@@ -50,8 +50,15 @@ export default function SetupPage() {
         if (c) {
           setConfig(c);
           setVoiceId(c.elevenlabs.voiceId ?? "");
-          // If everything is already configured, jump to done.
-          if (c.configured) setStep("done");
+          // Auto-jump to "done" ONLY if config.json itself has been
+          // populated by a previous wizard run. Env-only fallback
+          // doesn't count — the user hasn't actually saved via the
+          // wizard yet, so they should still see the welcome screen
+          // (which surfaces the env detection banner explaining the
+          // override semantics).
+          const savedViaWizard =
+            c.elevenlabs.hasApiKey && !!c.elevenlabs.voiceId;
+          if (savedViaWizard) setStep("done");
         }
       })
       .catch(() => {});
@@ -176,7 +183,20 @@ export default function SetupPage() {
           />
         )}
 
-        {step === "done" && <DoneStep onFinish={() => router.push("/")} />}
+        {step === "done" && (
+          <DoneStep
+            config={config}
+            onFinish={() => router.push("/")}
+            onEdit={() => {
+              // Reset the form fields and let the user re-enter or
+              // change the voiceId. apiKey field stays empty (we never
+              // surface the saved key in cleartext) — the masked
+              // value is shown in the input placeholder.
+              setApiKey("");
+              setStep("elevenlabs");
+            }}
+          />
+        )}
       </main>
     </div>
   );
@@ -407,29 +427,105 @@ function ElevenLabsStep({
 
 // ── Step 3 — Done ────────────────────────────────────────────────
 
-function DoneStep({ onFinish }: { onFinish: () => void }) {
+function DoneStep({
+  config,
+  onFinish,
+  onEdit,
+}: {
+  config: PublicConfig | null;
+  onFinish: () => void;
+  onEdit: () => void;
+}) {
+  const hasWizardConfig = !!config?.elevenlabs.hasApiKey;
+  const masked = config?.elevenlabs.apiKeyMasked ?? null;
+  const voiceId = config?.elevenlabs.voiceId ?? null;
+
   return (
-    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center space-y-4">
-      <span className="inline-flex w-12 h-12 rounded-2xl bg-emerald-600 text-white items-center justify-center">
-        <Check className="w-6 h-6" strokeWidth={2.5} />
-      </span>
-      <div>
-        <h2 className="text-xl font-semibold text-emerald-900 tracking-tight mb-1">
-          Setup terminé
-        </h2>
-        <p className="text-sm text-emerald-700 leading-relaxed max-w-md mx-auto">
-          Tu peux maintenant générer des voix off ElevenLabs depuis le tab{" "}
-          <strong>Voix off</strong> de chaque tour. La config est éditable à
-          tout moment depuis cette page.
-        </p>
+    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 space-y-5">
+      <div className="flex items-start gap-4">
+        <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white grid place-items-center flex-shrink-0">
+          <Check className="w-5 h-5" strokeWidth={2.5} />
+        </span>
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-emerald-700 mb-1">
+            Configuré
+          </p>
+          <h2 className="text-xl font-semibold text-emerald-900 tracking-tight mb-1">
+            Voix off prête
+          </h2>
+          <p className="text-sm text-emerald-700 leading-relaxed">
+            Tu peux générer des voix off ElevenLabs depuis le tab{" "}
+            <strong>Voix off</strong> de chaque tour.
+          </p>
+        </div>
       </div>
-      <button
-        onClick={onFinish}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
-      >
-        Aller au hub
-        <ArrowRight className="w-4 h-4" />
-      </button>
+
+      <div className="rounded-xl border border-emerald-200 bg-white p-4 space-y-2">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+          Source active
+        </p>
+        {hasWizardConfig ? (
+          <>
+            <Row
+              label="API key"
+              value={masked ?? "—"}
+              source="config.json"
+            />
+            <Row
+              label="Voice ID"
+              value={voiceId ?? "—"}
+              source="config.json"
+            />
+          </>
+        ) : (
+          <p className="text-xs text-slate-700 leading-relaxed">
+            Configuré via{" "}
+            <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">
+              .env.local
+            </code>{" "}
+            du repo (pas via le wizard). Ces valeurs marchent — si tu veux les
+            override depuis l&apos;UI, clique <strong>Modifier</strong>.
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <button
+          onClick={onEdit}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-800 hover:bg-emerald-100 rounded-lg transition-colors"
+        >
+          {hasWizardConfig ? "Modifier" : "Override via wizard"}
+        </button>
+        <button
+          onClick={onFinish}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+        >
+          Aller au hub
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </section>
+  );
+}
+
+function Row({
+  label,
+  value,
+  source,
+}: {
+  label: string;
+  value: string;
+  source: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 text-xs">
+      <span className="text-slate-500">{label}</span>
+      <span className="font-mono text-slate-900 truncate flex-1 text-right">
+        {value}
+      </span>
+      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+        {source}
+      </span>
+    </div>
   );
 }
