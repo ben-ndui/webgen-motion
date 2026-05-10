@@ -310,6 +310,12 @@ function ComposeStage({ tourId }: { tourId: string }) {
                     width: "100%",
                     height: "100%",
                     objectFit: "cover",
+                    // anchor the crop to the top of the captured page
+                    // so headers/heroes stay visible — Mac chrome's
+                    // 44px title bar + iPhone Dynamic Island make the
+                    // inner area slightly different from the video's
+                    // native aspect, and centering would eat the top.
+                    objectPosition: "top",
                     backgroundColor: "#000",
                     display: "block",
                   }}
