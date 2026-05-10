@@ -1,4 +1,10 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import type { TourEntry } from "./types/tour";
 
@@ -48,4 +54,39 @@ export function getTour(id: string | null | undefined): TourEntry | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Persists `tour` to `tours/<id>.json`. Used by the visual editor
+ * (Sprint 4) — every save mutates the project's source-of-truth file
+ * directly. If `id` doesn't already exist, a new tour file is created.
+ *
+ * Throws on validation failure so the API can surface a 400 instead
+ * of silently shipping a malformed tour.
+ */
+export function saveTour(id: string, tour: TourEntry): void {
+  if (!id || !/^[\w-]+$/.test(id)) {
+    throw new Error(`Invalid tour id: ${id}`);
+  }
+  if (!tour || typeof tour !== "object") {
+    throw new Error("Tour body must be an object");
+  }
+  if (!Array.isArray(tour.steps)) {
+    throw new Error("Tour.steps must be an array");
+  }
+  if (typeof tour.name !== "string" || !tour.name.trim()) {
+    throw new Error("Tour.name is required");
+  }
+  if (typeof tour.startPath !== "string") {
+    throw new Error("Tour.startPath is required");
+  }
+  // Force the on-disk id to match the path id — drops any client-side
+  // tampering attempt.
+  const normalized: TourEntry = { ...tour, id };
+  const dir = getToursDir();
+  if (!existsSync(dir)) {
+    throw new Error(`Tours directory missing: ${dir}`);
+  }
+  const path = join(dir, `${id}.json`);
+  writeFileSync(path, JSON.stringify(normalized, null, 2) + "\n");
 }

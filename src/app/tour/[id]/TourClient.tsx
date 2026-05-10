@@ -14,7 +14,7 @@ import {
 import type { TourEntry } from "@/lib/types/tour";
 import PageHeader from "./_components/page-header";
 import TabsStrip, { type TabDef } from "./_components/tabs-strip";
-import ScriptTab from "./_components/script-tab";
+import ScriptTab, { type SaveStatus } from "./_components/script-tab";
 import CaptureTab, {
   type CaptureState,
   type CapturedSection,
@@ -39,11 +39,12 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   const [activeTab, setActiveTab] = useState<TabKey>("script");
 
   // ── Persisted state (localStorage) ───────────────────────────────
-  const overridesKey = `motion-vo-overrides:${tour.id}`;
+  // Tour itself is now the source of truth — voOverrides legacy system
+  // dropped now that ScriptTab edits the tour directly + saves to disk.
   const formatKey = `motion-format:${tour.id}`;
-  const [voOverrides, setVoOverridesState] = useState<Record<string, string>>(
-    {},
-  );
+  const [localTour, setLocalTour] = useState<TourEntry>(tour);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [captureFormat, setCaptureFormatState] = useState<"16:9" | "9:16">(
     tour.format ?? "16:9",
   );
@@ -102,8 +103,6 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(overridesKey);
-      if (raw) setVoOverridesState(JSON.parse(raw));
       const f = localStorage.getItem(formatKey);
       if (f === "9:16" || f === "16:9") setCaptureFormatState(f);
       const bg = localStorage.getItem(bgMusicKey);
@@ -117,7 +116,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     } catch {
       // Ignore storage errors (private mode, quota, etc.)
     }
-  }, [overridesKey, formatKey, bgMusicKey, volumesKey]);
+  }, [formatKey, bgMusicKey, volumesKey]);
 
   // Auto-load existing artifacts from disk so a returning session
   // doesn't have to re-run Capturer. /api/motion/tour/status returns
@@ -398,10 +397,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
       const res = await fetch("/api/motion/tour/audio/voice/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tourId: tour.id,
-          voiceoverOverrides: voOverrides,
-        }),
+        body: JSON.stringify({ tourId: tour.id }),
       });
       if (!res.ok || !res.body) {
         const err = await res
@@ -501,11 +497,34 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     }
   }
 
-  const saveOverrides = (next: Record<string, string>) => {
-    setVoOverridesState(next);
+  const handleTourChange = (next: TourEntry) => {
+    setLocalTour(next);
+    if (saveStatus === "saved") setSaveStatus("idle"); // mark dirty
+  };
+
+  const saveTour = async () => {
+    setSaveStatus("saving");
+    setSaveError(null);
     try {
-      localStorage.setItem(overridesKey, JSON.stringify(next));
-    } catch {}
+      const res = await fetch(
+        `/api/motion/tour/${encodeURIComponent(tour.id)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tour: localTour }),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setSaveStatus("error");
+        setSaveError(data.error ?? `HTTP ${res.status}`);
+        return;
+      }
+      setSaveStatus("saved");
+    } catch (e) {
+      setSaveStatus("error");
+      setSaveError(e instanceof Error ? e.message : "Network error");
+    }
   };
 
   const setCaptureFormat = (f: "16:9" | "9:16") => {
@@ -515,18 +534,8 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     } catch {}
   };
 
-  const handleVoOverrideChange = (linearIdx: number, text: string) => {
-    // Drop empty matches that just equal the catalogue default.
-    const step = tour.steps[linearIdx];
-    const baseText = (step as { voiceover?: string }).voiceover ?? "";
-    const next = { ...voOverrides };
-    if (text === baseText) {
-      delete next[String(linearIdx)];
-    } else {
-      next[String(linearIdx)] = text;
-    }
-    saveOverrides(next);
-  };
+  // (voOverrides system retired — ScriptTab now mutates the tour
+  //  directly via handleTourChange.)
 
   // ── Tabs definition ──────────────────────────────────────────────
   const captureBadge =
@@ -599,11 +608,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         {/* Tab panes */}
         {activeTab === "script" && (
           <ScriptTab
-            tour={tour}
+            tour={localTour}
+            onChange={handleTourChange}
+            onSave={saveTour}
+            saveStatus={saveStatus}
+            saveError={saveError}
             captureFormat={captureFormat}
             onFormatChange={setCaptureFormat}
-            voOverrides={voOverrides}
-            onVoOverrideChange={handleVoOverrideChange}
           />
         )}
 
@@ -631,9 +642,8 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
 
         {activeTab === "voice" && (
           <VoiceTab
-            tour={tour}
+            tour={localTour}
             voState={vo}
-            voOverrides={voOverrides}
             onGenerateVo={handleGenerateVo}
             onJumpToScript={() => setActiveTab("script")}
           />

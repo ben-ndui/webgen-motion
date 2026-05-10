@@ -24,7 +24,6 @@ export type VoState =
 interface Props {
   tour: TourEntry;
   voState: VoState;
-  voOverrides: Record<string, string>;
   onGenerateVo: () => void;
   onJumpToScript: () => void;
 }
@@ -38,11 +37,10 @@ interface Props {
 export default function VoiceTab({
   tour,
   voState,
-  voOverrides,
   onGenerateVo,
   onJumpToScript,
 }: Props) {
-  const counters = countVoiceovers(tour, voOverrides);
+  const counters = countVoiceovers(tour);
   const hasAnyActive = counters.active > 0;
   const isRunning = voState.kind === "running";
 
@@ -94,17 +92,7 @@ export default function VoiceTab({
       <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-6 flex-wrap">
           <Counter label="Voix actives" value={counters.active} mono />
-          <Counter
-            label="Steps éligibles"
-            value={counters.eligible}
-            mono
-          />
-          <Counter
-            label="Overrides UI"
-            value={counters.overrides}
-            mono
-            warn={counters.overrides > 0}
-          />
+          <Counter label="Steps éligibles" value={counters.eligible} mono />
         </div>
         <button
           onClick={onJumpToScript}
@@ -218,14 +206,13 @@ function Counter({
   );
 }
 
-function countVoiceovers(
-  tour: TourEntry,
-  overrides: Record<string, string>,
-): { active: number; eligible: number; overrides: number } {
+function countVoiceovers(tour: TourEntry): {
+  active: number;
+  eligible: number;
+} {
   let eligible = 0;
   let active = 0;
-  for (let i = 0; i < tour.steps.length; i++) {
-    const s = tour.steps[i];
+  for (const s of tour.steps) {
     const canHave =
       s.type === "section" ||
       s.type === "overlay" ||
@@ -234,14 +221,8 @@ function countVoiceovers(
       s.type === "hover";
     if (!canHave) continue;
     eligible++;
-    const baseVo = "voiceover" in s ? s.voiceover : undefined;
-    const override = overrides[String(i)];
-    const effective = override !== undefined ? override : (baseVo ?? "");
-    if (effective.trim().length > 0) active++;
+    const text = "voiceover" in s ? (s.voiceover ?? "") : "";
+    if (text.trim().length > 0) active++;
   }
-  return {
-    active,
-    eligible,
-    overrides: Object.keys(overrides).length,
-  };
+  return { active, eligible };
 }
