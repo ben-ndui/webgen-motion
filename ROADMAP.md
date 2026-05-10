@@ -19,51 +19,69 @@ SaaS / open-source.
 - Hub `/` + tour preview `/tour/[id]` + compose `/compose/[id]` boot 200
 - README quickstart
 
-### Sprint 2 — UX/UI tabs (en cours, 3/4 chunks done)
+### Sprint 2 — UX/UI tabs
 
 - ✅ Chunk 1 : page-header + tabs-strip + Script tab (édition VO inline + format selector + stats)
 - ✅ Chunk 2 : Capture tab (action card + phase loader streaming NDJSON + sections grid + auto-load via status endpoint)
 - ✅ Chunk 3 : Audio tab (MusicLibrary + sliders volumes) + Voice tab (Générer VO + counters + audio preview)
-- ⏳ Chunk 4 : Compose tab (à venir)
-- ⏳ Cleanup : extraire les last bits de l'ancien TourClient, retirer brand.ts, harmoniser icons (lucide-react partout)
+- ✅ Chunk 4 : Compose tab (readiness strip + Composer + final.mp4 player + aperçu live)
+
+### Sprint 3 — distribution + meta-demo
+
+- ✅ CLAUDE.md détaillé pour qu'un agent IA puisse installer webgen-motion
+- ✅ README quickstart enrichi (5 tabs, workflow ASCII)
+- ✅ Setup wizard (3-step state machine, config dans `~/.webgen-motion/config.json`)
+- ✅ Meta-demo : `tours/webgen-motion-itself.json` (per-step VO + clicks `data-tab`)
+- ✅ Repo public `github.com/ben-ndui/webgen-motion`
+
+### Sprint 4 — éditeur visuel + features
+
+- ✅ Chunk 1 : `categories.json` + server-only fs loader (palettes éditables sans toucher au TS)
+- ✅ Chunk 2 : Visual tour editor inline dans Script tab (expand/up/down/delete par row + saveTour endpoint + SaveBadge)
+- ✅ Chunk 3 : Live preview sans re-capture (audio playback synchro via URL params, cycle 30s → 3s)
+- ✅ Chunk 4 : Mode narrative ElevenLabs (1 fetch `/with-timestamps`, markers `[step:N]`, calibrate timeline depuis alignment)
+
+### Plus
+
+- ✅ Brand-aware compose stage (intro / outro / URL bar tirent de `tour.brand`, fallback computé depuis `name` + `baseUrl`)
+- ✅ "Nouveau tour" : modal hub avec slug auto, format, brand pré-rempli, redirect `/tour/<id>`
+- ✅ Fix layout : `objectPosition: "top"` pour garder le haut du site visible dans Mac chrome + iPhone frame
+- ✅ Fix hooks order dans `/compose/[id]` (useEffect audio hoisté avant les early returns)
+- ✅ Fix channel layout : VO mono ElevenLabs ré-encodé stéréo pour matcher les silences anullsrc
 
 ---
 
-## 🔜 Sprint 3 — distribution + meta-demo
+## 🛠 Prochains chantiers
 
-- **CLAUDE.md** détaillé pour qu'un agent IA (Cursor / Claude Code / Copilot) puisse installer + configurer webgen-motion from scratch sur n'importe quel projet.
-- **README enrichi** : screenshots + GIFs (capture en cours, avant/après compose, tab strip).
-- **Setup wizard** : 4-5 écrans pour saisir API keys / voice ID / project URL / output dir via UI au lieu de `.env.local`. Config stockée dans `~/.webgen-motion/config.json`.
-- **Meta-demo** : tour `webgen-motion-itself.json` qui film l'interface du Motion Studio elle-même → carte de visite ultime pour la promo.
-- **`gh repo create ben-ndui/webgen-motion --public`** quand l'outil est polished.
+### Mobile app capture (Maestro + iOS sim, 2-3 jours)
+**Décidé en `/btw` (2026-05-10)** : skipped Flutter web (camera/notifs KO en web). Path retenu : Maestro YAML scripts pour les interactions + `xcrun simctl io booted recordVideo` pour la capture. Output natif iPhone, fit dans iPhone frame du compose.
 
----
+### ElevenLabs alignment plumb-down (raffinement chunk 4)
+Le mode narrative pose les bases. Reste à raffiner :
+- Heuristique de matching avec normalization (digits → words shift les indices entre `alignment` et `normalized_alignment`)
+- UI de preview de l'alignment (timeline visuelle char-by-char dans Voice tab)
+- Auto-cleanup du `voiceover-alignment.json` orphelin quand le user re-passe en per-step
 
-## 🛠 Sprint 4+ — features avancées
+### Visual category editor (Sprint 5)
+- UI pour éditer `categories.json` depuis le hub (mirror du pattern Script tab).
+- Pareil pour `pronunciation.json`.
 
-### Visual tour editor (priorité haute après Sprint 3)
-- Aujourd'hui : éditer un tour = écrire du JSON dans `tours/<id>.json`.
-- Cible : UI form-based avec drag-drop des steps, ajout/suppression sans toucher au fichier. Save → écrit le JSON.
-- Ce qui débloque : créer une vidéo promo pour un nouveau projet sans toucher à du code.
+### Cursor mode polish
+- Cursor + click ripple existent dans le runner mais jamais validé visuellement avec un tour qui a des clicks réels.
+- Le meta-demo a maintenant des clicks `data-tab` → candidate pour la validation.
 
-### Categories en JSON
-- `motion-categories.ts` deviendra `categories.json` (sibling de `tours/`) → user peut définir ses propres palettes.
-- Brand-pronunciation pareil : `pronunciation.json` éditable depuis la UI.
+### Mobile / Tablet UI
+- Le dashboard est admin desktop-first. Une vue tablette simplifiée pourrait servir aux validations vidéo en mode "mobile review".
 
-### Live preview sans re-capture
-- Actuellement chaque modif de step = re-capture (~30s).
-- Cible : preview "lite" qui charge le manifest existant + ré-applique uniquement les overlays / VO sans refilmer le site.
-- Réduit le cycle d'itération à ~3s.
+### CI workflow (option A originelle, en pause)
+- `.github/workflows/motion-tour.yml` qui dispatch GH Actions pour capture + compose en cloud.
+- Pas la priorité depuis qu'on est passés sur le modèle local-first installable. À ressortir si on veut une démo en ligne.
 
 ### Mobile app capture (4.D, ex-pivoté en option 3)
 **Décidé en `/btw` (2026-05-10)** : skipped pour l'instant car Flutter web pas configuré sur uzme repo (le `web/` existe mais vide).
 - **Path A** : Configurer Flutter web sur uzme (1-2 jours, partial — camera/notifs KO en web). Pas la peine pour l'instant.
 - **Path B** (recommandé) : Maestro + iOS Simulator. Stack séparée du runner Puppeteer actuel — Maestro YAML scripts pour les interactions + `xcrun simctl io booted recordVideo` pour la capture. Output natif iPhone, fit dans iPhone frame du compose. ~2-3 jours.
 - **Path C** : un wrapper qui embed la captured native MP4 dans le compose pipeline existant.
-
-### Cursor mode polish
-- Cursor + click ripple animé existent dans le runner mais jamais validé visuellement avec un tour qui a des clicks (deploys était admin-protégé).
-- À retester avec un tour public ayant des clicks réels une fois qu'on a un projet candidat.
 
 ### Mobile / Tablet UI
 - Le dashboard est admin desktop-first. Une vue tablette simplifiée pourrait servir aux validations vidéo en mode "mobile review".
@@ -91,7 +109,7 @@ SaaS / open-source.
 ### Distribution v2 (futur)
 - `npx create-webgen-motion my-tours` → scaffold + boot
 - Audience : créateurs / équipes produit qui veulent générer leur propre promo
-- Pré-requis : Sprint 3 + visual editor pour pas obliger le user à toucher au JSON
+- Pré-requis : Sprints 3 et 4 ✅ — débloqué, reste à packager
 
 ### Intégration smoothandesign / webgen-ai
 - Une fois l'outil mature, l'embarquer comme module du WebGen ecosystem
@@ -114,15 +132,21 @@ Data-driven → l'utilisateur n'a pas besoin de connaître TypeScript pour ajout
 On a évalué les deux dans le main thread. Conclusion : un outil local-first n'a pas besoin de cloud storage. Filesystem rapide + portable.
 
 ### Pourquoi UZME comme demo et non comme prod-tied
-UZME est l'exemple canonique car il a un site responsive et une app prête. Mais le pipeline est totalement projet-agnostic — `tour.baseUrl` peut pointer ailleurs.
+UZME est l'exemple canonique car il a un site responsive et une app prête. Mais le pipeline est totalement projet-agnostic — `tour.baseUrl` + `tour.brand` peuvent pointer ailleurs.
+
+### Pourquoi un champ `brand` séparé sur TourEntry
+Le compose stage avait des "UZME" / "uzme.app" hardcodés. Plutôt que de tout dériver à la volée (fragile sur les noms longs comme "UZME · Landing 16:9"), `brand` est explicite avec fallbacks computés. Le user peut affiner sans toucher au code.
+
+### Pourquoi narrative mode est ElevenLabs-only
+`/with-timestamps` est l'endpoint qui donne char-level alignment. Sans ça, impossible de calibrer les `dwellMs` au mot près. Coqui / Bark / autres open TTS ne fournissent pas cette granularité aujourd'hui.
 
 ---
 
 ## ⏰ Cadence
 
-- Sprint 2 chunks 4 → fin Sprint 2 : ~1-2h restantes
-- Sprint 3 (CLAUDE.md + README + meta-demo) : ~1 jour
-- Sprint 4 (visual editor) : ~3-4 jours
+- Sprints 1-4 ✅ done
 - Mobile app capture (Maestro) : ~2-3 jours quand Ben veut
+- `npx create-webgen-motion` packaging : ~1 jour
+- Visual category editor : ~1 jour
 
-Total avant SaaS-ready : **~1 semaine de boulot focused**.
+Reste avant SaaS-ready public : **~3-4 jours de boulot focused** (mobile capture + packaging npx).
