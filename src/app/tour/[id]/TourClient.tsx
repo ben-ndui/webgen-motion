@@ -21,6 +21,7 @@ import CaptureTab, {
 } from "./_components/capture-tab";
 import AudioTab from "./_components/audio-tab";
 import VoiceTab, { type VoState } from "./_components/voice-tab";
+import ComposeTab, { type ComposeState } from "./_components/compose-tab";
 import type { AudioTrack } from "./_components/music-library";
 import type { RunningProgress } from "./_components/phase-loader";
 
@@ -48,6 +49,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   );
   const [capture, setCapture] = useState<CaptureState>({ kind: "idle" });
   const [vo, setVo] = useState<VoState>({ kind: "idle" });
+  const [compose, setCompose] = useState<ComposeState>({ kind: "idle" });
   const [tracks, setTracks] = useState<AudioTrack[]>([]);
   // bgMusicId : undefined = use catalogue default, "" = explicit no-music,
   // "<id>" = library track override. localStorage'd so the choice survives
@@ -59,11 +61,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   const [voVolume, setVoVolumeState] = useState<number>(1.0);
   const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const voTickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const composeTickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {
       if (tickerRef.current) clearInterval(tickerRef.current);
       if (voTickerRef.current) clearInterval(voTickerRef.current);
+      if (composeTickerRef.current) clearInterval(composeTickerRef.current);
     };
   }, []);
 
@@ -144,6 +148,14 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
           setVo({
             kind: "ready",
             voiceoverUrl: String(data.voiceoverUrl),
+            captureWallTimeSec: 0,
+          });
+        }
+        if (data.hasFinal && data.finalUrl) {
+          setCompose({
+            kind: "ready",
+            finalUrl: String(data.finalUrl),
+            sizeBytes: Number(data.finalSizeBytes ?? 0),
             captureWallTimeSec: 0,
           });
         }
@@ -266,6 +278,94 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     } catch (e) {
       if (tickerRef.current) clearInterval(tickerRef.current);
       setCapture({
+        kind: "error",
+        message: e instanceof Error ? e.message : "Network error",
+      });
+    }
+  };
+
+  // ── Compose handler — POST + NDJSON streaming ───────────────────
+  const handleCompose = async () => {
+    if (composeTickerRef.current) clearInterval(composeTickerRef.current);
+    const startedAt = Date.now();
+    setCompose({
+      kind: "running",
+      progress: { phase: "Lancement du compositor…", sinceSec: 0 },
+    });
+    composeTickerRef.current = setInterval(() => {
+      setCompose((prev) =>
+        prev.kind === "running"
+          ? {
+              kind: "running",
+              progress: {
+                ...prev.progress,
+                sinceSec: Math.round((Date.now() - startedAt) / 1000),
+              },
+            }
+          : prev,
+      );
+    }, 1000);
+
+    try {
+      const res = await fetch("/api/motion/tour/compose/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tourId: tour.id,
+          bgMusicId,
+          bgMusicVolume,
+          voiceoverVolume: voVolume,
+        }),
+      });
+      if (!res.ok || !res.body) {
+        const err = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        if (composeTickerRef.current) clearInterval(composeTickerRef.current);
+        setCompose({ kind: "error", message: err.error });
+        return;
+      }
+      await consumeNdjson(res.body, (evt) => {
+        if (evt.type === "phase") {
+          setCompose((prev) =>
+            prev.kind === "running"
+              ? {
+                  kind: "running",
+                  progress: { ...prev.progress, phase: String(evt.label ?? "") },
+                }
+              : prev,
+          );
+        } else if (evt.type === "progress") {
+          setCompose((prev) =>
+            prev.kind === "running"
+              ? {
+                  kind: "running",
+                  progress: {
+                    ...prev.progress,
+                    frames: Number(evt.frames),
+                  },
+                }
+              : prev,
+          );
+        } else if (evt.type === "done" && evt.ok) {
+          if (composeTickerRef.current) clearInterval(composeTickerRef.current);
+          setCompose({
+            kind: "ready",
+            finalUrl: String(evt.finalUrl ?? ""),
+            sizeBytes: Number(evt.sizeBytes ?? 0),
+            captureWallTimeSec: Number(evt.captureWallTimeSec ?? 0),
+          });
+        } else if (evt.type === "error") {
+          if (composeTickerRef.current) clearInterval(composeTickerRef.current);
+          setCompose({
+            kind: "error",
+            message: String(evt.message ?? "Erreur inconnue"),
+          });
+        }
+      });
+    } catch (e) {
+      if (composeTickerRef.current) clearInterval(composeTickerRef.current);
+      setCompose({
         kind: "error",
         message: e instanceof Error ? e.message : "Network error",
       });
@@ -433,12 +533,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     capture.kind === "ready" ? capture.sections.length : null;
   const audioBadge = bgMusicId && bgMusicId !== "" ? "•" : null;
   const voiceBadge = vo.kind === "ready" ? "•" : null;
+  const composeBadge = compose.kind === "ready" ? "•" : null;
   const TABS: TabDef<TabKey>[] = [
     { id: "script", label: "Script", icon: FileText },
     { id: "capture", label: "Capture", icon: Video, badge: captureBadge },
     { id: "audio", label: "Audio", icon: Music, badge: audioBadge },
     { id: "voice", label: "Voix off", icon: Mic, badge: voiceBadge },
-    { id: "compose", label: "Compose", icon: Film },
+    { id: "compose", label: "Compose", icon: Film, badge: composeBadge },
   ];
 
   return (
@@ -539,37 +640,21 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         )}
 
         {activeTab === "compose" && (
-          <PlaceholderTab
-            title="Compose"
-            description="Composer le clip final + lecteur du final.mp4 + download."
-            comingSoon
+          <ComposeTab
+            tourId={tour.id}
+            compose={compose}
+            captureSections={
+              capture.kind === "ready" ? capture.sections : null
+            }
+            voState={vo}
+            bgMusicId={bgMusicId}
+            tracks={tracks}
+            bgMusicVolume={bgMusicVolume}
+            voVolume={voVolume}
+            onCompose={handleCompose}
           />
         )}
       </main>
-    </div>
-  );
-}
-
-function PlaceholderTab({
-  title,
-  description,
-  comingSoon,
-}: {
-  title: string;
-  description: string;
-  comingSoon?: boolean;
-}) {
-  return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-8 py-16 text-center">
-      <h3 className="text-base font-semibold text-slate-900 mb-1">{title}</h3>
-      <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-        {description}
-      </p>
-      {comingSoon && (
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-600 mt-4">
-          Sprint 2 · chunk suivant
-        </p>
-      )}
     </div>
   );
 }
