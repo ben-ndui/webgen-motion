@@ -5,6 +5,11 @@
   "estimatedSec": 70,
   "startPath": "/",
   "baseUrl": "http://localhost:3000",
+  "brand": {
+    "displayName": "webgen-motion",
+    "domain": "webgen-motion.local",
+    "tagline": "by Smooth & Design"
+  },
   "auth": "none",
   "format": "16:9",
   "steps": [

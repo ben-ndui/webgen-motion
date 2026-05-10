@@ -85,6 +85,19 @@ export interface TourEntry {
   /** Optional path (repo-relative or absolute) of a bg music MP3.
    *  Mixed in compose at volume 0.18 (or ducked to 0.10 if VO too). */
   bgMusic?: string;
+  /** Brand identity surfaced in the compose stage (intro card, outro
+   *  card, Mac chrome URL bar). All fields optional — sensible
+   *  fallbacks are computed from `name` and `baseUrl` when missing. */
+  brand?: {
+    /** Big logo text on the intro + outro card. Fallback: tour.name. */
+    displayName?: string;
+    /** Hostname shown in the Mac chrome URL bar. Fallback: hostname
+     *  parsed from baseUrl, or "localhost". */
+    domain?: string;
+    /** Subtitle line under the outro logo (e.g. "by Smooth & Design").
+     *  Fallback: same as `domain`. */
+    tagline?: string;
+  };
   /** How voice-over is sourced.
    *  - "per-step" (default, legacy): each step carries its own VO line,
    *    the runner concatenates them with silence padding to match the

@@ -43,6 +43,11 @@ interface Manifest {
   totalDurationSec: number;
   hasVoiceover?: boolean;
   voiceoverUrl?: string | null;
+  brand?: {
+    displayName: string;
+    domain: string;
+    tagline: string;
+  };
 }
 
 interface PageProps {
@@ -293,7 +298,7 @@ function ComposeStage({ tourId }: { tourId: string }) {
             }}
           >
             <DeviceFrame
-              url={`uzme.app${pathHintFor(current)}`}
+              url={`${manifest.brand?.domain ?? "localhost"}${pathHintFor(current)}`}
               tabTitle={current.title}
               cat={cat}
               format={manifest.format ?? "16:9"}
@@ -360,7 +365,7 @@ function ComposeStage({ tourId }: { tourId: string }) {
                       lineHeight: 1.05,
                     }}
                   >
-                    {manifest.tourId.replace(/-/g, " ")}
+                    {manifest.brand?.displayName ?? manifest.tourId.replace(/-/g, " ")}
                   </div>
                   {!autoplay && (
                     <button
@@ -415,9 +420,11 @@ function ComposeStage({ tourId }: { tourId: string }) {
                 fontWeight: 800,
                 letterSpacing: "-0.025em",
                 lineHeight: 1.05,
+                textAlign: "center",
+                maxWidth: "85%",
               }}
             >
-              UZME
+              {manifest.brand?.displayName ?? manifest.tourId.replace(/-/g, " ")}
             </div>
             <div
               style={{
@@ -425,9 +432,10 @@ function ComposeStage({ tourId }: { tourId: string }) {
                 fontWeight: 500,
                 color: cat.accent,
                 letterSpacing: "-0.005em",
+                textAlign: "center",
               }}
             >
-              uzme.app
+              {manifest.brand?.tagline ?? manifest.brand?.domain ?? "localhost"}
             </div>
           </motion.div>
         )}

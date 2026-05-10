@@ -2,6 +2,42 @@ import { NextResponse } from "next/server";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
+import { getTour } from "@/lib/tour-loader";
+
+/**
+ * Compute the brand info shown on the compose stage. Priority :
+ *   1. tour.brand.* (explicit overrides)
+ *   2. fallbacks derived from tour.name + tour.baseUrl
+ *   3. last-resort defaults from the tourId
+ *
+ * This runs server-side at request time so it always reflects the
+ * current tour file — no need to re-capture when the user tweaks
+ * brand metadata.
+ */
+function computeBrand(id: string): {
+  displayName: string;
+  domain: string;
+  tagline: string;
+} {
+  const tour = getTour(id);
+  const fallbackName = id
+    .split(/[-_]/g)
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join(" ");
+  let domain = "localhost";
+  if (tour?.baseUrl) {
+    try {
+      domain = new URL(tour.baseUrl).host;
+    } catch {
+      domain = "localhost";
+    }
+  }
+  const displayName =
+    tour?.brand?.displayName ?? tour?.name ?? fallbackName;
+  const finalDomain = tour?.brand?.domain ?? domain;
+  const tagline = tour?.brand?.tagline ?? finalDomain;
+  return { displayName, domain: finalDomain, tagline };
+}
 
 /**
  * returns the manifest produced by the most recent
@@ -42,6 +78,7 @@ export async function GET(req: Request) {
     // `<audio>` for live preview without a second roundtrip.
     const voiceoverPath = join(getMotionTourDir(id), "voiceover.mp3");
     const hasVoiceover = existsSync(voiceoverPath);
+    const brand = computeBrand(id);
     return NextResponse.json(
       {
         ...manifest,
@@ -50,6 +87,7 @@ export async function GET(req: Request) {
         voiceoverUrl: hasVoiceover
           ? `/api/motion/tour/audio/voice/preview?id=${encodeURIComponent(id)}`
           : null,
+        brand,
       },
       { headers: { "Cache-Control": "no-store" } },
     );

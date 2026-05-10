@@ -5,6 +5,11 @@
   "estimatedSec": 55,
   "startPath": "/",
   "baseUrl": "https://uzme.app",
+  "brand": {
+    "displayName": "UZME",
+    "domain": "uzme.app",
+    "tagline": "uzme.app"
+  },
   "auth": "none",
   "format": "16:9",
   "steps": [
