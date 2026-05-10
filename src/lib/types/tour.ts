@@ -85,5 +85,19 @@ export interface TourEntry {
   /** Optional path (repo-relative or absolute) of a bg music MP3.
    *  Mixed in compose at volume 0.18 (or ducked to 0.10 if VO too). */
   bgMusic?: string;
+  /** How voice-over is sourced.
+   *  - "per-step" (default, legacy): each step carries its own VO line,
+   *    the runner concatenates them with silence padding to match the
+   *    section MP4 durations.
+   *  - "narrative": ONE continuous narration for the whole tour (see
+   *    `narrativeScript`). ElevenLabs returns char-level timings; the
+   *    runner derives each step's audioStartSec from `[step:N]` markers
+   *    embedded in the script. Per-step `voiceover` fields are ignored. */
+  voiceMode?: "per-step" | "narrative";
+  /** Continuous narration text used when voiceMode === "narrative".
+   *  Embed `[step:N]` markers (N = linear index in steps) at the points
+   *  where each step's overlay should appear; the runner replaces each
+   *  marker with an audio offset from the alignment timestamps. */
+  narrativeScript?: string;
   steps: TourStep[];
 }

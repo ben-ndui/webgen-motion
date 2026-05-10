@@ -53,7 +53,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { getTour } from "../src/lib/tour-loader";
-import type { TourStep } from "../src/lib/types/tour";
+import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
 import { getVoCacheDir } from "../src/lib/motion-tour-store";
 
@@ -143,6 +143,29 @@ async function main(): Promise<void> {
   console.log(`  Model:    ${modelId}`);
   if (Object.keys(overrides).length > 0) {
     console.log(`  Overrides: ${Object.keys(overrides).length} step(s)`);
+  }
+
+  // Narrative mode short-circuits per-step assembly: one continuous
+  // narration for the whole tour, char-level timings drive the step
+  // start times. Per-step `voiceover` fields are ignored.
+  if (tour.voiceMode === "narrative") {
+    if (!tour.narrativeScript || !tour.narrativeScript.trim()) {
+      console.error(
+        "voiceMode=narrative but narrativeScript is empty — nothing to synthesize",
+      );
+      process.exit(1);
+    }
+    await runNarrativeMode({
+      tourDir: tourDir!,
+      tourId: tourId!,
+      tour,
+      narrativeScript: tour.narrativeScript,
+      cacheDir,
+      workDir,
+      manifest,
+    });
+    rmSync(workDir, { recursive: true, force: true });
+    return;
   }
 
   // Walk tour.steps, partition into sections. Each section keeps its
@@ -461,6 +484,185 @@ async function main(): Promise<void> {
 
   rmSync(workDir, { recursive: true, force: true });
   console.log(`✓ Done → ${outPath}`);
+}
+
+/**
+ * Strips `[step:N]` markers from the narrative script while remembering
+ * the position of each marker in the resulting clean text. The clean
+ * text is what we send to ElevenLabs; marker positions index into the
+ * `alignment.characters` array returned by the API.
+ *
+ * Whitespace immediately around a marker is preserved as-is — the user
+ * is expected to write natural prose with markers placed at sentence
+ * boundaries.
+ */
+function parseNarrativeMarkers(script: string): {
+  cleanText: string;
+  markers: Array<{ stepIdx: number; charPosClean: number }>;
+} {
+  const markers: Array<{ stepIdx: number; charPosClean: number }> = [];
+  let cleanText = "";
+  const re = /\[step:(\d+)\]/g;
+  let lastEnd = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(script)) !== null) {
+    cleanText += script.slice(lastEnd, m.index);
+    markers.push({
+      stepIdx: parseInt(m[1], 10),
+      charPosClean: cleanText.length,
+    });
+    lastEnd = m.index + m[0].length;
+  }
+  cleanText += script.slice(lastEnd);
+  return { cleanText, markers };
+}
+
+interface NarrativeRunInput {
+  tourDir: string;
+  tourId: string;
+  tour: TourEntry;
+  narrativeScript: string;
+  cacheDir: string;
+  workDir: string;
+  manifest: { sections: ManifestSection[] };
+}
+
+/**
+ * Narrative mode runner. One ElevenLabs synthesis for the entire tour,
+ * step start times derived from `[step:N]` markers in the script
+ * mapped to character timestamps. Output:
+ *   - `voiceover.mp3`              — re-encoded stereo
+ *   - `voiceover-alignment.json`   — narrative items with stepIdx +
+ *                                    audioStartSec, plus the raw
+ *                                    character alignment from Eleven
+ */
+async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
+  const { tourDir, tourId, tour, narrativeScript, cacheDir, workDir } = input;
+  const { cleanText, markers } = parseNarrativeMarkers(narrativeScript);
+  if (!cleanText.trim()) {
+    throw new Error(
+      "narrativeScript reduces to empty text after stripping markers",
+    );
+  }
+  console.log(`▶ Narrative mode`);
+  console.log(`  Markers: ${markers.length}`);
+  console.log(`  Clean text length: ${cleanText.length} chars`);
+
+  const tts = await ensureTts(cleanText, cacheDir);
+  if (!tts.alignment) {
+    throw new Error(
+      "ElevenLabs returned no alignment — narrative mode requires /with-timestamps to provide character timings",
+    );
+  }
+
+  // Re-encode the cached mono mp3 to stereo 44.1k so it matches the
+  // layout used everywhere else (compose mux, future per-section
+  // playback). No padding / fades — the narration is contiguous.
+  const outPath = join(tourDir, "voiceover.mp3");
+  runFfmpeg([
+    "-y",
+    "-i", tts.mp3Path,
+    "-c:a", "libmp3lame",
+    "-b:a", "128k",
+    "-ac", "2",
+    "-ar", "44100",
+    outPath,
+  ]);
+  console.log(`✓ Audio → ${outPath}`);
+
+  // The phonetic transformation (UZME→Youzmi) shifts character indices
+  // because "UZME" (4 chars) becomes "Youzmi" (6 chars). We sent the
+  // PHONETIC text to the API, so alignment.characters indexes the
+  // phonetic string. The markers were extracted from the ORIGINAL
+  // script, so their charPosClean indexes the un-phonetic text. Apply
+  // the same transformation to the marker offsets.
+  const phoneticCleanText = applyPronunciation(cleanText);
+  const aligned = tts.alignment;
+  const totalAudioSec =
+    aligned.character_end_times_seconds[
+      aligned.character_end_times_seconds.length - 1
+    ] ?? 0;
+
+  // For each marker, find its position in the phonetic text. The
+  // pronunciation map is small + applied uniformly, so we re-run the
+  // same transform on the prefix-up-to-marker to get the phonetic
+  // offset, then look up its end time as the step start (so a step
+  // appears just after the previous spoken character).
+  const stepStarts: Array<{
+    linearStepIdx: number;
+    audioStartSec: number;
+  }> = [];
+  for (const m of markers) {
+    const prefix = cleanText.slice(0, m.charPosClean);
+    const phoneticPrefix = applyPronunciation(prefix);
+    const idx = Math.min(
+      phoneticPrefix.length,
+      aligned.character_end_times_seconds.length - 1,
+    );
+    const tSec =
+      idx <= 0
+        ? 0
+        : aligned.character_end_times_seconds[idx - 1] ?? 0;
+    stepStarts.push({
+      linearStepIdx: m.stepIdx,
+      audioStartSec: tSec,
+    });
+  }
+
+  // Compute durations as gap to next marker (or to end-of-audio for
+  // the last one). Steps not referenced by a marker get null durations
+  // — the UI / compose layer can decide how to fill those.
+  const items = stepStarts.map((s, i) => {
+    const next = stepStarts[i + 1];
+    const audioDurationSec = next
+      ? Math.max(0, next.audioStartSec - s.audioStartSec)
+      : Math.max(0, totalAudioSec - s.audioStartSec);
+    return {
+      linearStepIdx: s.linearStepIdx,
+      sectionIdx: -1, // not section-bound in narrative mode
+      kind: "narrative-step" as const,
+      text: null,
+      audioStartSec: s.audioStartSec,
+      audioDurationSec,
+      alignment: null,
+      normalizedAlignment: null,
+    };
+  });
+
+  const alignPath = join(tourDir, "voiceover-alignment.json");
+  writeFileSync(
+    alignPath,
+    JSON.stringify(
+      {
+        tourId,
+        voiceId,
+        modelId,
+        voiceMode: "narrative",
+        totalDurationSec: totalAudioSec,
+        cleanText,
+        phoneticCleanText,
+        rawAlignment: aligned,
+        normalizedAlignment: tts.normalizedAlignment,
+        items,
+      },
+      null,
+      2,
+    ),
+  );
+  console.log(`✓ Alignment → ${alignPath}`);
+  console.log(
+    `  Total ${totalAudioSec.toFixed(2)}s · ${items.length} step start(s) derived`,
+  );
+
+  // Quiet warning if the user wrote markers referencing steps that
+  // don't exist — easy off-by-one in the script.
+  for (const s of stepStarts) {
+    if (s.linearStepIdx < 0 || s.linearStepIdx >= tour.steps.length) {
+      console.warn(
+        `  ⚠ marker [step:${s.linearStepIdx}] is out of range (tour has ${tour.steps.length} steps)`,
+      );
+    }
+  }
 }
 
 interface TtsArtifact {

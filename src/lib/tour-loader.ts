@@ -80,6 +80,21 @@ export function saveTour(id: string, tour: TourEntry): void {
   if (typeof tour.startPath !== "string") {
     throw new Error("Tour.startPath is required");
   }
+  if (
+    tour.voiceMode !== undefined &&
+    tour.voiceMode !== "per-step" &&
+    tour.voiceMode !== "narrative"
+  ) {
+    throw new Error(`Tour.voiceMode must be "per-step" or "narrative"`);
+  }
+  if (
+    tour.voiceMode === "narrative" &&
+    (typeof tour.narrativeScript !== "string" || !tour.narrativeScript.trim())
+  ) {
+    throw new Error(
+      `Tour.narrativeScript is required when voiceMode === "narrative"`,
+    );
+  }
   // Force the on-disk id to match the path id — drops any client-side
   // tampering attempt.
   const normalized: TourEntry = { ...tour, id };
