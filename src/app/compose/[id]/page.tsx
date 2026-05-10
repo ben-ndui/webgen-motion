@@ -138,6 +138,27 @@ function ComposeStage({ tourId }: { tourId: string }) {
     };
   }, [tourId, autoplay]);
 
+  // Sync audio playback to section playback. Audio is "armed" once
+  // playback enters playing phase the first time, then keeps running
+  // until done. Pause on done for a clean tail. NOTE: this MUST sit
+  // above the early returns below — React requires the hook count
+  // to be stable across renders, and loading short-circuits otherwise
+  // drop this hook.
+  useEffect(() => {
+    if (!audioEnabled) return;
+    const vo = voRef.current;
+    const bg = bgRef.current;
+    if (vo) vo.volume = clampVol(voVol, 1.0);
+    if (bg) bg.volume = clampVol(bgVol, 0.18);
+    if (phase.kind === "playing") {
+      vo?.play().catch(() => {});
+      bg?.play().catch(() => {});
+    } else if (phase.kind === "done") {
+      vo?.pause();
+      bg?.pause();
+    }
+  }, [phase.kind, audioEnabled, bgVol, voVol]);
+
   if (phase.kind === "loading") return <FullStageMsg msg="Chargement du manifest…" />;
   if (phase.kind === "error") return <FullStageMsg msg={phase.message} isError />;
   if (!manifest) return null;
@@ -173,24 +194,6 @@ function ComposeStage({ tourId }: { tourId: string }) {
       650,
     );
   };
-
-  // Sync audio playback to section playback. Audio is "armed" once
-  // playback enters playing phase the first time, then keeps running
-  // until done/error. Pause on done/outro for a clean tail.
-  useEffect(() => {
-    if (!audioEnabled) return;
-    const vo = voRef.current;
-    const bg = bgRef.current;
-    if (vo) vo.volume = clampVol(voVol, 1.0);
-    if (bg) bg.volume = clampVol(bgVol, 0.18);
-    if (phase.kind === "playing") {
-      vo?.play().catch(() => {});
-      bg?.play().catch(() => {});
-    } else if (phase.kind === "done") {
-      vo?.pause();
-      bg?.pause();
-    }
-  }, [phase.kind, audioEnabled, bgVol, voVol]);
 
   const bgMusicSrc = bgMusicId
     ? `/api/motion/audio/${encodeURIComponent(bgMusicId)}/stream`
