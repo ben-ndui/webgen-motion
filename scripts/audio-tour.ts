@@ -17,7 +17,10 @@
  *
  * Caching: every TTS call is keyed by sha1(voiceId|model|text) so
  * identical lines across runs / sections are reused. Stored in
- * `~/.uzme-motion/vo-cache/`.
+ * `~/.webgen-motion/vo-cache/` as `<hash>.mp3` + `<hash>.alignment.json`
+ * (character-level timings from the ElevenLabs `/with-timestamps`
+ * endpoint, kept side by side so future runs reuse them without
+ * re-querying).
  *
  * Phonetic respelling (e.g. UZME → Youzmi) is applied via
  * `applyPronunciation` BEFORE hashing + sending to the API.
@@ -48,11 +51,24 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
+import { getVoCacheDir } from "../src/lib/motion-tour-store";
+
+/**
+ * Character-level alignment returned by ElevenLabs
+ * `/with-timestamps`. Indices in the three arrays are aligned : the
+ * Nth character starts at `character_start_times_seconds[N]` and ends
+ * at `character_end_times_seconds[N]`. Whitespace + punctuation are
+ * included as their own characters.
+ */
+interface ElevenLabsAlignment {
+  characters: string[];
+  character_start_times_seconds: number[];
+  character_end_times_seconds: number[];
+}
 
 function arg(flag: string, fallback?: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -115,7 +131,7 @@ async function main(): Promise<void> {
     ? JSON.parse(readFileSync(overridesPath, "utf-8"))
     : {};
 
-  const cacheDir = join(homedir(), ".uzme-motion", "vo-cache");
+  const cacheDir = getVoCacheDir();
   mkdirSync(cacheDir, { recursive: true });
 
   const workDir = join(tourDir!, ".vo-work");
@@ -214,6 +230,33 @@ async function main(): Promise<void> {
 
   const sectionTracks: string[] = [];
 
+  // Tracks per-step audio offsets in the FINAL voiceover.mp3 timeline
+  // (cumulative across sections). Each item records the slot a step
+  // occupies so the UI / future narrative-mode logic can correlate
+  // overlay timing to the actual character-level alignment from
+  // ElevenLabs without re-querying.
+  type AlignmentItemKind =
+    | "section-vo"
+    | "step-vo"
+    | "section-silence"
+    | "splash-silence"
+    | "step-silence";
+  interface AlignmentItem {
+    linearStepIdx: number | null;
+    sectionIdx: number;
+    kind: AlignmentItemKind;
+    text: string | null;
+    /** Audio offset (seconds) within voiceover.mp3 where this slot starts. */
+    audioStartSec: number;
+    /** Slot duration. End = start + duration. */
+    audioDurationSec: number;
+    /** Character-level alignment (only present when kind ends in `-vo`). */
+    alignment: ElevenLabsAlignment | null;
+    normalizedAlignment: ElevenLabsAlignment | null;
+  }
+  const alignmentItems: AlignmentItem[] = [];
+  let timelineCursorSec = 0;
+
   for (const sec of plans) {
     const sectionMp3 = join(
       workDir,
@@ -229,8 +272,19 @@ async function main(): Promise<void> {
       console.log(
         `  [${sec.sectionIdx}/${plans.length}] section-level VO (${sec.durationSec.toFixed(1)}s)`,
       );
-      const voPath = await ensureTts(sectionLevelVo, cacheDir);
-      runFfmpeg(buildPadArgs(voPath, sectionMp3, sec.durationSec, /* fadeIn */ 0.08));
+      const tts = await ensureTts(sectionLevelVo, cacheDir);
+      runFfmpeg(buildPadArgs(tts.mp3Path, sectionMp3, sec.durationSec, /* fadeIn */ 0.08));
+      alignmentItems.push({
+        linearStepIdx: sec.splash?.linearIdx ?? null,
+        sectionIdx: sec.sectionIdx,
+        kind: "section-vo",
+        text: sectionLevelVo,
+        audioStartSec: timelineCursorSec,
+        audioDurationSec: sec.durationSec,
+        alignment: tts.alignment,
+        normalizedAlignment: tts.normalizedAlignment,
+      });
+      timelineCursorSec += sec.durationSec;
       sectionTracks.push(sectionMp3);
       continue;
     }
@@ -247,6 +301,17 @@ async function main(): Promise<void> {
         "-b:a", "128k",
         sectionMp3,
       ]);
+      alignmentItems.push({
+        linearStepIdx: sec.splash?.linearIdx ?? null,
+        sectionIdx: sec.sectionIdx,
+        kind: "section-silence",
+        text: null,
+        audioStartSec: timelineCursorSec,
+        audioDurationSec: sec.durationSec,
+        alignment: null,
+        normalizedAlignment: null,
+      });
+      timelineCursorSec += sec.durationSec;
       sectionTracks.push(sectionMp3);
       continue;
     }
@@ -265,15 +330,27 @@ async function main(): Promise<void> {
         workDir,
         `s${sec.sectionIdx}-splash.mp3`,
       );
+      const splashSec = sec.splash.dwellMs / 1000;
       runFfmpeg([
         "-y",
         "-f", "lavfi",
         "-i", "anullsrc=r=44100:cl=stereo",
-        "-t", (sec.splash.dwellMs / 1000).toFixed(3),
+        "-t", splashSec.toFixed(3),
         "-c:a", "libmp3lame",
         "-b:a", "128k",
         splashMp3,
       ]);
+      alignmentItems.push({
+        linearStepIdx: sec.splash.linearIdx,
+        sectionIdx: sec.sectionIdx,
+        kind: "splash-silence",
+        text: null,
+        audioStartSec: timelineCursorSec,
+        audioDurationSec: splashSec,
+        alignment: null,
+        normalizedAlignment: null,
+      });
+      timelineCursorSec += splashSec;
       stepChunks.push(splashMp3);
     }
 
@@ -288,8 +365,18 @@ async function main(): Promise<void> {
         const preview =
           p.voiceover.slice(0, 50) + (p.voiceover.length > 50 ? "…" : "");
         console.log(`      step ${p.linearIdx} · "${preview}"`);
-        const voPath = await ensureTts(p.voiceover, cacheDir);
-        runFfmpeg(buildPadArgs(voPath, stepMp3, stepSec, /* fadeIn */ 0.08));
+        const tts = await ensureTts(p.voiceover, cacheDir);
+        runFfmpeg(buildPadArgs(tts.mp3Path, stepMp3, stepSec, /* fadeIn */ 0.08));
+        alignmentItems.push({
+          linearStepIdx: p.linearIdx,
+          sectionIdx: sec.sectionIdx,
+          kind: "step-vo",
+          text: p.voiceover,
+          audioStartSec: timelineCursorSec,
+          audioDurationSec: stepSec,
+          alignment: tts.alignment,
+          normalizedAlignment: tts.normalizedAlignment,
+        });
       } else {
         runFfmpeg([
           "-y",
@@ -300,7 +387,18 @@ async function main(): Promise<void> {
           "-b:a", "128k",
           stepMp3,
         ]);
+        alignmentItems.push({
+          linearStepIdx: p.linearIdx,
+          sectionIdx: sec.sectionIdx,
+          kind: "step-silence",
+          text: null,
+          audioStartSec: timelineCursorSec,
+          audioDurationSec: stepSec,
+          alignment: null,
+          normalizedAlignment: null,
+        });
       }
+      timelineCursorSec += stepSec;
       stepChunks.push(stepMp3);
     }
 
@@ -340,27 +438,90 @@ async function main(): Promise<void> {
     outPath,
   ]);
 
+  // Companion alignment file: cumulative offsets per step + the
+  // original ElevenLabs character timings (per VO clip, RELATIVE to
+  // the clip's start, not the global timeline). Future "narrative
+  // continuous" mode will use this to derive overlay timings.
+  const alignPath = join(tourDir!, "voiceover-alignment.json");
+  writeFileSync(
+    alignPath,
+    JSON.stringify(
+      {
+        tourId,
+        voiceId,
+        modelId,
+        totalDurationSec: timelineCursorSec,
+        items: alignmentItems,
+      },
+      null,
+      2,
+    ),
+  );
+  console.log(`✓ Alignment → ${alignPath}`);
+
   rmSync(workDir, { recursive: true, force: true });
   console.log(`✓ Done → ${outPath}`);
 }
 
+interface TtsArtifact {
+  mp3Path: string;
+  /** Native ElevenLabs alignment (character-level). */
+  alignment: ElevenLabsAlignment | null;
+  /** Same shape but applied AFTER text normalization (digit→words…). */
+  normalizedAlignment: ElevenLabsAlignment | null;
+}
+
 /**
  * Generate or fetch from cache the TTS audio for `text`, returns
- * the path to the cached MP3. Phonetic substitutions (UZME→Youzmi)
- * are applied before hashing + sending to ElevenLabs.
+ * the path to the cached MP3 PLUS the character-level alignment from
+ * ElevenLabs. Phonetic substitutions (UZME→Youzmi) are applied before
+ * hashing + sending to the API.
+ *
+ * Cache layout per text:
+ *   <hash>.mp3                — the audio binary
+ *   <hash>.alignment.json     — { alignment, normalizedAlignment }
+ *
+ * Both are written atomically; if one is missing on read we re-query
+ * to keep them in sync.
  */
-async function ensureTts(text: string, cacheDir: string): Promise<string> {
+async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
   const phonetic = applyPronunciation(text);
   const hash = createHash("sha1")
     .update(`${voiceId}|${modelId}|${phonetic}`)
     .digest("hex")
     .slice(0, 16);
-  const path = join(cacheDir, `${hash}.mp3`);
-  if (existsSync(path)) return path;
+  const mp3Path = join(cacheDir, `${hash}.mp3`);
+  const alignPath = join(cacheDir, `${hash}.alignment.json`);
+  if (existsSync(mp3Path) && existsSync(alignPath)) {
+    const cached = JSON.parse(readFileSync(alignPath, "utf-8")) as {
+      alignment: ElevenLabsAlignment | null;
+      normalizedAlignment: ElevenLabsAlignment | null;
+    };
+    return {
+      mp3Path,
+      alignment: cached.alignment,
+      normalizedAlignment: cached.normalizedAlignment,
+    };
+  }
   console.log(`      TTS → "${phonetic.slice(0, 60)}${phonetic.length > 60 ? "…" : ""}"`);
-  const mp3 = await fetchElevenLabsTts(phonetic, voiceId!, modelId, apiKey!);
-  writeFileSync(path, mp3);
-  return path;
+  const fetched = await fetchElevenLabsTts(phonetic, voiceId!, modelId, apiKey!);
+  writeFileSync(mp3Path, fetched.audio);
+  writeFileSync(
+    alignPath,
+    JSON.stringify(
+      {
+        alignment: fetched.alignment,
+        normalizedAlignment: fetched.normalizedAlignment,
+      },
+      null,
+      2,
+    ),
+  );
+  return {
+    mp3Path,
+    alignment: fetched.alignment,
+    normalizedAlignment: fetched.normalizedAlignment,
+  };
 }
 
 /**
@@ -388,19 +549,28 @@ function buildPadArgs(
   ];
 }
 
+interface FetchedTts {
+  audio: Buffer;
+  alignment: ElevenLabsAlignment | null;
+  normalizedAlignment: ElevenLabsAlignment | null;
+}
+
 async function fetchElevenLabsTts(
   text: string,
   voiceId: string,
   modelId: string,
   apiKey: string,
-): Promise<Buffer> {
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
+): Promise<FetchedTts> {
+  // `/with-timestamps` returns JSON { audio_base64, alignment,
+  // normalized_alignment } instead of the raw MP3 binary. Same body
+  // shape as the standard endpoint, just a different content type.
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "xi-api-key": apiKey,
       "Content-Type": "application/json",
-      Accept: "audio/mpeg",
+      Accept: "application/json",
     },
     body: JSON.stringify({
       text,
@@ -419,11 +589,23 @@ async function fetchElevenLabsTts(
       `ElevenLabs TTS failed (${res.status}): ${errText.slice(0, 500)}`,
     );
   }
-  const buf = Buffer.from(await res.arrayBuffer());
-  if (buf.byteLength < 1024) {
-    throw new Error(`ElevenLabs returned suspiciously small payload (${buf.byteLength} bytes)`);
+  const json = (await res.json()) as {
+    audio_base64?: string;
+    alignment?: ElevenLabsAlignment | null;
+    normalized_alignment?: ElevenLabsAlignment | null;
+  };
+  if (!json.audio_base64) {
+    throw new Error(`ElevenLabs response missing audio_base64`);
   }
-  return buf;
+  const audio = Buffer.from(json.audio_base64, "base64");
+  if (audio.byteLength < 1024) {
+    throw new Error(`ElevenLabs returned suspiciously small payload (${audio.byteLength} bytes)`);
+  }
+  return {
+    audio,
+    alignment: json.alignment ?? null,
+    normalizedAlignment: json.normalized_alignment ?? null,
+  };
 }
 
 function runFfmpeg(args: string[]): void {

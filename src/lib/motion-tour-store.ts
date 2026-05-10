@@ -25,3 +25,7 @@ export function getMotionToursBaseDir(): string {
 export function getMotionTourDir(tourId: string): string {
   return join(getMotionToursBaseDir(), tourId);
 }
+
+export function getVoCacheDir(): string {
+  return join(homedir(), ".webgen-motion", "vo-cache");
+}
