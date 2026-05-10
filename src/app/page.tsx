@@ -9,11 +9,11 @@ import {
   Mic,
   Monitor,
   Smartphone,
-  Sparkles,
 } from "lucide-react";
 import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
 import { getPublicConfig } from "@/lib/config";
+import NewTourButton from "./_components/new-tour-button";
 
 /**
  * Hub. Mirrors the WebGen admin pattern: sticky top bar + compact
@@ -99,14 +99,7 @@ export default function HubPage() {
                 : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${totalSec}s cumulés · prêts à filmer`}
             </p>
           </div>
-          <button
-            disabled
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Sprint 2 : éditeur de tours visuel"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Nouveau tour
-          </button>
+          <NewTourButton />
         </div>
 
         {/* Tours grid */}
