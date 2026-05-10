@@ -19,6 +19,9 @@ import CaptureTab, {
   type CaptureState,
   type CapturedSection,
 } from "./_components/capture-tab";
+import AudioTab from "./_components/audio-tab";
+import VoiceTab, { type VoState } from "./_components/voice-tab";
+import type { AudioTrack } from "./_components/music-library";
 import type { RunningProgress } from "./_components/phase-loader";
 
 type TabKey = "script" | "capture" | "audio" | "voice" | "compose";
@@ -44,12 +47,53 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     tour.format ?? "16:9",
   );
   const [capture, setCapture] = useState<CaptureState>({ kind: "idle" });
+  const [vo, setVo] = useState<VoState>({ kind: "idle" });
+  const [tracks, setTracks] = useState<AudioTrack[]>([]);
+  // bgMusicId : undefined = use catalogue default, "" = explicit no-music,
+  // "<id>" = library track override. localStorage'd so the choice survives
+  // reloads (fixes silent music drop after refresh).
+  const bgMusicKey = `motion-bg-music:${tour.id}`;
+  const volumesKey = `motion-volumes:${tour.id}`;
+  const [bgMusicId, setBgMusicIdState] = useState<string | undefined>(undefined);
+  const [bgMusicVolume, setBgMusicVolumeState] = useState<number>(0.18);
+  const [voVolume, setVoVolumeState] = useState<number>(1.0);
   const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const voTickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {
       if (tickerRef.current) clearInterval(tickerRef.current);
+      if (voTickerRef.current) clearInterval(voTickerRef.current);
     };
+  }, []);
+
+  const setBgMusicId = (next: string | undefined) => {
+    setBgMusicIdState(next);
+    try {
+      if (next === undefined) localStorage.removeItem(bgMusicKey);
+      else localStorage.setItem(bgMusicKey, next);
+    } catch {}
+  };
+
+  const saveVolumes = (bg: number, voV: number) => {
+    setBgMusicVolumeState(bg);
+    setVoVolumeState(voV);
+    try {
+      localStorage.setItem(volumesKey, JSON.stringify({ bg, vo: voV }));
+    } catch {}
+  };
+
+  const refreshTracks = async () => {
+    try {
+      const res = await fetch("/api/motion/audio");
+      if (!res.ok) return;
+      const data = await res.json();
+      setTracks(data.tracks ?? []);
+    } catch {}
+  };
+
+  useEffect(() => {
+    refreshTracks();
   }, []);
 
   useEffect(() => {
@@ -58,10 +102,18 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
       if (raw) setVoOverridesState(JSON.parse(raw));
       const f = localStorage.getItem(formatKey);
       if (f === "9:16" || f === "16:9") setCaptureFormatState(f);
+      const bg = localStorage.getItem(bgMusicKey);
+      if (bg !== null) setBgMusicIdState(bg);
+      const vraw = localStorage.getItem(volumesKey);
+      if (vraw) {
+        const v = JSON.parse(vraw) as { bg?: number; vo?: number };
+        if (typeof v.bg === "number") setBgMusicVolumeState(v.bg);
+        if (typeof v.vo === "number") setVoVolumeState(v.vo);
+      }
     } catch {
       // Ignore storage errors (private mode, quota, etc.)
     }
-  }, [overridesKey, formatKey]);
+  }, [overridesKey, formatKey, bgMusicKey, volumesKey]);
 
   // Auto-load existing artifacts from disk so a returning session
   // doesn't have to re-run Capturer. /api/motion/tour/status returns
@@ -85,6 +137,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
             sections,
             totalDurationSec: Number(data.manifest.totalDurationSec ?? 0),
             totalSizeBytes: Number(data.manifest.totalSizeBytes ?? 0),
+            captureWallTimeSec: 0,
+          });
+        }
+        if (data.hasVoiceover && data.voiceoverUrl) {
+          setVo({
+            kind: "ready",
+            voiceoverUrl: String(data.voiceoverUrl),
             captureWallTimeSec: 0,
           });
         }
@@ -213,6 +272,102 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     }
   };
 
+  // ── Voice handler — POST + NDJSON streaming ─────────────────────
+  const handleGenerateVo = async () => {
+    if (voTickerRef.current) clearInterval(voTickerRef.current);
+    const startedAt = Date.now();
+    setVo({
+      kind: "running",
+      progress: { phase: "Lancement de la génération VO…", sinceSec: 0 },
+    });
+    voTickerRef.current = setInterval(() => {
+      setVo((prev) =>
+        prev.kind === "running"
+          ? {
+              kind: "running",
+              progress: {
+                ...prev.progress,
+                sinceSec: Math.round((Date.now() - startedAt) / 1000),
+              },
+            }
+          : prev,
+      );
+    }, 1000);
+
+    try {
+      const res = await fetch("/api/motion/tour/audio/voice/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tourId: tour.id,
+          voiceoverOverrides: voOverrides,
+        }),
+      });
+      if (!res.ok || !res.body) {
+        const err = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        if (voTickerRef.current) clearInterval(voTickerRef.current);
+        setVo({ kind: "error", message: err.error });
+        return;
+      }
+      await consumeNdjson(res.body, (evt) => {
+        if (evt.type === "phase") {
+          setVo((prev) =>
+            prev.kind === "running"
+              ? {
+                  kind: "running",
+                  progress: {
+                    ...prev.progress,
+                    phase: String(evt.label ?? ""),
+                    sectionIdx:
+                      evt.sectionIdx !== undefined
+                        ? Number(evt.sectionIdx)
+                        : prev.progress.sectionIdx,
+                    totalSections:
+                      evt.totalSections !== undefined
+                        ? Number(evt.totalSections)
+                        : prev.progress.totalSections,
+                  },
+                }
+              : prev,
+          );
+        } else if (evt.type === "warn") {
+          setVo((prev) =>
+            prev.kind === "running"
+              ? {
+                  kind: "running",
+                  progress: {
+                    ...prev.progress,
+                    lastWarn: String(evt.message ?? ""),
+                  },
+                }
+              : prev,
+          );
+        } else if (evt.type === "done" && evt.ok) {
+          if (voTickerRef.current) clearInterval(voTickerRef.current);
+          setVo({
+            kind: "ready",
+            voiceoverUrl: String(evt.voiceoverUrl ?? ""),
+            captureWallTimeSec: Number(evt.captureWallTimeSec ?? 0),
+          });
+        } else if (evt.type === "error") {
+          if (voTickerRef.current) clearInterval(voTickerRef.current);
+          setVo({
+            kind: "error",
+            message: String(evt.message ?? "Erreur inconnue"),
+          });
+        }
+      });
+    } catch (e) {
+      if (voTickerRef.current) clearInterval(voTickerRef.current);
+      setVo({
+        kind: "error",
+        message: e instanceof Error ? e.message : "Network error",
+      });
+    }
+  };
+
   /**
    * Reads an NDJSON stream and dispatches each parsed object to the
    * provided handler. Reusable across capture / compose / voice.
@@ -276,11 +431,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   // ── Tabs definition ──────────────────────────────────────────────
   const captureBadge =
     capture.kind === "ready" ? capture.sections.length : null;
+  const audioBadge = bgMusicId && bgMusicId !== "" ? "•" : null;
+  const voiceBadge = vo.kind === "ready" ? "•" : null;
   const TABS: TabDef<TabKey>[] = [
     { id: "script", label: "Script", icon: FileText },
     { id: "capture", label: "Capture", icon: Video, badge: captureBadge },
-    { id: "audio", label: "Audio", icon: Music },
-    { id: "voice", label: "Voix off", icon: Mic },
+    { id: "audio", label: "Audio", icon: Music, badge: audioBadge },
+    { id: "voice", label: "Voix off", icon: Mic, badge: voiceBadge },
     { id: "compose", label: "Compose", icon: Film },
   ];
 
@@ -359,18 +516,25 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         )}
 
         {activeTab === "audio" && (
-          <PlaceholderTab
-            title="Audio"
-            description="Music library upload/list/preview + sliders volume musique + voix off."
-            comingSoon
+          <AudioTab
+            tracks={tracks}
+            bgMusicId={bgMusicId}
+            onBgMusicChange={setBgMusicId}
+            onTracksChanged={refreshTracks}
+            tourBgMusic={tour.bgMusic}
+            bgMusicVolume={bgMusicVolume}
+            voVolume={voVolume}
+            onVolumesChange={saveVolumes}
           />
         )}
 
         {activeTab === "voice" && (
-          <PlaceholderTab
-            title="Voix off"
-            description="Bouton Générer la voix off + status ElevenLabs + audio preview du voiceover.mp3."
-            comingSoon
+          <VoiceTab
+            tour={tour}
+            voState={vo}
+            voOverrides={voOverrides}
+            onGenerateVo={handleGenerateVo}
+            onJumpToScript={() => setActiveTab("script")}
           />
         )}
 
