@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Compose runner. Re-films the React compose page
- * (`/admin/motion-studio/compose/<tourId>?autoplay=1`) to produce a
+ * (`/compose/<tourId>?autoplay=1`) to produce a
  * single final MP4 from all the section clips.
  *
  * Why two passes? The per-section runner (`capture-tour.ts`) gives us
@@ -104,7 +104,7 @@ async function main(): Promise<void> {
   const width = parseInt(widthArg ?? String(manifest.width ?? (isPortrait ? 1080 : 1920)), 10);
   const height = parseInt(heightArg ?? String(manifest.height ?? (isPortrait ? 1920 : 1080)), 10);
 
-  const composeUrl = `${baseUrl}/admin/motion-studio/compose/${encodeURIComponent(tourId)}?autoplay=1`;
+  const composeUrl = `${baseUrl}/compose/${encodeURIComponent(tourId)}?autoplay=1`;
 
   console.log(`▶ Compose: ${tourId} (${format})`);
   console.log(`  Stage URL: ${composeUrl}`);
