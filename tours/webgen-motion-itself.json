@@ -1,0 +1,80 @@
+{
+  "id": "webgen-motion-itself",
+  "name": "webgen-motion · Meta-démo",
+  "description": "L'outil filme sa propre interface. Demo officielle Smooth & Design pour présenter webgen-motion. Hub → onglets d'un tour → compose stage → setup.",
+  "estimatedSec": 50,
+  "startPath": "/",
+  "baseUrl": "http://localhost:3000",
+  "auth": "none",
+  "format": "16:9",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "webgen-motion",
+      "subtitle": "Le Motion Studio qui filme le réel",
+      "dwellMs": 2400,
+      "voiceover": "webgen-motion. Le Motion Studio qui filme le réel."
+    },
+    { "type": "wait", "dwellMs": 1500 },
+    {
+      "type": "overlay",
+      "text": "Génère des vidéos motion design depuis tes sites et apps web",
+      "position": "center",
+      "dwellMs": 2800,
+      "voiceover": "Génère des vidéos motion design depuis tes sites et tes apps web. Tout en local."
+    },
+    { "type": "scroll", "to": 400, "dwellMs": 1800 },
+    {
+      "type": "overlay",
+      "text": "Tours data-driven · Format 16:9 ou 9:16",
+      "position": "bottom",
+      "dwellMs": 2200
+    },
+    { "type": "scroll", "to": 0, "dwellMs": 1200 },
+    {
+      "type": "section",
+      "categoryId": "motion",
+      "title": "Cinq onglets pour piloter",
+      "subtitle": "Script · Capture · Audio · Voix off · Compose",
+      "goto": "/tour/uzme-landing-portrait",
+      "dwellMs": 2600,
+      "voiceover": "Cinq onglets pour piloter ton montage. Script, capture, audio, voix off, compose."
+    },
+    { "type": "wait", "dwellMs": 1500 },
+    {
+      "type": "overlay",
+      "text": "Édite ton script + voix off en inline",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "scroll", "to": 600, "dwellMs": 1800 },
+    { "type": "scroll", "to": 0, "dwellMs": 1200 },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Compose final",
+      "subtitle": "Mac chrome 16:9 · iPhone frame 9:16",
+      "goto": "/compose/uzme-landing-portrait",
+      "dwellMs": 2600,
+      "voiceover": "Compose final dans une animation Mac chrome ou iPhone frame. Transitions fluides entre sections."
+    },
+    { "type": "wait", "dwellMs": 3500 },
+    {
+      "type": "section",
+      "categoryId": "stores",
+      "title": "Setup en 2 minutes",
+      "subtitle": "Local · Aucun cloud requis",
+      "goto": "/setup",
+      "dwellMs": 2400,
+      "voiceover": "Setup en deux minutes. Tout local. Aucun cloud requis. Clone, configure, génère."
+    },
+    {
+      "type": "overlay",
+      "text": "Clone · Configure · Génère",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "wait", "dwellMs": 1500 }
+  ]
+}

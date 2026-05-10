@@ -1,69 +1,59 @@
 # webgen-motion
 
-> Outil portable de génération de vidéos motion design — by Smooth & Design
+> Motion Studio portable — by **Smooth & Design**
 
-E2E filmé de ton site / app web · voice-over IA (ElevenLabs) · bg music · Mac
-chrome / iPhone frame · entièrement local-first.
+```
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│   E2E filmé  →  Voix off IA  →  Compose final      │
+│   Puppeteer    ElevenLabs       Mac chrome / iPhone │
+│                                                     │
+│   100% local · 0 cloud · 0 vendor lock-in          │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
 
-Tu clones, tu configures tes API keys, tu pointes vers ton projet, et tu
-génères. Pas de cloud, pas de SaaS, pas de vendor lock-in. Tu cours sur ta
-machine.
+Génère des vidéos motion design à partir de ton site ou ton app web.
+Tout tourne sur ta machine. Tu clones, tu configures, tu génères.
 
-## Pré-requis
-
-- **Node 20+** (Next 16 + Turbopack)
-- **ffmpeg** sur le `PATH` (`brew install ffmpeg` sur macOS)
-- **Chromium** — fourni automatiquement par puppeteer au premier `npm install`
-
-## Démarrage
+## Quickstart
 
 ```bash
 git clone https://github.com/ben-ndui/webgen-motion.git
 cd webgen-motion
-npm install
-npm run dev
+npm install              # installe Next.js + Puppeteer + Chromium
+brew install ffmpeg      # macOS — pour l'encode des frames
+npm run dev              # http://localhost:3000
 ```
 
-Ouvre [http://localhost:3000](http://localhost:3000) → tu vois la liste des
-tours bundlés (`tours/uzme-landing.json`, `tours/uzme-landing-portrait.json`).
+Ouvre [http://localhost:3000](http://localhost:3000) → tu vois le **hub**
+avec les tours bundlés. Clique sur le bouton **Setup** en haut à droite
+pour configurer ElevenLabs (voix off) en 2 minutes.
 
-## Configurer tes API keys
+## Le workflow en 5 onglets
 
-Crée `.env.local` à la racine :
+Chaque tour a une page dédiée à `/tour/<id>` avec 5 onglets state-based :
 
-```bash
-ELEVENLABS_API_KEY=sk_...                 # https://elevenlabs.io/app/settings/api-keys
-ELEVENLABS_VOICE_ID=ton_voiceId            # voix clonée ou voix stock
-ELEVENLABS_MODEL=eleven_multilingual_v2    # optionnel, défaut OK
-```
+| Tab | Rôle |
+|---|---|
+| **Script** | Liste des steps + édition voix off inline + format 16:9 / 9:16 |
+| **Capture** | Lance Puppeteer sur ton site, film section par section, encode en MP4 |
+| **Audio** | Library musique (upload MP3/WAV/M4A) + sliders volumes mix |
+| **Voix off** | Génère la timeline VO via ElevenLabs avec ta voix clonée |
+| **Compose** | Re-films la stage React dans une Mac chrome (16:9) ou iPhone frame (9:16) avec mix audio + transitions |
 
-Sans ces clés, tout le reste (capture, compose) marche sauf la génération de
-voix off.
-
-## Workflow
-
-1. **Hub `/`** liste tes tours bundlés dans `tours/`.
-2. **Tour preview `/tour/<id>`** :
-   - Choisis le format (`16:9` / `9:16`)
-   - Clique **Capturer en MP4** → Puppeteer ouvre une fenêtre, film ton site
-     section par section, encode en `~/.webgen-motion/tours/<id>/section-NN.mp4`
-   - Édite les voix off step par step dans le panel **Voix off**
-   - Upload une track dans la **Music library**
-   - Clique **Générer voix off** → ElevenLabs TTS → `voiceover.mp3`
-   - Clique **Composer le clip final** → headless re-films le compositor avec
-     Mac chrome / iPhone frame + bg music + voix → `final.mp4`
-3. **Compose `/compose/<id>`** preview interactive du compositor avant export.
+État persisté entre tabs et entre sessions (localStorage + filesystem).
 
 ## Définir un tour
 
-Tours = JSON dans `tours/<id>.json`. Schéma : voir
-`src/lib/types/tour.ts`. Exemple minimaliste :
+Tours = JSON dans `tours/<id>.json` (data-driven, pas de TypeScript).
+Le hub liste auto tous les fichiers du dossier au refresh.
 
 ```json
 {
   "id": "mon-site",
   "name": "Mon site · Landing",
-  "description": "Tour rapide de la landing.",
+  "description": "Tour rapide de ma landing.",
   "estimatedSec": 30,
   "startPath": "/",
   "baseUrl": "https://mon-site.com",
@@ -73,7 +63,7 @@ Tours = JSON dans `tours/<id>.json`. Schéma : voir
       "type": "section",
       "categoryId": "branding",
       "title": "Mon Brand",
-      "subtitle": "Tagline",
+      "subtitle": "Tagline punchy",
       "voiceover": "Bienvenue chez Mon Brand."
     },
     { "type": "wait", "dwellMs": 1500 },
@@ -88,48 +78,98 @@ Tours = JSON dans `tours/<id>.json`. Schéma : voir
 }
 ```
 
-## Storage
+Schéma complet : voir [`src/lib/types/tour.ts`](src/lib/types/tour.ts).
 
-Toutes les sorties sont en `~/.webgen-motion/` (hors repo) :
+## Storage local
 
-- `~/.webgen-motion/tours/<id>/` — manifest + section MP4s + voiceover + final
-- `~/.webgen-motion/audio/` — bg music library (MP3/WAV/M4A/AAC/OGG, ≤25 MB)
-- `~/.webgen-motion/vo-cache/` — TTS cache keyed par sha1(voiceId|model|text)
+```
+~/.webgen-motion/
+├── config.json                     # Setup wizard (ElevenLabs creds)
+├── audio/
+│   ├── index.json                  # Audio library metadata
+│   └── <slug>-<epoch>.mp3          # Tracks uploadées
+├── vo-cache/
+│   └── <sha1>.mp3                  # TTS cache (par voix + texte)
+└── tours/
+    └── <tourId>/
+        ├── manifest.json
+        ├── section-NN-<cat>.mp4    # Captures par section
+        ├── voiceover.mp3           # Timeline VO assemblée
+        └── final.mp4               # Clip final composé
+```
 
-Survit aux reboots, partagé entre tous les tours, jamais commit dans git.
+Tout reste sur ta machine. Survit aux reboots. Jamais commit dans git.
+
+## Tours bundlés (démo)
+
+| Tour | Format | Ce qu'il film |
+|---|---|---|
+| `uzme-landing` | 16:9 | Landing UZME desktop avec 4 sections (Branding · Features · Rôles · App) |
+| `uzme-landing-portrait` | 9:16 | Variant TikTok / Reels / Stories |
+| `webgen-motion-itself` | 16:9 | **Meta-démo** : webgen-motion film sa propre interface (Hub → tabs → compose → setup). Lance le dev server, génère ce tour, t'as la promo officielle de l'outil |
+
+## Configuration
+
+Deux options :
+
+**Option 1 — Setup wizard (recommandé)** : http://localhost:3000/setup
+→ formulaire ElevenLabs API key + voice ID → écrit dans
+`~/.webgen-motion/config.json`. Aucune var d'env requise.
+
+**Option 2 — `.env.local`** :
+```bash
+ELEVENLABS_API_KEY=sk_...
+ELEVENLABS_VOICE_ID=<voiceId>
+ELEVENLABS_MODEL=eleven_multilingual_v2  # optionnel
+```
+
+`config.json` override l'env si les deux existent.
+
+## Commandes
+
+```bash
+npm run dev          # dev server (Turbopack, hot reload)
+npm run build        # production build
+npm run lint         # ESLint
+
+# CLI direct sans dashboard (debug)
+npx tsx scripts/capture-tour.ts \
+  --tour-id uzme-landing \
+  --base-url https://uzme.app \
+  --fps 30 \
+  --out ~/.webgen-motion/tours/uzme-landing
+
+npx tsx scripts/audio-tour.ts \
+  --tour-id uzme-landing \
+  --tour-dir ~/.webgen-motion/tours/uzme-landing
+
+npx tsx scripts/compose-tour.ts \
+  --tour-id uzme-landing \
+  --tour-dir ~/.webgen-motion/tours/uzme-landing \
+  --fps 30
+```
+
+## Pré-requis système
+
+- **Node 20+**
+- **ffmpeg** sur le PATH (`brew install ffmpeg` sur macOS)
+- **ElevenLabs account** (Starter $5/mois minimum pour le voice cloning, sinon une voix stock suffit)
+- **Chromium** : fourni automatiquement par puppeteer au premier `npm install`
 
 ## Stack
 
-- Next.js 16 + Turbopack
-- Puppeteer + ffmpeg pour la capture E2E
-- ElevenLabs TTS pour la voix off
-- Tailwind v4 + slate palette + Geist Sans
-- lucide-react + react-icons (transitionnel)
+Next.js 16 (App Router + Turbopack) · Tailwind v4 · Geist Sans/Mono ·
+lucide-react · framer-motion · Puppeteer · FFmpeg · ElevenLabs TTS.
 
-## Architecture
+## Pour aller plus loin
 
-```
-webgen-motion/
-├── tours/                       # Catalogue de tours JSON (data-driven)
-├── scripts/
-│   ├── capture-tour.ts          # E2E filmé section par section
-│   ├── audio-tour.ts            # TTS + timeline audio
-│   └── compose-tour.ts          # Compositor headless final
-├── src/
-│   ├── app/
-│   │   ├── page.tsx             # Hub
-│   │   ├── tour/[id]/           # Preview + handlers
-│   │   ├── compose/[id]/        # Compose stage (filmé par compose-tour.ts)
-│   │   └── api/motion/          # Routes streaming NDJSON
-│   └── lib/
-│       ├── tour-loader.ts       # Lit tours/*.json
-│       ├── motion-tour-store.ts # Path ~/.webgen-motion/tours/
-│       ├── motion-audio-store.ts# Audio library + ffprobe
-│       ├── motion-categories.ts # Palette par category
-│       ├── pronunciation.ts     # Phonetic respelling map (ex. UZME → Youzmi)
-│       └── types/tour.ts        # TourEntry / TourStep
-```
+- [`CLAUDE.md`](CLAUDE.md) — guide pour agents IA qui installent / itèrent
+- [`ROADMAP.md`](ROADMAP.md) — sprints, futures, décisions architecturales
 
 ## License
 
 À définir.
+
+---
+
+Made with ❤ in Nice by [Smooth & Design](https://www.smoothandesign.fr).
