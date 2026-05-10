@@ -18,6 +18,21 @@ Tout tourne sur ta machine. Tu clones, tu configures, tu génères.
 
 ## Quickstart
 
+### Option 1 — Scaffold (recommandé)
+
+```bash
+npx create-webgen-motion@latest my-promo
+cd my-promo
+brew install ffmpeg      # macOS — pour l'encode des frames
+npm run dev              # http://localhost:3000
+```
+
+Le scaffolder clone le repo, drop l'historique upstream + les tours
+de démo internes, install les deps, te laisse avec un projet propre
+prêt à filmer ton site.
+
+### Option 2 — Clone direct (contributeurs / contributions)
+
 ```bash
 git clone https://github.com/ben-ndui/webgen-motion.git
 cd webgen-motion
@@ -26,9 +41,10 @@ brew install ffmpeg      # macOS — pour l'encode des frames
 npm run dev              # http://localhost:3000
 ```
 
-Ouvre [http://localhost:3000](http://localhost:3000) → tu vois le **hub**
-avec les tours bundlés. Clique sur le bouton **Setup** en haut à droite
-pour configurer ElevenLabs (voix off) en 2 minutes.
+Dans les deux cas, ouvre [http://localhost:3000](http://localhost:3000) →
+tu vois le **hub**. Clique sur le bouton **Setup** en haut à droite
+pour configurer ElevenLabs (voix off) en 2 minutes, puis **Nouveau tour**
+pour créer ton premier scénario.
 
 ## Le workflow en 5 onglets
 
@@ -102,11 +118,16 @@ Tout reste sur ta machine. Survit aux reboots. Jamais commit dans git.
 
 ## Tours bundlés (démo)
 
+> Ces tours ne sont présents que dans le repo principal — le scaffolder
+> `create-webgen-motion` les retire pour partir d'un dossier `tours/`
+> propre (sauf `demo-target.json` qui sert de starter neutre).
+
 | Tour | Format | Ce qu'il film |
 |---|---|---|
 | `uzme-landing` | 16:9 | Landing UZME desktop avec 4 sections (Branding · Features · Rôles · App) |
 | `uzme-landing-portrait` | 9:16 | Variant TikTok / Reels / Stories |
 | `webgen-motion-itself` | 16:9 | **Meta-démo** : webgen-motion film sa propre interface (Hub → tabs → compose → setup). Lance le dev server, génère ce tour, t'as la promo officielle de l'outil |
+| `demo-target` | 9:16 | Tour neutre minimal utilisé comme cible visuelle dans la meta-démo |
 
 ## Configuration
 
