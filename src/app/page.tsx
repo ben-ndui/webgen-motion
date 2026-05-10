@@ -1,15 +1,19 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  Check,
   ChevronRight,
+  Cog,
   ExternalLink,
   Film,
+  Mic,
   Monitor,
   Smartphone,
   Sparkles,
 } from "lucide-react";
 import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
+import { getPublicConfig } from "@/lib/config";
 
 /**
  * Hub. Mirrors the WebGen admin pattern: sticky top bar + compact
@@ -19,6 +23,7 @@ import { getCategory } from "@/lib/motion-categories";
 export default function HubPage() {
   const tours = getAllTours();
   const totalSec = tours.reduce((acc, t) => acc + t.estimatedSec, 0);
+  const config = getPublicConfig();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,17 +59,31 @@ export default function HubPage() {
                 <ExternalLink className="w-3.5 h-3.5" />
                 GitHub
               </a>
-              <Link
-                href="/settings"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                Configurer
-              </Link>
+              <ConfigChip configured={config.configured} />
             </div>
           </div>
         </div>
       </header>
+
+      {/* Setup banner — only when nothing is configured */}
+      {!config.configured && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-2.5 flex items-center gap-3 flex-wrap">
+            <Mic className="w-4 h-4 text-amber-700 flex-shrink-0" />
+            <p className="text-xs text-amber-900 flex-1 min-w-0">
+              <span className="font-semibold">Setup recommandé</span> · ajoute
+              tes clés ElevenLabs pour activer la voix off automatique.
+            </p>
+            <Link
+              href="/setup"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-900 text-white text-[11px] font-medium hover:bg-amber-800 transition-colors"
+            >
+              Configurer
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Main */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-8">
@@ -175,6 +194,27 @@ export default function HubPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function ConfigChip({ configured }: { configured: boolean }) {
+  return (
+    <Link
+      href="/setup"
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        configured
+          ? "text-emerald-700 hover:bg-emerald-50"
+          : "text-amber-700 hover:bg-amber-50"
+      }`}
+      title={configured ? "Config ElevenLabs OK" : "Setup requis"}
+    >
+      {configured ? (
+        <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+      ) : (
+        <Cog className="w-3.5 h-3.5" />
+      )}
+      {configured ? "Configuré" : "Setup"}
+    </Link>
   );
 }
 

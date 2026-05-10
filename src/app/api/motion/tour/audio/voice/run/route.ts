@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
+import { resolveElevenLabs } from "@/lib/config";
 
 /**
  * generates the voice-over track for a tour by
@@ -41,11 +42,13 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_VOICE_ID) {
+  // Config wins over env. If neither is set, surface a setup hint.
+  const credentials = resolveElevenLabs();
+  if (!credentials) {
     return NextResponse.json(
       {
         error:
-          "ELEVENLABS_API_KEY ou ELEVENLABS_VOICE_ID manquant. Ajoute-les dans `.env.local` puis relance le dev server.",
+          "ElevenLabs key + voiceId manquants. Va sur /setup pour les configurer (ou ajoute ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID dans .env.local).",
       },
       { status: 400 },
     );
@@ -93,7 +96,15 @@ export async function POST(req: NextRequest) {
 
       const proc = spawn("npx", args, {
         cwd,
-        env: { ...process.env, NO_COLOR: "1" },
+        // Inject the resolved credentials so the runner gets them
+        // whether they came from the wizard's config.json or .env.local.
+        env: {
+          ...process.env,
+          NO_COLOR: "1",
+          ELEVENLABS_API_KEY: credentials.apiKey,
+          ELEVENLABS_VOICE_ID: credentials.voiceId,
+          ELEVENLABS_MODEL: credentials.model,
+        },
       });
       let stdoutBuf = "";
       let stderrBuf = "";
