@@ -1,0 +1,50 @@
+{
+  "id": "uzme-landing-portrait",
+  "name": "UZME · Landing 9:16 (TikTok / Reels)",
+  "description": "Variante 9:16 de la landing UZME pour TikTok / Reels / Stories. Capture en mobile viewport, compose dans iPhone frame.",
+  "estimatedSec": 35,
+  "startPath": "/",
+  "baseUrl": "https://uzme.app",
+  "auth": "none",
+  "format": "9:16",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "UZME",
+      "subtitle": "Studios pour artistes",
+      "dwellMs": 2200,
+      "voiceover": "UZME. Le studio dans ta poche."
+    },
+    { "type": "wait", "dwellMs": 1200 },
+    {
+      "type": "overlay",
+      "text": "Pour studios, ingés son et artistes",
+      "position": "center",
+      "dwellMs": 2200
+    },
+    { "type": "scroll", "to": 800, "dwellMs": 1500 },
+    {
+      "type": "overlay",
+      "text": "Sessions · Paiements · Planning",
+      "position": "bottom",
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "stores",
+      "title": "Disponible",
+      "subtitle": "App Store + Play Store",
+      "goto": "/download",
+      "dwellMs": 2400,
+      "voiceover": "Disponible sur App Store et Play Store. Télécharge UZME. La musique commence."
+    },
+    {
+      "type": "overlay",
+      "text": "Télécharge maintenant",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "wait", "dwellMs": 1500 }
+  ]
+}

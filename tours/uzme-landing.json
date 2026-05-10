@@ -1,0 +1,79 @@
+{
+  "id": "uzme-landing",
+  "name": "UZME · Landing 16:9",
+  "description": "Tour démo : présentation de la landing UZME (Branding · Features · Rôles · App). Utilisé comme référence pour valider le pipeline 16:9.",
+  "estimatedSec": 55,
+  "startPath": "/",
+  "baseUrl": "https://uzme.app",
+  "auth": "none",
+  "format": "16:9",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "UZME",
+      "subtitle": "Studios pour artistes",
+      "dwellMs": 2200,
+      "voiceover": "UZME. Le studio dans ta poche."
+    },
+    { "type": "wait", "dwellMs": 1200 },
+    {
+      "type": "overlay",
+      "text": "La plateforme qui connecte studios, ingés son et artistes",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "wait", "dwellMs": 800 },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Features",
+      "subtitle": "Sessions, messagerie, paiements, planning",
+      "dwellMs": 2200,
+      "voiceover": "Une session à booker. Un mix à régler. Un planning à caler. Tout est là, dans une seule app."
+    },
+    { "type": "scroll", "to": 1100, "dwellMs": 1800 },
+    {
+      "type": "overlay",
+      "text": "Tout l'outillage studio dans une seule app",
+      "position": "bottom",
+      "dwellMs": 2200
+    },
+    { "type": "scroll", "to": 1700, "dwellMs": 1500 },
+    { "type": "wait", "dwellMs": 1200 },
+    {
+      "type": "section",
+      "categoryId": "ai",
+      "title": "Conçue pour 3 rôles",
+      "subtitle": "Artistes · Ingés son · Studios",
+      "dwellMs": 2200,
+      "voiceover": "Que tu sois artiste, ingé son, ou studio. UZME s'adapte à toi."
+    },
+    { "type": "scroll", "to": 2400, "dwellMs": 1800 },
+    {
+      "type": "overlay",
+      "text": "Une expérience adaptée à chaque profil",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "scroll", "to": 3000, "dwellMs": 1500 },
+    { "type": "wait", "dwellMs": 1200 },
+    {
+      "type": "section",
+      "categoryId": "stores",
+      "title": "Disponible sur App Store + Play Store",
+      "subtitle": "iOS · Android · uzme.app",
+      "goto": "/download",
+      "dwellMs": 2400,
+      "voiceover": "Disponible sur App Store et Play Store. Télécharge UZME. La musique commence."
+    },
+    {
+      "type": "overlay",
+      "text": "Téléchargez UZME maintenant",
+      "position": "center",
+      "dwellMs": 2400
+    },
+    { "type": "scroll", "to": 300, "dwellMs": 1500 },
+    { "type": "wait", "dwellMs": 1500 }
+  ]
+}
