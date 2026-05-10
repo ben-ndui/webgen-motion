@@ -545,6 +545,13 @@ function buildPadArgs(
     `apad,atrim=0:${targetSec.toFixed(3)},afade=t=in:st=0:d=${fadeInSec.toFixed(3)},afade=t=out:st=${fadeOutAt.toFixed(3)}:d=${fadeOutDur.toFixed(3)}`,
     "-c:a", "libmp3lame",
     "-b:a", "128k",
+    // ElevenLabs returns mono mp3 but our silence chunks are
+    // stereo (anullsrc cl=stereo). Forcing every VO chunk to
+    // stereo keeps the channel layout uniform across the whole
+    // timeline so `concat -c copy` doesn't produce a mid-file
+    // layout switch (which most players abort on).
+    "-ac", "2",
+    "-ar", "44100",
     outputMp3,
   ];
 }
