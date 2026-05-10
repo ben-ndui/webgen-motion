@@ -25,11 +25,16 @@ import { join } from "node:path";
 import puppeteer, { type Cookie, type Page } from "puppeteer";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
+import type { MotionCategory } from "../src/lib/motion-categories";
 import {
-  MOTION_CATEGORIES,
-  getCategory,
-  type MotionCategory,
-} from "../src/lib/motion-categories";
+  loadAllCategories,
+  getCategoryFs as getCategory,
+} from "../src/lib/motion-categories-fs";
+
+// `MOTION_CATEGORIES` here resolves through the fs loader so user
+// overrides in ~/.webgen-motion/categories.json or ./categories.json
+// land in the captured frames.
+const MOTION_CATEGORIES = loadAllCategories();
 
 function arg(flag: string, fallback?: string): string | undefined {
   const i = process.argv.indexOf(flag);

@@ -1,15 +1,16 @@
 /**
  * Motion design categories. Each tour section references a category
- * which provides the palette: backdrop colour behind the device frame
+ * which provides the palette : backdrop colour for the device frame
  * (compositor), splash card bg, overlay accent.
  *
- * For Sprint 1 the catalogue is hardcoded TS with UZME-flavoured
- * defaults that double as demo examples. Sprint 2 will move this to
- * a `categories.json` so users can define their own without touching
- * the source.
+ * Module is **client + server safe** — pure TS data, no fs imports.
+ * Source-of-truth values are kept in sync with `categories.json` at
+ * the repo root. The JSON sibling exists for the upcoming visual
+ * category editor (Sprint 5+) and for runner-side overrides via
+ * `motion-categories-fs.ts` (server only — reads disk + merges).
  *
- * Keep the list tight — a tour with 12 different categories = chaotic
- * montage. Group under broader categories.
+ * Don't add fs/os imports here. If you need disk-loaded data, use
+ * `motion-categories-fs.ts` from a server context.
  */
 
 export interface MotionCategory {
