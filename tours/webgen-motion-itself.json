@@ -53,7 +53,7 @@
       "categoryId": "motion",
       "title": "Cinq onglets",
       "subtitle": "Pour tout piloter",
-      "goto": "/tour/uzme-landing-portrait",
+      "goto": "/tour/demo-target",
       "dwellMs": 2800
     },
     {
@@ -95,7 +95,7 @@
       "categoryId": "features",
       "title": "Compose stage",
       "subtitle": "Mac chrome 16:9 · iPhone frame 9:16",
-      "goto": "/compose/uzme-landing-portrait",
+      "goto": "/compose/demo-target",
       "dwellMs": 2800
     },
     {

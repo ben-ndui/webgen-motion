@@ -610,7 +610,15 @@ async function executeStep(
       await moveCursorTo(p, step.selector);
       await triggerClickRipple(p);
       await new Promise((r) => setTimeout(r, 120));
-      await p.click(step.selector);
+      // Use DOM-level .click() rather than Puppeteer's coordinate
+      // click — the fake cursor + ripple overlays plus any scroll
+      // shift during the dwell would push the physical hit point
+      // off-target. Dispatching directly on the element guarantees
+      // the React onClick fires regardless of pixel state.
+      await p.evaluate((sel) => {
+        const el = document.querySelector(sel) as HTMLElement | null;
+        el?.click();
+      }, step.selector);
       break;
     case "type":
       await p.waitForSelector(step.selector, { timeout: 5000 });
@@ -618,7 +626,10 @@ async function executeStep(
       await moveCursorTo(p, step.selector);
       await triggerClickRipple(p);
       await new Promise((r) => setTimeout(r, 120));
-      await p.click(step.selector);
+      // Focus the input by selector, then type into it. focus() also
+      // dispatches the React focus handler; subsequent .type() sends
+      // keystroke events the framework picks up.
+      await p.focus(step.selector);
       await p.type(step.selector, step.text, { delay: 40 });
       break;
     case "select":
