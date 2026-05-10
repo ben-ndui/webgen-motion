@@ -112,13 +112,13 @@ export default function ComposeTab({
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/compose/${tourId}`}
+            href={buildPreviewHref(tourId, bgMusicId, bgMusicVolume, voVolume)}
             target="_blank"
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200 transition-colors"
-            title="Aperçu interactif du compositor (sans re-capture)"
+            title="Aperçu live (audio playback synchro, sans re-compose)"
           >
             <ExternalLink className="w-3 h-3" />
-            Aperçu
+            Aperçu live
           </Link>
           <button
             onClick={onCompose}
@@ -243,6 +243,23 @@ export default function ComposeTab({
       )}
     </div>
   );
+}
+
+function buildPreviewHref(
+  tourId: string,
+  bgMusicId: string | undefined,
+  bgVol: number,
+  voVol: number,
+): string {
+  // Compose page reads these params and wires hidden <audio> elements
+  // synced with section playback — gives a live preview of the mix
+  // without invoking the headless compose runner.
+  const qs = new URLSearchParams();
+  qs.set("audio", "1");
+  if (bgMusicId && bgMusicId !== "") qs.set("bgMusicId", bgMusicId);
+  qs.set("bgVol", bgVol.toFixed(2));
+  qs.set("voVol", voVol.toFixed(2));
+  return `/compose/${encodeURIComponent(tourId)}?${qs.toString()}`;
 }
 
 function Stat({

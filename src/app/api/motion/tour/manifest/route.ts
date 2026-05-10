@@ -38,8 +38,19 @@ export async function GET(req: Request) {
       ...s,
       mp4Url: `/api/motion/tour/preview?id=${encodeURIComponent(id)}&file=${encodeURIComponent(s.file)}`,
     }));
+    // Surface the voiceover availability so the compose page can wire
+    // `<audio>` for live preview without a second roundtrip.
+    const voiceoverPath = join(getMotionTourDir(id), "voiceover.mp3");
+    const hasVoiceover = existsSync(voiceoverPath);
     return NextResponse.json(
-      { ...manifest, sections },
+      {
+        ...manifest,
+        sections,
+        hasVoiceover,
+        voiceoverUrl: hasVoiceover
+          ? `/api/motion/tour/audio/voice/preview?id=${encodeURIComponent(id)}`
+          : null,
+      },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch (e) {

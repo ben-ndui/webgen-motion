@@ -15,7 +15,10 @@
       "subtitle": "Le Motion Studio qui filme le réel",
       "dwellMs": 2800
     },
-    { "type": "wait", "dwellMs": 1500 },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
     {
       "type": "overlay",
       "text": "Génère des vidéos motion design depuis n'importe quel site",
@@ -23,7 +26,11 @@
       "dwellMs": 4000,
       "voiceover": "webgen-motion. Génère des vidéos motion design depuis n'importe quel site web."
     },
-    { "type": "scroll", "to": 350, "dwellMs": 1800 },
+    {
+      "type": "scroll",
+      "to": 350,
+      "dwellMs": 1800
+    },
     {
       "type": "overlay",
       "text": "Tours data-driven · 16:9 ou 9:16",
@@ -31,8 +38,11 @@
       "dwellMs": 3500,
       "voiceover": "Tours data-driven, en seize neuf desktop ou neuf seize mobile."
     },
-    { "type": "scroll", "to": 0, "dwellMs": 1200 },
-
+    {
+      "type": "scroll",
+      "to": 0,
+      "dwellMs": 1200
+    },
     {
       "type": "section",
       "categoryId": "motion",
@@ -41,7 +51,10 @@
       "goto": "/tour/uzme-landing-portrait",
       "dwellMs": 2800
     },
-    { "type": "wait", "dwellMs": 1500 },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
     {
       "type": "click",
       "selector": "[data-tab='script']",
@@ -72,7 +85,6 @@
       "dwellMs": 3000,
       "voiceover": "Compose. Le clip final monté avec transitions et mix audio."
     },
-
     {
       "type": "section",
       "categoryId": "features",
@@ -81,7 +93,10 @@
       "goto": "/compose/uzme-landing-portrait",
       "dwellMs": 2800
     },
-    { "type": "wait", "dwellMs": 4000 },
+    {
+      "type": "wait",
+      "dwellMs": 4000
+    },
     {
       "type": "overlay",
       "text": "Backdrop coloré par catégorie · transitions fluides",
@@ -89,8 +104,10 @@
       "dwellMs": 4500,
       "voiceover": "Backdrop coloré par catégorie, transitions fluides entre sections, mix sidechain audio."
     },
-    { "type": "wait", "dwellMs": 2000 },
-
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    },
     {
       "type": "section",
       "categoryId": "stores",
@@ -99,7 +116,10 @@
       "goto": "/setup",
       "dwellMs": 2800
     },
-    { "type": "wait", "dwellMs": 2000 },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    },
     {
       "type": "overlay",
       "text": "Clone · Configure · Génère",
@@ -107,6 +127,9 @@
       "dwellMs": 3500,
       "voiceover": "Clone. Configure. Génère. webgen-motion par Smooth & Design."
     },
-    { "type": "wait", "dwellMs": 1500 }
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    }
   ]
 }

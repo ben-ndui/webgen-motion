@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getCategory,
@@ -41,6 +41,8 @@ interface Manifest {
   format?: "16:9" | "9:16";
   sections: Section[];
   totalDurationSec: number;
+  hasVoiceover?: boolean;
+  voiceoverUrl?: string | null;
 }
 
 interface PageProps {
@@ -71,9 +73,27 @@ type Phase =
 function ComposeStage({ tourId }: { tourId: string }) {
   const [manifest, setManifest] = useState<Manifest | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
-  const autoplay =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("autoplay") === "1";
+  // URL params drive the playback mode :
+  //  - autoplay=1  → headless capture mode (compose-tour.ts), no audio
+  //  - audio=0     → silence the audio elements (default off in autoplay
+  //                   mode for the headless runner, default on for
+  //                   human preview)
+  //  - bgMusicId   → which library track to layer underneath
+  //  - bgVol / voVol → playback volumes (compose mix params previewed live)
+  const params =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const autoplay = params.get("autoplay") === "1";
+  const audioEnabled =
+    params.get("audio") === null
+      ? !autoplay // default : audio off in capture mode, on for human preview
+      : params.get("audio") === "1";
+  const bgMusicId = params.get("bgMusicId") || null;
+  const bgVol = clampVol(parseFloat(params.get("bgVol") || ""), 0.18);
+  const voVol = clampVol(parseFloat(params.get("voVol") || ""), 1.0);
+  const voRef = useRef<HTMLAudioElement | null>(null);
+  const bgRef = useRef<HTMLAudioElement | null>(null);
 
   // Mark window.__motionComposeDone when the run completes — the
   // headless runner polls for this to know when to stop capturing.
@@ -153,6 +173,29 @@ function ComposeStage({ tourId }: { tourId: string }) {
       650,
     );
   };
+
+  // Sync audio playback to section playback. Audio is "armed" once
+  // playback enters playing phase the first time, then keeps running
+  // until done/error. Pause on done/outro for a clean tail.
+  useEffect(() => {
+    if (!audioEnabled) return;
+    const vo = voRef.current;
+    const bg = bgRef.current;
+    if (vo) vo.volume = clampVol(voVol, 1.0);
+    if (bg) bg.volume = clampVol(bgVol, 0.18);
+    if (phase.kind === "playing") {
+      vo?.play().catch(() => {});
+      bg?.play().catch(() => {});
+    } else if (phase.kind === "done") {
+      vo?.pause();
+      bg?.pause();
+    }
+  }, [phase.kind, audioEnabled, bgVol, voVol]);
+
+  const bgMusicSrc = bgMusicId
+    ? `/api/motion/audio/${encodeURIComponent(bgMusicId)}/stream`
+    : null;
+  const voSrc = manifest?.voiceoverUrl ?? null;
 
   return (
     <div
@@ -380,8 +423,39 @@ function ComposeStage({ tourId }: { tourId: string }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Hidden audio elements driven by playback phase. Mounted only
+          when audioEnabled (i.e. human preview, not headless capture).
+          The headless compose runner explicitly passes ?audio=0 to
+          mute these — its own mux happens via ffmpeg, not the page. */}
+      {audioEnabled && voSrc && (
+        <audio
+          ref={voRef}
+          src={voSrc}
+          preload="auto"
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
+        />
+      )}
+      {audioEnabled && bgMusicSrc && (
+        <audio
+          ref={bgRef}
+          src={bgMusicSrc}
+          preload="auto"
+          loop
+          aria-hidden="true"
+          style={{ position: "absolute", inset: 0, width: 0, height: 0, opacity: 0, pointerEvents: "none" }}
+        />
+      )}
     </div>
   );
+}
+
+function clampVol(v: number, fallback: number): number {
+  if (!Number.isFinite(v)) return fallback;
+  if (v < 0) return 0;
+  if (v > 2) return 2;
+  return v;
 }
 
 // ── Mac browser chrome ────────────────────────────────────────────
