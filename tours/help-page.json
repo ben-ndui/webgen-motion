@@ -13,14 +13,14 @@
   "auth": "none",
   "format": "16:9",
   "voiceMode": "narrative",
-  "narrativeScript": "[step:0]Bienvenue chez webgen-motion. Le Motion Studio local-first qui transforme ton site web en vidéo motion design. [step:2]webgen-motion explique webgen-motion. Une démo méta entièrement produite par l'outil lui-même. [step:4]L'idée est simple : tu connectes ton site, tu scénarises ton clip, et tu génères tout localement. Aucun cloud requis, aucun vendor lock-in. [step:6]Cinq étapes pour ta première vidéo. [step:9]Tu configures tes clés ElevenLabs, tu crées un tour, tu définis tes steps. Puis capture, voix off, compose. Trois actions, un clip final prêt à publier. [step:11]Un tour est un fichier JSON data-driven. Pas de TypeScript, pas de compilation, juste de la donnée éditable depuis l'interface. [step:13]Le lien avec ton projet, c'est juste le champ base URL. Puppeteer ouvre cette adresse et exécute tes steps dans l'ordre. [step:15]Pour les clicks, utilise les sélecteurs CSS. Préfère les attributs data-testid stables aux classes auto-générées qui cassent à chaque refacto. [step:18]Deux modes de voix off. Per-step pour la simplicité d'une ligne par étape. Narrative continu pour la synchronisation parfaite. [step:20]En narratif, ElevenLabs renvoie un alignment caractère par caractère. Le bouton Calibrer recale chaque overlay au mot près, sans deviner. [step:22]Plusieurs projets ? Tu peux tout gérer depuis une seule installation, ou créer un dossier dédié par projet. Les deux patterns marchent. [step:25]Tout reste sur ta machine. Captures, voix off, clips finaux, tous stockés dans ton dossier home. [step:27]webgen-motion. Local-first. Par Smooth and Design.",
+  "narrativeScript": "[step:0]Bienvenue chez webgen-motion. Le Motion Studio local-first, qui transforme ton site web en vidéo motion design. [step:2]webgen-motion explique webgen-motion. Une démo méta, entièrement produite par l'outil lui-même. [step:4]L'idée est simple. Tu connectes ton site. Tu scénarises ton clip. Et tu génères tout localement. Aucun cloud, aucun vendor lock-in. [step:6]Cinq étapes, pour ta première vidéo. [step:9]Tu configures tes clés ElevenLabs. Tu crées un tour. Tu définis tes étapes. Puis : capture, voix off, compose. Trois actions, un clip prêt à publier. [step:11]Un tour, c'est un fichier JSON, data-driven. Pas de TypeScript, pas de compilation. Juste de la donnée, éditable depuis l'interface. [step:13]Le lien avec ton projet, c'est le champ base URL. Puppeteer ouvre cette adresse, et exécute tes étapes dans l'ordre. [step:15]Pour les clicks, utilise les sélecteurs CSS. Préfère les attributs data-testid, stables face aux refactos. [step:18]Deux modes de voix off. Per-step, pour la simplicité. Narrative continu, pour la synchronisation parfaite. [step:20]En narratif, ElevenLabs renvoie un alignment caractère par caractère. Le bouton Calibrer recale chaque overlay au mot près. [step:22]Plusieurs projets ? Tu peux tout gérer depuis une seule installation. Ou créer un dossier dédié par projet. Les deux marchent. [step:25]Tout reste sur ta machine. Captures, voix off, clips finaux. Stockés dans ton dossier home. [step:27]webgen-motion. Local-first. Par Smooth and Design.",
   "steps": [
     {
       "type": "section",
       "categoryId": "branding",
       "title": "webgen-motion",
       "subtitle": "Le Motion Studio local-first",
-      "dwellMs": 3000
+      "dwellMs": 5921
     },
     {
       "type": "wait",
@@ -30,7 +30,7 @@
       "type": "overlay",
       "text": "webgen-motion explique webgen-motion",
       "position": "center",
-      "dwellMs": 3500
+      "dwellMs": 4749
     },
     {
       "type": "wait",
@@ -38,9 +38,9 @@
     },
     {
       "type": "overlay",
-      "text": "Un outil pour filmer ton site et en faire un clip motion",
+      "text": "Filme ton site · Génère ton clip motion",
       "position": "bottom",
-      "dwellMs": 3500
+      "dwellMs": 13816
     },
     {
       "type": "scroll",
@@ -52,7 +52,7 @@
       "categoryId": "motion",
       "title": "5 étapes",
       "subtitle": "Du clone à la première vidéo",
-      "dwellMs": 2500
+      "dwellMs": 2612
     },
     {
       "type": "wait",
@@ -65,9 +65,9 @@
     },
     {
       "type": "overlay",
-      "text": "Setup → Nouveau tour → baseUrl → Steps → Capture/Voice/Compose",
+      "text": "Setup · Tour · Steps · Capture · Voice · Compose",
       "position": "center",
-      "dwellMs": 4000
+      "dwellMs": 8522
     },
     {
       "type": "scroll",
@@ -79,7 +79,7 @@
       "categoryId": "features",
       "title": "Schéma JSON",
       "subtitle": "Data-driven, pas de TypeScript",
-      "dwellMs": 2500
+      "dwellMs": 6118
     },
     {
       "type": "wait",
@@ -89,7 +89,7 @@
       "type": "overlay",
       "text": "Tour = JSON. baseUrl = lien avec ton projet. C'est tout.",
       "position": "center",
-      "dwellMs": 4000
+      "dwellMs": 9230
     },
     {
       "type": "scroll",
@@ -101,7 +101,7 @@
       "categoryId": "stores",
       "title": "Sélecteurs CSS",
       "subtitle": "data-testid · stable face aux refactors",
-      "dwellMs": 2500
+      "dwellMs": 8998
     },
     {
       "type": "wait",
@@ -117,7 +117,7 @@
       "categoryId": "ai",
       "title": "Voix off",
       "subtitle": "Per-step ou Narrative continu",
-      "dwellMs": 2500
+      "dwellMs": 7500
     },
     {
       "type": "wait",
@@ -127,7 +127,7 @@
       "type": "overlay",
       "text": "Narrative continu : 1 texte, alignment char-level, calibration auto",
       "position": "bottom",
-      "dwellMs": 4000
+      "dwellMs": 9022
     },
     {
       "type": "scroll",
@@ -139,7 +139,7 @@
       "categoryId": "pipeline",
       "title": "Multi-projets",
       "subtitle": "Une install, N tours OU une install par projet",
-      "dwellMs": 2500
+      "dwellMs": 12225
     },
     {
       "type": "wait",
@@ -155,7 +155,7 @@
       "categoryId": "releases",
       "title": "Tout en local",
       "subtitle": "~/.webgen-motion/ · 0 cloud · 0 lock-in",
-      "dwellMs": 2800
+      "dwellMs": 6850
     },
     {
       "type": "wait",
@@ -165,7 +165,7 @@
       "type": "overlay",
       "text": "Local-first · By Smooth & Design",
       "position": "center",
-      "dwellMs": 3500
+      "dwellMs": 3355
     },
     {
       "type": "wait",
