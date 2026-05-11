@@ -113,6 +113,24 @@ interface ManifestSection {
   durationSec: number;
 }
 
+/** Effective ElevenLabs voice settings — tour override merged with defaults. */
+interface EffectiveVoiceSettings {
+  stability: number;
+  similarityBoost: number;
+  style: number;
+  useSpeakerBoost: boolean;
+}
+
+const DEFAULT_VOICE_SETTINGS: EffectiveVoiceSettings = {
+  stability: 0.55,
+  similarityBoost: 0.78,
+  style: 0.12,
+  useSpeakerBoost: true,
+};
+
+/** Module-level reference populated once per run, used by fetchElevenLabsTts. */
+let effectiveSettings: EffectiveVoiceSettings = DEFAULT_VOICE_SETTINGS;
+
 async function main(): Promise<void> {
   const tour = getTour(tourId!);
   if (!tour) {
@@ -138,9 +156,34 @@ async function main(): Promise<void> {
   rmSync(workDir, { recursive: true, force: true });
   mkdirSync(workDir, { recursive: true });
 
+  // Merge tour-level voice settings overrides on top of defaults.
+  // Anything missing keeps the default value.
+  const userSettings = tour.voiceSettings ?? {};
+  effectiveSettings = {
+    stability:
+      typeof userSettings.stability === "number"
+        ? userSettings.stability
+        : DEFAULT_VOICE_SETTINGS.stability,
+    similarityBoost:
+      typeof userSettings.similarityBoost === "number"
+        ? userSettings.similarityBoost
+        : DEFAULT_VOICE_SETTINGS.similarityBoost,
+    style:
+      typeof userSettings.style === "number"
+        ? userSettings.style
+        : DEFAULT_VOICE_SETTINGS.style,
+    useSpeakerBoost:
+      typeof userSettings.useSpeakerBoost === "boolean"
+        ? userSettings.useSpeakerBoost
+        : DEFAULT_VOICE_SETTINGS.useSpeakerBoost,
+  };
+
   console.log(`▶ VO: ${tour.name}`);
   console.log(`  Voice ID: ${voiceId}`);
   console.log(`  Model:    ${modelId}`);
+  console.log(
+    `  Settings: stability=${effectiveSettings.stability} similarity=${effectiveSettings.similarityBoost} style=${effectiveSettings.style} speaker_boost=${effectiveSettings.useSpeakerBoost}`,
+  );
   if (Object.keys(overrides).length > 0) {
     console.log(`  Overrides: ${Object.keys(overrides).length} step(s)`);
   }
@@ -688,8 +731,16 @@ interface TtsArtifact {
  */
 async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
   const phonetic = applyPronunciation(text);
+  // Cache key includes voice settings so changing the sliders busts
+  // the cache rather than serving the old audio.
+  const settingsKey = [
+    effectiveSettings.stability.toFixed(3),
+    effectiveSettings.similarityBoost.toFixed(3),
+    effectiveSettings.style.toFixed(3),
+    effectiveSettings.useSpeakerBoost ? "1" : "0",
+  ].join(",");
   const hash = createHash("sha1")
-    .update(`${voiceId}|${modelId}|${phonetic}`)
+    .update(`${voiceId}|${modelId}|${settingsKey}|${phonetic}`)
     .digest("hex")
     .slice(0, 16);
   const mp3Path = join(cacheDir, `${hash}.mp3`);
@@ -785,15 +836,10 @@ async function fetchElevenLabsTts(
       text,
       model_id: modelId,
       voice_settings: {
-        // Slightly above default (0.5) — enough to dampen stutters on
-        // mixed-language identifiers without making the voice flat.
-        // Going to 0.7 trades stutters for a robotic monotone.
-        stability: 0.55,
-        similarity_boost: 0.78,
-        // Modest style preserves the speaker's expressivity while
-        // avoiding the over-coloring that causes hesitations.
-        style: 0.12,
-        use_speaker_boost: true,
+        stability: effectiveSettings.stability,
+        similarity_boost: effectiveSettings.similarityBoost,
+        style: effectiveSettings.style,
+        use_speaker_boost: effectiveSettings.useSpeakerBoost,
       },
     }),
   });

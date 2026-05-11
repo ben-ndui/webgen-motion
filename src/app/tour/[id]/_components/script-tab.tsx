@@ -217,6 +217,60 @@ export default function ScriptTab({
               />
             </label>
           </div>
+
+          {/* Voice settings sliders */}
+          <div className="pt-2 border-t border-slate-100 space-y-2.5">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+              Réglages ElevenLabs
+            </p>
+            <VoiceSlider
+              label="Stability"
+              hint="Bas = expressif, haut = stable. 0.55 conseillé."
+              value={tour.voiceSettings?.stability ?? 0.55}
+              onChange={(v) => updateVoiceSettings(tour, onChange, { stability: v })}
+            />
+            <VoiceSlider
+              label="Similarity"
+              hint="Fidélité à la voix clonée. 0.78 par défaut."
+              value={tour.voiceSettings?.similarityBoost ?? 0.78}
+              onChange={(v) =>
+                updateVoiceSettings(tour, onChange, { similarityBoost: v })
+              }
+            />
+            <VoiceSlider
+              label="Style"
+              hint="Coloration émotionnelle. 0.12 conseillé."
+              value={tour.voiceSettings?.style ?? 0.12}
+              onChange={(v) => updateVoiceSettings(tour, onChange, { style: v })}
+            />
+            <label className="flex items-center justify-between gap-3 cursor-pointer">
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+                  Speaker boost
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Renforce le timbre du speaker
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={tour.voiceSettings?.useSpeakerBoost ?? true}
+                onChange={(e) =>
+                  updateVoiceSettings(tour, onChange, {
+                    useSpeakerBoost: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 accent-zinc-900"
+              />
+            </label>
+            <button
+              onClick={() => onChange({ ...tour, voiceSettings: undefined })}
+              className="w-full text-[10px] font-mono uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors py-1"
+              title="Reset aux valeurs par défaut"
+            >
+              ↻ Reset
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -788,4 +842,54 @@ function describeStep(step: TourStep): {
     case "keypress":
       return { kind: "KEY", summary: step.key, accent: "#64748b" };
   }
+}
+
+function updateVoiceSettings(
+  tour: TourEntry,
+  onChange: (next: TourEntry) => void,
+  patch: Partial<NonNullable<TourEntry["voiceSettings"]>>,
+): void {
+  const next = { ...(tour.voiceSettings ?? {}), ...patch };
+  // Drop the field entirely if everything reverts to undefined.
+  const allEmpty =
+    next.stability === undefined &&
+    next.similarityBoost === undefined &&
+    next.style === undefined &&
+    next.useSpeakerBoost === undefined;
+  onChange({ ...tour, voiceSettings: allEmpty ? undefined : next });
+}
+
+function VoiceSlider({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  onChange: (next: number) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+          {label}
+        </span>
+        <span className="text-[10px] font-mono text-slate-700">
+          {value.toFixed(2)}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="w-full h-1 mt-1 accent-zinc-900 cursor-pointer"
+      />
+      <p className="text-[10px] text-slate-400 mt-0.5">{hint}</p>
+    </div>
+  );
 }

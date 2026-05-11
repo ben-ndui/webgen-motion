@@ -101,6 +101,24 @@ export function saveTour(id: string, tour: TourEntry): void {
   if (tour.voiceModel !== undefined && typeof tour.voiceModel !== "string") {
     throw new Error("Tour.voiceModel must be a string");
   }
+  if (tour.voiceSettings !== undefined) {
+    const vs = tour.voiceSettings;
+    if (typeof vs !== "object" || vs === null) {
+      throw new Error("Tour.voiceSettings must be an object");
+    }
+    for (const k of ["stability", "similarityBoost", "style"] as const) {
+      const v = (vs as Record<string, unknown>)[k];
+      if (v !== undefined && (typeof v !== "number" || v < 0 || v > 1)) {
+        throw new Error(`Tour.voiceSettings.${k} must be a number between 0 and 1`);
+      }
+    }
+    if (
+      vs.useSpeakerBoost !== undefined &&
+      typeof vs.useSpeakerBoost !== "boolean"
+    ) {
+      throw new Error("Tour.voiceSettings.useSpeakerBoost must be a boolean");
+    }
+  }
   // Force the on-disk id to match the path id — drops any client-side
   // tampering attempt.
   const normalized: TourEntry = { ...tour, id };

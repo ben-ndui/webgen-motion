@@ -92,6 +92,19 @@ export interface TourEntry {
   /** Override the ElevenLabs model for this tour. Falls back to the
    *  global config / `ELEVENLABS_MODEL` / `eleven_multilingual_v2`. */
   voiceModel?: string;
+  /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
+   *  All fields optional ; runner falls back to sensible defaults
+   *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).
+   *
+   *  Lower stability = more emotion + variation but more stutters.
+   *  Higher stability = robotic monotone. 0.55 is the sweet spot for
+   *  technical narration mixing French + English identifiers. */
+  voiceSettings?: {
+    stability?: number;
+    similarityBoost?: number;
+    style?: number;
+    useSpeakerBoost?: boolean;
+  };
   /** Brand identity surfaced in the compose stage (intro card, outro
    *  card, Mac chrome URL bar). All fields optional — sensible
    *  fallbacks are computed from `name` and `baseUrl` when missing. */
