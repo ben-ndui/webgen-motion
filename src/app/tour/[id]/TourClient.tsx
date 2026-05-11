@@ -670,6 +670,8 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         {activeTab === "compose" && (
           <ComposeTab
             tourId={tour.id}
+            tour={localTour}
+            onTourChange={handleTourChange}
             compose={compose}
             captureSections={
               capture.kind === "ready" ? capture.sections : null

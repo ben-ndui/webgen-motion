@@ -7,6 +7,33 @@ import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import type { CapturedSection } from "./capture-tab";
 import type { VoState } from "./voice-tab";
 import type { AudioTrack } from "./music-library";
+import type { TourEntry } from "@/lib/types/tour";
+
+/** Mirror of the Remotion style preset list (remotion/lib/style-presets.ts).
+ *  Kept inline rather than imported because the Remotion module pulls
+ *  in a TransitionId type that's only useful at render time. */
+const COMPOSE_STYLES = [
+  {
+    id: "sober",
+    label: "Sober",
+    hint: "Mouvement minimal — corporate / documentary",
+  },
+  {
+    id: "energetic",
+    label: "Energetic",
+    hint: "Look produit / SaaS punchy (défaut)",
+  },
+  {
+    id: "cinematic",
+    label: "Cinematic",
+    hint: "Storytelling lent, fades + wipes, halo subtil",
+  },
+  {
+    id: "glitch",
+    label: "Glitch",
+    hint: "Esthétique tech / AI — glitch sur chaque transition",
+  },
+] as const;
 
 export type ComposeState =
   | { kind: "idle" }
@@ -21,6 +48,8 @@ export type ComposeState =
 
 interface Props {
   tourId: string;
+  tour: TourEntry;
+  onTourChange: (next: TourEntry) => void;
   compose: ComposeState;
   /** Capture state — used to gate the action ("need capture first"). */
   captureSections: CapturedSection[] | null;
@@ -44,6 +73,8 @@ interface Props {
  */
 export default function ComposeTab({
   tourId,
+  tour,
+  onTourChange,
   compose,
   captureSections,
   voState,
@@ -77,6 +108,10 @@ export default function ComposeTab({
 
   const actionDescription = `Headless re-films le compositor (Mac chrome / iPhone frame + backdrop coloré + transitions) avec la musique + la voix off mixées.\nSortie : ~/.webgen-motion/tours/${tourId}/final.mp4`;
 
+  const activeStyle = tour.composeStyle ?? "energetic";
+  const activeStylePreset =
+    COMPOSE_STYLES.find((s) => s.id === activeStyle) ?? COMPOSE_STYLES[1];
+
   const actionCard = (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
@@ -97,6 +132,31 @@ export default function ComposeTab({
           <Info className="w-4 h-4" />
         </button>
       </div>
+
+      {/* Style preset selector — feeds into Tour composition props. */}
+      <div className="space-y-1">
+        <label className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+          Style du montage
+        </label>
+        <select
+          value={activeStyle}
+          onChange={(e) =>
+            onTourChange({ ...tour, composeStyle: e.target.value })
+          }
+          className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+          title={activeStylePreset.hint}
+        >
+          {COMPOSE_STYLES.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <p className="hidden sm:block text-[10px] text-slate-500 leading-relaxed">
+          {activeStylePreset.hint}
+        </p>
+      </div>
+
       <div className="flex flex-col gap-2">
         <button
           onClick={onCompose}

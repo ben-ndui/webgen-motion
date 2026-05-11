@@ -105,6 +105,11 @@ export interface TourEntry {
   /** Voicebox model size hint when the engine supports it
    *  (qwen accepts 0.6B / 1.7B / 1B / 3B). */
   voiceboxModelSize?: string;
+  /** Compose style preset (sober / energetic / cinematic / glitch).
+   *  Drives Ken Burns intensity, transition mapping, backdrop motion,
+   *  and beats layer strength inside the Remotion composition.
+   *  Defaults to "energetic" when missing or unknown. */
+  composeStyle?: string;
   /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
    *  All fields optional ; runner falls back to sensible defaults
    *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).

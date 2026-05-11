@@ -4,6 +4,7 @@ import type { MotionCategory } from "@/lib/motion-categories";
 import { MacChrome } from "./MacChrome";
 import { IPhoneFrame } from "./IPhoneFrame";
 import { applyTransition, kenBurns, pickTransition } from "./lib/transitions";
+import { resolveStyle } from "./lib/style-presets";
 
 /**
  * Single section playback in the chosen device frame.
@@ -26,6 +27,7 @@ export function SectionPlayer({
   durationFrames,
   crossfadeFrames,
   sectionIndex,
+  styleId,
 }: {
   section: ManifestSection;
   cat: MotionCategory;
@@ -34,6 +36,7 @@ export function SectionPlayer({
   durationFrames: number;
   crossfadeFrames: number;
   sectionIndex: number;
+  styleId: string;
 }) {
   // useCurrentFrame() inside a <Sequence> returns frames relative
   // to the sequence's `from`. Negative during the premount window,
@@ -42,7 +45,11 @@ export function SectionPlayer({
   // of range values resolve cleanly to opacity 0.
   const localFrame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const transitionId = pickTransition(section.categoryId);
+  const style = resolveStyle(styleId);
+  const transitionId = pickTransition(
+    section.categoryId,
+    style.transitionOverride,
+  );
   // OffthreadVideo plays the MP4 from frame 0 up to `endAt`. We cap
   // it at the section's (possibly trimmed) duration so a section that
   // was shortened by pacing analysis doesn't keep playing its tail.
@@ -76,7 +83,12 @@ export function SectionPlayer({
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
-  const kenBurnsTransform = kenBurns(local01, sectionIndex);
+  const kenBurnsTransform = kenBurns(
+    local01,
+    sectionIndex,
+    style.kenBurnsScale,
+    style.kenBurnsPan,
+  );
 
   // Video plays cleanly inside the frame — no Ken Burns here. The
   // site content as captured stays steady ; it's the device that

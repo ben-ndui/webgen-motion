@@ -19,11 +19,20 @@ export function BeatsLayer({
   bgBeats,
   voPauses,
   activeCat,
+  beatPulseStrength = 1,
+  voPauseHaloStrength = 1,
 }: {
   bgBeats: AudioBeat[];
   voPauses: VoPause[];
   activeCat: MotionCategory;
+  beatPulseStrength?: number;
+  voPauseHaloStrength?: number;
 }) {
+  // Style preset can dim or hide these entirely. Skip the work
+  // when both are zero so we don't render hidden DOM nodes.
+  if (beatPulseStrength <= 0 && voPauseHaloStrength <= 0) {
+    return null;
+  }
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const timeSec = frame / fps;
@@ -42,7 +51,14 @@ export function BeatsLayer({
       break;
     }
   }
-  const beatOpacity = interpolate(beatProgress, [0, 0.2, 1], [0.55 * beatStrength, 0.25 * beatStrength, 0]);
+  const beatOpacity =
+    beatPulseStrength <= 0
+      ? 0
+      : interpolate(
+          beatProgress,
+          [0, 0.2, 1],
+          [0.55 * beatStrength * beatPulseStrength, 0.25 * beatStrength * beatPulseStrength, 0],
+        );
   const beatScale = interpolate(beatProgress, [0, 1], [0.6, 1.8]);
 
   // ── Pause halo ──────────────────────────────────────────────
@@ -52,15 +68,16 @@ export function BeatsLayer({
     (p) => timeSec >= p.startSec && timeSec < p.endSec,
   );
   let pauseOpacity = 0;
-  if (insidePause) {
+  if (insidePause && voPauseHaloStrength > 0) {
     const local = timeSec - insidePause.startSec;
     const local01 = local / Math.max(0.05, insidePause.durationSec);
-    pauseOpacity = interpolate(
-      local01,
-      [0, 0.3, 0.7, 1],
-      [0, 0.18, 0.18, 0],
-      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-    );
+    pauseOpacity =
+      interpolate(
+        local01,
+        [0, 0.3, 0.7, 1],
+        [0, 0.18, 0.18, 0],
+        { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+      ) * voPauseHaloStrength;
   }
 
   return (

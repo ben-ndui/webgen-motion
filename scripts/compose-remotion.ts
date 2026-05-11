@@ -298,6 +298,10 @@ async function main(): Promise<void> {
     voVolume: voVolumeArg,
     bgBeats,
     voPauses,
+    composeStyle:
+      typeof tour?.composeStyle === "string" && tour.composeStyle.length > 0
+        ? tour.composeStyle
+        : "energetic",
   };
 
   const durationFrames = computeDurationInFrames(sections, fps);

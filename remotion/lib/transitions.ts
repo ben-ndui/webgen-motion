@@ -103,7 +103,14 @@ const CATEGORY_TRANSITION: Record<string, TransitionId> = {
   default: "fade",
 };
 
-export function pickTransition(categoryId: string): TransitionId {
+export function pickTransition(
+  categoryId: string,
+  /** When provided, force every section to this transition — used
+   *  by style presets that want a uniform look (sober → fade,
+   *  cinematic → wipe-down, glitch → glitch). */
+  styleOverride?: TransitionId | null,
+): TransitionId {
+  if (styleOverride) return styleOverride;
   return CATEGORY_TRANSITION[categoryId] ?? CATEGORY_TRANSITION.default;
 }
 
@@ -120,10 +127,19 @@ export function applyTransition(
  * section index. `local01` is 0..1 across the section's full
  * duration ; `idx` decides pan direction so adjacent sections feel
  * different even when the same category repeats.
+ *
+ * `scaleAmp` and `panAmp` come from the active style preset so a
+ * "sober" tour gets a barely-perceptible zoom and a "glitch" one
+ * gets a strong one.
  */
-export function kenBurns(local01: number, idx: number): string {
-  const scale = 1.0 + 0.06 * local01;
-  const panX = (idx % 2 === 0 ? -1 : 1) * (1 - local01) * 1.4;
-  const panY = (idx % 3 === 0 ? -1 : 1) * (1 - local01) * 0.8;
+export function kenBurns(
+  local01: number,
+  idx: number,
+  scaleAmp = 0.06,
+  panAmp = 1.4,
+): string {
+  const scale = 1.0 + scaleAmp * local01;
+  const panX = (idx % 2 === 0 ? -1 : 1) * (1 - local01) * panAmp;
+  const panY = (idx % 3 === 0 ? -1 : 1) * (1 - local01) * panAmp * 0.57;
   return `scale(${scale}) translate(${panX}%, ${panY}%)`;
 }

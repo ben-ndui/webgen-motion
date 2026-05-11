@@ -20,6 +20,7 @@ const tourPropsSchema = z
     bgMusicFile: z.string().nullable(),
     bgBeats: z.array(z.any()),
     voPauses: z.array(z.any()),
+    composeStyle: z.string(),
     bgMusicVolume: z.number(),
     voVolume: z.number(),
   })
@@ -42,6 +43,7 @@ const EMPTY_TOUR_PROPS: TourCompositionProps = {
   bgMusicFile: null,
   bgBeats: [],
   voPauses: [],
+  composeStyle: "energetic",
   bgMusicVolume: 0.18,
   voVolume: 1.0,
 };

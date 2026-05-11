@@ -52,6 +52,10 @@ export interface TourCompositionProps extends Record<string, unknown> {
   fps: number;
   sections: ManifestSection[];
   brand: TourBrand;
+  /** Style preset id — drives Ken Burns intensity, transition mapping,
+   *  backdrop motion, and beats layer strength. Falls back to
+   *  "energetic" when missing or unknown. */
+  composeStyle: string;
   /** Voiceover filename inside the publicDir staging directory.
    *  Null if no VO was generated yet. */
   voiceoverFile: string | null;

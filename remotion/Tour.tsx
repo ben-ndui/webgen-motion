@@ -11,6 +11,7 @@ import { getCategory, MOTION_CATEGORIES } from "@/lib/motion-categories";
 import { SectionPlayer } from "./SectionPlayer";
 import { IntroCard, OutroCard } from "./IntroOutro";
 import { BeatsLayer } from "./BeatsLayer";
+import { resolveStyle } from "./lib/style-presets";
 import {
   computeSectionFrames,
   TRANSITIONS,
@@ -38,9 +39,11 @@ export function Tour({
   voVolume,
   bgBeats,
   voPauses,
+  composeStyle,
 }: TourCompositionProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const style = resolveStyle(composeStyle);
   const sectionWindows = computeSectionFrames(sections, fps);
   const introFrames = TRANSITIONS.introHoldSec * fps;
   const outroFrames = TRANSITIONS.outroHoldSec * fps;
@@ -81,14 +84,14 @@ export function Tour({
         style={{
           background: `radial-gradient(ellipse at top right, ${activeCat.accent}22, transparent 60%), radial-gradient(ellipse at bottom left, ${activeCat.accent}1a, transparent 50%)`,
           opacity: interpolate(
-            Math.sin((frame / fps) * 0.6),
+            Math.sin((frame / fps) * (style.backdropFreq * 1.33)),
             [-1, 1],
-            [0.7, 1],
+            [1 - style.backdropOpacityAmp, 1],
           ),
           transform: `scale(${interpolate(
-            Math.sin((frame / fps) * 0.45),
+            Math.sin((frame / fps) * style.backdropFreq),
             [-1, 1],
-            [1.0, 1.06],
+            [1.0, 1.0 + style.backdropScaleAmp],
           )})`,
           transformOrigin: "center",
           pointerEvents: "none",
@@ -139,6 +142,7 @@ export function Tour({
               durationFrames={durationFrames}
               crossfadeFrames={crossfadeFrames}
               sectionIndex={i}
+              styleId={composeStyle}
             />
           </Sequence>
         );
@@ -161,6 +165,8 @@ export function Tour({
         bgBeats={bgBeats}
         voPauses={voPauses}
         activeCat={activeCat}
+        beatPulseStrength={style.beatPulseStrength}
+        voPauseHaloStrength={style.voPauseHaloStrength}
       />
 
       {/* Audio overlays at the root — Remotion mixes them automatically
