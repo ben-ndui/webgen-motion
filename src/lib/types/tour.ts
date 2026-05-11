@@ -85,6 +85,9 @@ export interface TourEntry {
   /** Optional path (repo-relative or absolute) of a bg music MP3.
    *  Mixed in compose at volume 0.18 (or ducked to 0.10 if VO too). */
   bgMusic?: string;
+  /** Override the global voice backend ("elevenlabs" cloud or
+   *  "voicebox" local). Falls back to the wizard's `defaultBackend`. */
+  voiceBackend?: "elevenlabs" | "voicebox";
   /** Override the global ElevenLabs voice id for this tour. Falls back
    *  to the wizard's config / `ELEVENLABS_VOICE_ID` when empty. Useful
    *  when you target multiple projects with different brand voices. */
@@ -92,6 +95,16 @@ export interface TourEntry {
   /** Override the ElevenLabs model for this tour. Falls back to the
    *  global config / `ELEVENLABS_MODEL` / `eleven_multilingual_v2`. */
   voiceModel?: string;
+  /** Voicebox profile UUID (visible in Voicebox's UI under "Profiles").
+   *  Used when voiceBackend === "voicebox". */
+  voiceboxProfileId?: string;
+  /** Voicebox TTS engine choice (qwen / kokoro / chatterbox / luxtts
+   *  / tada / qwen_custom_voice / chatterbox_turbo). Defaults to qwen
+   *  for quality, kokoro for speed. */
+  voiceboxEngine?: string;
+  /** Voicebox model size hint when the engine supports it
+   *  (qwen accepts 0.6B / 1.7B / 1B / 3B). */
+  voiceboxModelSize?: string;
   /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
    *  All fields optional ; runner falls back to sensible defaults
    *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).

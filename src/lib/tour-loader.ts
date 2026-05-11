@@ -101,6 +101,18 @@ export function saveTour(id: string, tour: TourEntry): void {
   if (tour.voiceModel !== undefined && typeof tour.voiceModel !== "string") {
     throw new Error("Tour.voiceModel must be a string");
   }
+  if (
+    tour.voiceBackend !== undefined &&
+    tour.voiceBackend !== "elevenlabs" &&
+    tour.voiceBackend !== "voicebox"
+  ) {
+    throw new Error(`Tour.voiceBackend must be "elevenlabs" or "voicebox"`);
+  }
+  for (const k of ["voiceboxProfileId", "voiceboxEngine", "voiceboxModelSize"] as const) {
+    if (tour[k] !== undefined && typeof tour[k] !== "string") {
+      throw new Error(`Tour.${k} must be a string`);
+    }
+  }
   if (tour.voiceSettings !== undefined) {
     const vs = tour.voiceSettings;
     if (typeof vs !== "object" || vs === null) {

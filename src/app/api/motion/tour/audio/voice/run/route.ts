@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
-import { resolveElevenLabs } from "@/lib/config";
+import { resolveVoiceBackend } from "@/lib/config";
 import { getTour } from "@/lib/tour-loader";
 
 /**
@@ -43,31 +43,23 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  // Config wins over env. If neither is set, surface a setup hint.
-  const credentials = resolveElevenLabs();
-  if (!credentials) {
+  // Resolve the effective backend (elevenlabs or voicebox) with the
+  // tour's overrides on top. The runner does the same resolution
+  // independently from its own context (it re-reads getTour) — this
+  // server-side check just produces a fast 400 with a clear error
+  // when the chosen backend isn't usable, instead of letting the
+  // spawned process fail with a cryptic stderr.
+  const tour = getTour(tourId);
+  const backend = resolveVoiceBackend(tour ?? undefined);
+  if (!backend) {
     return NextResponse.json(
       {
         error:
-          "ElevenLabs key + voiceId manquants. Va sur /setup pour les configurer (ou ajoute ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID dans .env.local).",
+          "Voice backend not configured. Open /setup to pick ElevenLabs (clé API + voice ID) or Voicebox (profile UUID local).",
       },
       { status: 400 },
     );
   }
-
-  // Per-tour overrides (multi-projets light) : if the tour declares
-  // its own voiceId / voiceModel, they take precedence over the
-  // global config — so the same install can target multiple brands
-  // with different cloned voices.
-  const tour = getTour(tourId);
-  const effectiveVoiceId =
-    tour?.voiceId && tour.voiceId.trim().length > 0
-      ? tour.voiceId.trim()
-      : credentials.voiceId;
-  const effectiveModel =
-    tour?.voiceModel && tour.voiceModel.trim().length > 0
-      ? tour.voiceModel.trim()
-      : credentials.model;
 
   // Persist overrides to disk so the runner can read them by path.
   // Stored next to the manifest so `npm run audio` from CLI also
@@ -109,18 +101,17 @@ export async function POST(req: NextRequest) {
 
       emit({ type: "phase", label: "Génération de la voix off…" });
 
-      const proc = spawn("npx", args, {
-        cwd,
-        // Inject the resolved credentials so the runner gets them
-        // whether they came from the wizard's config.json or .env.local.
-        env: {
-          ...process.env,
-          NO_COLOR: "1",
-          ELEVENLABS_API_KEY: credentials.apiKey,
-          ELEVENLABS_VOICE_ID: effectiveVoiceId,
-          ELEVENLABS_MODEL: effectiveModel,
-        },
-      });
+      // Inject ElevenLabs creds as env when applicable so CLI runs
+      // without config.json still find them. Voicebox doesn't need
+      // anything beyond what config.json already exposes (the runner
+      // calls resolveVoiceBackend itself).
+      const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: "1" };
+      if (backend.kind === "elevenlabs") {
+        env.ELEVENLABS_API_KEY = backend.apiKey;
+        env.ELEVENLABS_VOICE_ID = backend.voiceId;
+        env.ELEVENLABS_MODEL = backend.model;
+      }
+      const proc = spawn("npx", args, { cwd, env });
       let stdoutBuf = "";
       let stderrBuf = "";
 

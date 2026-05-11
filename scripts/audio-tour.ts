@@ -56,6 +56,10 @@ import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
 import { getVoCacheDir } from "../src/lib/motion-tour-store";
+import {
+  resolveVoiceBackend,
+  type ResolvedVoiceBackend,
+} from "../src/lib/config";
 
 /**
  * Character-level alignment returned by ElevenLabs
@@ -89,18 +93,11 @@ if (!tourDir || !existsSync(join(tourDir, "manifest.json"))) {
   process.exit(1);
 }
 
-const apiKey = process.env.ELEVENLABS_API_KEY;
-const voiceId = process.env.ELEVENLABS_VOICE_ID;
-const modelId = process.env.ELEVENLABS_MODEL ?? "eleven_multilingual_v2";
-
-if (!apiKey) {
-  console.error("ELEVENLABS_API_KEY not set in env");
-  process.exit(1);
-}
-if (!voiceId) {
-  console.error("ELEVENLABS_VOICE_ID not set in env");
-  process.exit(1);
-}
+// Backend credentials are resolved per-run inside main() now that we
+// support multiple backends (elevenlabs / voicebox). The runner used
+// to hard-fail at module load on missing ELEVENLABS_* env vars, but
+// that locks out the Voicebox path which has no credentials at all.
+let backend: ResolvedVoiceBackend | null = null;
 
 interface ManifestSection {
   index: number;
@@ -138,6 +135,17 @@ async function main(): Promise<void> {
   const tour = getTour(tourId!);
   if (!tour) {
     console.error(`Tour not found in catalogue: ${tourId}`);
+    process.exit(1);
+  }
+
+  // Resolve the voice backend (elevenlabs or voicebox) based on
+  // tour-level overrides + global config.json + env. Hard-fail with
+  // a clear hint when nothing is configured.
+  backend = resolveVoiceBackend(tour);
+  if (!backend) {
+    console.error(
+      "Voice backend not configured. Run the Setup wizard (/setup) or add ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID to .env.local.",
+    );
     process.exit(1);
   }
 
@@ -182,11 +190,19 @@ async function main(): Promise<void> {
   };
 
   console.log(`▶ VO: ${tour.name}`);
-  console.log(`  Voice ID: ${voiceId}`);
-  console.log(`  Model:    ${modelId}`);
-  console.log(
-    `  Settings: stability=${effectiveSettings.stability} similarity=${effectiveSettings.similarityBoost} style=${effectiveSettings.style} speaker_boost=${effectiveSettings.useSpeakerBoost}`,
-  );
+  if (backend.kind === "elevenlabs") {
+    console.log(`  Backend  : ElevenLabs (cloud)`);
+    console.log(`  Voice ID : ${backend.voiceId}`);
+    console.log(`  Model    : ${backend.model}`);
+    console.log(
+      `  Settings : stability=${effectiveSettings.stability} similarity=${effectiveSettings.similarityBoost} style=${effectiveSettings.style} speaker_boost=${effectiveSettings.useSpeakerBoost}`,
+    );
+  } else {
+    console.log(`  Backend  : Voicebox (local @ ${backend.url})`);
+    console.log(`  Profile  : ${backend.profileId}`);
+    console.log(`  Engine   : ${backend.engine} · ${backend.modelSize}`);
+    console.log(`  Lang     : ${backend.language}`);
+  }
   if (Object.keys(overrides).length > 0) {
     console.log(`  Overrides: ${Object.keys(overrides).length} step(s)`);
   }
@@ -198,6 +214,16 @@ async function main(): Promise<void> {
     if (!tour.narrativeScript || !tour.narrativeScript.trim()) {
       console.error(
         "voiceMode=narrative but narrativeScript is empty — nothing to synthesize",
+      );
+      process.exit(1);
+    }
+    if (backend.kind === "voicebox") {
+      // Voicebox doesn't return char-level timings yet, so the
+      // Calibrer button can't recompute dwellMs from the audio.
+      // Chunk A1.1 will reintroduce narrative+voicebox via a local
+      // Whisper forced-aligner pass on the produced MP3.
+      console.error(
+        "Narrative mode is not supported with the Voicebox backend yet (no char-level timings). Use ElevenLabs for narrative tours, or switch this tour to per-step mode.",
       );
       process.exit(1);
     }
@@ -733,17 +759,21 @@ interface TtsArtifact {
  * to keep them in sync.
  */
 async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
+  if (!backend) throw new Error("Voice backend not resolved");
   const phonetic = applyPronunciation(text);
-  // Cache key includes voice settings so changing the sliders busts
-  // the cache rather than serving the old audio.
-  const settingsKey = [
-    effectiveSettings.stability.toFixed(3),
-    effectiveSettings.similarityBoost.toFixed(3),
-    effectiveSettings.style.toFixed(3),
-    effectiveSettings.useSpeakerBoost ? "1" : "0",
-  ].join(",");
+  // Cache key depends on the backend identity — switching backend or
+  // tweaking any synthesis param invalidates the cached MP3.
+  const backendKey =
+    backend.kind === "elevenlabs"
+      ? `eleven|${backend.voiceId}|${backend.model}|${[
+          effectiveSettings.stability.toFixed(3),
+          effectiveSettings.similarityBoost.toFixed(3),
+          effectiveSettings.style.toFixed(3),
+          effectiveSettings.useSpeakerBoost ? "1" : "0",
+        ].join(",")}`
+      : `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}`;
   const hash = createHash("sha1")
-    .update(`${voiceId}|${modelId}|${settingsKey}|${phonetic}`)
+    .update(`${backendKey}|${phonetic}`)
     .digest("hex")
     .slice(0, 16);
   const mp3Path = join(cacheDir, `${hash}.mp3`);
@@ -760,7 +790,10 @@ async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
     };
   }
   console.log(`      TTS → "${phonetic.slice(0, 60)}${phonetic.length > 60 ? "…" : ""}"`);
-  const fetched = await fetchElevenLabsTts(phonetic, voiceId!, modelId, apiKey!);
+  const fetched =
+    backend.kind === "elevenlabs"
+      ? await fetchElevenLabsTts(phonetic, backend)
+      : await fetchVoiceboxTts(phonetic, backend);
   writeFileSync(mp3Path, fetched.audio);
   writeFileSync(
     alignPath,
@@ -820,24 +853,22 @@ interface FetchedTts {
 
 async function fetchElevenLabsTts(
   text: string,
-  voiceId: string,
-  modelId: string,
-  apiKey: string,
+  cfg: Extract<ResolvedVoiceBackend, { kind: "elevenlabs" }>,
 ): Promise<FetchedTts> {
   // `/with-timestamps` returns JSON { audio_base64, alignment,
   // normalized_alignment } instead of the raw MP3 binary. Same body
   // shape as the standard endpoint, just a different content type.
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps`;
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(cfg.voiceId)}/with-timestamps`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "xi-api-key": apiKey,
+      "xi-api-key": cfg.apiKey,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
     body: JSON.stringify({
       text,
-      model_id: modelId,
+      model_id: cfg.model,
       voice_settings: {
         stability: effectiveSettings.stability,
         similarity_boost: effectiveSettings.similarityBoost,
@@ -868,6 +899,107 @@ async function fetchElevenLabsTts(
     audio,
     alignment: json.alignment ?? null,
     normalizedAlignment: json.normalized_alignment ?? null,
+  };
+}
+
+/**
+ * Voicebox synthesis pipeline. The backend is asynchronous : POST
+ * /generate enqueues a job and returns a generation_id, then we
+ * poll /generate/{id}/status until completed, then download from
+ * /audio/{id}.
+ *
+ * No char-level timestamps are returned today. The runner produces
+ * `fetched.alignment = null` here ; narrative mode + Voicebox is
+ * gated server-side (chunk A1.1 will reintroduce alignment via a
+ * local Whisper forced-aligner pass).
+ */
+async function fetchVoiceboxTts(
+  text: string,
+  cfg: Extract<ResolvedVoiceBackend, { kind: "voicebox" }>,
+): Promise<FetchedTts> {
+  const base = cfg.url.replace(/\/+$/, "");
+
+  const submitRes = await fetch(`${base}/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      profile_id: cfg.profileId,
+      text,
+      language: cfg.language,
+      engine: cfg.engine,
+      model_size: cfg.modelSize,
+      normalize: true,
+      crossfade_ms: 50,
+    }),
+  });
+  if (!submitRes.ok) {
+    const errText = await submitRes.text().catch(() => "<no body>");
+    throw new Error(
+      `Voicebox /generate failed (${submitRes.status}): ${errText.slice(0, 500)}`,
+    );
+  }
+  const submit = (await submitRes.json()) as {
+    id?: string;
+    status?: string;
+    error?: string | null;
+  };
+  const generationId = submit.id;
+  if (!generationId) {
+    throw new Error(`Voicebox /generate returned no id`);
+  }
+
+  // Poll up to 90s. Voicebox emits status as "generating" → "completed"
+  // or "failed". Polling interval 750ms keeps the loop snappy without
+  // hammering the backend.
+  const pollIntervalMs = 750;
+  const timeoutMs = 90_000;
+  const deadline = Date.now() + timeoutMs;
+  let lastStatus = "generating";
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, pollIntervalMs));
+    const statusRes = await fetch(
+      `${base}/generate/${encodeURIComponent(generationId)}/status`,
+    );
+    if (!statusRes.ok) {
+      throw new Error(
+        `Voicebox /generate/${generationId}/status failed (${statusRes.status})`,
+      );
+    }
+    const status = (await statusRes.json()) as {
+      status?: string;
+      error?: string | null;
+    };
+    lastStatus = status.status ?? "unknown";
+    if (lastStatus === "completed") break;
+    if (lastStatus === "failed") {
+      throw new Error(
+        `Voicebox generation failed : ${status.error ?? "no error message"}`,
+      );
+    }
+  }
+  if (lastStatus !== "completed") {
+    throw new Error(`Voicebox generation timed out after ${timeoutMs}ms`);
+  }
+
+  const audioRes = await fetch(
+    `${base}/audio/${encodeURIComponent(generationId)}`,
+  );
+  if (!audioRes.ok) {
+    throw new Error(
+      `Voicebox /audio/${generationId} failed (${audioRes.status})`,
+    );
+  }
+  const audio = Buffer.from(await audioRes.arrayBuffer());
+  if (audio.byteLength < 1024) {
+    throw new Error(
+      `Voicebox returned suspiciously small payload (${audio.byteLength} bytes)`,
+    );
+  }
+
+  return {
+    audio,
+    alignment: null,
+    normalizedAlignment: null,
   };
 }
 
