@@ -18,25 +18,11 @@
 
 ## 🎬 Démo
 
-> 80 secondes — webgen-motion filme sa propre interface à travers ses 5 surfaces (hub · setup · éditeur · voix off · compose) avec voix off ElevenLabs et style Energetic.
+> 100 secondes — webgen-motion filme sa propre interface à travers ses 5 surfaces (hub · setup · éditeur · voix off · compose) avec voix off ElevenLabs en mode narratif continu et style Energetic.
 
-<!--
-  Quand on aura le rendu final.mp4 hébergé sur une GitHub release :
-  remplacer ce bloc par <video src="..." controls width="100%"></video>
--->
+<video src="public/demo.mp4" controls width="100%"></video>
 
-```
-   ┌─────────────────────────────────────────────────────────────┐
-   │                                                             │
-   │   ▶  webgen-motion · Pitch officiel (80s)                  │
-   │                                                             │
-   │      Hub → Setup → Éditeur → Voix off → Compose            │
-   │      Style Energetic · Mode narratif continu                │
-   │                                                             │
-   │   Tour source : tours/webgen-motion-pitch.json              │
-   │                                                             │
-   └─────────────────────────────────────────────────────────────┘
-```
+> Tour source : [`tours/webgen-motion-pitch.json`](tours/webgen-motion-pitch.json) · 8 sections · 4 catégories · 18 markers narratifs · rendu par Remotion en ~150s wall time.
 
 ---
 

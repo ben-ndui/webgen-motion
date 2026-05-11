@@ -138,36 +138,37 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Demo video block — placeholder until the rendered MP4 is hosted */}
+      {/* Demo video — rendered via the pipeline itself (Capture +
+       *  Voice off + Calibrate + Compose). Source tour lives at
+       *  tours/webgen-motion-pitch.json. Generated 80s clip is
+       *  served at /demo.mp4 (public/) so the landing stays
+       *  self-contained — no external host. */}
       <section className="px-6 lg:px-8 pb-16 sm:pb-24">
         <div className="max-w-5xl mx-auto">
-          <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 shadow-2xl shadow-blue-500/10">
-            {/* Future <video> element ; placeholder for now. To embed
-             *  the rendered final.mp4, upload to GitHub release assets
-             *  and reference here via <video src={…} controls poster>. */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-              <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 grid place-items-center mb-6">
-                <Video className="w-7 h-7 text-white" />
-              </div>
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 mb-2">
-                Demo · 80 secondes
-              </p>
-              <h3 className="text-2xl sm:text-3xl font-semibold text-white mb-3">
-                webgen-motion en action
-              </h3>
-              <p className="text-sm text-slate-400 max-w-md leading-relaxed">
-                L&apos;outil filme sa propre interface à travers ses 5 surfaces
-                clés (hub · setup · éditeur · voix off · compose) avec une
-                voix off ElevenLabs et un style Energetic.
-              </p>
-              <Link
-                href="/tour/webgen-motion-pitch"
-                className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-xs font-medium hover:bg-white/15 transition-colors"
-              >
-                Voir le tour source
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+          <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-slate-900 shadow-2xl shadow-blue-500/10">
+            <video
+              src="/demo.mp4"
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full h-full block"
+            />
+          </div>
+          <div className="mt-5 flex items-center justify-between gap-3 flex-wrap text-xs text-slate-400">
+            <p>
+              <span className="font-mono uppercase tracking-[0.2em] text-slate-500">
+                Demo
+              </span>{" "}
+              · 100s · Style Energetic · narrative ElevenLabs · rendu par
+              Remotion
+            </p>
+            <Link
+              href="/tour/webgen-motion-pitch"
+              className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
+            >
+              Voir le tour source
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
