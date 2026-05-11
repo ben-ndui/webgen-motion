@@ -1,6 +1,7 @@
 import {
   AbsoluteFill,
   Audio,
+  Sequence,
   interpolate,
   staticFile,
   useCurrentFrame,
@@ -106,31 +107,40 @@ export function Tour({
         />
       )}
 
-      {/* Section players — ALL mounted at all times so OffthreadVideo
-       *  can decode the next clip ahead of its visible window. Without
-       *  this pre-mount, switching to a section's first frame meets a
-       *  not-yet-decoded source and renders a black flash inside the
-       *  device frame for a few hundred ms. The cost is keeping a
-       *  handful of decoders alive simultaneously — fine for this
-       *  workload. Visibility is gated by the per-player opacity
-       *  computed from the transition window. */}
+      {/* Section players wrapped in <Sequence>. The Sequence aligns
+       *  each OffthreadVideo's media t=0 with the section's intended
+       *  startFrame on the composition timeline — without it, every
+       *  section's video starts playing at composition t=0 and ends
+       *  long before its window opens, producing the dreaded
+       *  "first 1-2 clips, then black" symptom.
+       *
+       *  premountFor=crossfadeFrames gives Remotion enough lead to
+       *  decode the next clip before the previous one starts its
+       *  exit crossfade, so the transition stays smooth.
+       *
+       *  durationInFrames is extended by crossfadeFrames so the exit
+       *  window of section N stays visible while section N+1 enters. */}
       {sections.map((s, i) => {
         const w = sectionWindows[i];
         const cat = getCategory(s.categoryId) ?? MOTION_CATEGORIES.branding;
-        const localFrame = frame - w.startFrame;
         const durationFrames = w.endFrame - w.startFrame;
         return (
-          <SectionPlayer
+          <Sequence
             key={s.index}
-            section={s}
-            cat={cat}
-            format={format}
-            url={`${brand.domain}${pathHintFor(s)}`}
-            localFrame={localFrame}
-            durationFrames={durationFrames}
-            crossfadeFrames={crossfadeFrames}
-            sectionIndex={i}
-          />
+            from={w.startFrame}
+            durationInFrames={durationFrames + crossfadeFrames}
+            layout="none"
+          >
+            <SectionPlayer
+              section={s}
+              cat={cat}
+              format={format}
+              url={`${brand.domain}${pathHintFor(s)}`}
+              durationFrames={durationFrames}
+              crossfadeFrames={crossfadeFrames}
+              sectionIndex={i}
+            />
+          </Sequence>
         );
       })}
 

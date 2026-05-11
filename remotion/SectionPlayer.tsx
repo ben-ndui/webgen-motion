@@ -1,4 +1,4 @@
-import { OffthreadVideo, interpolate, staticFile, useVideoConfig } from "remotion";
+import { OffthreadVideo, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import type { ManifestSection } from "./lib/types";
 import type { MotionCategory } from "@/lib/motion-categories";
 import { MacChrome } from "./MacChrome";
@@ -23,7 +23,6 @@ export function SectionPlayer({
   cat,
   format,
   url,
-  localFrame,
   durationFrames,
   crossfadeFrames,
   sectionIndex,
@@ -32,11 +31,16 @@ export function SectionPlayer({
   cat: MotionCategory;
   format: "16:9" | "9:16";
   url: string;
-  localFrame: number;
   durationFrames: number;
   crossfadeFrames: number;
   sectionIndex: number;
 }) {
+  // useCurrentFrame() inside a <Sequence> returns frames relative
+  // to the sequence's `from`. Negative during the premount window,
+  // 0 when the section starts, up to durationFrames + crossfade at
+  // the exit tail. The interpolate calls below all use clamp so out
+  // of range values resolve cleanly to opacity 0.
+  const localFrame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const transitionId = pickTransition(section.categoryId);
   // OffthreadVideo plays the MP4 from frame 0 up to `endAt`. We cap
