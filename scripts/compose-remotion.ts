@@ -21,6 +21,7 @@
  */
 
 import { spawn } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import {
@@ -107,6 +108,7 @@ async function main(): Promise<void> {
       subtitle: s.subtitle,
       fileName: s.file,
       durationSec: s.durationSec,
+      capturedDurationSec: s.durationSec,
     };
   });
 
@@ -138,6 +140,66 @@ async function main(): Promise<void> {
     bgMusicFile = `bg-music.${ext}`;
     linkInto(resolvedBgMusicPath, bgMusicFile);
   }
+
+  // ── Audio analysis : pacing trim + beats ──────────────────────
+  // Spawn the analyzer synchronously so we can read its output and
+  // shorten sections before kicking off the Remotion render. Chunk
+  // 5 will consume the beats array directly from the composition.
+  console.log(`▶ Audio analysis…`);
+  const analyzeArgs = [
+    "tsx",
+    "scripts/analyze-audio.ts",
+    "--tour-id",
+    tourId!,
+    "--tour-dir",
+    tourDir!,
+  ];
+  if (resolvedBgMusicPath) {
+    analyzeArgs.push("--bg-music", resolvedBgMusicPath);
+  }
+  const analyze = spawnSync("npx", analyzeArgs, {
+    cwd: process.cwd(),
+    stdio: "inherit",
+    env: { ...process.env, NO_COLOR: "1" },
+  });
+  if (analyze.status !== 0) {
+    console.warn("  ⚠ analyze-audio exited non-zero ; continuing without trim");
+  }
+
+  // Read the pacing decisions back and rewrite section durations.
+  const audioAnalysisPath = join(tourDir!, "audio-analysis.json");
+  let trimSummary = "no trim";
+  if (existsSync(audioAnalysisPath)) {
+    try {
+      const analysis = JSON.parse(
+        readFileSync(audioAnalysisPath, "utf-8"),
+      ) as {
+        pacing?: Array<{
+          sectionIdx: number;
+          trimmedDurationSec: number;
+          trimRecommended: boolean;
+        }>;
+      };
+      let savedSec = 0;
+      let trimmed = 0;
+      for (const s of sections) {
+        const p = analysis.pacing?.find((x) => x.sectionIdx === s.index);
+        if (p?.trimRecommended) {
+          savedSec += s.durationSec - p.trimmedDurationSec;
+          trimmed++;
+          s.durationSec = p.trimmedDurationSec;
+        }
+      }
+      if (trimmed > 0) {
+        trimSummary = `${trimmed} section(s) trimmed, ${savedSec.toFixed(1)}s saved`;
+      }
+    } catch (e) {
+      console.warn(
+        `  ⚠ couldn't parse audio-analysis.json: ${(e as Error).message}`,
+      );
+    }
+  }
+  console.log(`  Pacing trim : ${trimSummary}`);
 
   // Brand info comes from the tour catalogue with sensible fallbacks.
   const tour = getTour(tourId!);

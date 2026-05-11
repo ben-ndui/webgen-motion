@@ -1,4 +1,4 @@
-import { OffthreadVideo, interpolate, staticFile } from "remotion";
+import { OffthreadVideo, interpolate, staticFile, useVideoConfig } from "remotion";
 import type { ManifestSection } from "./lib/types";
 import type { MotionCategory } from "@/lib/motion-categories";
 import { MacChrome } from "./MacChrome";
@@ -37,7 +37,12 @@ export function SectionPlayer({
   crossfadeFrames: number;
   sectionIndex: number;
 }) {
+  const { fps } = useVideoConfig();
   const transitionId = pickTransition(section.categoryId);
+  // OffthreadVideo plays the MP4 from frame 0 up to `endAt`. We cap
+  // it at the section's (possibly trimmed) duration so a section that
+  // was shortened by pacing analysis doesn't keep playing its tail.
+  const videoEndAt = Math.round(section.durationSec * fps);
 
   // Entrance: rises 0→1 over the first `crossfadeFrames`.
   // Exit: falls 1→0 over the last `crossfadeFrames`.
@@ -75,6 +80,7 @@ export function SectionPlayer({
   const video = (
     <OffthreadVideo
       src={staticFile(section.fileName)}
+      endAt={videoEndAt}
       style={{
         width: "100%",
         height: "100%",

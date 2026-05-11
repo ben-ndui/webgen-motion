@@ -16,8 +16,14 @@ export interface ManifestSection {
    *  directory. The composition resolves it via Remotion's
    *  `staticFile(fileName)` to get a served URL. */
   fileName: string;
-  /** Per-section playback duration (seconds). */
+  /** Per-section playback duration (seconds). The composition uses
+   *  this for the timeline window AND as the OffthreadVideo cut
+   *  point — `analyze-audio.ts` may shorten it relative to the
+   *  captured MP4 if the VO ends earlier than the visual. */
   durationSec: number;
+  /** Original captured MP4 duration — kept around so chunk 5 can
+   *  reference the pre-trim length if needed. */
+  capturedDurationSec?: number;
 }
 
 export interface TourBrand {
