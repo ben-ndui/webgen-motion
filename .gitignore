@@ -44,3 +44,7 @@ next-env.d.ts
 # tauri (Rust target / bundled DMGs / EXEs / lockfile)
 /src-tauri/target/
 /src-tauri/gen/
+# Staged Next.js standalone + frontendDist placeholder (rebuilt
+# every `tauri build` by scripts/desktop-prepare-standalone.mjs)
+/src-tauri/standalone/
+/src-tauri/dist/

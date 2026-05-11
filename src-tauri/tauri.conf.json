@@ -6,14 +6,15 @@
   "build": {
     "beforeDevCommand": "PORT=3030 npm run dev",
     "devUrl": "http://localhost:3030",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../.next/standalone"
+    "beforeBuildCommand": "npm run build && node scripts/desktop-prepare-standalone.mjs",
+    "frontendDist": "../src-tauri/dist"
   },
   "app": {
     "windows": [
       {
         "label": "main",
         "title": "webgen-motion",
+        "url": "http://localhost:3030",
         "width": 1400,
         "height": 900,
         "minWidth": 1024,
@@ -22,7 +23,8 @@
         "fullscreen": false,
         "decorations": true,
         "titleBarStyle": "Transparent",
-        "hiddenTitle": true
+        "hiddenTitle": true,
+        "visible": true
       }
     ],
     "security": {
@@ -32,6 +34,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": ["dist/**/*", "standalone/**/*"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
