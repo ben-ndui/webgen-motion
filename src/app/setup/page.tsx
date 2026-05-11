@@ -103,7 +103,7 @@ export default function SetupPage() {
     <div className="min-h-screen flex flex-col">
       {/* Top bar */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="max-w-3xl mx-auto px-6 lg:px-8">
+        <div className="max-w-3xl xl:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link
               href="/"
@@ -129,7 +129,7 @@ export default function SetupPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 lg:px-8 py-12 space-y-8">
+      <main className="flex-1 max-w-3xl xl:max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6 sm:space-y-8">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2">
           {(["welcome", "elevenlabs", "done"] as const).map((s, i) => {
@@ -215,7 +215,7 @@ function WelcomeStep({
 }) {
   const envHasBoth = envFallback?.hasApiKey && envFallback?.hasVoiceId;
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-8 space-y-6">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 space-y-5 sm:space-y-6">
       <div className="flex items-start gap-4">
         <span className="w-10 h-10 rounded-xl bg-zinc-900 text-white grid place-items-center flex-shrink-0">
           <Sparkles className="w-5 h-5" />
@@ -306,7 +306,7 @@ function ElevenLabsStep({
   onSave: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-8 space-y-6">
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 space-y-5 sm:space-y-6">
       <div className="flex items-start gap-4">
         <span className="w-10 h-10 rounded-xl bg-zinc-900 text-white grid place-items-center flex-shrink-0">
           <Mic className="w-5 h-5" />
@@ -441,7 +441,7 @@ function DoneStep({
   const voiceId = config?.elevenlabs.voiceId ?? null;
 
   return (
-    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 space-y-5">
+    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-8 space-y-4 sm:space-y-5">
       <div className="flex items-start gap-4">
         <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white grid place-items-center flex-shrink-0">
           <Check className="w-5 h-5" strokeWidth={2.5} />
