@@ -1,0 +1,175 @@
+{
+  "id": "help-page",
+  "name": "webgen-motion · Page d'aide",
+  "description": "Tour narratif qui film la page /help — webgen-motion explique webgen-motion. Mode narrative continu : un texte fluide avec markers [step:N] que tu peux calibrer après une 1re génération pour synchroniser les overlays au mot près.",
+  "estimatedSec": 75,
+  "startPath": "/help",
+  "baseUrl": "http://localhost:3000",
+  "brand": {
+    "displayName": "webgen-motion",
+    "domain": "webgen-motion.local",
+    "tagline": "by Smooth & Design"
+  },
+  "auth": "none",
+  "format": "16:9",
+  "voiceMode": "narrative",
+  "narrativeScript": "[step:0]Bienvenue dans webgen-motion. [step:2]Le Motion Studio local-first qui transforme ton site en vidéo motion design. [step:5]Cinq étapes simples. [step:6]Setup ElevenLabs. Création de tour. Lien projet via base URL. Définition des étapes. Capture, voix off, compose. [step:9]Un tour, c'est juste un fichier JSON. [step:11]Sections, overlays, clicks, scrolls. [step:14]Pour les sélecteurs CSS, utilise les data-testid. [step:17]Deux modes voix off. Per-step pour la simplicité. [step:18]Narrative continu pour la synchro parfaite. [step:21]Plusieurs projets. Une install, plusieurs tours. Ou une install par projet. [step:24]Tout est stocké en local. Aucun cloud. [step:26]Local-first. By Smooth and Design.",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "webgen-motion",
+      "subtitle": "Le Motion Studio local-first",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "webgen-motion explique webgen-motion",
+      "position": "center",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1000
+    },
+    {
+      "type": "overlay",
+      "text": "Un outil pour filmer ton site et en faire un clip motion",
+      "position": "bottom",
+      "dwellMs": 3500
+    },
+    {
+      "type": "scroll",
+      "to": 480,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "motion",
+      "title": "5 étapes",
+      "subtitle": "Du clone à la première vidéo",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "scroll",
+      "to": 900,
+      "dwellMs": 2200
+    },
+    {
+      "type": "overlay",
+      "text": "Setup → Nouveau tour → baseUrl → Steps → Capture/Voice/Compose",
+      "position": "center",
+      "dwellMs": 4000
+    },
+    {
+      "type": "scroll",
+      "to": 1700,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Schéma JSON",
+      "subtitle": "Data-driven, pas de TypeScript",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Tour = JSON. baseUrl = lien avec ton projet. C'est tout.",
+      "position": "center",
+      "dwellMs": 4000
+    },
+    {
+      "type": "scroll",
+      "to": 2600,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "stores",
+      "title": "Sélecteurs CSS",
+      "subtitle": "data-testid · stable face aux refactors",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "scroll",
+      "to": 3400,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "ai",
+      "title": "Voix off",
+      "subtitle": "Per-step ou Narrative continu",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Narrative continu : 1 texte, alignment char-level, calibration auto",
+      "position": "bottom",
+      "dwellMs": 4000
+    },
+    {
+      "type": "scroll",
+      "to": 4100,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "pipeline",
+      "title": "Multi-projets",
+      "subtitle": "Une install, N tours OU une install par projet",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "scroll",
+      "to": 4900,
+      "dwellMs": 2200
+    },
+    {
+      "type": "section",
+      "categoryId": "releases",
+      "title": "Tout en local",
+      "subtitle": "~/.webgen-motion/ · 0 cloud · 0 lock-in",
+      "dwellMs": 2800
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Local-first · By Smooth & Design",
+      "position": "center",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    }
+  ]
+}
