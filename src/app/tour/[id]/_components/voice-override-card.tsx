@@ -1,6 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { TourEntry } from "@/lib/types/tour";
+
+interface VoiceboxProfile {
+  id: string;
+  name: string;
+  language: string | null;
+  voice_type: string | null;
+  default_engine: string | null;
+  sample_count: number;
+  description: string | null;
+}
+
+type ProfilesState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "loaded"; profiles: VoiceboxProfile[]; url: string }
+  | { kind: "error"; message: string; url: string };
 
 /**
  * Voice override card — per-tour TTS backend + voice id / settings.
@@ -19,6 +36,49 @@ export default function VoiceOverrideCard({
   // tour itself doesn't pin a backend, but we still show the active
   // form below so the user can see what's effectively going to run.
   const effectiveBackend = tour.voiceBackend ?? "elevenlabs";
+
+  // Auto-fetch Voicebox profiles when the user switches to Voicebox
+  // so they can pick from a dropdown instead of pasting UUIDs by
+  // hand. Refetched on demand via the refresh button.
+  const [profilesState, setProfilesState] = useState<ProfilesState>({
+    kind: "idle",
+  });
+  const fetchProfiles = async () => {
+    setProfilesState({ kind: "loading" });
+    try {
+      const res = await fetch("/api/motion/voicebox/profiles");
+      const data = (await res.json()) as
+        | {
+            url: string;
+            profiles: VoiceboxProfile[];
+          }
+        | { url: string; error: string };
+      if (!res.ok || "error" in data) {
+        setProfilesState({
+          kind: "error",
+          message: "error" in data ? data.error : `HTTP ${res.status}`,
+          url: data.url ?? "",
+        });
+        return;
+      }
+      setProfilesState({
+        kind: "loaded",
+        profiles: data.profiles,
+        url: data.url,
+      });
+    } catch (e) {
+      setProfilesState({
+        kind: "error",
+        message: e instanceof Error ? e.message : "Network error",
+        url: "",
+      });
+    }
+  };
+  useEffect(() => {
+    if (effectiveBackend === "voicebox" && profilesState.kind === "idle") {
+      fetchProfiles();
+    }
+  }, [effectiveBackend, profilesState.kind]);
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
@@ -100,26 +160,86 @@ export default function VoiceOverrideCard({
         </div>
       ) : (
         <div className="space-y-2">
-          <label className="block">
-            <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
-              Profile UUID
-            </span>
-            <input
-              type="text"
-              value={tour.voiceboxProfileId ?? ""}
-              onChange={(e) =>
-                onChange({
-                  ...tour,
-                  voiceboxProfileId:
-                    e.target.value.trim().length > 0
-                      ? e.target.value
-                      : undefined,
-                })
-              }
-              placeholder="profile id global"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
-            />
-          </label>
+          <div>
+            <div className="flex items-baseline justify-between mb-1">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+                Voix
+              </span>
+              <button
+                type="button"
+                onClick={fetchProfiles}
+                className="text-[10px] font-mono text-slate-500 hover:text-slate-900"
+                title="Rafraîchir la liste depuis Voicebox"
+              >
+                ↻ Refresh
+              </button>
+            </div>
+            {profilesState.kind === "loading" && (
+              <p className="text-[10px] font-mono text-slate-500 px-2 py-1.5 bg-slate-50 rounded-md">
+                Chargement des profils Voicebox…
+              </p>
+            )}
+            {profilesState.kind === "error" && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-2 py-1.5 leading-relaxed">
+                  {profilesState.message}
+                </p>
+                <input
+                  type="text"
+                  value={tour.voiceboxProfileId ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...tour,
+                      voiceboxProfileId:
+                        e.target.value.trim().length > 0
+                          ? e.target.value
+                          : undefined,
+                    })
+                  }
+                  placeholder="profile UUID (fallback)"
+                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                />
+              </div>
+            )}
+            {profilesState.kind === "loaded" && (
+              <>
+                {profilesState.profiles.length === 0 ? (
+                  <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 leading-relaxed">
+                    Aucune voix dans Voicebox — crée-en une dans l&apos;app
+                    desktop puis clique Refresh.
+                  </p>
+                ) : (
+                  <select
+                    value={tour.voiceboxProfileId ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...tour,
+                        voiceboxProfileId:
+                          e.target.value.length > 0
+                            ? e.target.value
+                            : undefined,
+                      })
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+                  >
+                    <option value="">
+                      — Voix globale (config wizard) —
+                    </option>
+                    {profilesState.profiles.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                        {p.language ? ` · ${p.language}` : ""}
+                        {p.voice_type ? ` · ${p.voice_type}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <p className="hidden sm:block text-[10px] text-slate-400 mt-0.5">
+                  {profilesState.profiles.length} voix · {profilesState.url}
+                </p>
+              </>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-1.5">
             <label className="block">
               <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
