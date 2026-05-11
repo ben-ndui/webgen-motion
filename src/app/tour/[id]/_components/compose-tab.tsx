@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, Download, ExternalLink, Film, Sparkles } from "lucide-react";
+import { AlertCircle, Download, ExternalLink, Film, Info, Sparkles } from "lucide-react";
 import Link from "next/link";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import type { CapturedSection } from "./capture-tab";
@@ -75,67 +75,72 @@ export default function ComposeTab({
     mix: `bg ${bgMusicVolume.toFixed(2)} · vo ${voVolume.toFixed(2)}`,
   };
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
-      <div className="space-y-5 min-w-0">
-        {/* Readiness — only inline on md- (sidebar replaces it at lg+) */}
-        <div className="lg:hidden">
-          <ReadinessCard stats={readinessStats} orientation="horizontal" />
-        </div>
+  const actionDescription = `Headless re-films le compositor (Mac chrome / iPhone frame + backdrop coloré + transitions) avec la musique + la voix off mixées.\nSortie : ~/.webgen-motion/tours/${tourId}/final.mp4`;
 
-        {/* Action card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
+  const actionCard = (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
             Action
           </p>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-sm font-semibold text-slate-900 leading-tight">
             Composer le clip final
           </h2>
-          <p className="text-sm text-slate-600 mt-0.5">
-            Headless re-films le compositor (Mac chrome / iPhone frame +
-            backdrop coloré + transitions) avec la musique + la voix off
-            mixées. Sortie :{" "}
-            <code className="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">
-              ~/.webgen-motion/tours/{tourId}/final.mp4
-            </code>
-            .
-          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href={buildPreviewHref(tourId, bgMusicId, bgMusicVolume, voVolume)}
-            target="_blank"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200 transition-colors"
-            title="Aperçu live (audio playback synchro, sans re-compose)"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Aperçu live
-          </Link>
-          <button
-            onClick={onCompose}
-            disabled={isRunning || !hasCapture}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            title={
-              !hasCapture
-                ? "Capture d'abord les sections dans le tab Capture"
-                : "Lance le compositor headless (re-film + mix audio)"
-            }
-          >
-            {isRunning ? (
-              <>
-                <Sparkles className="w-4 h-4 animate-pulse" />
-                Compose · {compose.progress.sinceSec}s
-              </>
-            ) : (
-              <>
-                <Film className="w-4 h-4" />
-                Composer le clip final
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          title={actionDescription}
+          aria-label="À propos du compose"
+          className="flex-shrink-0 text-slate-400 hover:text-slate-700 transition-colors cursor-help"
+        >
+          <Info className="w-4 h-4" />
+        </button>
       </div>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={onCompose}
+          disabled={isRunning || !hasCapture}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          title={
+            !hasCapture
+              ? "Capture d'abord les sections dans le tab Capture"
+              : "Lance le compositor headless (re-film + mix audio)"
+          }
+        >
+          {isRunning ? (
+            <>
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              Compose · {compose.progress.sinceSec}s
+            </>
+          ) : (
+            <>
+              <Film className="w-4 h-4" />
+              Composer le clip final
+            </>
+          )}
+        </button>
+        <Link
+          href={buildPreviewHref(tourId, bgMusicId, bgMusicVolume, voVolume)}
+          target="_blank"
+          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-full bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200 transition-colors"
+          title="Aperçu live (audio playback synchro, sans re-compose)"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Aperçu live
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
+      <div className="space-y-5 min-w-0">
+        {/* Action + Readiness inline at md- (sidebar takes them at lg+) */}
+        <div className="lg:hidden space-y-4">
+          {actionCard}
+          <ReadinessCard stats={readinessStats} orientation="horizontal" />
+        </div>
 
       {/* Phase loader */}
       <AnimatePresence>
@@ -235,8 +240,9 @@ export default function ComposeTab({
       )}
       </div>
 
-      {/* Sidebar (lg+) — readiness stats vertically */}
+      {/* Sidebar (lg+) — action above, readiness below */}
       <aside className="hidden lg:block lg:sticky lg:top-6 self-start space-y-4">
+        {actionCard}
         <ReadinessCard stats={readinessStats} orientation="vertical" />
       </aside>
     </div>
