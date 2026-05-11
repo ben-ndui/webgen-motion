@@ -5,7 +5,6 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Loader2,
   Monitor,
   Plus,
   Smartphone,
@@ -14,14 +13,15 @@ import {
 import type { TourEntry, TourStep } from "@/lib/types/tour";
 import { getCategory, MOTION_CATEGORIES } from "@/lib/motion-categories";
 
+// Re-exported for the few tabs that still mirror the save state
+// inline (Voice tab shows it next to its narrative script title).
+// The actual Save button lives in the tour top bar so every tab
+// can persist without going back to Script.
 export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface Props {
   tour: TourEntry;
   onChange: (next: TourEntry) => void;
-  onSave: () => void;
-  saveStatus: SaveStatus;
-  saveError: string | null;
   captureFormat: "16:9" | "9:16";
   onFormatChange: (next: "16:9" | "9:16") => void;
 }
@@ -39,9 +39,6 @@ interface Props {
 export default function ScriptTab({
   tour,
   onChange,
-  onSave,
-  saveStatus,
-  saveError,
   captureFormat,
   onFormatChange,
 }: Props) {
@@ -95,47 +92,9 @@ export default function ScriptTab({
         <AddStepRow onAdd={addStep} />
       </div>
 
-      {/* Col 2 — main controls (save + format + voice@lg-only + stats) */}
+      {/* Col 2 — main controls (format + stats). The Save button now
+       *  lives in the tour top bar so any tab can flush changes. */}
       <aside className="lg:sticky lg:top-6 self-start space-y-4">
-        {/* Save card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
-              Édition
-            </p>
-            <SaveBadge status={saveStatus} />
-          </div>
-          <button
-            onClick={onSave}
-            disabled={saveStatus === "saving"}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {saveStatus === "saving" ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Sauvegarde…
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4" />
-                Sauvegarder
-              </>
-            )}
-          </button>
-          <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
-            Écrit dans{" "}
-            <code className="font-mono text-slate-700">
-              tours/{tour.id}.json
-            </code>
-            . Les modifs deviennent persistentes.
-          </p>
-          {saveError && (
-            <p className="text-[11px] font-mono text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-2">
-              {saveError}
-            </p>
-          )}
-        </div>
-
         {/* Format selector */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
@@ -205,34 +164,6 @@ function StatsCard({
         <Row label="Start path" value={tour.startPath} mono />
       </dl>
     </div>
-  );
-}
-
-function SaveBadge({ status }: { status: SaveStatus }) {
-  if (status === "saving")
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-mono uppercase tracking-wider">
-        <Loader2 className="w-2.5 h-2.5 animate-spin" />
-        Saving
-      </span>
-    );
-  if (status === "saved")
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-mono uppercase tracking-wider">
-        <Check className="w-2.5 h-2.5" strokeWidth={3} />
-        Saved
-      </span>
-    );
-  if (status === "error")
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-mono uppercase tracking-wider">
-        Error
-      </span>
-    );
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10px] font-mono uppercase tracking-wider">
-      Unsaved
-    </span>
   );
 }
 

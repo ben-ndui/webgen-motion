@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
+  AlertCircle,
   ArrowLeft,
+  Check,
   ChevronRight,
   FileText,
   Film,
   HelpCircle,
+  Loader2,
   Mic,
   Music,
+  Save,
   Video,
 } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
@@ -588,6 +592,11 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <SaveButton
+                status={saveStatus}
+                error={saveError}
+                onSave={saveTour}
+              />
               <Link
                 href="/help"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
@@ -619,9 +628,6 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
           <ScriptTab
             tour={localTour}
             onChange={handleTourChange}
-            onSave={saveTour}
-            saveStatus={saveStatus}
-            saveError={saveError}
             captureFormat={captureFormat}
             onFormatChange={setCaptureFormat}
           />
@@ -678,5 +684,66 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         )}
       </main>
     </div>
+  );
+}
+
+/**
+ * Always-visible save affordance for the tour. Lives in the top bar
+ * so any tab (Script, Capture, Audio, Voice, Compose) can persist
+ * pending tour changes without going back to Script to find the
+ * button. Renders 4 visual states keyed on saveStatus :
+ *   - idle       → black filled button "Sauvegarder"
+ *   - saving     → animated spinner, disabled
+ *   - saved      → green check pill (read-only, fades into idle on
+ *                  the next dirty edit via the parent's state)
+ *   - error      → rose pill that opens a tiny tooltip with the
+ *                  error message
+ */
+function SaveButton({
+  status,
+  error,
+  onSave,
+}: {
+  status: SaveStatus;
+  error: string | null;
+  onSave: () => void;
+}) {
+  if (status === "saving") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Sauvegarde…
+      </span>
+    );
+  }
+  if (status === "saved") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-medium">
+        <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+        Sauvegardé
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <button
+        onClick={onSave}
+        title={error ?? "Erreur de sauvegarde"}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-medium transition-colors"
+      >
+        <AlertCircle className="w-3.5 h-3.5" />
+        Réessayer
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={onSave}
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-medium transition-colors"
+      title="Sauvegarder les modifs du tour"
+    >
+      <Save className="w-3.5 h-3.5" />
+      Sauvegarder
+    </button>
   );
 }
