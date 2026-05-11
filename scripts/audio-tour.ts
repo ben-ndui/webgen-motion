@@ -948,37 +948,74 @@ async function fetchVoiceboxTts(
     throw new Error(`Voicebox /generate returned no id`);
   }
 
-  // Poll up to 90s. Voicebox emits status as "generating" → "completed"
-  // or "failed". Polling interval 750ms keeps the loop snappy without
-  // hammering the backend.
-  const pollIntervalMs = 750;
-  const timeoutMs = 90_000;
-  const deadline = Date.now() + timeoutMs;
-  let lastStatus = "generating";
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, pollIntervalMs));
-    const statusRes = await fetch(
+  // Voicebox exposes status via **SSE**, not JSON polling — each event
+  // is `data: {…}\n\n` and the stream closes on completed/failed.
+  // We consume it once and break out as soon as a terminal status
+  // event lands. 120s abort fence so a stuck inference doesn't hang
+  // the whole pipeline.
+  const timeoutMs = 120_000;
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), timeoutMs);
+  let finalStatus = "generating";
+  let lastError: string | null = null;
+  try {
+    const sseRes = await fetch(
       `${base}/generate/${encodeURIComponent(generationId)}/status`,
+      {
+        headers: { Accept: "text/event-stream" },
+        signal: abort.signal,
+      },
     );
-    if (!statusRes.ok) {
+    if (!sseRes.ok || !sseRes.body) {
       throw new Error(
-        `Voicebox /generate/${generationId}/status failed (${statusRes.status})`,
+        `Voicebox /generate/${generationId}/status failed (${sseRes.status})`,
       );
     }
-    const status = (await statusRes.json()) as {
-      status?: string;
-      error?: string | null;
-    };
-    lastStatus = status.status ?? "unknown";
-    if (lastStatus === "completed") break;
-    if (lastStatus === "failed") {
-      throw new Error(
-        `Voicebox generation failed : ${status.error ?? "no error message"}`,
-      );
+    const reader = sseRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    outer: while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      // SSE events are separated by a blank line ; collect full events.
+      const events = buf.split("\n\n");
+      buf = events.pop() ?? "";
+      for (const ev of events) {
+        const payload = ev
+          .split("\n")
+          .filter((l) => l.startsWith("data: "))
+          .map((l) => l.slice(6))
+          .join("");
+        if (!payload) continue;
+        try {
+          const parsed = JSON.parse(payload) as {
+            status?: string;
+            error?: string | null;
+          };
+          if (parsed.status) finalStatus = parsed.status;
+          if (parsed.error) lastError = parsed.error;
+          if (finalStatus === "completed" || finalStatus === "failed") {
+            await reader.cancel().catch(() => {});
+            break outer;
+          }
+        } catch {
+          // malformed event — skip
+        }
+      }
     }
+  } finally {
+    clearTimeout(timer);
   }
-  if (lastStatus !== "completed") {
-    throw new Error(`Voicebox generation timed out after ${timeoutMs}ms`);
+  if (finalStatus === "failed") {
+    throw new Error(
+      `Voicebox generation failed : ${lastError ?? "no error message"}`,
+    );
+  }
+  if (finalStatus !== "completed") {
+    throw new Error(
+      `Voicebox generation didn't reach completed (last status: ${finalStatus})`,
+    );
   }
 
   const audioRes = await fetch(
