@@ -91,18 +91,29 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
         .ok_or("standalone parent missing")?
         .to_path_buf();
 
+    // Resolve the runners directory (scripts/ + node_modules for
+    // Puppeteer / Remotion / etc.). API routes use this path via
+    // the `WEBGEN_RUNNERS_DIR` env var to locate which command to
+    // spawn (see src/lib/runner-spawn.ts).
+    let runners_dir = app
+        .path()
+        .resolve("runners", BaseDirectory::Resource)
+        .map_err(|e| format!("resolve runners dir: {e}"))?;
+
     eprintln!("[webgen-motion] spawning Node sidecar : {server_js:?}");
+    eprintln!("[webgen-motion] runners dir : {runners_dir:?}");
 
     // `tauri-plugin-shell` runs through the configured permission
     // capability — see capabilities/default.json `shell:default`.
     // Using `command("node")` calls the system Node for now ;
-    // stage 3 swaps this for a bundled `binaries/node-<triple>`.
+    // stage 4 swaps this for a bundled `binaries/node-<triple>`.
     let (mut rx, child) = app
         .shell()
         .command("node")
         .args([server_js.to_string_lossy().to_string()])
         .env("PORT", SERVER_PORT.to_string())
         .env("HOSTNAME", "127.0.0.1")
+        .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
         .current_dir(standalone_dir)
         .spawn()
         .map_err(|e| format!("spawn node : {e}"))?;

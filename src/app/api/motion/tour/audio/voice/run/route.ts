@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveVoiceBackend } from "@/lib/config";
+import { resolveRunnerSpawn } from "@/lib/runner-spawn";
 import { getTour } from "@/lib/tour-loader";
 
 /**
@@ -75,19 +76,11 @@ export async function POST(req: NextRequest) {
     writeFileSync(overridesPath, JSON.stringify(cleaned, null, 2));
   }
 
-  const args = [
-    "tsx",
-    "scripts/audio-tour.ts",
-    "--tour-id",
-    tourId,
-    "--tour-dir",
-    tourDir,
-  ];
+  const runnerArgs = ["--tour-id", tourId, "--tour-dir", tourDir];
   if (overridesPath) {
-    args.push("--overrides", overridesPath);
+    runnerArgs.push("--overrides", overridesPath);
   }
-
-  const cwd = process.cwd();
+  const spawnSpec = resolveRunnerSpawn("audio-tour", runnerArgs);
   const startedAt = Date.now();
 
   const stream = new ReadableStream({
@@ -111,7 +104,10 @@ export async function POST(req: NextRequest) {
         env.ELEVENLABS_VOICE_ID = backend.voiceId;
         env.ELEVENLABS_MODEL = backend.model;
       }
-      const proc = spawn("npx", args, { cwd, env });
+      const proc = spawn(spawnSpec.command, spawnSpec.args, {
+        cwd: spawnSpec.cwd,
+        env,
+      });
       let stdoutBuf = "";
       let stderrBuf = "";
 

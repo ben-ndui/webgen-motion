@@ -1,0 +1,70 @@
+import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+
+/**
+ * Resolves the spawn config for a CLI runner script
+ * (`audio-tour`, `capture-tour`, `compose-tour`, `analyze-audio`).
+ *
+ * Two modes :
+ *
+ * - **Dev** (Next dev server) : `tsx scripts/<runner>.ts` from
+ *   the repo root. `npx tsx` resolves both via local node_modules.
+ *
+ * - **Packaged Tauri** : `WEBGEN_RUNNERS_DIR` is set by the Rust
+ *   shell to the bundle's Resources directory. The directory ships
+ *   the `scripts/` + a `runner-deps/node_modules/` tree (bundled
+ *   by `scripts/desktop-prepare-runners.mjs` at build time) and
+ *   uses the bundled Node binary from the same Resources path.
+ *
+ * Routes import this helper instead of hard-coding `["tsx",
+ * "scripts/X.ts"]`, so swapping the runtime contract stays in one
+ * place.
+ */
+
+export interface RunnerSpawn {
+  command: string;
+  args: string[];
+  cwd: string;
+}
+
+const RUNNER_FILES: Record<string, string> = {
+  "audio-tour": "audio-tour.ts",
+  "capture-tour": "capture-tour.ts",
+  "compose-tour": "compose-tour.ts",
+  "analyze-audio": "analyze-audio.ts",
+};
+
+export function resolveRunnerSpawn(
+  runner: keyof typeof RUNNER_FILES | string,
+  extraArgs: string[] = [],
+): RunnerSpawn {
+  const fileName = RUNNER_FILES[runner];
+  if (!fileName) {
+    throw new Error(`Unknown runner : ${runner}`);
+  }
+
+  // Packaged desktop : the Rust shell sets these env vars pointing
+  // at the unpacked Resources directory.
+  const resDir = process.env.WEBGEN_RUNNERS_DIR;
+  if (resDir && existsSync(resDir)) {
+    const scriptPath = resolve(resDir, "scripts", fileName);
+    if (existsSync(scriptPath)) {
+      // The runners run via the bundled tsx-style loader. We keep
+      // `tsx` because the scripts use top-level TS imports + the
+      // bundled `runner-deps/` tree provides it.
+      return {
+        command: "npx",
+        args: ["tsx", scriptPath, ...extraArgs],
+        cwd: resDir,
+      };
+    }
+  }
+
+  // Dev fallback : relative path from process.cwd() (the repo root
+  // when Next dev is running).
+  return {
+    command: "npx",
+    args: ["tsx", `scripts/${fileName}`, ...extraArgs],
+    cwd: process.cwd(),
+  };
+}

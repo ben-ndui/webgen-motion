@@ -5,6 +5,7 @@ import { join, isAbsolute } from "node:path";
 import { getTour } from "@/lib/tour-loader";
 import { getTrackPath } from "@/lib/motion-audio-store";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
+import { resolveRunnerSpawn } from "@/lib/runner-spawn";
 
 /**
  * spawns `scripts/compose-tour.ts` (Remotion runner) and streams
@@ -99,24 +100,17 @@ export async function POST(req: NextRequest) {
   // Remotion-based compose runner (level-3 motion design + style
   // presets). The legacy Puppeteer compositor was removed in
   // chunk 7 ; this is now the only path.
-  const args = [
-    "tsx",
-    "scripts/compose-tour.ts",
-    "--tour-id",
-    tourId,
-    "--tour-dir",
-    tourDir,
-  ];
+  const runnerArgs = ["--tour-id", tourId, "--tour-dir", tourDir];
   if (resolvedBgMusic) {
-    args.push("--bg-music", resolvedBgMusic);
+    runnerArgs.push("--bg-music", resolvedBgMusic);
   }
   if (bgMusicVolume !== undefined) {
-    args.push("--bg-music-volume", String(bgMusicVolume));
+    runnerArgs.push("--bg-music-volume", String(bgMusicVolume));
   }
   if (voiceoverVolume !== undefined) {
-    args.push("--vo-volume", String(voiceoverVolume));
+    runnerArgs.push("--vo-volume", String(voiceoverVolume));
   }
-
+  const spawnSpec = resolveRunnerSpawn("compose-tour", runnerArgs);
   const startedAt = Date.now();
 
   const stream = new ReadableStream({
@@ -132,8 +126,8 @@ export async function POST(req: NextRequest) {
 
       emit({ type: "phase", label: "Lancement du compositor headless…" });
 
-      const proc = spawn("npx", args, {
-        cwd,
+      const proc = spawn(spawnSpec.command, spawnSpec.args, {
+        cwd: spawnSpec.cwd,
         env: { ...process.env, NO_COLOR: "1" },
       });
 

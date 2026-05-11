@@ -7,6 +7,7 @@ import {
   getMotionTourDir,
 } from "@/lib/motion-tour-store";
 import { getTour } from "@/lib/tour-loader";
+import { resolveRunnerSpawn } from "@/lib/runner-spawn";
 
 /**
  * spawns `scripts/capture-tour.ts` and streams
@@ -59,9 +60,7 @@ export async function POST(req: NextRequest) {
   // web build, Storybook, etc.). Falls back to localhost:3000.
   const tour = getTour(tourId);
   const baseUrl = tour?.baseUrl ?? "http://localhost:3000";
-  const args = [
-    "tsx",
-    "scripts/capture-tour.ts",
+  const runnerArgs = [
     "--tour-id",
     tourId,
     "--base-url",
@@ -72,10 +71,9 @@ export async function POST(req: NextRequest) {
     outDir,
   ];
   if (formatOverride) {
-    args.push("--format", formatOverride);
+    runnerArgs.push("--format", formatOverride);
   }
-
-  const cwd = process.cwd();
+  const spawnSpec = resolveRunnerSpawn("capture-tour", runnerArgs);
   const startedAt = Date.now();
 
   const stream = new ReadableStream({
@@ -93,8 +91,8 @@ export async function POST(req: NextRequest) {
 
       emit({ type: "phase", label: "Lancement du runner Puppeteer…" });
 
-      const proc = spawn("npx", args, {
-        cwd,
+      const proc = spawn(spawnSpec.command, spawnSpec.args, {
+        cwd: spawnSpec.cwd,
         env: { ...process.env, NO_COLOR: "1" },
       });
 
