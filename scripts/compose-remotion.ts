@@ -166,37 +166,54 @@ async function main(): Promise<void> {
     console.warn("  ⚠ analyze-audio exited non-zero ; continuing without trim");
   }
 
-  // Read the pacing decisions back and rewrite section durations.
-  const audioAnalysisPath = join(tourDir!, "audio-analysis.json");
-  let trimSummary = "no trim";
-  if (existsSync(audioAnalysisPath)) {
-    try {
-      const analysis = JSON.parse(
-        readFileSync(audioAnalysisPath, "utf-8"),
-      ) as {
-        pacing?: Array<{
-          sectionIdx: number;
-          trimmedDurationSec: number;
-          trimRecommended: boolean;
-        }>;
-      };
-      let savedSec = 0;
-      let trimmed = 0;
-      for (const s of sections) {
-        const p = analysis.pacing?.find((x) => x.sectionIdx === s.index);
-        if (p?.trimRecommended) {
-          savedSec += s.durationSec - p.trimmedDurationSec;
-          trimmed++;
-          s.durationSec = p.trimmedDurationSec;
+  // Pacing trim is currently disabled by default — trimming a section
+  // visually without also cutting the matching silence inside the VO
+  // mp3 leaves the VO desynchronized for every subsequent section
+  // (audio keeps playing past the visual cut → black frames with
+  // voice continuing).
+  //
+  // Chunk 4.5 will reintroduce the trim alongside an ffmpeg
+  // silenceremove pass on voiceover.mp3 so the audio shrinks by the
+  // same amount, keeping markers and visuals aligned.
+  //
+  // Opt-in via --enable-pacing-trim for experimentation ; the
+  // audio-analysis.json file is still produced for chunk 5 (beats /
+  // pauses driving visual sync).
+  const enablePacingTrim = process.argv.includes("--enable-pacing-trim");
+  let trimSummary = enablePacingTrim
+    ? "no trim (analysis empty)"
+    : "skipped (re-enable with --enable-pacing-trim once VO sync is plumbed)";
+  if (enablePacingTrim) {
+    const audioAnalysisPath = join(tourDir!, "audio-analysis.json");
+    if (existsSync(audioAnalysisPath)) {
+      try {
+        const analysis = JSON.parse(
+          readFileSync(audioAnalysisPath, "utf-8"),
+        ) as {
+          pacing?: Array<{
+            sectionIdx: number;
+            trimmedDurationSec: number;
+            trimRecommended: boolean;
+          }>;
+        };
+        let savedSec = 0;
+        let trimmed = 0;
+        for (const s of sections) {
+          const p = analysis.pacing?.find((x) => x.sectionIdx === s.index);
+          if (p?.trimRecommended) {
+            savedSec += s.durationSec - p.trimmedDurationSec;
+            trimmed++;
+            s.durationSec = p.trimmedDurationSec;
+          }
         }
+        if (trimmed > 0) {
+          trimSummary = `${trimmed} section(s) trimmed, ${savedSec.toFixed(1)}s saved`;
+        }
+      } catch (e) {
+        console.warn(
+          `  ⚠ couldn't parse audio-analysis.json: ${(e as Error).message}`,
+        );
       }
-      if (trimmed > 0) {
-        trimSummary = `${trimmed} section(s) trimmed, ${savedSec.toFixed(1)}s saved`;
-      }
-    } catch (e) {
-      console.warn(
-        `  ⚠ couldn't parse audio-analysis.json: ${(e as Error).message}`,
-      );
     }
   }
   console.log(`  Pacing trim : ${trimSummary}`);
