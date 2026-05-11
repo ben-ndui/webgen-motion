@@ -701,14 +701,28 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
     };
   });
 
+  // Backend identity for the alignment manifest — kept loose so the
+  // Calibrer step in the UI can still reason about which voice
+  // produced this MP3 without having to remember the old env vars
+  // we used to plumb through.
+  const backendInfo =
+    backend?.kind === "elevenlabs"
+      ? { backend: "elevenlabs", voiceId: backend.voiceId, modelId: backend.model }
+      : backend?.kind === "voicebox"
+        ? {
+            backend: "voicebox",
+            profileId: backend.profileId,
+            engine: backend.engine,
+            modelSize: backend.modelSize,
+          }
+        : { backend: "unknown" };
   const alignPath = join(tourDir, "voiceover-alignment.json");
   writeFileSync(
     alignPath,
     JSON.stringify(
       {
         tourId,
-        voiceId,
-        modelId,
+        ...backendInfo,
         voiceMode: "narrative",
         totalDurationSec: totalAudioSec,
         cleanText,
