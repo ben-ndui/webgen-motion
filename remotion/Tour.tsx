@@ -9,6 +9,7 @@ import {
 import { getCategory, MOTION_CATEGORIES } from "@/lib/motion-categories";
 import { SectionPlayer } from "./SectionPlayer";
 import { IntroCard, OutroCard } from "./IntroOutro";
+import { BeatsLayer } from "./BeatsLayer";
 import {
   computeSectionFrames,
   TRANSITIONS,
@@ -34,6 +35,8 @@ export function Tour({
   bgMusicFile,
   bgMusicVolume,
   voVolume,
+  bgBeats,
+  voPauses,
 }: TourCompositionProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -141,6 +144,13 @@ export function Tour({
           fadeFrames={fadeFrames}
         />
       )}
+
+      {/* Reactive beats / pause halos on top of sections, below audio. */}
+      <BeatsLayer
+        bgBeats={bgBeats}
+        voPauses={voPauses}
+        activeCat={activeCat}
+      />
 
       {/* Audio overlays at the root — Remotion mixes them automatically
        *  with the OffthreadVideo's silent track. */}

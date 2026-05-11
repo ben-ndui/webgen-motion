@@ -18,6 +18,8 @@ const tourPropsSchema = z
     brand: z.any(),
     voiceoverFile: z.string().nullable(),
     bgMusicFile: z.string().nullable(),
+    bgBeats: z.array(z.any()),
+    voPauses: z.array(z.any()),
     bgMusicVolume: z.number(),
     voVolume: z.number(),
   })
@@ -38,6 +40,8 @@ const EMPTY_TOUR_PROPS: TourCompositionProps = {
   brand: { displayName: "webgen-motion", domain: "localhost", tagline: "by Smooth & Design" },
   voiceoverFile: null,
   bgMusicFile: null,
+  bgBeats: [],
+  voPauses: [],
   bgMusicVolume: 0.18,
   voVolume: 1.0,
 };

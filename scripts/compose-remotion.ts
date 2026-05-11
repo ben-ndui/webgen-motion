@@ -26,8 +26,10 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:
 import { basename, join, resolve } from "node:path";
 import {
   computeDurationInFrames,
+  type AudioBeat,
   type ManifestSection,
   type TourCompositionProps,
+  type VoPause,
 } from "../remotion/lib/types";
 import { getTour } from "../src/lib/tour-loader";
 
@@ -218,6 +220,22 @@ async function main(): Promise<void> {
   }
   console.log(`  Pacing trim : ${trimSummary}`);
 
+  // Surface beats + pauses into the composition props so chunk-5
+  // visual sync (transitions + pulses) can read them at render time.
+  let bgBeats: AudioBeat[] = [];
+  let voPauses: VoPause[] = [];
+  const audioAnalysisPath2 = join(tourDir!, "audio-analysis.json");
+  if (existsSync(audioAnalysisPath2)) {
+    try {
+      const a = JSON.parse(readFileSync(audioAnalysisPath2, "utf-8")) as {
+        bgBeats?: AudioBeat[];
+        voPauses?: VoPause[];
+      };
+      bgBeats = a.bgBeats ?? [];
+      voPauses = a.voPauses ?? [];
+    } catch {}
+  }
+
   // Brand info comes from the tour catalogue with sensible fallbacks.
   const tour = getTour(tourId!);
   const tourBaseUrl = tour?.baseUrl ?? "http://localhost:3000";
@@ -243,6 +261,8 @@ async function main(): Promise<void> {
     bgMusicFile,
     bgMusicVolume: bgMusicVolumeArg,
     voVolume: voVolumeArg,
+    bgBeats,
+    voPauses,
   };
 
   const durationFrames = computeDurationInFrames(sections, fps);

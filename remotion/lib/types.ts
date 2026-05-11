@@ -32,6 +32,20 @@ export interface TourBrand {
   tagline: string;
 }
 
+/** Beat in the bg music timeline — emitted by `analyze-audio.ts`. */
+export interface AudioBeat {
+  sec: number;
+  /** 0..1 normalized strength relative to the loudest beat. */
+  strength: number;
+}
+
+/** Pause window in the voiceover — emitted by `analyze-audio.ts`. */
+export interface VoPause {
+  startSec: number;
+  endSec: number;
+  durationSec: number;
+}
+
 export interface TourCompositionProps extends Record<string, unknown> {
   tourId: string;
   format: "16:9" | "9:16";
@@ -46,6 +60,13 @@ export interface TourCompositionProps extends Record<string, unknown> {
   bgMusicFile: string | null;
   bgMusicVolume: number;
   voVolume: number;
+  /** Beats detected on the bg music — empty array when no music
+   *  is set, or when onset detection couldn't extract a clear
+   *  rhythm. Times are in seconds from the start of the bg track,
+   *  which begins at composition t=0. */
+  bgBeats: AudioBeat[];
+  /** Pauses detected in the voice-over track. */
+  voPauses: VoPause[];
 }
 
 /** Transition durations in seconds, shared between calculate-duration
