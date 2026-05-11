@@ -13,7 +13,6 @@ import {
   Video,
 } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
-import PageHeader from "./_components/page-header";
 import TabsStrip, { type TabDef } from "./_components/tabs-strip";
 import ScriptTab, { type SaveStatus } from "./_components/script-tab";
 import CaptureTab, {
@@ -578,7 +577,13 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
                 Tours
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-              <span className="text-sm text-slate-900 font-medium truncate">
+              <span
+                className="text-sm text-slate-900 font-medium truncate"
+                title={tour.description}
+              >
+                {tour.name}
+              </span>
+              <span className="hidden md:inline text-[10px] font-mono text-slate-400 truncate">
                 {tour.id}
               </span>
             </div>
@@ -602,13 +607,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-8 space-y-6">
-        <PageHeader
-          eyebrow="Tour"
-          title={tour.name}
-          description={tour.description}
-        />
-
+      <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-6 space-y-5">
         <TabsStrip<TabKey>
           tabs={TABS}
           activeTab={activeTab}
