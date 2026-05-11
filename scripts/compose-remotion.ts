@@ -39,6 +39,27 @@ function arg(flag: string, fallback?: string): string | undefined {
   return process.argv[i + 1];
 }
 
+/** ffprobe a media file and return its duration in seconds. Returns 0
+ *  on any failure — caller falls back to the manifest value. */
+function probeMediaDurationSec(absPath: string): number {
+  const r = spawnSync(
+    "ffprobe",
+    [
+      "-v",
+      "error",
+      "-show_entries",
+      "format=duration",
+      "-of",
+      "default=noprint_wrappers=1:nokey=1",
+      absPath,
+    ],
+    { encoding: "utf-8" },
+  );
+  if (r.status !== 0) return 0;
+  const sec = parseFloat((r.stdout ?? "").trim());
+  return Number.isFinite(sec) ? sec : 0;
+}
+
 const tourId = arg("--tour-id");
 const tourDir = arg("--tour-dir");
 const bgMusicPathArg = arg("--bg-music");
@@ -100,16 +121,30 @@ async function main(): Promise<void> {
     copyFileSync(absPath, dest);
   };
 
-  // Section MP4s — names preserved from manifest.
+  // Section MP4s — names preserved from manifest, but we re-probe
+  // each file's actual duration with ffprobe and clamp the manifest
+  // value to that. A manifest entry claiming "8s" against a 5s MP4
+  // would make Remotion's OffthreadVideo extend past the media end
+  // and display black for the residual frames. Better to play the
+  // real media length and let the transition window shrink with it.
   const sections: ManifestSection[] = manifest.sections.map((s) => {
-    linkInto(resolve(tourDir!, s.file), s.file);
+    const absPath = resolve(tourDir!, s.file);
+    linkInto(absPath, s.file);
+    const probedSec = probeMediaDurationSec(absPath);
+    const effectiveSec =
+      probedSec > 0 ? Math.min(s.durationSec, probedSec) : s.durationSec;
+    if (probedSec > 0 && Math.abs(probedSec - s.durationSec) > 0.05) {
+      console.log(
+        `  ⚠ section ${s.index} : manifest ${s.durationSec.toFixed(2)}s vs media ${probedSec.toFixed(2)}s — using ${effectiveSec.toFixed(2)}s`,
+      );
+    }
     return {
       index: s.index,
       categoryId: s.categoryId,
       title: s.title,
       subtitle: s.subtitle,
       fileName: s.file,
-      durationSec: s.durationSec,
+      durationSec: effectiveSec,
       capturedDurationSec: s.durationSec,
     };
   });
@@ -305,6 +340,8 @@ async function main(): Promise<void> {
     console.error(`Spawn failed: ${err.message}`);
     process.exit(1);
   });
+
+  void probeMediaDurationSec;
 
   proc.on("close", (code) => {
     // Cleanup the staging dir whatever the outcome ; symlinks aren't
