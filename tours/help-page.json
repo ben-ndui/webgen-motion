@@ -13,14 +13,15 @@
   "auth": "none",
   "format": "16:9",
   "voiceMode": "narrative",
-  "narrativeScript": "[step:0]Bienvenue chez webgen-motion. Le Motion Studio local-first, qui transforme ton site web en vidéo motion design. [step:2]webgen-motion explique webgen-motion. Une démo méta, entièrement produite par l'outil lui-même. [step:4]L'idée est simple. Tu connectes ton site. Tu scénarises ton clip. Et tu génères tout localement. Aucun cloud, aucun vendor lock-in. [step:6]Cinq étapes, pour ta première vidéo. [step:9]Tu configures tes clés ElevenLabs. Tu crées un tour. Tu définis tes étapes. Puis : capture, voix off, compose. Trois actions, un clip prêt à publier. [step:11]Un tour, c'est un fichier JSON, data-driven. Pas de TypeScript, pas de compilation. Juste de la donnée, éditable depuis l'interface. [step:13]Le lien avec ton projet, c'est le champ base URL. Puppeteer ouvre cette adresse, et exécute tes étapes dans l'ordre. [step:15]Pour les clicks, utilise les sélecteurs CSS. Préfère les attributs data-testid, stables face aux refactos. [step:18]Deux modes de voix off. Per-step, pour la simplicité. Narrative continu, pour la synchronisation parfaite. [step:20]En narratif, ElevenLabs renvoie un alignment caractère par caractère. Le bouton Calibrer recale chaque overlay au mot près. [step:22]Plusieurs projets ? Tu peux tout gérer depuis une seule installation. Ou créer un dossier dédié par projet. Les deux marchent. [step:25]Tout reste sur ta machine. Captures, voix off, clips finaux. Stockés dans ton dossier home. [step:27]webgen-motion. Local-first. Par Smooth and Design.",
+  "narrativeScript": "[step:0]Bienvenue dans webgen-motion le Motion Studio local-first qui transforme ton site web en clip motion design. [step:2]webgen-motion explique webgen-motion : une démo méta produite par l'outil lui-même. [step:4]L'idée est simple. Tu connectes ton site tu scénarises ton clip et tu génères tout localement. Aucun cloud aucun vendor lock-in. [step:6]Cinq étapes pour ta première vidéo. [step:9]Tu configures tes clés ElevenLabs tu crées un tour tu définis tes étapes. Puis capture voix off compose : trois actions un clip prêt à publier. [step:11]Un tour c'est un fichier JSON data-driven. Pas de TypeScript pas de compilation juste de la donnée éditable depuis l'interface. [step:13]Le lien avec ton projet c'est le champ base URL. Puppeteer ouvre cette adresse et exécute tes étapes dans l'ordre. [step:15]Pour les clicks utilise les sélecteurs CSS. Préfère les attributs data-testid stables face aux refactos. [step:18]Deux modes de voix off : per-step pour la simplicité ou narrative continu pour la synchronisation parfaite. [step:20]En narratif ElevenLabs renvoie un alignment caractère par caractère. Le bouton Calibrer recale chaque overlay au mot près. [step:22]Plusieurs projets ? Tu peux tout gérer depuis une seule installation ou créer un dossier dédié par projet : les deux marchent. [step:25]Tout reste sur ta machine. Captures voix off clips finaux : tous stockés dans ton dossier home. [step:27]webgen-motion. Local-first par Smooth and Design.",
   "steps": [
     {
       "type": "section",
       "categoryId": "branding",
       "title": "webgen-motion",
       "subtitle": "Le Motion Studio local-first",
-      "dwellMs": 5921
+      "dwellMs": 5921,
+      "voiceover": "Bienvenue sur WebGen Motion"
     },
     {
       "type": "wait",
