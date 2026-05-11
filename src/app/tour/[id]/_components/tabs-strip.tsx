@@ -28,7 +28,7 @@ export default function TabsStrip<TKey extends string>({
   onChange,
 }: Props<TKey>) {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center overflow-x-auto overscroll-contain snap-x-soft">
       <div
         role="tablist"
         className="inline-flex items-center gap-0.5 p-1 rounded-full bg-white/70 backdrop-blur-2xl ring-1 ring-zinc-900/5 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.15)]"

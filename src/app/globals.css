@@ -71,3 +71,54 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* ── Scroll smoothness ────────────────────────────────────────────
+ * Global: programmatic scrolls (#anchor links, scrollIntoView) animate
+ *         instead of jumping; respect user prefers-reduced-motion.
+ * `scroll-padding-top` offsets the 64px sticky top bar so anchor
+ * jumps don't land under it.
+ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ── Custom scrollbar ─────────────────────────────────────────────
+ * Default OS scrollbars feel "brute" on macOS Chrome — chunky, grey,
+ * always visible. We replace them with a thin, semi-transparent
+ * track that fades into the surface, gets bolder on hover.
+ * Firefox honors scrollbar-width + scrollbar-color natively.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent; /* slate-500 @ 35% */
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.28);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+  transition: background-color 200ms ease;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.55);
+}
+
+/* Scroll-snapping utility for horizontal carousels (markers list, etc.) */
+.snap-x-soft {
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 1rem;
+}
+.snap-x-soft > * {
+  scroll-snap-align: start;
+}

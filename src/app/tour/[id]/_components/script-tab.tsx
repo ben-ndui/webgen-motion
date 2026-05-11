@@ -69,7 +69,7 @@ export default function ScriptTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
       {/* Col 1 — step list */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 lg:overflow-y-auto lg:max-h-[calc(100vh-22rem)] xl:max-h-[calc(100vh-14rem)]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 lg:overflow-y-auto lg:max-h-[calc(100vh-22rem)] xl:max-h-[calc(100vh-14rem)] lg:overscroll-contain">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-slate-900">
             Script du tour
