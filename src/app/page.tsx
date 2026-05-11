@@ -1,239 +1,236 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Box,
-  Cpu,
-  ExternalLink,
-  Film,
-  Headphones,
-  HelpCircle,
-  Layers,
-  Mic,
-  Palette,
-  Sparkles,
-  Video,
-  Wand2,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 /**
- * Landing page. First surface a user sees after `npx create-webgen-motion`
- * — the marketing pitch BEFORE the dashboard. Dark hero, spacious
- * sections, animated accents. The dashboard lives at `/dashboard`.
+ * Landing page — direction artistique alignée sur smoothandesign.fr :
+ * noir & blanc strict, zero gradient, layouts asymétriques, grosses
+ * typos display, espacement éditorial généreux, accents mono pour
+ * marqueurs / chiffres. Aucune carte décorative, aucune icône
+ * inutile — la page parle, le produit montre.
  *
- * Structure :
- *  1. Sticky top bar (logo / Dashboard / Help / GitHub)
- *  2. Hero — gradient backdrop + big title + tagline + 2 CTAs
- *  3. Demo video block (placeholder until the meta-démo MP4 is hosted)
- *  4. 3 Pillars — Local-first / 5-tab workflow / 4 style presets
- *  5. 5-step quickstart with icons
- *  6. Stack pills
- *  7. Footer with credits + CTA
+ * Si tu reviens éditer : pas de couleurs, pas de gradient, pas
+ * d'illustration générée. Le DA de Smooth & Design = sobriété
+ * radicale. Le seul "media" qui parle = la démo vidéo.
  */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-white">
-      {/* Sticky top bar — dark variant */}
-      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 group">
-              <span className="w-7 h-7 rounded-lg bg-white text-slate-900 grid place-items-center group-hover:bg-slate-100 transition-colors">
-                <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
-              </span>
-              <span className="font-semibold text-sm tracking-tight">
-                webgen-motion
+    <div className="min-h-screen flex flex-col bg-white text-zinc-950">
+      {/* Top bar — éditorial, peu d'ornement */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10">
+          <div className="flex items-center justify-between h-14">
+            <Link href="/" className="font-semibold text-sm tracking-tight">
+              webgen-motion
+              <span className="hidden sm:inline ml-2 text-zinc-400 font-normal">
+                — Smooth &amp; Design
               </span>
             </Link>
-            <div className="flex items-center gap-1">
+            <nav className="flex items-center gap-6 text-sm">
               <Link
                 href="/help"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                className="hidden sm:inline text-zinc-600 hover:text-zinc-950 transition-colors"
               >
-                <HelpCircle className="w-3.5 h-3.5" />
-                Aide
+                Doc
               </Link>
               <a
                 href="https://github.com/ben-ndui/webgen-motion"
                 target="_blank"
                 rel="noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                className="hidden sm:inline text-zinc-600 hover:text-zinc-950 transition-colors"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
                 GitHub
               </a>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white text-slate-900 text-xs font-semibold hover:bg-slate-100 transition-colors"
+                className="inline-flex items-center gap-1.5 text-zinc-950 font-medium hover:underline underline-offset-4 decoration-2"
               >
                 Lancer le studio
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            </div>
+            </nav>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* Animated gradient blobs */}
-        <div
-          aria-hidden
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] rounded-full opacity-30 blur-3xl pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, #2563eb 0%, transparent 60%)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="absolute top-40 right-0 w-[600px] h-[400px] rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at center, #ec4899 0%, transparent 60%)",
-          }}
-        />
+      {/* Hero — asymétrique, décalé à gauche, gros titre noir */}
+      <section className="border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-20 sm:pt-32 pb-24 sm:pb-40 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          <div className="lg:col-span-8 xl:col-span-7">
+            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-8 sm:mb-12">
+              Motion Studio · local-first · 2026
+            </p>
+            <h1 className="text-[44px] sm:text-[80px] xl:text-[112px] font-medium leading-[0.95] tracking-[-0.04em] text-zinc-950 mb-8 sm:mb-10">
+              On capture votre site.
+              <br />
+              <span className="text-zinc-400">
+                Vous obtenez un clip motion.
+              </span>
+            </h1>
 
-        <div className="relative max-w-5xl mx-auto px-6 lg:px-8 pt-20 sm:pt-28 pb-16 sm:pb-24 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-8">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-slate-300">
-              Motion Studio · Local-first · v0.2
-            </span>
+            <p className="max-w-xl text-base sm:text-lg text-zinc-700 leading-relaxed mb-10">
+              webgen-motion film n&apos;importe quelle interface web, mixe la
+              voix off clonée, compose en clip vidéo prêt à publier.{" "}
+              <strong className="text-zinc-950 font-medium">
+                Sur votre machine.
+              </strong>{" "}
+              Sans cloud, sans vendor lock-in.
+            </p>
+
+            <div className="flex items-center gap-6">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+              >
+                Lancer le studio
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/help"
+                className="text-sm text-zinc-700 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950 transition-colors"
+              >
+                Lire la documentation
+              </Link>
+            </div>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl xl:text-8xl font-bold tracking-tight leading-[0.95] mb-6">
-            Du site web
-            <br />
-            <span className="bg-gradient-to-r from-blue-300 via-fuchsia-300 to-amber-200 bg-clip-text text-transparent">
-              à la vidéo motion
-            </span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-10">
-            Capture · Mixe · Compose. Le Motion Studio qui transforme
-            n&apos;importe quel site en clip motion design en cinq minutes —
-            sur ta machine, sans cloud, ta voix clonée.
-          </p>
-
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-slate-900 text-sm font-semibold hover:bg-slate-100 transition-colors shadow-lg shadow-blue-500/20"
-            >
-              Lancer le studio
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/help"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-              Lire la doc
-            </Link>
-          </div>
-
-          <p className="mt-8 text-[11px] font-mono uppercase tracking-[0.2em] text-slate-500">
-            Open source · MIT · par Smooth &amp; Design
-          </p>
+          {/* Side meta — décalé à droite, mono, très petit */}
+          <aside className="lg:col-span-4 xl:col-span-5 lg:pl-10 lg:border-l lg:border-zinc-200 self-end pt-6 lg:pt-0">
+            <dl className="space-y-5 text-sm">
+              <Meta label="Open source" value="MIT · GitHub" />
+              <Meta label="Stack" value="Remotion · Puppeteer · FFmpeg" />
+              <Meta label="Voix off" value="ElevenLabs ou Voicebox local" />
+              <Meta label="Studio" value="Nice, France" />
+            </dl>
+          </aside>
         </div>
       </section>
 
-      {/* Demo video — rendered via the pipeline itself (Capture +
-       *  Voice off + Calibrate + Compose). Source tour lives at
-       *  tours/webgen-motion-pitch.json. Generated 80s clip is
-       *  served at /demo.mp4 (public/) so the landing stays
-       *  self-contained — no external host. */}
-      <section className="px-6 lg:px-8 pb-16 sm:pb-24">
-        <div className="max-w-5xl mx-auto">
-          <div className="relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-slate-900 shadow-2xl shadow-blue-500/10">
+      {/* Démo — quasi pleine largeur, peu de chrome */}
+      <section className="border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 sm:py-28">
+          <div className="flex items-baseline justify-between gap-6 mb-8 sm:mb-12 flex-wrap">
+            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500">
+              · 100 s · pipeline complet
+            </p>
+            <Link
+              href="/tour/webgen-motion-pitch"
+              className="text-sm text-zinc-700 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950 transition-colors inline-flex items-center gap-1"
+            >
+              Voir le tour source
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="border border-zinc-200 bg-zinc-950">
             <video
               src="/demo.mp4"
               controls
               playsInline
               preload="metadata"
-              className="w-full h-full block"
+              className="w-full block"
             />
           </div>
-          <div className="mt-5 flex items-center justify-between gap-3 flex-wrap text-xs text-slate-400">
-            <p>
-              <span className="font-mono uppercase tracking-[0.2em] text-slate-500">
-                Demo
-              </span>{" "}
-              · 100s · Style Energetic · narrative ElevenLabs · rendu par
-              Remotion
-            </p>
-            <Link
-              href="/tour/webgen-motion-pitch"
-              className="inline-flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              Voir le tour source
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+          <p className="mt-6 text-xs text-zinc-500 max-w-3xl leading-relaxed">
+            Cette démo a été produite par webgen-motion lui-même. Capture
+            Puppeteer · voix off ElevenLabs en mode narratif (alignment
+            char-level) · compose Remotion avec preset Energetic · 1920×1080
+            h264. Le tour source est versionné dans le repo.
+          </p>
         </div>
       </section>
 
-      {/* 3 Pillars */}
-      <section className="bg-white text-slate-900 px-6 lg:px-8 py-20 sm:py-28">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14 sm:mb-16">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
-              Pourquoi webgen-motion ?
+      {/* L'approche — 3 blocs numérotés, asymétriques, sans card sans icône */}
+      <section className="border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-24 sm:py-40 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+          <div className="lg:col-span-4 lg:sticky lg:top-24 self-start">
+            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-6">
+              L&apos;approche
             </p>
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight max-w-2xl mx-auto leading-tight">
-              Un Motion Studio,
+            <h2 className="text-4xl sm:text-5xl xl:text-6xl font-medium leading-[1] tracking-[-0.03em] text-zinc-950 mb-6">
+              Un studio motion design,
               <br />
               taillé pour les devs.
             </h2>
+            <p className="text-zinc-600 leading-relaxed max-w-md">
+              Trois principes simples. Aucun marketing-tech-bro, aucune
+              promesse magique. Ce qui marche, sur votre machine.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="lg:col-span-8 space-y-16 sm:space-y-24">
             <Pillar
-              icon={Cpu}
-              title="Local-first"
-              tagline="Aucun cloud"
-              body="Capture Puppeteer + Voicebox + Remotion tournent sur ta machine. Tes vidéos restent chez toi. Pas de vendor lock-in, pas de quota."
+              n="01"
+              title="Local-first."
+              body="Aucune donnée ne quitte votre machine. Puppeteer pour la capture, ElevenLabs ou Voicebox (100 % local) pour la voix off, FFmpeg + Remotion natifs pour l'encodage. Pas de cold start CI, pas de vendor lock-in, pas de quota."
             />
             <Pillar
-              icon={Layers}
-              title="5 onglets, 1 timeline"
-              tagline="Workflow data-driven"
-              body="Script · Capture · Audio · Voix off · Compose. Édite tes tours via UI ou JSON, sauvegarde toujours visible, rien à ré-écrire."
+              n="02"
+              title="Cinq onglets, une timeline."
+              body="Script, Capture, Audio, Voix off, Compose. L'édition est visuelle, le bouton Save est toujours visible, le mode narratif continu calibre votre timeline sur les timings caractère par caractère retournés par ElevenLabs. Rien à ré-écrire."
             />
             <Pillar
-              icon={Palette}
-              title="4 style presets"
-              tagline="Sober · Energetic · Cinematic · Glitch"
-              body="La même capture, 4 montages visuellement très différents. Switch en 1 clic dans le tab Compose."
+              n="03"
+              title="Quatre presets de montage."
+              body="Sober, Energetic, Cinematic, Glitch. La même capture peut sortir en quatre vidéos visuellement très différentes — un clic dans le tab Compose, un re-render Remotion, terminé."
             />
           </div>
         </div>
       </section>
 
-      {/* Quickstart */}
-      <section className="bg-slate-50 text-slate-900 px-6 lg:px-8 py-20 sm:py-28">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14 sm:mb-16">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
-              Du clone à ton premier clip
-            </p>
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">
-              Cinq étapes · cinq minutes.
-            </h2>
+      {/* Comment ça marche — timeline numérique pure texte */}
+      <section className="border-b border-zinc-200 bg-zinc-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-24 sm:py-40">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 mb-14 sm:mb-20">
+            <div className="lg:col-span-4">
+              <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-6">
+                Comment ça marche
+              </p>
+              <h2 className="text-4xl sm:text-5xl xl:text-6xl font-medium leading-[1] tracking-[-0.03em] text-zinc-950">
+                Cinq étapes.
+                <br />
+                Cinq minutes.
+              </h2>
+            </div>
+            <div className="lg:col-span-7 lg:col-start-6 self-end">
+              <p className="text-zinc-600 leading-relaxed max-w-md">
+                Du clone à la première vidéo. Compte sur 5 minutes la première
+                fois, 2 minutes les suivantes — la VO est mise en cache, les
+                sections ré-utilisables.
+              </p>
+            </div>
           </div>
 
-          <ol className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
-            <Step n={1} icon={Box} title="Scaffold" body="npx create-webgen-motion my-promo" mono />
-            <Step n={2} icon={Mic} title="Setup voix off" body="ElevenLabs cloud ou Voicebox 100% local — wizard guidé" />
-            <Step n={3} icon={Sparkles} title="Nouveau tour" body="Bouton dashboard · slug + format + brand pré-rempli" />
-            <Step n={4} icon={Video} title="Capture + Voice off" body="Puppeteer film ton site · ElevenLabs aligne la voix au caractère près" />
-            <Step n={5} icon={Wand2} title="Compose" body="Remotion + 4 styles · final.mp4 à la sortie" />
+          <ol className="divide-y divide-zinc-200 border-t border-b border-zinc-200">
+            <StepRow
+              n="01"
+              title="Scaffold"
+              cmd="npx create-webgen-motion@latest my-promo"
+            />
+            <StepRow
+              n="02"
+              title="Backend voix off"
+              detail="ElevenLabs cloud (qualité instantanée, char-level timings) ou Voicebox 100 % local (zéro données externes). Wizard guidé."
+            />
+            <StepRow
+              n="03"
+              title="Nouveau tour"
+              detail="Slug, format 16:9 ou 9:16, brand préfilé. JSON scaffold. L'éditeur visuel prend le relais."
+            />
+            <StepRow
+              n="04"
+              title="Capture + Voice off"
+              detail="Puppeteer film votre site section par section. ElevenLabs synthétise, vous appuyez sur Calibrer, la timeline s'aligne au mot près."
+            />
+            <StepRow
+              n="05"
+              title="Compose"
+              detail="Remotion assemble dans un Mac chrome ou un iPhone frame, applique le preset choisi, écrit final.mp4. Prêt à publier."
+            />
           </ol>
 
-          <div className="mt-12 sm:mt-16 text-center">
+          <div className="mt-12 sm:mt-16">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
             >
               Lancer le studio
               <ArrowRight className="w-4 h-4" />
@@ -242,75 +239,94 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stack */}
-      <section className="bg-slate-900 text-white px-6 lg:px-8 py-20 sm:py-28">
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
-            Stack
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            Open source from top to bottom.
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            Aucun service propriétaire dans le pipeline de génération.
-            ElevenLabs reste optionnel (Voicebox local couvre le 100% offline).
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {[
-              "Remotion",
-              "Next.js 16",
-              "Puppeteer",
-              "FFmpeg",
-              "ElevenLabs",
-              "Voicebox",
-              "Tailwind v4",
-              "Framer Motion",
-            ].map((tech) => (
-              <span
-                key={tech}
-                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-slate-300"
-              >
-                {tech}
-              </span>
-            ))}
+      {/* Stack — text-only badges, pas d'icônes */}
+      <section className="border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-20 sm:py-28 grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-4">
+            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-6">
+              Stack
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-medium leading-tight tracking-[-0.02em] text-zinc-950">
+              Open source from top to bottom.
+            </h2>
+          </div>
+          <div className="lg:col-span-8 self-end">
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-zinc-700">
+              {[
+                "Remotion 4",
+                "Next.js 16",
+                "Puppeteer",
+                "FFmpeg",
+                "ElevenLabs",
+                "Voicebox",
+                "Tailwind v4",
+                "Framer Motion",
+              ].map((tech, i, arr) => (
+                <li key={tech} className="flex items-center gap-5">
+                  <span>{tech}</span>
+                  {i < arr.length - 1 && (
+                    <span className="text-zinc-300">·</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-8 text-sm text-zinc-500 leading-relaxed max-w-xl">
+              ElevenLabs est l&apos;unique service externe optionnel — Voicebox
+              couvre le cas 100 % local. Le reste du pipeline (capture,
+              analyse audio, compose, rendu) tourne sans réseau une fois les
+              dépendances installées.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-950 border-t border-white/5 px-6 lg:px-8 py-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3 text-xs">
-          <p className="text-slate-500">
-            <span className="font-medium text-slate-300">webgen-motion</span> ·
-            Made with{" "}
-            <Headphones className="w-3 h-3 inline-block align-text-bottom text-fuchsia-400" />{" "}
-            in Nice by{" "}
-            <a
-              href="https://www.smoothandesign.fr"
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-300 hover:text-white underline underline-offset-2"
-            >
-              Smooth &amp; Design
-            </a>
-          </p>
-          <div className="flex items-center gap-3 text-slate-500">
-            <Link href="/dashboard" className="hover:text-white">
-              Dashboard
-            </Link>
-            <span className="text-slate-700">·</span>
-            <Link href="/help" className="hover:text-white">
-              Docs
-            </Link>
-            <span className="text-slate-700">·</span>
-            <a
-              href="https://github.com/ben-ndui/webgen-motion"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-white"
-            >
-              GitHub
-            </a>
+      {/* Footer édito */}
+      <footer className="bg-zinc-950 text-zinc-300">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 sm:py-24 grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-7">
+            <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-5">
+              Studio digital
+            </p>
+            <h3 className="text-3xl sm:text-5xl font-medium leading-[1.05] tracking-[-0.025em] text-white mb-6">
+              webgen-motion est un produit
+              <br />
+              <a
+                href="https://www.smoothandesign.fr"
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-[8px] decoration-zinc-700 hover:decoration-white transition-colors"
+              >
+                Smooth &amp; Design
+              </a>
+              , à Nice.
+            </h3>
+            <p className="text-zinc-400 max-w-md leading-relaxed">
+              On code vos idées, vous changez le monde. webgen-motion fait
+              partie du WebGen ecosystem — d&apos;autres outils internes
+              arrivent.
+            </p>
+          </div>
+          <div className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-zinc-800">
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+              <FooterLink href="/dashboard">Studio</FooterLink>
+              <FooterLink href="/help">Documentation</FooterLink>
+              <FooterLink href="/setup">Setup</FooterLink>
+              <FooterLink href="/tour/webgen-motion-pitch">
+                Tour démo
+              </FooterLink>
+              <FooterLink
+                href="https://github.com/ben-ndui/webgen-motion"
+                external
+              >
+                GitHub
+              </FooterLink>
+              <FooterLink href="https://www.smoothandesign.fr" external>
+                smoothandesign.fr
+              </FooterLink>
+            </ul>
+            <p className="mt-10 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-600">
+              MIT · 2026
+            </p>
           </div>
         </div>
       </footer>
@@ -318,64 +334,96 @@ export default function LandingPage() {
   );
 }
 
-function Pillar({
-  icon: Icon,
-  title,
-  tagline,
-  body,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  tagline: string;
-  body: string;
-}) {
+function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-      <div className="w-11 h-11 rounded-xl bg-slate-900 text-white grid place-items-center mb-5">
-        <Icon className="w-5 h-5" />
-      </div>
-      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1.5">
-        {tagline}
-      </p>
-      <h3 className="text-xl font-semibold text-slate-900 mb-2 tracking-tight">
-        {title}
-      </h3>
-      <p className="text-sm text-slate-600 leading-relaxed">{body}</p>
+    <div className="grid grid-cols-[110px_1fr] gap-3">
+      <dt className="text-[11px] font-mono uppercase tracking-[0.2em] text-zinc-500 pt-0.5">
+        {label}
+      </dt>
+      <dd className="text-sm text-zinc-800 leading-snug">{value}</dd>
     </div>
   );
 }
 
-function Step({
+function Pillar({
   n,
-  icon: Icon,
   title,
   body,
-  mono,
 }: {
-  n: number;
-  icon: React.ComponentType<{ className?: string }>;
+  n: string;
   title: string;
   body: string;
-  mono?: boolean;
 }) {
   return (
-    <li className="relative rounded-2xl border border-slate-200 bg-white p-5">
-      <div className="flex items-start gap-3 mb-2">
-        <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-900 grid place-items-center font-mono text-xs font-semibold flex-shrink-0">
-          {n}
-        </span>
-        <Icon className="w-4 h-4 text-slate-500 mt-1.5" />
+    <div className="grid grid-cols-1 sm:grid-cols-[80px_1fr] gap-4 sm:gap-8">
+      <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 pt-2 sm:pt-3">
+        {n}
+      </span>
+      <div>
+        <h3 className="text-2xl sm:text-3xl font-medium leading-tight tracking-[-0.02em] text-zinc-950 mb-3">
+          {title}
+        </h3>
+        <p className="text-zinc-600 leading-relaxed max-w-2xl">{body}</p>
       </div>
-      <h3 className="text-sm font-semibold text-slate-900 mb-1.5 tracking-tight">
-        {title}
-      </h3>
-      <p
-        className={`text-xs leading-relaxed text-slate-600 ${
-          mono ? "font-mono" : ""
-        }`}
-      >
-        {body}
-      </p>
+    </div>
+  );
+}
+
+function StepRow({
+  n,
+  title,
+  detail,
+  cmd,
+}: {
+  n: string;
+  title: string;
+  detail?: string;
+  cmd?: string;
+}) {
+  return (
+    <li className="grid grid-cols-1 sm:grid-cols-[80px_220px_1fr] gap-3 sm:gap-8 py-6 sm:py-8 items-start">
+      <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 pt-1">
+        {n}
+      </span>
+      <p className="text-base sm:text-lg font-medium text-zinc-950">{title}</p>
+      <div className="text-sm text-zinc-600 leading-relaxed">
+        {cmd && (
+          <code className="font-mono text-xs sm:text-sm bg-zinc-950 text-zinc-100 px-2 py-1 inline-block">
+            {cmd}
+          </code>
+        )}
+        {detail && <p>{detail}</p>}
+      </div>
+    </li>
+  );
+}
+
+function FooterLink({
+  href,
+  external,
+  children,
+}: {
+  href: string;
+  external?: boolean;
+  children: React.ReactNode;
+}) {
+  const className =
+    "text-zinc-300 hover:text-white transition-colors inline-flex items-center gap-1.5";
+  if (external) {
+    return (
+      <li>
+        <a href={href} target="_blank" rel="noreferrer" className={className}>
+          {children}
+          <ArrowUpRight className="w-3 h-3" />
+        </a>
+      </li>
+    );
+  }
+  return (
+    <li>
+      <Link href={href} className={className}>
+        {children}
+      </Link>
     </li>
   );
 }
