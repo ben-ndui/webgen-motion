@@ -102,11 +102,6 @@ if (!voiceId) {
   process.exit(1);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
-
 interface ManifestSection {
   index: number;
   title: string;
@@ -128,8 +123,16 @@ const DEFAULT_VOICE_SETTINGS: EffectiveVoiceSettings = {
   useSpeakerBoost: true,
 };
 
-/** Module-level reference populated once per run, used by fetchElevenLabsTts. */
+/** Module-level reference populated once per run, used by fetchElevenLabsTts.
+ *  Declared BEFORE the kickoff so the TDZ doesn't fire during main()'s
+ *  synchronous prelude (async funcs run sync up to their first await,
+ *  which can hit these consts before module init completes). */
 let effectiveSettings: EffectiveVoiceSettings = DEFAULT_VOICE_SETTINGS;
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
 
 async function main(): Promise<void> {
   const tour = getTour(tourId!);
