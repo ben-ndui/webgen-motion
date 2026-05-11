@@ -96,33 +96,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Switched to the Remotion-based compose runner (level-3 motion
+  // design). The old Puppeteer compositor (`scripts/compose-tour.ts`)
+  // stays callable from the CLI as a fallback during the migration.
   const args = [
     "tsx",
-    "scripts/compose-tour.ts",
+    "scripts/compose-remotion.ts",
     "--tour-id",
     tourId,
-    "--base-url",
-    "http://localhost:3000",
-    "--width",
-    "1920",
-    "--height",
-    "1080",
-    "--fps",
-    "30",
     "--tour-dir",
     tourDir,
   ];
   if (resolvedBgMusic) {
     args.push("--bg-music", resolvedBgMusic);
-  }
-
-  // Voice-over auto-attach: if `voiceover.mp3` is sitting next to the
-  // section MP4s (produced by `audio-tour.ts`), include it in the
-  // mix. The user generates it via the dashboard's "Générer voix off"
-  // button before composing.
-  const voiceoverPath = join(tourDir, "voiceover.mp3");
-  if (existsSync(voiceoverPath)) {
-    args.push("--voiceover", voiceoverPath);
   }
   if (bgMusicVolume !== undefined) {
     args.push("--bg-music-volume", String(bgMusicVolume));
@@ -228,42 +214,54 @@ function parseComposeLine(
 ): void {
   if (!line) return;
 
-  if (line.startsWith("  ▶ Capturing frames")) {
+  // Banner lines from compose-remotion.ts.
+  if (line.startsWith("▶ Remotion compose")) {
+    emit({ type: "phase", label: "Bundling de la composition…" });
+    return;
+  }
+
+  // Remotion CLI : "Bundling N%"
+  let m = line.match(/^Bundling (\d+)%/);
+  if (m) {
     emit({
       type: "phase",
-      label: "Capture frame-by-frame du compositor…",
+      label: `Bundling de la composition · ${m[1]}%…`,
     });
     return;
   }
-  // X frames · Ys elapsed
-  let m = line.match(/^ {4}(\d+) frames · ([\d.]+)s elapsed/);
+
+  // Remotion CLI : "Rendered N/M, time remaining: …"
+  m = line.match(/^Rendered (\d+)\/(\d+)/);
   if (m) {
+    const n = parseInt(m[1], 10);
+    const total = parseInt(m[2], 10);
     emit({
       type: "progress",
-      frames: parseInt(m[1], 10),
-      elapsedSec: parseFloat(m[2]),
+      frames: n,
+      label: `Rendu frame-by-frame · ${n}/${total}`,
     });
+    if (n === 0) {
+      emit({ type: "phase", label: "Démarrage du rendu Remotion…" });
+    }
     return;
   }
-  // ▶ N frames in Xs · actual Yfps → encoding final MP4…
-  m = line.match(
-    /^▶ (\d+) frames in [\d.]+s · actual ([\d.]+)fps → encoding/,
-  );
+
+  // Remotion CLI : "Encoded N/M" — encoding pass after the render.
+  m = line.match(/^Encoded (\d+)\/(\d+)/);
   if (m) {
+    const n = parseInt(m[1], 10);
+    const total = parseInt(m[2], 10);
     emit({
-      type: "phase",
-      label: `Encoding final MP4 (${m[1]} frames @ ${m[2]}fps)…`,
+      type: "progress",
+      frames: n,
+      label: `Encodage h264 · ${n}/${total}`,
     });
     return;
   }
-  // ▶ Mixing bg music: <path>
-  if (line.startsWith("  ▶ Mixing bg music")) {
-    emit({ type: "phase", label: "Mux audio · bg music…" });
-    return;
-  }
-  // ▶ Mixing voice-over: <path>
-  if (line.startsWith("  ▶ Mixing voice-over")) {
-    emit({ type: "phase", label: "Mux audio · voix off…" });
+
+  // Final "✓ Done → …"
+  if (line.startsWith("✓ Done")) {
+    emit({ type: "phase", label: "Finalisation…" });
     return;
   }
 }
