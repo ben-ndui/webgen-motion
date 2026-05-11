@@ -67,31 +67,23 @@ export default function ComposeTab({
         ? "Défaut catalogue"
         : (selectedTrack?.originalName ?? "Track manquante");
 
-  return (
-    <div className="space-y-6">
-      {/* Readiness strip */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Stat
-          label="Sections"
-          value={hasCapture ? String(captureSections.length) : "—"}
-          mono
-          dim={!hasCapture}
-        />
-        <Stat
-          label="Voix off"
-          value={voState.kind === "ready" ? "OK" : "—"}
-          mono
-          dim={voState.kind !== "ready"}
-        />
-        <Stat label="Musique" value={bgMusicLabel} truncate />
-        <Stat
-          label="Mix"
-          value={`bg ${bgMusicVolume.toFixed(2)} · vo ${voVolume.toFixed(2)}`}
-          mono
-        />
-      </div>
+  const readinessStats = {
+    sections: hasCapture ? String(captureSections.length) : "—",
+    sectionsDim: !hasCapture,
+    voOk: voState.kind === "ready",
+    bgMusicLabel,
+    mix: `bg ${bgMusicVolume.toFixed(2)} · vo ${voVolume.toFixed(2)}`,
+  };
 
-      {/* Action card */}
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
+      <div className="space-y-5 min-w-0">
+        {/* Readiness — only inline on md- (sidebar replaces it at lg+) */}
+        <div className="lg:hidden">
+          <ReadinessCard stats={readinessStats} orientation="horizontal" />
+        </div>
+
+        {/* Action card */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-4 flex-wrap">
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
@@ -241,6 +233,59 @@ export default function ComposeTab({
           </p>
         </div>
       )}
+      </div>
+
+      {/* Sidebar (lg+) — readiness stats vertically */}
+      <aside className="hidden lg:block lg:sticky lg:top-6 self-start space-y-4">
+        <ReadinessCard stats={readinessStats} orientation="vertical" />
+      </aside>
+    </div>
+  );
+}
+
+interface ReadinessStats {
+  sections: string;
+  sectionsDim: boolean;
+  voOk: boolean;
+  bgMusicLabel: string;
+  mix: string;
+}
+
+function ReadinessCard({
+  stats,
+  orientation,
+}: {
+  stats: ReadinessStats;
+  orientation: "horizontal" | "vertical";
+}) {
+  const vertical = orientation === "vertical";
+  return (
+    <div
+      className={`rounded-2xl border border-slate-200 bg-white p-4 gap-4 ${
+        vertical
+          ? "flex flex-col"
+          : "grid grid-cols-2 sm:grid-cols-4"
+      }`}
+    >
+      {vertical && (
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+          État
+        </p>
+      )}
+      <Stat
+        label="Sections"
+        value={stats.sections}
+        mono
+        dim={stats.sectionsDim}
+      />
+      <Stat
+        label="Voix off"
+        value={stats.voOk ? "OK" : "—"}
+        mono
+        dim={!stats.voOk}
+      />
+      <Stat label="Musique" value={stats.bgMusicLabel} truncate />
+      <Stat label="Mix" value={stats.mix} mono />
     </div>
   );
 }
