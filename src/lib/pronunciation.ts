@@ -1,43 +1,39 @@
 /**
- * Phonetic respelling map for ElevenLabs TTS. The free / Starter tier
- * doesn't expose pronunciation dictionaries, so we substitute brand-
- * specific words with phonetic equivalents in the raw text *before*
- * sending it to the API.
+ * Phonetic respelling map for ElevenLabs TTS.
  *
- * Add brand entries via `~/.webgen-motion/pronunciation.json` (Sprint 2)
- * or by editing this file directly.
+ * **The map is empty by default.** Our previous heuristic respellings
+ * (UZME→Youzmi, webgen-motion→"webgen motion", URL→"U R L", etc.)
+ * caused more pronunciation artefacts than they fixed — ElevenLabs
+ * French TTS already handles JSON, Puppeteer, TypeScript, CSS,
+ * domain names and hyphenated identifiers naturally. Touching them
+ * forced the model to read non-words, which is exactly what made
+ * the voice stutter.
  *
- * Default map ships with `UZME → Youzmi` as the canonical demo example.
- * Drop or replace it for your own project.
+ * For the rare word that REALLY needs help, prefer one of these
+ * official channels over a naive substitution :
+ *
+ *   1. **SSML `<phoneme>`** inside the narrative script :
+ *      `<phoneme alphabet="ipa" ph="ˈwɛb.ʒɛn">webgen</phoneme>` —
+ *      eleven_multilingual_v2 honors this tag and pronounces the
+ *      word with the supplied IPA. No globale map needed, scoped to
+ *      that one occurrence.
+ *
+ *   2. **ElevenLabs pronunciation dictionary** (Starter+ plan) :
+ *      upload a `.lex` (PLS) file via the API, reference its
+ *      `dictionary_id` in the TTS request via
+ *      `pronunciation_dictionary_locators`. Persistent, applied to
+ *      every synthesis without touching the text.
+ *
+ *   3. **Last resort** — a substitution here, as a *natural French
+ *      spelling* of the target sound. Example below ; keep it
+ *      surgical and don't touch words Eleven already pronounces
+ *      cleanly.
  */
 
 export const BRAND_PRONUNCIATION: Record<string, string> = {
-  // Brand examples — keep or replace.
-  UZME: "Youzmi",
-
-  // Minimal map : only respellings that actually fix stuttering.
-  // ElevenLabs French TTS handles tech terms fairly well — over-spelling
-  // them ("djéssone" for JSON, "Pupètiir" for Puppeteer, "Webjèn" for
-  // webgen) sounds robotic and is precisely what produces audible
-  // artefacts. Rule of thumb : only touch words where Eleven literally
-  // stutters or pauses, not words you'd "improve".
-  //
-  // Hyphens are the worst offender — Eleven sometimes reads them as
-  // "tiret" or inserts a beat. Strip them.
-  "webgen-motion": "webgen motion",
-  "local-first": "local first",
-  "data-testid": "data testid",
-  "data-tab": "data tab",
-  // ElevenLabs reads "ElevenLabs" letter-by-letter sometimes ;
-  // splitting it as two words restores natural cadence.
-  ElevenLabs: "Eleven Labs",
-  // URL gets épelé in French tech speech. Order matters : the longer
-  // "baseUrl" runs first, then the standalone "URL" gets letter-spaced.
-  baseUrl: "base url",
-  "base URL": "base url",
-  URL: "U R L",
-  // Keep the ampersand readable.
-  "Smooth & Design": "Smooth and Design",
+  // Surgical example only. Uncomment + adapt if Eleven really
+  // mispronounces a specific term for your project.
+  // UZME: "Youzmi",
 };
 
 export function applyPronunciation(text: string): string {
