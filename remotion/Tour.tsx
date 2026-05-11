@@ -1,6 +1,7 @@
 import {
   AbsoluteFill,
   Audio,
+  interpolate,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
@@ -64,12 +65,28 @@ export function Tour({
     <AbsoluteFill
       style={{
         backgroundColor: activeCat.bgColor,
+        // Subtle background-color crossfade is handled by React
+        // re-rendering with the new activeCat ; transition is then
+        // smoothed by the radial accents below scaling slightly.
+        transition: "background-color 600ms cubic-bezier(0.22,0.61,0.36,1)",
       }}
     >
-      {/* Radial accents (same as the React stage) */}
+      {/* Radial accents — slow breathing scale + opacity oscillation
+       *  so the backdrop never feels static, even on long sections. */}
       <AbsoluteFill
         style={{
           background: `radial-gradient(ellipse at top right, ${activeCat.accent}22, transparent 60%), radial-gradient(ellipse at bottom left, ${activeCat.accent}1a, transparent 50%)`,
+          opacity: interpolate(
+            Math.sin((frame / fps) * 0.6),
+            [-1, 1],
+            [0.7, 1],
+          ),
+          transform: `scale(${interpolate(
+            Math.sin((frame / fps) * 0.45),
+            [-1, 1],
+            [1.0, 1.06],
+          )})`,
+          transformOrigin: "center",
           pointerEvents: "none",
         }}
       />
@@ -108,6 +125,7 @@ export function Tour({
             localFrame={localFrame}
             durationFrames={durationFrames}
             crossfadeFrames={crossfadeFrames}
+            sectionIndex={i}
           />
         );
       })}
