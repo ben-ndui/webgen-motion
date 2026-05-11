@@ -785,14 +785,14 @@ async function fetchElevenLabsTts(
       text,
       model_id: modelId,
       voice_settings: {
-        // Higher stability = less prosodic variation, fewer stutters
-        // on technical / English-mixed terms (ElevenLabs, baseUrl…).
-        // Trade-off : slightly less expressive on emotional copy.
-        stability: 0.7,
+        // Slightly above default (0.5) — enough to dampen stutters on
+        // mixed-language identifiers without making the voice flat.
+        // Going to 0.7 trades stutters for a robotic monotone.
+        stability: 0.55,
         similarity_boost: 0.78,
-        // Lower style keeps the voice from over-coloring identifiers,
-        // which is what causes the audible "hesitation".
-        style: 0.08,
+        // Modest style preserves the speaker's expressivity while
+        // avoiding the over-coloring that causes hesitations.
+        style: 0.12,
         use_speaker_boost: true,
       },
     }),

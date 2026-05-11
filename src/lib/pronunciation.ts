@@ -15,37 +15,29 @@ export const BRAND_PRONUNCIATION: Record<string, string> = {
   // Brand examples — keep or replace.
   UZME: "Youzmi",
 
-  // webgen-motion tech terms : ElevenLabs in French TTS tends to
-  // stutter on raw English camelCase / mixed-case identifiers. The
-  // respellings below force a French phonetic reading.
-  "webgen-motion": "Webjèn motion",
-  "ElevenLabs": "Eleven Labs",
-  "Puppeteer": "Pupètiir",
-  "baseUrl": "base U.R.L.",
-  "base URL": "base U.R.L.",
-  "data-testid": "data test ID",
+  // Minimal map : only respellings that actually fix stuttering.
+  // ElevenLabs French TTS handles tech terms fairly well — over-spelling
+  // them ("djéssone" for JSON, "Pupètiir" for Puppeteer, "Webjèn" for
+  // webgen) sounds robotic and is precisely what produces audible
+  // artefacts. Rule of thumb : only touch words where Eleven literally
+  // stutters or pauses, not words you'd "improve".
+  //
+  // Hyphens are the worst offender — Eleven sometimes reads them as
+  // "tiret" or inserts a beat. Strip them.
+  "webgen-motion": "webgen motion",
+  "local-first": "local first",
+  "data-testid": "data testid",
   "data-tab": "data tab",
-  "JSON": "djéssone",
-  "TypeScript": "Taïpe Script",
-  "TikTok": "Tiktok",
-  "Reels": "Riils",
-  "Stories": "Stoorize",
-  "iPhone": "aïe Phone",
-  "Mac chrome": "Mac krôme",
-  "ffmpeg": "F.F. M-peg",
-  "MP3": "M.P. trois",
-  "MP4": "M.P. quatre",
-  "API": "A.P.I.",
-  "URL": "U.R.L.",
-  "CSS": "C.S.S.",
-  "DOM": "domme",
-  // Case-insensitive matching handles capitalization at sentence
-  // starts — one entry covers both "compose" and "Compose".
-  "compose": "compoze",
-  "setup": "sètt-up",
-  // Smooth & Design : the ampersand confuses the parser; force "and"
-  "Smooth & Design": "Smooth and Dizaïne",
-  "Smooth and Design": "Smooth and Dizaïne",
+  // ElevenLabs reads "ElevenLabs" letter-by-letter sometimes ;
+  // splitting it as two words restores natural cadence.
+  ElevenLabs: "Eleven Labs",
+  // URL gets épelé in French tech speech. Order matters : the longer
+  // "baseUrl" runs first, then the standalone "URL" gets letter-spaced.
+  baseUrl: "base url",
+  "base URL": "base url",
+  URL: "U R L",
+  // Keep the ampersand readable.
+  "Smooth & Design": "Smooth and Design",
 };
 
 export function applyPronunciation(text: string): string {
