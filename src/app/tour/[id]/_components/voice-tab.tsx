@@ -5,6 +5,7 @@ import {
   AlertCircle,
   ArrowRight,
   CheckCircle2,
+  Info,
   Mic,
   Play,
   Plus,
@@ -190,9 +191,111 @@ export default function VoiceTab({
     }
   };
 
+  const generateDisabled =
+    isRunning ||
+    (isNarrative ? !tour.narrativeScript?.trim() : counters.active === 0);
+  const generateTitle = isNarrative
+    ? !tour.narrativeScript?.trim()
+      ? "Écris un script narratif d'abord"
+      : "Génère la VO narrative continue"
+    : counters.active === 0
+      ? "Aucune voix off active — écris un texte dans le tab Script"
+      : "Génère la VO via ElevenLabs";
+  const generateDescription = isNarrative
+    ? "Synthèse via ta voix clonée. Mode narrative : 1 fetch /with-timestamps pour le script entier, alignment char-level retourné."
+    : "Synthèse via ta voix clonée. Mode per-step : 1 fetch par ligne, assemblage timeline avec padding silencieux entre chaque chunk.";
+
+  const actionCard = (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+            ElevenLabs TTS
+          </p>
+          <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+            Générer la voix off
+          </h2>
+        </div>
+        <button
+          type="button"
+          title={generateDescription}
+          aria-label="À propos de la génération VO"
+          className="flex-shrink-0 text-slate-400 hover:text-slate-700 transition-colors cursor-help"
+        >
+          <Info className="w-4 h-4" />
+        </button>
+      </div>
+      <button
+        onClick={onGenerateVo}
+        disabled={generateDisabled}
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        title={generateTitle}
+      >
+        {isRunning ? (
+          <>
+            <Sparkles className="w-4 h-4 animate-pulse" />
+            Génération · {voState.progress.sinceSec}s
+          </>
+        ) : (
+          <>
+            <Mic className="w-4 h-4" />
+            Générer la voix off
+          </>
+        )}
+      </button>
+    </div>
+  );
+
+  const calibrateCard =
+    isNarrative && voState.kind === "ready" ? (
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+              Synchro
+            </p>
+            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+              Calibrer la timeline
+            </h2>
+          </div>
+          <button
+            type="button"
+            title="Lit voiceover-alignment.json et écrit les nouveaux dwellMs sur chaque step référencé par un marker. Ensuite, lance Capturer pour produire des sections au pacing exact de la voix."
+            aria-label="À propos de la calibration"
+            className="flex-shrink-0 text-slate-400 hover:text-slate-700 transition-colors cursor-help"
+          >
+            <Info className="w-4 h-4" />
+          </button>
+        </div>
+        <button
+          onClick={handleCalibrate}
+          disabled={calibrate.kind === "loading"}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {calibrate.kind === "loading" ? (
+            <>
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              Calibration…
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-4 h-4" />
+              Calibrer la timeline
+            </>
+          )}
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
       <div className="space-y-6 min-w-0">
+      {/* Action + Calibrate inline at md- (sidebar takes them at lg+) */}
+      <div className="lg:hidden space-y-4">
+        {actionCard}
+        {calibrateCard}
+      </div>
+
       {/* Mode toggle */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-3 flex-wrap">
         <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mr-2">
@@ -265,59 +368,6 @@ export default function VoiceTab({
           </p>
         </div>
       )}
-
-      {/* Action card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
-            ElevenLabs TTS
-          </p>
-          <h2 className="text-lg font-semibold text-slate-900">
-            Générer la voix off
-          </h2>
-          <p className="text-sm text-slate-600 mt-0.5">
-            Synthèse via ta voix clonée (env{" "}
-            <code className="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">
-              ELEVENLABS_VOICE_ID
-            </code>
-            ) avec cache disk + pronunciation map.{" "}
-            {isNarrative
-              ? "Mode narrative : 1 fetch /with-timestamps pour le script entier."
-              : "Mode per-step : 1 fetch par ligne, assemblage timeline aligné."}
-          </p>
-        </div>
-        <button
-          onClick={onGenerateVo}
-          disabled={
-            isRunning ||
-            (isNarrative
-              ? !tour.narrativeScript?.trim()
-              : counters.active === 0)
-          }
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          title={
-            isNarrative
-              ? !tour.narrativeScript?.trim()
-                ? "Écris un script narratif d'abord"
-                : "Génère la VO narrative continue"
-              : counters.active === 0
-                ? "Aucune voix off active — écris un texte dans le tab Script"
-                : "Génère la VO via ElevenLabs"
-          }
-        >
-          {isRunning ? (
-            <>
-              <Sparkles className="w-4 h-4 animate-pulse" />
-              Génération · {voState.progress.sinceSec}s
-            </>
-          ) : (
-            <>
-              <Mic className="w-4 h-4" />
-              Générer la voix off
-            </>
-          )}
-        </button>
-      </div>
 
       {/* Counters strip — narrative shows marker count, per-step shows VO actives */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -407,44 +457,6 @@ export default function VoiceTab({
         </motion.div>
       )}
 
-      {/* Calibrate card — only in narrative mode, requires a previous VO run */}
-      {isNarrative && voState.kind === "ready" && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 flex items-center gap-4 flex-wrap">
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
-              Synchro
-            </p>
-            <h2 className="text-base font-semibold text-slate-900">
-              Calibrer la timeline depuis la VO
-            </h2>
-            <p className="text-sm text-slate-600 mt-0.5">
-              Lit <code className="font-mono">voiceover-alignment.json</code>{" "}
-              et écrit les nouveaux <code className="font-mono">dwellMs</code>{" "}
-              sur chaque step référencé par un marker. Ensuite, lance{" "}
-              <strong>Capturer</strong> pour produire des sections au pacing
-              exact de la voix.
-            </p>
-          </div>
-          <button
-            onClick={handleCalibrate}
-            disabled={calibrate.kind === "loading"}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {calibrate.kind === "loading" ? (
-              <>
-                <Sparkles className="w-4 h-4 animate-pulse" />
-                Calibration…
-              </>
-            ) : (
-              <>
-                <Wand2 className="w-4 h-4" />
-                Calibrer la timeline
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
       {calibrate.kind === "done" && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -506,8 +518,10 @@ export default function VoiceTab({
       )}
       </div>
 
-      {/* Sticky aside (lg+) — voice id, model, ElevenLabs settings */}
-      <aside className="lg:sticky lg:top-6 self-start">
+      {/* Sticky aside (lg+) — action above, calibrate (if shown), then voice override */}
+      <aside className="hidden lg:block lg:sticky lg:top-6 self-start space-y-4">
+        {actionCard}
+        {calibrateCard}
         <VoiceOverrideCard tour={tour} onChange={onTourChange} />
       </aside>
     </div>
