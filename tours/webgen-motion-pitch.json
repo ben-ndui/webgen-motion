@@ -1,0 +1,228 @@
+{
+  "id": "webgen-motion-pitch",
+  "name": "webgen-motion · Pitch officiel",
+  "description": "Présentation 80s de webgen-motion qui film l'outil lui-même à travers ses 5 surfaces clés. Mode narratif continu — édite le script depuis le tab Voix off, puis Générer → Calibrer → Capturer → Composer. Style 'Energetic' (look produit punchy).",
+  "estimatedSec": 80,
+  "startPath": "/",
+  "baseUrl": "http://localhost:3000",
+  "brand": {
+    "displayName": "webgen-motion",
+    "domain": "webgen-motion.local",
+    "tagline": "by Smooth & Design"
+  },
+  "auth": "none",
+  "format": "16:9",
+  "composeStyle": "energetic",
+  "voiceMode": "narrative",
+  "narrativeScript": "[step:0]webgen-motion. Le Motion Studio local-first par Smooth and Design. [step:2]Tu veux transformer ton site web en vidéo motion design ? [step:4]Avant, c'était des jours dans After Effects. [step:6]Aujourd'hui, c'est cinq minutes, sur ta machine, zéro cloud requis. [step:8]L'idée tient en trois mots : capturer, mixer, composer. [step:10]Tout commence ici. Le hub liste tous tes tours. [step:12]Crée un nouveau projet en deux clics. [step:14]Setup en deux minutes. [step:16]ElevenLabs cloud pour la qualité instantanée, ou Voicebox pour le cent pour cent local. [step:18]L'éditeur visuel te donne le contrôle complet. [step:21]Cinq onglets, un bouton Save toujours visible. [step:24]Mode narratif continu. [step:26]Un texte, des markers. ElevenLabs te donne l'alignment au caractère près. Calibrer aligne ta timeline. [step:29]Quatre presets de montage à un clic. Sober. Energetic. Cinematic. Glitch. [step:31]Sous le capot : Remotion pour le rendu, Puppeteer pour la capture, ffmpeg pour l'encodage. [step:33]Local-first, open source, zéro vendor lock-in. [step:35]webgen-motion. Par Smooth and Design. [step:37]Clone, configure, génère. Ton premier clip motion en cinq minutes.",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "webgen-motion",
+      "subtitle": "Le Motion Studio local-first",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Transformer ton site web en vidéo motion design ?",
+      "position": "center",
+      "dwellMs": 4500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 800
+    },
+    {
+      "type": "overlay",
+      "text": "Avant : des jours en After Effects",
+      "position": "bottom",
+      "dwellMs": 3500
+    },
+    {
+      "type": "scroll",
+      "to": 200,
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "motion",
+      "title": "5 minutes",
+      "subtitle": "Sur ta machine · zéro cloud",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Capturer · Mixer · Composer",
+      "position": "center",
+      "dwellMs": 4000
+    },
+    {
+      "type": "scroll",
+      "to": 0,
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Hub",
+      "subtitle": "Tous tes tours en un coup d'œil",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Grille admin · Nouveau tour en 2 clics",
+      "position": "bottom",
+      "dwellMs": 4000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "section",
+      "categoryId": "pipeline",
+      "title": "Setup",
+      "subtitle": "Backend voix off en 2 minutes",
+      "goto": "/setup",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1800
+    },
+    {
+      "type": "overlay",
+      "text": "ElevenLabs Cloud · ou Voicebox Local",
+      "position": "center",
+      "dwellMs": 5000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "motion",
+      "title": "Éditeur visuel",
+      "subtitle": "Contrôle complet sur ta timeline",
+      "goto": "/tour/help-page",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "click",
+      "selector": "[data-tab='script']",
+      "dwellMs": 3000
+    },
+    {
+      "type": "overlay",
+      "text": "5 onglets · Save toujours visible",
+      "position": "top",
+      "dwellMs": 4500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "click",
+      "selector": "[data-tab='voice']",
+      "dwellMs": 3000
+    },
+    {
+      "type": "section",
+      "categoryId": "ai",
+      "title": "Narratif continu",
+      "subtitle": "Alignment au caractère près",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Markers · Calibrer · Sync au mot près",
+      "position": "center",
+      "dwellMs": 4500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1200
+    },
+    {
+      "type": "click",
+      "selector": "[data-tab='compose']",
+      "dwellMs": 3000
+    },
+    {
+      "type": "overlay",
+      "text": "Sober · Energetic · Cinematic · Glitch",
+      "position": "center",
+      "dwellMs": 5000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "stores",
+      "title": "Stack",
+      "subtitle": "Remotion · ElevenLabs · Voicebox · ffmpeg",
+      "goto": "/",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Local-first · Open source · Zero lock-in",
+      "position": "center",
+      "dwellMs": 5000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Clone · Configure · Génère",
+      "subtitle": "webgen-motion par Smooth & Design",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Ton premier clip motion en 5 minutes",
+      "position": "center",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    }
+  ]
+}
