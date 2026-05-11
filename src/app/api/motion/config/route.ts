@@ -21,6 +21,12 @@ export async function PUT(req: NextRequest) {
   }
   // Whitelist the fields we accept — extra keys are dropped silently.
   const sanitized: MotionConfig = {};
+  if (
+    body.defaultBackend === "elevenlabs" ||
+    body.defaultBackend === "voicebox"
+  ) {
+    sanitized.defaultBackend = body.defaultBackend;
+  }
   if (body.elevenlabs) {
     sanitized.elevenlabs = {};
     if (typeof body.elevenlabs.apiKey === "string") {
@@ -32,6 +38,15 @@ export async function PUT(req: NextRequest) {
     }
     if (typeof body.elevenlabs.model === "string") {
       sanitized.elevenlabs.model = body.elevenlabs.model.trim() || undefined;
+    }
+  }
+  if (body.voicebox) {
+    sanitized.voicebox = {};
+    for (const k of ["url", "profileId", "engine", "modelSize", "language"] as const) {
+      const v = body.voicebox[k];
+      if (typeof v === "string") {
+        sanitized.voicebox[k] = v.trim() || undefined;
+      }
     }
   }
   saveConfig(sanitized);
