@@ -166,16 +166,20 @@ npx tsx scripts/audio-tour.ts \
 
 npx tsx scripts/compose-tour.ts \
   --tour-id uzme-landing \
-  --tour-dir ~/.webgen-motion/tours/uzme-landing \
-  --fps 30
+  --tour-dir ~/.webgen-motion/tours/uzme-landing
 ```
+
+> Compose tourne via **Remotion** depuis le chunk 7 — Ken Burns sur
+> le mock device, transitions variées par catégorie, beats/pause
+> reactive layer, et 4 style presets (Sober / Energetic / Cinematic
+> / Glitch) sélectionnables dans le tab Compose.
 
 ## Pré-requis système
 
 - **Node 20+**
 - **ffmpeg** sur le PATH (`brew install ffmpeg` sur macOS)
-- **ElevenLabs account** (Starter $5/mois minimum pour le voice cloning, sinon une voix stock suffit)
-- **Chromium** : fourni automatiquement par puppeteer au premier `npm install`
+- **ElevenLabs account** (Starter $5/mois minimum pour le voice cloning, sinon une voix stock suffit) **OU** [Voicebox](https://github.com/jamiepine/voicebox) desktop pour du local-first 100%
+- **Chromium** : fourni automatiquement par puppeteer au premier `npm install` (encore utilisé par capture-tour ; compose tourne via Remotion désormais)
 
 ## Stack
 

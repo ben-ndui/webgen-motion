@@ -13,7 +13,7 @@
   "auth": "none",
   "format": "16:9",
   "voiceMode": "narrative",
-  "narrativeScript": "[step:0]Bienvenue dans webgen-motion, LE Motion Studio local-first, qui transforme ton site web en clip motion design ! Une démo méta produite par l'outil lui-même ! L'idée est simple. Tu connectes ton site, tu scénarises ton clip et tu génères tout localement ! Cinq étapes pour ta première vidéo. Tu configures tes clés ElevenLabs, tu crées un tour, tu définis tes étapes ! Puis capture voix off compose : trois actions un clip prêt à publier. Un tour c'est un fichier JSON ! Pas de TypeScript pas de compilation juste de la donnée éditable depuis l'interface. Le lien avec ton projet c'est le champ base URL. Puppeteer ouvre cette adresse et exécute tes étapes dans l'ordre. Pour les clicks utilise les sélecteurs CSS. Préfère les attributs stables comme les IDs. \nDeux modes de voix off : \"Per-step\" pour la simplicité ou \"Narrative\", continu pour la synchronisation parfaite. En narratif, ElevenLabs renvoie un alignment caractère par caractère. Le bouton \"Calibrer\", recale chaque overlay au mot près. \nPlusieurs projets ? Tu peux tout gérer depuis une seule installation ou, créer un dossier dédié par projet : les deux marchent ! Tout reste sur ta machine. Captures voix off, clips finaux : tous stockés dans ton dossier home. Webgen-motion. Local-first par Smooth and Design.",
+  "narrativeScript": "Bienvenue dans webgen-motion, LE Motion Studio local-first, qui transforme ton site web en clip motion design ! Une démo méta produite par l'outil lui-même ! L'idée est simple. Tu connectes ton site, tu scénarises ton clip et tu génères tout localement en cinq étapes seulement. Tu configures tes clés ElevenLabs, crées tes tours, définis tes étapes ! Puis capture la voix off et compose ! Le lien avec ton projet c'est le champ base URL. \nDeux modes de voix off : \"Per-step\" pour la simplicité ou \"Narrative\", continu pour la synchronisation parfaite. Le bouton \"Calibrer\", recale chaque overlay au mot près. \nPlusieurs projets ? Tu peux tout gérer depuis une seule installation ou, créer un dossier dédié par projet, les deux marchent ! Tout reste sur ta machine ! \nWebgen-motion. Local-first par Smooth and Design.",
   "steps": [
     {
       "type": "section",
@@ -172,5 +172,7 @@
       "type": "wait",
       "dwellMs": 1500
     }
-  ]
+  ],
+  "voiceBackend": "elevenlabs",
+  "voiceboxProfileId": "c0001fdc-2004-4dea-a765-5cb8cca833c2"
 }

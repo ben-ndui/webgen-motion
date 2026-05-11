@@ -7,7 +7,7 @@ import { getTrackPath } from "@/lib/motion-audio-store";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 
 /**
- * spawns `scripts/compose-tour.ts` and streams
+ * spawns `scripts/compose-tour.ts` (Remotion runner) and streams
  * progress events as **NDJSON** so the dashboard shows phase-by-phase
  * status. Same wire format as `/api/motion/tour/run`.
  */
@@ -96,12 +96,12 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Switched to the Remotion-based compose runner (level-3 motion
-  // design). The old Puppeteer compositor (`scripts/compose-tour.ts`)
-  // stays callable from the CLI as a fallback during the migration.
+  // Remotion-based compose runner (level-3 motion design + style
+  // presets). The legacy Puppeteer compositor was removed in
+  // chunk 7 ; this is now the only path.
   const args = [
     "tsx",
-    "scripts/compose-remotion.ts",
+    "scripts/compose-tour.ts",
     "--tour-id",
     tourId,
     "--tour-dir",
@@ -214,7 +214,7 @@ function parseComposeLine(
 ): void {
   if (!line) return;
 
-  // Banner lines from compose-remotion.ts.
+  // Banner lines from compose-tour.ts (Remotion runner).
   if (line.startsWith("▶ Remotion compose")) {
     emit({ type: "phase", label: "Bundling de la composition…" });
     return;

@@ -9,7 +9,7 @@
     "lint": "eslint",
     "remotion:studio": "remotion studio",
     "remotion:render": "remotion render hello-world out/hello-world.mp4",
-    "compose:remotion": "tsx scripts/compose-remotion.ts"
+    "compose": "tsx scripts/compose-tour.ts"
   },
   "dependencies": {
     "@remotion/bundler": "^4.0.459",

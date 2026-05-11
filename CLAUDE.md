@@ -49,7 +49,8 @@ webgen-motion/
 ├── scripts/
 │   ├── capture-tour.ts          # E2E filmé section par section
 │   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs)
-│   └── compose-tour.ts          # Compositor headless final (re-film le stage)
+│   ├── compose-tour.ts          # Compose runner — spawn `remotion render`
+│   └── analyze-audio.ts         # ffmpeg silencedetect + onset detection
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx             # Hub — liste les tours, design admin
@@ -57,7 +58,7 @@ webgen-motion/
 │   │   │   ├── page.tsx         # Server entry, fetch tour from JSON
 │   │   │   ├── TourClient.tsx   # Orchestrator (state + handlers + tabs)
 │   │   │   └── _components/     # 5 tabs (script/capture/audio/voice/compose)
-│   │   ├── compose/[id]/        # Compose stage (filmé par compose-tour.ts)
+│   │   ├── compose/[id]/        # Live preview stage (audio playback synchro)
 │   │   └── api/motion/          # Routes streaming NDJSON
 │   └── lib/
 │       ├── tour-loader.ts       # Lit tours/<id>.json (server-side fs)
@@ -118,11 +119,11 @@ Survit aux reboots. Partagé entre tous les tours.
    - Écrit `voiceover.mp3`
 
 3. **Compose** : `POST /api/motion/tour/compose/run` spawn `compose-tour.ts` qui :
-   - Charge le manifest pour connaître format/dimensions/sections
-   - Lance Puppeteer sur `/compose/<id>?autoplay=1` (la stage React)
-   - Capture frame-par-frame pendant que la stage joue les sections dans le device frame
-   - Encode `final.mp4` avec ffmpeg en mixant bg music + voix off
-   - Mix : VO 1.0 + bg ducké à 0.10 si VO présente, sinon bg à 0.18
+   - Charge le manifest + le tour (composeStyle + brand)
+   - Spawn `analyze-audio.ts` (ffmpeg silencedetect sur VO + onset detection sur bg music → `audio-analysis.json`)
+   - Stage les MP4s + audios dans un `.remotion-public/` (Remotion sert via `staticFile()`)
+   - Spawn `npx remotion render tour-{16x9|9x16} out/final.mp4 --props ...`
+   - Composition Remotion (`remotion/Tour.tsx`) joue chaque section dans son device frame (Mac chrome / iPhone), applique le style preset (Ken Burns + transitions + backdrop motion + beats layer), mixe VO + bg music via `<Audio>`
 
 4. **Auto-load** : la page tour preview hit `/api/motion/tour/status?id=<id>` au mount → restaure capture/vo/compose `ready` si les fichiers existent.
 
@@ -167,7 +168,7 @@ npm run lint         # ESLint
 # CLI direct (debug, sans dashboard)
 npx tsx scripts/capture-tour.ts --tour-id uzme-landing --base-url https://uzme.app --fps 30 --out ~/.webgen-motion/tours/uzme-landing
 npx tsx scripts/audio-tour.ts --tour-id uzme-landing --tour-dir ~/.webgen-motion/tours/uzme-landing
-npx tsx scripts/compose-tour.ts --tour-id uzme-landing --tour-dir ~/.webgen-motion/tours/uzme-landing --fps 30
+npx tsx scripts/compose-tour.ts --tour-id uzme-landing --tour-dir ~/.webgen-motion/tours/uzme-landing
 ```
 
 ## Décisions architecturales

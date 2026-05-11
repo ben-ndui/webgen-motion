@@ -58,5 +58,6 @@
       "type": "wait",
       "dwellMs": 1500
     }
-  ]
+  ],
+  "composeStyle": "energetic"
 }

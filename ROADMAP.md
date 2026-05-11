@@ -41,6 +41,23 @@ SaaS / open-source.
 - ✅ Chunk 3 : Live preview sans re-capture (audio playback synchro via URL params, cycle 30s → 3s)
 - ✅ Chunk 4 : Mode narrative ElevenLabs (1 fetch `/with-timestamps`, markers `[step:N]`, calibrate timeline depuis alignment)
 
+### Sprint 5 — Compose v2 (Remotion + motion design pro)
+
+- ✅ Chunk 1 : Setup Remotion + hello-world render (pipeline boot validé)
+- ✅ Chunk 2 : Port iso-fonctionnel du compose stage en compositions Remotion (`tour-16x9` / `tour-9x16`)
+- ✅ Chunk 3 : Ken Burns sur le device frame, 5 transitions variées par catégorie (fade / scale-blur / swipe / wipe-down / glitch), backdrop motion
+- ✅ Chunk 4 : `analyze-audio.ts` — silencedetect sur la VO + onset detection sur bg music → `audio-analysis.json` (pacing trim opt-in)
+- ✅ Chunk 5 : `BeatsLayer` réactif (pulse beat + halo VO pause) consommant l'audio analysis
+- ✅ Chunk 6 : 4 style presets (Sober / Energetic / Cinematic / Glitch) bundlant Ken Burns intensity + transition override + backdrop amp + beats strength ; dropdown dans Compose tab
+- ✅ Chunk 7 : Cutover — `compose-tour.ts` est désormais le runner Remotion (legacy Puppeteer compositor supprimé), `/compose/[id]` reste pour le mode "Aperçu live"
+
+### Sprint 6 — Voicebox (local-first TTS alternative)
+
+- ✅ A1.0 : Backend choice (ElevenLabs cloud / Voicebox local) — schema + runner branche, SSE consumption pour `/generate/{id}/status`
+- ✅ A1.0+ : Auto-discover Voicebox profiles via dropdown (proxy `/api/motion/voicebox/profiles`)
+- ✅ A1.2 : Setup wizard step "Backend choice" + branche Voicebox avec auto-detect
+- ⏳ A1.1 : Forced alignment via `nodejs-whisper` pour réactiver narrative + Voicebox (V0 = error clean)
+
 ### Plus
 
 - ✅ Brand-aware compose stage (intro / outro / URL bar tirent de `tour.brand`, fallback computé depuis `name` + `baseUrl`)
