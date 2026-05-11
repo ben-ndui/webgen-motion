@@ -69,32 +69,23 @@ export function SectionPlayer({
   );
   const kenBurnsTransform = kenBurns(local01, sectionIndex);
 
+  // Video plays cleanly inside the frame — no Ken Burns here. The
+  // site content as captured stays steady ; it's the device that
+  // moves on top, like a film maker panning a phone in hand.
   const video = (
-    <div
+    <OffthreadVideo
+      src={staticFile(section.fileName)}
       style={{
         width: "100%",
         height: "100%",
-        overflow: "hidden",
+        objectFit: "cover",
+        // anchor the crop to the top — Mac chrome's title bar + iPhone
+        // Dynamic Island would eat the page header otherwise.
+        objectPosition: "top",
+        backgroundColor: "#000",
+        display: "block",
       }}
-    >
-      <OffthreadVideo
-        src={staticFile(section.fileName)}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          // anchor the crop to the top — Mac chrome's title bar + iPhone
-          // Dynamic Island would eat the page header otherwise.
-          objectPosition: "top",
-          backgroundColor: "#000",
-          display: "block",
-          // Ken Burns is applied to the video element itself so the
-          // device frame stays put while the content "lives".
-          transform: kenBurnsTransform,
-          transformOrigin: "center",
-        }}
-      />
-    </div>
+    />
   );
 
   const frame =
@@ -123,7 +114,22 @@ export function SectionPlayer({
         clipPath: transitionStyle.clipPath,
       }}
     >
-      {frame}
+      {/* Ken Burns on the FRAME wrapper, not the video — the device
+       *  itself zooms / pans cinematically while the captured page
+       *  content inside stays steady. */}
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transform: kenBurnsTransform,
+          transformOrigin: "center",
+        }}
+      >
+        {frame}
+      </div>
     </div>
   );
 }
