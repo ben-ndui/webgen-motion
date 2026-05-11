@@ -66,10 +66,14 @@ export default function ScriptTab({
     onChange({ ...tour, steps: [...tour.steps, fresh] });
   };
 
+  const voiceOverrideCard = (
+    <VoiceOverrideCard tour={tour} onChange={onChange} />
+  );
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-      {/* Left — step list */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 lg:overflow-y-auto lg:max-h-[calc(100vh-22rem)]">
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_320px_340px] 2xl:grid-cols-[1fr_360px_380px] gap-6">
+      {/* Col 1 — step list */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 lg:overflow-y-auto lg:max-h-[calc(100vh-22rem)] xl:max-h-[calc(100vh-14rem)]">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-slate-900">
             Script du tour
@@ -95,7 +99,7 @@ export default function ScriptTab({
         <AddStepRow onAdd={addStep} />
       </div>
 
-      {/* Right — sticky controls */}
+      {/* Col 2 — main controls (save + format + voice@lg-only + stats) */}
       <aside className="lg:sticky lg:top-6 self-start space-y-4">
         {/* Save card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
@@ -122,7 +126,7 @@ export default function ScriptTab({
               </>
             )}
           </button>
-          <p className="text-[11px] text-slate-500 leading-relaxed">
+          <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
             Écrit dans{" "}
             <code className="font-mono text-slate-700">
               tours/{tour.id}.json
@@ -163,145 +167,178 @@ export default function ScriptTab({
           </div>
         </div>
 
-        {/* Voice override (multi-projets light) */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
-          <div>
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
-              Voix off — override par tour
-            </p>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Laisse vide pour utiliser la config globale (Setup wizard /
-              .env). Utile quand plusieurs projets partagent une install mais
-              ont chacun leur voix clonée.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <label className="block">
-              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
-                Voice ID
-              </span>
-              <input
-                type="text"
-                value={tour.voiceId ?? ""}
-                onChange={(e) =>
-                  onChange({
-                    ...tour,
-                    voiceId:
-                      e.target.value.trim().length > 0
-                        ? e.target.value
-                        : undefined,
-                  })
-                }
-                placeholder="ELEVENLABS_VOICE_ID (global)"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
-              />
-            </label>
-            <label className="block">
-              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
-                Model
-              </span>
-              <input
-                type="text"
-                value={tour.voiceModel ?? ""}
-                onChange={(e) =>
-                  onChange({
-                    ...tour,
-                    voiceModel:
-                      e.target.value.trim().length > 0
-                        ? e.target.value
-                        : undefined,
-                  })
-                }
-                placeholder="eleven_multilingual_v2"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
-              />
-            </label>
-          </div>
+        {/* Voice override — appears in col 2 ONLY at lg (xl gets col 3). */}
+        <div className="xl:hidden">{voiceOverrideCard}</div>
 
-          {/* Voice settings sliders */}
-          <div className="pt-2 border-t border-slate-100 space-y-2.5">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
-              Réglages ElevenLabs
-            </p>
-            <VoiceSlider
-              label="Stability"
-              hint="Bas = expressif, haut = stable. 0.55 conseillé."
-              value={tour.voiceSettings?.stability ?? 0.55}
-              onChange={(v) => updateVoiceSettings(tour, onChange, { stability: v })}
-            />
-            <VoiceSlider
-              label="Similarity"
-              hint="Fidélité à la voix clonée. 0.78 par défaut."
-              value={tour.voiceSettings?.similarityBoost ?? 0.78}
-              onChange={(v) =>
-                updateVoiceSettings(tour, onChange, { similarityBoost: v })
-              }
-            />
-            <VoiceSlider
-              label="Style"
-              hint="Coloration émotionnelle. 0.12 conseillé."
-              value={tour.voiceSettings?.style ?? 0.12}
-              onChange={(v) => updateVoiceSettings(tour, onChange, { style: v })}
-            />
-            <label className="flex items-center justify-between gap-3 cursor-pointer">
-              <div className="flex-1 min-w-0">
-                <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
-                  Speaker boost
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Renforce le timbre du speaker
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={tour.voiceSettings?.useSpeakerBoost ?? true}
-                onChange={(e) =>
-                  updateVoiceSettings(tour, onChange, {
-                    useSpeakerBoost: e.target.checked,
-                  })
-                }
-                className="h-4 w-4 accent-zinc-900"
-              />
-            </label>
-            <button
-              onClick={() => onChange({ ...tour, voiceSettings: undefined })}
-              className="w-full text-[10px] font-mono uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors py-1"
-              title="Reset aux valeurs par défaut"
-            >
-              ↻ Reset
-            </button>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-4">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
-            Aperçu
-          </p>
-          <dl className="space-y-2 text-sm">
-            <Row
-              label="Dwell total"
-              value={`${(totalDwellMs / 1000).toFixed(1)}s`}
-              mono
-            />
-            <Row
-              label="Sections"
-              value={countSections(tour.steps).toString()}
-              mono
-            />
-            <Row
-              label="Voix off"
-              value={countVoiceovers(tour.steps).toString()}
-              mono
-            />
-            <Row
-              label="Origin"
-              value={tour.baseUrl?.replace(/^https?:\/\//, "") ?? "localhost:3000"}
-            />
-            <Row label="Start path" value={tour.startPath} mono />
-          </dl>
-        </div>
+        {/* Stats card (always in col 2) */}
+        <StatsCard tour={tour} totalDwellMs={totalDwellMs} />
       </aside>
+
+      {/* Col 3 — voice override card (xl+ only) */}
+      <aside className="hidden xl:block xl:sticky xl:top-6 self-start space-y-4">
+        {voiceOverrideCard}
+      </aside>
+    </div>
+  );
+}
+
+/**
+ * VoiceOverrideCard — extracted so the same JSX can render either in
+ * the col-2 panel (md/lg) or the col-3 panel (xl+) without duplication.
+ */
+function VoiceOverrideCard({
+  tour,
+  onChange,
+}: {
+  tour: TourEntry;
+  onChange: (next: TourEntry) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+      <div>
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+          Voix off — override par tour
+        </p>
+        <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
+          Laisse vide pour utiliser la config globale (Setup wizard / .env).
+          Utile quand plusieurs projets partagent une install mais ont
+          chacun leur voix clonée.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+            Voice ID
+          </span>
+          <input
+            type="text"
+            value={tour.voiceId ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...tour,
+                voiceId:
+                  e.target.value.trim().length > 0
+                    ? e.target.value
+                    : undefined,
+              })
+            }
+            placeholder="ELEVENLABS_VOICE_ID (global)"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          />
+        </label>
+        <label className="block">
+          <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+            Model
+          </span>
+          <input
+            type="text"
+            value={tour.voiceModel ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...tour,
+                voiceModel:
+                  e.target.value.trim().length > 0
+                    ? e.target.value
+                    : undefined,
+              })
+            }
+            placeholder="eleven_multilingual_v2"
+            className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          />
+        </label>
+      </div>
+
+      {/* Voice settings sliders */}
+      <div className="pt-2 border-t border-slate-100 space-y-2.5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+          Réglages ElevenLabs
+        </p>
+        <VoiceSlider
+          label="Stability"
+          hint="Bas = expressif, haut = stable. 0.55 conseillé."
+          value={tour.voiceSettings?.stability ?? 0.55}
+          onChange={(v) => updateVoiceSettings(tour, onChange, { stability: v })}
+        />
+        <VoiceSlider
+          label="Similarity"
+          hint="Fidélité à la voix clonée. 0.78 par défaut."
+          value={tour.voiceSettings?.similarityBoost ?? 0.78}
+          onChange={(v) =>
+            updateVoiceSettings(tour, onChange, { similarityBoost: v })
+          }
+        />
+        <VoiceSlider
+          label="Style"
+          hint="Coloration émotionnelle. 0.12 conseillé."
+          value={tour.voiceSettings?.style ?? 0.12}
+          onChange={(v) => updateVoiceSettings(tour, onChange, { style: v })}
+        />
+        <label className="flex items-center justify-between gap-3 cursor-pointer">
+          <div className="flex-1 min-w-0">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+              Speaker boost
+            </span>
+            <span className="hidden sm:inline text-[10px] text-slate-400">
+              Renforce le timbre du speaker
+            </span>
+          </div>
+          <input
+            type="checkbox"
+            checked={tour.voiceSettings?.useSpeakerBoost ?? true}
+            onChange={(e) =>
+              updateVoiceSettings(tour, onChange, {
+                useSpeakerBoost: e.target.checked,
+              })
+            }
+            className="h-4 w-4 accent-zinc-900"
+          />
+        </label>
+        <button
+          onClick={() => onChange({ ...tour, voiceSettings: undefined })}
+          className="w-full text-[10px] font-mono uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors py-1"
+          title="Reset aux valeurs par défaut"
+        >
+          ↻ Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatsCard({
+  tour,
+  totalDwellMs,
+}: {
+  tour: TourEntry;
+  totalDwellMs: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">
+        Aperçu
+      </p>
+      <dl className="space-y-2 text-sm">
+        <Row
+          label="Dwell total"
+          value={`${(totalDwellMs / 1000).toFixed(1)}s`}
+          mono
+        />
+        <Row
+          label="Sections"
+          value={countSections(tour.steps).toString()}
+          mono
+        />
+        <Row
+          label="Voix off"
+          value={countVoiceovers(tour.steps).toString()}
+          mono
+        />
+        <Row
+          label="Origin"
+          value={tour.baseUrl?.replace(/^https?:\/\//, "") ?? "localhost:3000"}
+        />
+        <Row label="Start path" value={tour.startPath} mono />
+      </dl>
     </div>
   );
 }
