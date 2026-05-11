@@ -6,6 +6,7 @@ import {
   Cog,
   ExternalLink,
   Film,
+  HelpCircle,
   Mic,
   Monitor,
   Smartphone,
@@ -50,6 +51,13 @@ export default function HubPage() {
 
             {/* Right actions */}
             <div className="flex items-center gap-2">
+              <Link
+                href="/help"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                Aide
+              </Link>
               <a
                 href="https://github.com/ben-ndui/webgen-motion"
                 target="_blank"

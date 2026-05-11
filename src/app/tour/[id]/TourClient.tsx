@@ -7,6 +7,7 @@ import {
   ChevronRight,
   FileText,
   Film,
+  HelpCircle,
   Mic,
   Music,
   Video,
@@ -581,13 +582,22 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
                 {tour.id}
               </span>
             </div>
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Retour
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/help"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                Aide
+              </Link>
+              <Link
+                href="/"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Retour
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -646,6 +656,9 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
             voState={vo}
             onGenerateVo={handleGenerateVo}
             onJumpToScript={() => setActiveTab("script")}
+            onTourChange={handleTourChange}
+            onSaveTour={saveTour}
+            saveStatus={saveStatus}
           />
         )}
 
