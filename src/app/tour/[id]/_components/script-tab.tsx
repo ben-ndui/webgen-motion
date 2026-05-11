@@ -163,6 +163,62 @@ export default function ScriptTab({
           </div>
         </div>
 
+        {/* Voice override (multi-projets light) */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+          <div>
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+              Voix off — override par tour
+            </p>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              Laisse vide pour utiliser la config globale (Setup wizard /
+              .env). Utile quand plusieurs projets partagent une install mais
+              ont chacun leur voix clonée.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="block">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+                Voice ID
+              </span>
+              <input
+                type="text"
+                value={tour.voiceId ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...tour,
+                    voiceId:
+                      e.target.value.trim().length > 0
+                        ? e.target.value
+                        : undefined,
+                  })
+                }
+                placeholder="ELEVENLABS_VOICE_ID (global)"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              />
+            </label>
+            <label className="block">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+                Model
+              </span>
+              <input
+                type="text"
+                value={tour.voiceModel ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...tour,
+                    voiceModel:
+                      e.target.value.trim().length > 0
+                        ? e.target.value
+                        : undefined,
+                  })
+                }
+                placeholder="eleven_multilingual_v2"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              />
+            </label>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-3">

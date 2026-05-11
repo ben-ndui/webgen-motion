@@ -95,6 +95,12 @@ export function saveTour(id: string, tour: TourEntry): void {
       `Tour.narrativeScript is required when voiceMode === "narrative"`,
     );
   }
+  if (tour.voiceId !== undefined && typeof tour.voiceId !== "string") {
+    throw new Error("Tour.voiceId must be a string");
+  }
+  if (tour.voiceModel !== undefined && typeof tour.voiceModel !== "string") {
+    throw new Error("Tour.voiceModel must be a string");
+  }
   // Force the on-disk id to match the path id — drops any client-side
   // tampering attempt.
   const normalized: TourEntry = { ...tour, id };

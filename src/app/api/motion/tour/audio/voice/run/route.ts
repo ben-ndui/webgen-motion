@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveElevenLabs } from "@/lib/config";
+import { getTour } from "@/lib/tour-loader";
 
 /**
  * generates the voice-over track for a tour by
@@ -54,6 +55,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Per-tour overrides (multi-projets light) : if the tour declares
+  // its own voiceId / voiceModel, they take precedence over the
+  // global config — so the same install can target multiple brands
+  // with different cloned voices.
+  const tour = getTour(tourId);
+  const effectiveVoiceId =
+    tour?.voiceId && tour.voiceId.trim().length > 0
+      ? tour.voiceId.trim()
+      : credentials.voiceId;
+  const effectiveModel =
+    tour?.voiceModel && tour.voiceModel.trim().length > 0
+      ? tour.voiceModel.trim()
+      : credentials.model;
+
   // Persist overrides to disk so the runner can read them by path.
   // Stored next to the manifest so `npm run audio` from CLI also
   // sees the latest overrides without going through this endpoint.
@@ -102,8 +117,8 @@ export async function POST(req: NextRequest) {
           ...process.env,
           NO_COLOR: "1",
           ELEVENLABS_API_KEY: credentials.apiKey,
-          ELEVENLABS_VOICE_ID: credentials.voiceId,
-          ELEVENLABS_MODEL: credentials.model,
+          ELEVENLABS_VOICE_ID: effectiveVoiceId,
+          ELEVENLABS_MODEL: effectiveModel,
         },
       });
       let stdoutBuf = "";

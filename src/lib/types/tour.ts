@@ -85,6 +85,13 @@ export interface TourEntry {
   /** Optional path (repo-relative or absolute) of a bg music MP3.
    *  Mixed in compose at volume 0.18 (or ducked to 0.10 if VO too). */
   bgMusic?: string;
+  /** Override the global ElevenLabs voice id for this tour. Falls back
+   *  to the wizard's config / `ELEVENLABS_VOICE_ID` when empty. Useful
+   *  when you target multiple projects with different brand voices. */
+  voiceId?: string;
+  /** Override the ElevenLabs model for this tour. Falls back to the
+   *  global config / `ELEVENLABS_MODEL` / `eleven_multilingual_v2`. */
+  voiceModel?: string;
   /** Brand identity surfaced in the compose stage (intro card, outro
    *  card, Mac chrome URL bar). All fields optional — sensible
    *  fallbacks are computed from `name` and `baseUrl` when missing. */
