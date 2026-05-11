@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="220" fill="#09090b"/>
+  <g transform="translate(280 280)">
+    <rect x="0" y="0" width="464" height="464" rx="48" fill="none" stroke="white" stroke-width="32"/>
+    <rect x="56" y="0" width="40" height="48" fill="white"/>
+    <rect x="156" y="0" width="40" height="48" fill="white"/>
+    <rect x="256" y="0" width="40" height="48" fill="white"/>
+    <rect x="356" y="0" width="40" height="48" fill="white"/>
+    <rect x="56" y="416" width="40" height="48" fill="white"/>
+    <rect x="156" y="416" width="40" height="48" fill="white"/>
+    <rect x="256" y="416" width="40" height="48" fill="white"/>
+    <rect x="356" y="416" width="40" height="48" fill="white"/>
+    <polygon points="180,140 180,324 320,232" fill="white"/>
+  </g>
+</svg>

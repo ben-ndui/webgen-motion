@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "webgen-motion",
+  "version": "0.2.0",
+  "identifier": "fr.smoothandesign.webgen-motion",
+  "build": {
+    "beforeDevCommand": "PORT=3030 npm run dev",
+    "devUrl": "http://localhost:3030",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../.next/standalone"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "webgen-motion",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "titleBarStyle": "Transparent",
+        "hiddenTitle": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "shortDescription": "Motion Studio local-first",
+    "longDescription": "Capture, mix and compose motion design clips from any website — voice cloning, beat-driven cuts, 4 style presets. Runs entirely on your machine.",
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    },
+    "windows": {
+      "wix": {
+        "language": ["en-US", "fr-FR"]
+      }
+    }
+  }
+}

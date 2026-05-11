@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:icon": "tauri icon src-tauri/icons/source.png",
     "remotion:studio": "remotion studio",
     "remotion:render": "remotion render hello-world out/hello-world.mp4",
     "compose": "tsx scripts/compose-tour.ts"
@@ -15,6 +19,7 @@
     "@remotion/bundler": "^4.0.459",
     "@remotion/cli": "^4.0.459",
     "@remotion/renderer": "^4.0.459",
+    "@tauri-apps/api": "^2.11.0",
     "framer-motion": "^12.38.0",
     "geist": "^1.7.0",
     "lucide-react": "^1.14.0",
@@ -27,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tauri-apps/cli": "^2.11.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

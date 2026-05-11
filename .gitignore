@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .idea/
+
+# tauri (Rust target / bundled DMGs / EXEs / lockfile)
+/src-tauri/target/
+/src-tauri/gen/
