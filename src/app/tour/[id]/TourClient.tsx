@@ -575,7 +575,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
               <Link
-                href="/"
+                href="/dashboard"
                 className="text-sm text-slate-500 font-medium hover:text-slate-900 transition-colors"
               >
                 Tours
@@ -605,7 +605,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
                 Aide
               </Link>
               <Link
-                href="/"
+                href="/dashboard"
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />

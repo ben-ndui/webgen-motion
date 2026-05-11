@@ -1,0 +1,194 @@
+import Link from "next/link";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronRight,
+  Cog,
+  ExternalLink,
+  Film,
+  HelpCircle,
+  Mic,
+} from "lucide-react";
+import { getAllTours } from "@/lib/tour-loader";
+import { getCategory } from "@/lib/motion-categories";
+import { getPublicConfig } from "@/lib/config";
+import NewTourButton from "../_components/new-tour-button";
+import TourCard from "../_components/tour-card";
+
+/**
+ * Dashboard / Hub. Tours grid + quick actions + status chips.
+ * Used to live at `/`, moved to `/dashboard` once the landing page
+ * took over the root path. The breadcrumb stays "Tours" because
+ * the hub IS the tours surface.
+ */
+export default function DashboardPage() {
+  const tours = getAllTours();
+  const totalSec = tours.reduce((acc, t) => acc + t.estimatedSec, 0);
+  const config = getPublicConfig();
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Sticky top bar */}
+      <header className="sticky top-0 z-50 bg-white border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Brand + breadcrumb */}
+            <div className="flex items-center gap-3 min-w-0">
+              <Link
+                href="/"
+                className="shrink-0 flex items-center gap-2 group"
+                title="Retour à la landing"
+              >
+                <span className="w-7 h-7 rounded-lg bg-slate-900 text-white grid place-items-center group-hover:bg-slate-800 transition-colors">
+                  <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
+                </span>
+                <span className="font-semibold text-sm tracking-tight">
+                  webgen-motion
+                </span>
+              </Link>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+              <Link
+                href="/dashboard"
+                className="text-sm text-slate-500 font-medium hover:text-slate-900 transition-colors"
+              >
+                Tours
+              </Link>
+            </div>
+
+            {/* Right actions */}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/help"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                Aide
+              </Link>
+              <a
+                href="https://github.com/ben-ndui/webgen-motion"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                GitHub
+              </a>
+              <ConfigChip configured={config.configured} />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Setup banner — only when nothing is configured */}
+      {!config.configured && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-2.5 flex items-center gap-3 flex-wrap">
+            <Mic className="w-4 h-4 text-amber-700 flex-shrink-0" />
+            <p className="text-xs text-amber-900 flex-1 min-w-0">
+              <span className="font-semibold">Setup recommandé</span> · choisis
+              ton backend voix off (ElevenLabs cloud ou Voicebox local).
+            </p>
+            <Link
+              href="/setup"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-900 text-white text-[11px] font-medium hover:bg-amber-800 transition-colors"
+            >
+              Configurer
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Main */}
+      <main className="flex-1 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full px-6 lg:px-8 py-8">
+        {/* Page header — compact, no hero */}
+        <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+              Tours
+            </h1>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {tours.length === 0
+                ? "Aucun tour. Drop un JSON dans tours/."
+                : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${totalSec}s cumulés · prêts à filmer`}
+            </p>
+          </div>
+          <NewTourButton />
+        </div>
+
+        {/* Tours grid */}
+        {tours.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {tours.map((t) => {
+              const firstSection = t.steps.find(
+                (s): s is Extract<typeof s, { type: "section" }> =>
+                  s.type === "section",
+              );
+              const cat = getCategory(firstSection?.categoryId);
+              return <TourCard key={t.id} tour={t} cat={cat ?? null} />;
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Tiny footer */}
+      <footer className="border-t border-border bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-12 flex items-center justify-between text-xs text-slate-500">
+          <p>
+            <span className="font-medium text-slate-700">webgen-motion</span> ·
+            Smooth &amp; Design · local-first
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 font-mono text-[10px] tracking-wider uppercase hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Landing
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function ConfigChip({ configured }: { configured: boolean }) {
+  return (
+    <Link
+      href="/setup"
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        configured
+          ? "text-emerald-700 hover:bg-emerald-50"
+          : "text-amber-700 hover:bg-amber-50"
+      }`}
+      title={configured ? "Backend voix off OK" : "Setup requis"}
+    >
+      {configured ? (
+        <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+      ) : (
+        <Cog className="w-3.5 h-3.5" />
+      )}
+      {configured ? "Configuré" : "Setup"}
+    </Link>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="rounded-2xl border-2 border-dashed border-border p-12 flex flex-col items-center justify-center gap-3 text-center bg-surface-muted">
+      <div className="w-10 h-10 rounded-xl bg-slate-900 text-white grid place-items-center">
+        <Film className="w-5 h-5" />
+      </div>
+      <p className="text-base font-semibold text-slate-900">
+        Aucun tour défini
+      </p>
+      <p className="text-xs text-slate-500 max-w-md leading-relaxed">
+        Clique sur <strong>Nouveau tour</strong> ci-dessus pour scaffolder
+        un fichier <code className="px-1.5 py-0.5 bg-white border border-border rounded text-slate-700">tours/&lt;id&gt;.json</code>{" "}
+        ou drop-en un à la main dans le dossier <code className="px-1.5 py-0.5 bg-white border border-border rounded text-slate-700">tours/</code>.
+      </p>
+    </div>
+  );
+}

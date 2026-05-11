@@ -48,7 +48,7 @@ export default function HelpPage() {
               <span className="text-sm text-slate-500 font-medium">Aide</span>
             </div>
             <Link
-              href="/"
+              href="/dashboard"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -381,7 +381,7 @@ export default function HelpPage() {
         {/* Back to hub CTA */}
         <div className="flex justify-center pt-2">
           <Link
-            href="/"
+            href="/dashboard"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
           >
             Retour au hub

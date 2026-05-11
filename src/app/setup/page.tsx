@@ -215,7 +215,7 @@ export default function SetupPage() {
               <span className="text-sm text-slate-500 font-medium">Setup</span>
             </Link>
             <Link
-              href="/"
+              href="/dashboard"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -274,7 +274,7 @@ export default function SetupPage() {
           <WelcomeStep
             envFallback={config?.envFallback}
             onContinue={() => setStep("backend")}
-            onSkip={() => router.push("/")}
+            onSkip={() => router.push("/dashboard")}
           />
         )}
 
@@ -325,7 +325,7 @@ export default function SetupPage() {
         {step === "done" && (
           <DoneStep
             config={config}
-            onFinish={() => router.push("/")}
+            onFinish={() => router.push("/dashboard")}
             onEdit={() => {
               // Reset the form fields and bounce the user back to the
               // backend picker so they can change branch if needed.
