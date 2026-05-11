@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { existsSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
 import { getTour, saveTour } from "@/lib/tour-loader";
 import type { TourEntry } from "@/lib/types/tour";
 
@@ -55,6 +57,36 @@ export async function PUT(
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Save failed" },
       { status: 400 },
+    );
+  }
+  return NextResponse.json({ ok: true });
+}
+
+/**
+ * Removes `tours/<id>.json`. Capture / voiceover / final artifacts
+ * sitting under `~/.webgen-motion/tours/<id>/` are left intact on
+ * purpose — they're expensive to reproduce and the user can re-add
+ * the tour JSON later without losing them. To clean those, point
+ * Finder / Terminal at the path manually.
+ */
+export async function DELETE(
+  _req: NextRequest,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const { id } = await ctx.params;
+  if (!id || !/^[\w-]+$/.test(id)) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+  const path = join(process.cwd(), "tours", `${id}.json`);
+  if (!existsSync(path)) {
+    return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+  }
+  try {
+    unlinkSync(path);
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Delete failed" },
+      { status: 500 },
     );
   }
   return NextResponse.json({ ok: true });

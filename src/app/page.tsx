@@ -8,13 +8,12 @@ import {
   Film,
   HelpCircle,
   Mic,
-  Monitor,
-  Smartphone,
 } from "lucide-react";
 import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
 import { getPublicConfig } from "@/lib/config";
 import NewTourButton from "./_components/new-tour-button";
+import TourCard from "./_components/tour-card";
 
 /**
  * Hub. Mirrors the WebGen admin pattern: sticky top bar + compact
@@ -121,62 +120,7 @@ export default function HubPage() {
                   s.type === "section",
               );
               const cat = getCategory(firstSection?.categoryId);
-              const isPortrait = t.format === "9:16";
-              return (
-                <Link
-                  key={t.id}
-                  href={`/tour/${t.id}`}
-                  className="group bg-white border border-border rounded-2xl overflow-hidden hover:border-border-strong hover:shadow-lg transition-all duration-200 cursor-pointer"
-                >
-                  {/* Cat color accent strip */}
-                  {cat ? (
-                    <div
-                      className="h-1.5"
-                      style={{ backgroundColor: cat.bgColor }}
-                    />
-                  ) : (
-                    <div className="h-1.5 bg-slate-200" />
-                  )}
-
-                  <div className="p-5">
-                    {/* Header row : format chip + title */}
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-mono uppercase tracking-wider">
-                        {isPortrait ? (
-                          <Smartphone className="w-3 h-3" />
-                        ) : (
-                          <Monitor className="w-3 h-3" />
-                        )}
-                        {t.format ?? "16:9"}
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all" />
-                    </div>
-
-                    {/* Title + description */}
-                    <h3 className="text-base font-semibold text-slate-900 leading-tight mb-1 line-clamp-1">
-                      {t.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
-                      {t.description}
-                    </p>
-
-                    {/* Meta row */}
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-                      <span>{t.steps.length} steps</span>
-                      <span>·</span>
-                      <span>~{t.estimatedSec}s</span>
-                      {cat && (
-                        <>
-                          <span>·</span>
-                          <span style={{ color: cat.bgColor }}>
-                            {cat.label}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
+              return <TourCard key={t.id} tour={t} cat={cat ?? null} />;
             })}
           </div>
         )}
