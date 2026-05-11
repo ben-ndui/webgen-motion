@@ -58,7 +58,7 @@ export default function HelpPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 lg:px-8 py-10 space-y-10">
+      <main className="flex-1 max-w-4xl xl:max-w-6xl mx-auto w-full px-6 lg:px-8 py-10 space-y-10">
         {/* Hero */}
         <section className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-mono uppercase tracking-[0.2em]">
@@ -99,7 +99,7 @@ export default function HelpPage() {
           eyebrow="Workflow"
           title="5 étapes pour ta première vidéo"
         >
-          <ol className="space-y-3">
+          <ol className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             <Step
               num={1}
               icon={Settings}
