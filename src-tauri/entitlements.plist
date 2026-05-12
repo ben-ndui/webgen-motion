@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Allow Chromium (bundled by Puppeteer) to JIT-compile JS. -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <!-- Same JIT need : V8 maps writable + executable pages. -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <!-- Required so our bundled Node + ffmpeg + ffprobe sidecars
+         (which we sign ourselves but didn't ship as part of Tauri's
+         own crypto chain) can load their own dylibs without macOS
+         refusing them. Without this the notarized .app launches but
+         the sidecars die instantly. -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <!-- Node 22's V8 occasionally needs to mark already-executable
+         pages writable again. Required for clean sidecar boot. -->
+    <key>com.apple.security.cs.disable-executable-page-protection</key>
+    <true/>
+    <!-- Network access — capture filme des sites externes
+         (puppeteer goto, fetch des audios voicebox/elevenlabs). -->
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <!-- Audio input device : Voicebox local TTS peut avoir besoin
+         de l'entrée micro pour ré-enregistrer une voix custom. -->
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+    <!-- User-selected file read/write : on lit / écrit dans
+         ~/.webgen-motion/ qui est en dehors du sandbox app. -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+</dict>
+</plist>

@@ -28,9 +28,16 @@
  *
  * Run automatically by `tauri build` via `beforeBuildCommand`.
  */
+import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+
+/** du -sm wrapper — returns size in MB (integer). */
+function dirSizeMb(p) {
+  const r = spawnSync("du", ["-sm", p], { encoding: "utf-8" });
+  return parseInt((r.stdout ?? "0").split("\t")[0], 10) || 0;
+}
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -99,9 +106,12 @@ if (existsSync(src.tsconfig)) {
 }
 cpSync(src.package_json, join(dst.runners, "package.json"));
 
-// node_modules : heavy (Puppeteer with bundled Chromium ~200 MB,
-// Remotion ~600 MB, dev deps not needed). For stage 3 we copy the
-// full tree to guarantee the runners boot ; stage 4 will prune.
+// node_modules : heavy (Puppeteer ~200 MB, Remotion ~600 MB, plus
+// the frontend stack we don't need at runner time). We copy
+// everything in `node_modules` then prune the frontend / dev /
+// build-tool deps in a second pass — simpler than a complex filter,
+// and the cpSync is mostly disk-bound so the post-trim is cheap
+// next to the copy itself.
 console.log("[desktop-prepare] staging node_modules (heavy, this takes a moment)…");
 cpSync(src.node_modules, join(dst.runners, "node_modules"), {
   recursive: true,
@@ -109,11 +119,139 @@ cpSync(src.node_modules, join(dst.runners, "node_modules"), {
   filter: (path) => !path.includes("/.cache/"),
 });
 
+// Prune dependencies the runners (capture-tour, audio-tour,
+// compose-tour, analyze-audio) never load. Pure frontend libs go
+// (React UI + Next + framer / icons / fonts / Tauri JS SDK), plus
+// dev + build-time tooling (TypeScript, ESLint, Prettier, Tailwind,
+// Webpack/Rspack, SWC, sharp/img). Cuts the bundled .dmg by roughly
+// 50%.
+console.log("[desktop-prepare] pruning runner node_modules…");
+const PRUNE_TOP_LEVEL = [
+  // Next.js stack — the Next *server* lives in standalone/, runners
+  // don't import any of this.
+  "next", "@next",
+  // Frontend UI / icons / animations / fonts / Tauri SDK
+  "react-icons", "lucide-react", "framer-motion", "geist",
+  "@tauri-apps",
+  // Dev tooling : TypeScript / ESLint / Prettier
+  "typescript", "@types",
+  "eslint", "@eslint", "@typescript-eslint",
+  "eslint-config-next", "eslint-plugin-react", "eslint-plugin-react-hooks",
+  "prettier",
+  // Build-time CSS / bundler / compiler
+  "tailwindcss", "@tailwindcss",
+  "webpack",
+  "@rspack", "@rsbuild",
+  "@swc",
+  // sharp / lightningcss — frontend (Next/Image, Tailwind)
+  "@img", "lightningcss-darwin-arm64", "lightningcss-darwin-x64",
+  "lightningcss-linux-x64-gnu", "lightningcss-win32-x64-msvc",
+];
+let prunedMb = 0;
+for (const name of PRUNE_TOP_LEVEL) {
+  const target = join(dst.runners, "node_modules", name);
+  if (existsSync(target)) {
+    const sizeBefore = dirSizeMb(target);
+    rmSync(target, { recursive: true, force: true });
+    prunedMb += sizeBefore;
+    console.log(`  - ${name} (${sizeBefore} MB)`);
+  }
+}
+console.log(`[desktop-prepare] pruned ${Math.round(prunedMb)} MB total`);
+
 // ─── frontendDist placeholder ──────────────────────────────────────
 writeFileSync(
   join(dst.dist, "index.html"),
   "<!doctype html><meta http-equiv=refresh content=0;url=http://localhost:3030>",
 );
+
+// ─── codesign nested Mach-O binaries ───────────────────────────────
+// Apple's notarization scanner recurses into Contents/Resources and
+// rejects any unsigned Mach-O it finds. Tauri only signs the top-
+// level executables it knows about (sidecars + main exe), so all the
+// native node-modules binaries (esbuild, fsevents, @remotion/compositor,
+// @unrs/resolver, etc.) come up as "not signed" or "missing secure
+// timestamp" → notarization Invalid.
+//
+// We pre-sign every Mach-O inside the staged runners/ with hardened
+// runtime + secure timestamp. Tauri's outer .app signing later just
+// wraps everything. No entitlements on nested binaries — they inherit
+// from the parent process at runtime (entitlements only meaningful
+// on the main executable anyway).
+const signingIdentity = process.env.APPLE_SIGNING_IDENTITY;
+if (signingIdentity) {
+  console.log(`[desktop-prepare] codesigning nested Mach-O binaries…`);
+  // Both staged trees end up inside Contents/Resources/ so we have to
+  // recurse-sign in both. We use `find -L` to follow symlinks (those
+  // in node_modules/.bin/ resolve to real binaries) and probe every
+  // candidate file via `file -b` for "Mach-O" — this catches custom
+  // extensions like `.bare` (bare-url prebuilds), unflagged
+  // executables, .dylibs, .nodes, .so, anything.
+  const roots = [dst.runners, dst.standalone];
+  const candidates = new Set();
+  for (const root of roots) {
+    // Fast cull : known native extensions + permission-executable
+    // files. We exclude source/text files to keep the file-probe
+    // cheap (file -b on 30k+ files would otherwise take ages).
+    const fast = spawnSync(
+      "find",
+      [
+        "-L", root,
+        "-type", "f",
+        "(",
+        "-name", "*.dylib",
+        "-o", "-name", "*.node",
+        "-o", "-name", "*.so",
+        "-o", "-name", "*.bare",
+        "-o", "-perm", "+111",
+        ")",
+        "-not", "-name", "*.js",
+        "-not", "-name", "*.mjs",
+        "-not", "-name", "*.cjs",
+        "-not", "-name", "*.json",
+        "-not", "-name", "*.ts",
+        "-not", "-name", "*.md",
+        "-not", "-name", "*.map",
+      ],
+      { encoding: "utf-8", maxBuffer: 64 * 1024 * 1024 },
+    );
+    for (const f of (fast.stdout ?? "").split("\n").filter(Boolean)) {
+      candidates.add(f);
+    }
+  }
+  // file -b probe each candidate, keep only Mach-O.
+  const files = [];
+  for (const c of candidates) {
+    const r = spawnSync("file", ["-b", c], { encoding: "utf-8" });
+    if ((r.stdout ?? "").includes("Mach-O")) files.push(c);
+  }
+  console.log(`[desktop-prepare] signing ${files.length} Mach-O binaries…`);
+  let ok = 0, fail = 0;
+  for (const file of files) {
+    const r = spawnSync(
+      "codesign",
+      [
+        "--force",
+        "--timestamp",
+        "--options", "runtime",
+        "--sign", signingIdentity,
+        file,
+      ],
+      { stdio: ["ignore", "ignore", "pipe"], encoding: "utf-8" },
+    );
+    if (r.status === 0) {
+      ok++;
+    } else {
+      fail++;
+      console.error(`  ✗ ${file.replace(dst.runners, "runners")} — ${(r.stderr ?? "").trim().split("\n")[0]}`);
+    }
+  }
+  console.log(`[desktop-prepare] codesigned ${ok} OK, ${fail} failed`);
+} else {
+  console.log(
+    `[desktop-prepare] APPLE_SIGNING_IDENTITY not set — skipping nested codesign (unsigned .app, won't notarize)`,
+  );
+}
 
 console.log(`[desktop-prepare] ✓ done`);
 console.log(`  standalone : ${dst.standalone}`);

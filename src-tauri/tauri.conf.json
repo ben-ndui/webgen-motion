@@ -55,7 +55,10 @@
     "shortDescription": "Motion Studio local-first",
     "longDescription": "Capture, mix and compose motion design clips from any website — voice cloning, beat-driven cuts, 4 style presets. Runs entirely on your machine.",
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "10.15",
+      "signingIdentity": "Developer ID Application: Ben NDUI (A24549KKK4)",
+      "providerShortName": "A24549KKK4",
+      "entitlements": "entitlements.plist"
     },
     "windows": {
       "wix": {
