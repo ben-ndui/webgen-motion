@@ -1054,8 +1054,10 @@ async function fetchVoiceboxTts(
   };
 }
 
+const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
+
 function runFfmpeg(args: string[]): void {
-  const r = spawnSync("ffmpeg", args, { stdio: ["ignore", "ignore", "inherit"] });
+  const r = spawnSync(FFMPEG_BIN, args, { stdio: ["ignore", "ignore", "inherit"] });
   if (r.status !== 0) {
     throw new Error(`ffmpeg failed: ${args.join(" ")}`);
   }

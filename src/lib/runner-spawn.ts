@@ -43,25 +43,30 @@ export function resolveRunnerSpawn(
     throw new Error(`Unknown runner : ${runner}`);
   }
 
-  // Packaged desktop : the Rust shell sets these env vars pointing
-  // at the unpacked Resources directory.
+  // Packaged desktop : the Rust shell sets WEBGEN_RUNNERS_DIR to
+  // the unpacked Resources/runners directory. In that mode we MUST
+  // NOT shell out via `npx` because a macOS .app launched from
+  // Finder doesn't inherit the user's PATH — `/opt/homebrew/bin/npx`
+  // simply isn't visible and the spawn fails with ENOENT. Instead
+  // we invoke the bundled Node binary (the same one running the
+  // Next server : `process.execPath` is the Tauri sidecar) with an
+  // explicit path to tsx's CLI script.
   const resDir = process.env.WEBGEN_RUNNERS_DIR;
   if (resDir && existsSync(resDir)) {
     const scriptPath = resolve(resDir, "scripts", fileName);
-    if (existsSync(scriptPath)) {
-      // The runners run via the bundled tsx-style loader. We keep
-      // `tsx` because the scripts use top-level TS imports + the
-      // bundled `runner-deps/` tree provides it.
+    const tsxCli = resolve(resDir, "node_modules", "tsx", "dist", "cli.mjs");
+    if (existsSync(scriptPath) && existsSync(tsxCli)) {
       return {
-        command: "npx",
-        args: ["tsx", scriptPath, ...extraArgs],
+        command: process.execPath,
+        args: [tsxCli, scriptPath, ...extraArgs],
         cwd: resDir,
       };
     }
   }
 
   // Dev fallback : relative path from process.cwd() (the repo root
-  // when Next dev is running).
+  // when Next dev is running). `npx` is fine here because dev runs
+  // inside a terminal with the full user PATH.
   return {
     command: "npx",
     args: ["tsx", `scripts/${fileName}`, ...extraArgs],

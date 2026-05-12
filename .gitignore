@@ -49,3 +49,7 @@ next-env.d.ts
 /src-tauri/standalone/
 /src-tauri/runners/
 /src-tauri/dist/
+# Sidecar binaries (Node + ffmpeg per platform triple, ~190 MB / host).
+# Fetched fresh on each machine via `node scripts/desktop-fetch-binaries.mjs`
+# and rebuilt in CI for cross-platform releases.
+/src-tauri/binaries/

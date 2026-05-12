@@ -1,0 +1,88 @@
+# Multi-OS desktop release for webgen-motion.
+#
+# Produces installers (.dmg / .msi / .AppImage / .deb) on every push of
+# a `v*` tag, attached to a draft GitHub release named after the tag.
+# Each matrix job runs on its native runner so the Tauri sidecar
+# binaries (Node + ffmpeg) match the host triple automatically.
+#
+# Trigger manually via the Actions tab too (`workflow_dispatch`) for
+# preview builds without tagging.
+
+name: desktop-release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            triple: aarch64-apple-darwin
+            rust-target: aarch64-apple-darwin
+          - os: macos-13
+            triple: x86_64-apple-darwin
+            rust-target: x86_64-apple-darwin
+          - os: windows-latest
+            triple: x86_64-pc-windows-msvc
+            rust-target: x86_64-pc-windows-msvc
+          - os: ubuntu-22.04
+            triple: x86_64-unknown-linux-gnu
+            rust-target: x86_64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux WebKit & build deps
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libgtk-3-dev \
+            libsoup-3.0-dev
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+          key: ${{ matrix.triple }}
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Fetch sidecar binaries (Node + ffmpeg)
+        run: node scripts/desktop-fetch-binaries.mjs
+
+      - name: Tauri build
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "webgen-motion ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.rust-target }}

@@ -118,7 +118,9 @@ export async function POST(req: NextRequest) {
         for (const line of lines) parseVoLine(line, emit);
       });
       proc.stderr.on("data", (d) => {
-        stderrBuf += d.toString();
+        const s = d.toString();
+        stderrBuf += s;
+        process.stderr.write(`[audio-tour] ${s}`);
       });
 
       proc.on("error", (err) => {

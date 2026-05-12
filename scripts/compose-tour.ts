@@ -37,11 +37,16 @@ function arg(flag: string, fallback?: string): string | undefined {
   return process.argv[i + 1];
 }
 
+/** Path to the ffprobe binary. Set by the Tauri Rust shell to the
+ *  bundled sidecar in packaged builds ; falls back to whatever's on
+ *  PATH in dev (`brew install ffmpeg` provides ffprobe too). */
+const FFPROBE_BIN = process.env.WEBGEN_FFPROBE_BIN || "ffprobe";
+
 /** ffprobe a media file and return its duration in seconds. Returns 0
  *  on any failure — caller falls back to the manifest value. */
 function probeMediaDurationSec(absPath: string): number {
   const r = spawnSync(
-    "ffprobe",
+    FFPROBE_BIN,
     [
       "-v",
       "error",
@@ -181,8 +186,15 @@ async function main(): Promise<void> {
   // shorten sections before kicking off the Remotion render. Chunk
   // 5 will consume the beats array directly from the composition.
   console.log(`▶ Audio analysis…`);
+  // Resolve tsx via its canonical CLI script instead of `.bin/tsx`.
+  // The `.bin/` shims are symlinks whose self-resolution
+  // (`import.meta.url` based) breaks inside a packaged .app, where
+  // `.bin/tsx` is a hardlink-copy that no longer sees its sibling
+  // dist files. Going through `node_modules/tsx/dist/cli.mjs`
+  // directly is portable to both dev and bundled contexts.
+  const tsxCli = resolve(process.cwd(), "node_modules", "tsx", "dist", "cli.mjs");
   const analyzeArgs = [
-    "tsx",
+    tsxCli,
     "scripts/analyze-audio.ts",
     "--tour-id",
     tourId!,
@@ -192,7 +204,7 @@ async function main(): Promise<void> {
   if (resolvedBgMusicPath) {
     analyzeArgs.push("--bg-music", resolvedBgMusicPath);
   }
-  const analyze = spawnSync("npx", analyzeArgs, {
+  const analyze = spawnSync(process.execPath, analyzeArgs, {
     cwd: process.cwd(),
     stdio: "inherit",
     env: { ...process.env, NO_COLOR: "1" },
@@ -317,8 +329,19 @@ async function main(): Promise<void> {
 
   const propsArg = JSON.stringify(props);
 
+  // Same logic as the tsx spawn above : the `.bin/remotion` shim
+  // does `require('./dist/index')` relative to its own location and
+  // fails when the symlink-resolved path isn't `@remotion/cli/`.
+  // Going through the canonical CLI script bypasses that.
+  const remotionCli = resolve(
+    process.cwd(),
+    "node_modules",
+    "@remotion",
+    "cli",
+    "remotion-cli.js",
+  );
   const remotionArgs = [
-    "remotion",
+    remotionCli,
     "render",
     compositionId,
     outPath,
@@ -332,7 +355,7 @@ async function main(): Promise<void> {
     "info",
   ];
 
-  const proc = spawn("npx", remotionArgs, {
+  const proc = spawn(process.execPath, remotionArgs, {
     cwd: process.cwd(),
     stdio: "inherit",
     env: { ...process.env, NO_COLOR: "1" },

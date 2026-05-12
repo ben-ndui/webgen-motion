@@ -161,13 +161,19 @@ function main(): void {
   console.log(`✓ ${outPath}`);
 }
 
+/** Path to the ffmpeg binary. In a packaged Tauri build the Rust
+ *  shell sets WEBGEN_FFMPEG_BIN to the bundled sidecar ; in dev we
+ *  fall back to whatever's on PATH (`brew install ffmpeg`). */
+const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
+const FFPROBE_BIN = process.env.WEBGEN_FFPROBE_BIN || "ffprobe";
+
 function runFfmpeg(args: string[]): { stdout: string; stderr: string } {
-  const r = spawnSync("ffmpeg", args, { encoding: "utf-8" });
+  const r = spawnSync(FFMPEG_BIN, args, { encoding: "utf-8" });
   return { stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
 
 function runFfprobe(args: string[]): string {
-  const r = spawnSync("ffprobe", args, { encoding: "utf-8" });
+  const r = spawnSync(FFPROBE_BIN, args, { encoding: "utf-8" });
   return r.stdout ?? "";
 }
 

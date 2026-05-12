@@ -100,20 +100,32 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
         .resolve("runners", BaseDirectory::Resource)
         .map_err(|e| format!("resolve runners dir: {e}"))?;
 
+    // Bundled ffmpeg + ffprobe sidecars — exposed via env to the
+    // routes so audio-tour / capture-tour / compose-tour / analyze-audio
+    // use the bundled binaries instead of falling back to a system
+    // install that doesn't exist on a vanilla user's machine.
+    let ffmpeg_path = sidecar_binary_path(app, "ffmpeg")?;
+    let ffprobe_path = sidecar_binary_path(app, "ffprobe")?;
+
     eprintln!("[webgen-motion] spawning Node sidecar : {server_js:?}");
     eprintln!("[webgen-motion] runners dir : {runners_dir:?}");
+    eprintln!("[webgen-motion] ffmpeg path : {ffmpeg_path:?}");
+    eprintln!("[webgen-motion] ffprobe path : {ffprobe_path:?}");
 
-    // `tauri-plugin-shell` runs through the configured permission
-    // capability — see capabilities/default.json `shell:default`.
-    // Using `command("node")` calls the system Node for now ;
-    // stage 4 swaps this for a bundled `binaries/node-<triple>`.
+    // `tauri-plugin-shell.sidecar("node")` picks the platform-triple
+    // binary (e.g. `node-aarch64-apple-darwin`) that Tauri bundled
+    // from `src-tauri/binaries/`. Falls back to system Node only in
+    // dev (and dev doesn't run this branch anyway).
     let (mut rx, child) = app
         .shell()
-        .command("node")
+        .sidecar("node")
+        .map_err(|e| format!("resolve node sidecar : {e}"))?
         .args([server_js.to_string_lossy().to_string()])
         .env("PORT", SERVER_PORT.to_string())
         .env("HOSTNAME", "127.0.0.1")
         .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
+        .env("WEBGEN_FFMPEG_BIN", ffmpeg_path.to_string_lossy().to_string())
+        .env("WEBGEN_FFPROBE_BIN", ffprobe_path.to_string_lossy().to_string())
         .current_dir(standalone_dir)
         .spawn()
         .map_err(|e| format!("spawn node : {e}"))?;
@@ -143,6 +155,30 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     // Block (with timeout) until the server actually listens.
     wait_for_port(SERVER_PORT, SERVER_BOOT_TIMEOUT_SECS);
     Ok(())
+}
+
+/// Resolves the absolute path to a Tauri-bundled sidecar binary
+/// (e.g. `ffmpeg`). Tauri strips the platform-triple suffix at
+/// bundling time and drops the binary next to the main executable
+/// — `Contents/MacOS/<name>` on macOS, `<install>/<name>.exe` on
+/// Windows, etc. So we resolve from `current_exe().parent()` with
+/// the bare name (no triple).
+#[cfg(not(debug_assertions))]
+fn sidecar_binary_path(
+    _app: &tauri::AppHandle,
+    name: &str,
+) -> Result<std::path::PathBuf, String> {
+    let exe = std::env::current_exe()
+        .map_err(|e| format!("current_exe : {e}"))?;
+    let exe_dir = exe
+        .parent()
+        .ok_or_else(|| "current_exe has no parent".to_string())?;
+    let file_name = if cfg!(target_os = "windows") {
+        format!("{name}.exe")
+    } else {
+        name.to_string()
+    };
+    Ok(exe_dir.join(file_name))
 }
 
 /// Polls `127.0.0.1:<port>` every 150ms until the connect succeeds

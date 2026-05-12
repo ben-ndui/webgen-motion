@@ -106,7 +106,9 @@ export async function POST(req: NextRequest) {
         for (const line of lines) parseCaptureLine(line, emit);
       });
       proc.stderr.on("data", (d) => {
-        stderrBuf += d.toString();
+        const s = d.toString();
+        stderrBuf += s;
+        process.stderr.write(`[capture-tour] ${s}`);
       });
 
       proc.on("error", (err) => {

@@ -360,9 +360,11 @@ async function dwell(ctx: CaptureContext, ms: number): Promise<void> {
   }
 }
 
+const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
+
 function encodeMp4(framesDir: string, outPath: string, fpsArg: number): void {
   const ff = spawnSync(
-    "ffmpeg",
+    FFMPEG_BIN,
     [
       "-y",
       "-framerate",
