@@ -1,0 +1,149 @@
+{
+  "id": "smoothandesign-mp3vsoiz",
+  "name": "Smooth & Design · Studio Digital Premium",
+  "description": "Découvrez un studio digital à Nice qui code vos idées en produits web et mobile performants, du brief au lancement.",
+  "estimatedSec": 95,
+  "startPath": "/",
+  "baseUrl": "https://www.smoothandesign.fr/",
+  "format": "16:9",
+  "voiceMode": "narrative",
+  "narrativeScript": "[step:0] On code vos idées, vous changez le monde. Bienvenue chez Smooth & Design, un studio digital basé à Nice qui construit des produits web et mobile qui performent — pas juste des sites. [step:1] Design, code, déploiement. Tout inclus, rien à gérer. Que ce soit un site web, une application mobile iOS ou Android, ou une plateforme complète, nous maîtrisons la stack moderne : Next.js, Flutter, Firebase. [step:2] Du brief au lancement. Simple, rapide, efficace. Un appel découverte de 30 minutes pour comprendre votre projet, vos objectifs et vos contraintes. Puis trois à six semaines pour livrer un produit en production. [step:3] Des projets livrés. En production. Nous avons accompagné des startups ambitieuses, des PMEs en croissance et des grands groupes. Plateforme esport, solutions e-commerce, applications d'impact social — chaque projet raconte une histoire de transformation digitale. [step:4] Plus de sept ans à builder. Startup, grand groupe, entrepreneuriat. Depuis 2019, nous accumulons l'expérience et la rigueur pour transformer vos ambitions en réalité. [step:5] Questions fréquentes. Délais, budgets, design, technologies — nous répondons à toutes vos interrogations pour que vous commenciez serein.",
+  "brand": {
+    "displayName": "Smooth & Design",
+    "domain": "smoothandesign.fr",
+    "tagline": "Studio Digital Premium Nice"
+  },
+  "composeStyle": "sober",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "On code vos idées",
+      "subtitle": "vous changez le monde.",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Design, code, déploiement",
+      "subtitle": "Tout inclus, rien à gérer.",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 1080,
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "cta",
+      "title": "Du brief au lancement",
+      "subtitle": "Simple, rapide, efficace.",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 2972,
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Web, Mobile, et bien plus",
+      "position": "center",
+      "categoryId": "features",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "testimonials",
+      "title": "Des projets livrés",
+      "subtitle": "En production.",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 3731,
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "3 à 6 semaines de conception et développement",
+      "position": "center",
+      "categoryId": "cta",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "testimonials",
+      "title": "+7 ans à builder",
+      "subtitle": "Startup, grand groupe, entrepreneuriat.",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 5509,
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Esport, E-commerce, Impact Social",
+      "position": "center",
+      "categoryId": "testimonials",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "footer",
+      "title": "Questions fréquentes",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 6621,
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Depuis 2019, nous transformons les idées en produits",
+      "position": "center",
+      "categoryId": "testimonials",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "scroll",
+      "to": 6621,
+      "dwellMs": 1500
+    },
+    {
+      "type": "overlay",
+      "text": "Tous vos doutes, clarifiés",
+      "position": "center",
+      "categoryId": "footer",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    }
+  ]
+}
