@@ -53,7 +53,6 @@ export default function CaptureTab({
   onCapture,
 }: Props) {
   const isRunning = capture.kind === "running";
-  const [zoom, setZoom] = useState<CapturedSection | null>(null);
 
   const captureDescription = `Puppeteer ouvre une fenêtre Chromium au format ${captureFormat}, film le tour section par section et encode chaque section en MP4 + manifest.json.\nSortie : ~/.webgen-motion/tours/${tourId}/`;
 
@@ -188,6 +187,7 @@ function CaptureResults({
   captureWallTimeSec: number;
   tourId: string;
 }) {
+  const [zoom, setZoom] = useState<CapturedSection | null>(null);
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
