@@ -60,7 +60,9 @@ export default function GLBDevice({
   //    targetHeight (3.4 unités pour iPhone, 4 pour MacBook)
   const { scale, rotation } = useMemo(() => {
     if (!gltf.scene) return { scale: 1, rotation: [0, 0, 0] as [number, number, number] };
+    const sceneCenter = new THREE.Vector3();
     const box = new THREE.Box3().setFromObject(gltf.scene);
+    box.getCenter(sceneCenter);
     const size = new THREE.Vector3();
     box.getSize(size);
 
@@ -69,16 +71,35 @@ export default function GLBDevice({
     const shortestIdx = dims.indexOf(Math.min(...dims));
     let rot: [number, number, number] = [0, 0, 0];
     if (shortestIdx === 0) {
-      // X is shortest → device lying with thickness on X.
-      // Rotate around Y by π/2 to bring thickness onto Z.
       rot = [0, Math.PI / 2, 0];
     } else if (shortestIdx === 1) {
-      // Y is shortest → device lying flat (screen up or down).
-      // Rotate around X by -π/2 to stand it up screen-facing camera.
       rot = [-Math.PI / 2, 0, 0];
     }
-    // shortestIdx === 2 → thickness déjà sur Z, rien à faire
-    // (best case, mais peut nécessiter un flip 180° si back-facing)
+
+    // Check si la mesh "screen" finit devant (+Z) ou derrière (-Z)
+    // la caméra après notre rotation. Si derrière → flip Y par π pour
+    // amener le screen face cam. Ça gère les GLBs Sketchfab dont le
+    // screen est sur -Z (back-facing par défaut, très commun).
+    let screenCenter: THREE.Vector3 | null = null;
+    gltf.scene.traverse((obj) => {
+      if (screenCenter || !(obj instanceof THREE.Mesh)) return;
+      if (SCREEN_MESH_NAMES.includes(obj.name)) {
+        const meshBox = new THREE.Box3().setFromObject(obj);
+        screenCenter = new THREE.Vector3();
+        meshBox.getCenter(screenCenter);
+        screenCenter.sub(sceneCenter); // local au scene center
+      }
+    });
+    if (screenCenter !== null) {
+      // Appliquer notre rotation au screenCenter pour savoir où il
+      // atterrit dans l'espace de la caméra.
+      const euler = new THREE.Euler(rot[0], rot[1], rot[2]);
+      const rotated = (screenCenter as THREE.Vector3).clone().applyEuler(euler);
+      if (rotated.z < -0.001) {
+        // Screen est derrière → flip Y de π pour le ramener devant.
+        rot = [rot[0], rot[1] + Math.PI, rot[2]];
+      }
+    }
 
     const longest = Math.max(...dims);
     const s = longest > 0 ? targetHeight / longest : 1;
