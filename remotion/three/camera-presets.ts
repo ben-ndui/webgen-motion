@@ -107,36 +107,35 @@ export function resolveCamera(
       };
     }
     case "cinematic-spin": {
-      // Chorégraphie 4 temps avec camera statique en arrière. Le
-      // device tourne sur lui-même + drift léger sans jamais sortir
-      // du cadre (amplitude réduite pour respecter le FoV cam).
+      // Chorégraphie 4 temps avec camera statique reculée + device
+      // qui danse sur lui-même. Amplitude conservatrice pour rester
+      // dans le cadre (camera z=9, drift max ±0.3, rotation ±0.35).
       //   t=0..0.25 : face caméra → début 3/4 droite
       //   t=0.25..0.50 : 3/4 droite stable, drift léger
       //   t=0.50..0.75 : revient au centre, rotation passe par 0
       //   t=0.75..1.0 : 3/4 gauche, settle
-      // Camera reculée (z=8) pour avoir plus de marge latérale.
       const phase = t * 4;
       let rotY = 0;
       let posX = 0;
       let posY = 0;
       if (phase < 1) {
-        rotY = lerp(0, 0.4, phase);
-        posX = lerp(0, 0.35, phase);
+        rotY = lerp(0, 0.3, phase);
+        posX = lerp(0, 0.2, phase);
       } else if (phase < 2) {
-        rotY = lerp(0.4, 0.45, phase - 1);
-        posX = lerp(0.35, 0.55, phase - 1);
-        posY = lerp(0, 0.1, phase - 1);
+        rotY = lerp(0.3, 0.35, phase - 1);
+        posX = lerp(0.2, 0.3, phase - 1);
+        posY = lerp(0, 0.08, phase - 1);
       } else if (phase < 3) {
-        rotY = lerp(0.45, -0.45, phase - 2);
-        posX = lerp(0.55, -0.55, phase - 2);
-        posY = lerp(0.1, 0.1, phase - 2);
+        rotY = lerp(0.35, -0.35, phase - 2);
+        posX = lerp(0.3, -0.3, phase - 2);
+        posY = lerp(0.08, 0.08, phase - 2);
       } else {
-        rotY = lerp(-0.45, -0.4, phase - 3);
-        posX = lerp(-0.55, -0.35, phase - 3);
-        posY = lerp(0.1, 0, phase - 3);
+        rotY = lerp(-0.35, -0.3, phase - 3);
+        posX = lerp(-0.3, -0.2, phase - 3);
+        posY = lerp(0.08, 0, phase - 3);
       }
       return {
-        position: [0, 0.4, 8],
+        position: [0, 0.4, 9],
         lookAt: [0, 0, 0],
         fov: 36,
         deviceRotation: [0, rotY, 0],
