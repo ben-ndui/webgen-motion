@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { getCategory } from "@/lib/motion-categories";
 import RecaptureSectionButton from "./recapture-section-button";
+import SectionReplaceMp4Button from "./section-replace-mp4-button";
 import SectionTrimControls from "./section-trim-controls";
 import type { CapturedSection } from "./capture-tab";
 
@@ -140,8 +141,13 @@ export default function SectionCard({
 
       {/* Footer : recapture + trim toggle + download */}
       <div className="p-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <RecaptureSectionButton
+            tourId={tourId}
+            sectionIndex={section.index}
+            onDone={onSectionRecaptured}
+          />
+          <SectionReplaceMp4Button
             tourId={tourId}
             sectionIndex={section.index}
             onDone={onSectionRecaptured}
