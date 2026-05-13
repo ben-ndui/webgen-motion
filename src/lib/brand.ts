@@ -1,17 +1,21 @@
 /**
- * Brand tokens for the dashboard chrome.
+ * Brand tokens neutres pour le chrome admin de webgen-motion.
  *
- * Kept under the `UZME` export name temporarily because the migrated
- * tour preview / compose pages reference `UZME.primary` etc. directly
- * via inline `style={{}}` rather than Tailwind classes. Sprint 2 will
- * rip these out in favour of theme variables.
+ * Sprint 6 — extraction Motion Studio standalone : l'ex-export
+ * `UZME` (transitionnel depuis la migration) a été renommé en
+ * `BRAND` pour ne pas exporter de nom propriétaire. Aucun consumer
+ * n'importait cet export — on garde quand même la constante pour
+ * un éventuel futur usage par les step preview components.
  *
- * Values mirror the slate-based admin palette from globals.css.
+ * Pour une vraie customisation par projet, passer plutôt par
+ * `webgen-motion.config.ts` qui expose une API plus structurée.
+ *
+ * Valeurs : palette slate-based mirror de globals.css.
  */
-export const UZME = {
-  primary: "#0f172a", // slate-900 — primary text + slate-900 buttons
+export const BRAND = {
+  primary: "#0f172a", // slate-900 — primary text + boutons
   secondary: "#1e293b", // slate-800
-  tertiary: "#2563eb", // blue-600 — accent CTAs (was UZME turquoise)
+  tertiary: "#2563eb", // blue-600 — accent CTAs
   accent: "#3b82f6", // blue-500
   success: "#16a34a", // green-600
   warning: "#f59e0b", // amber-500

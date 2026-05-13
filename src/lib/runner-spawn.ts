@@ -33,6 +33,7 @@ const RUNNER_FILES: Record<string, string> = {
   "compose-tour": "compose-tour.ts",
   "analyze-audio": "analyze-audio.ts",
   "agent-generate-tour": "agent-generate-tour.ts",
+  "scaffold-tours-from-project": "scaffold-tours-from-project.ts",
 };
 
 export function resolveRunnerSpawn(

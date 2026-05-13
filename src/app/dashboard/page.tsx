@@ -15,6 +15,7 @@ import { getCategory } from "@/lib/motion-categories";
 import { getPublicConfig } from "@/lib/config";
 import NewTourButton from "../_components/new-tour-button";
 import GenerateWithAiButton from "../_components/generate-with-ai-button";
+import ScaffoldFromProjectButton from "../_components/scaffold-from-project-button";
 import TourCard from "../_components/tour-card";
 
 /**
@@ -125,6 +126,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2" data-wm-id="dashboard.actions">
+            <ScaffoldFromProjectButton />
             <GenerateWithAiButton />
             <NewTourButton />
           </div>

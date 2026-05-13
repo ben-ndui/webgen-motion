@@ -13,10 +13,10 @@
  *
  * Usage:
  *   npx tsx scripts/capture-tour.ts \
- *     --tour-id uzme-landing \
- *     --base-url https://uzme.app \
+ *     --tour-id my-landing \
+ *     --base-url https://example.com \
  *     --fps 30 \
- *     --out ~/.webgen-motion/tours/uzme-landing
+ *     --out ~/.webgen-motion/tours/my-landing
  */
 
 import {
