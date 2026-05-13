@@ -1,0 +1,121 @@
+{
+  "id": "restaurant-epicentre-mp4hyo33",
+  "name": "Epicentre — Gastronomie Émotionnelle",
+  "description": "Découvrez un restaurant gastronomique où innovation et tradition se rencontrent pour une expérience culinaire inoubliable.",
+  "estimatedSec": 95,
+  "startPath": "/",
+  "baseUrl": "https://restaurant-epicentre.com/",
+  "format": "16:9",
+  "voiceMode": "narrative",
+  "narrativeScript": "[step:0] Bienvenue à Epicentre, un restaurant gastronomique niçois où la cuisine devient une expérience émotionnelle. Ce n'est pas simplement une table, c'est un moment de connexion. [step:1] Ici, chaque plat raconte une histoire, alliant innovation culinaire et tradition méditerranéenne. Les produits frais et de saison sont au cœur de notre philosophie. [step:2] Découvrez notre menu raffiné, conçu par notre chef passionné. Chaque création est pensée pour vous marquer, au-delà du simple goût. [step:3] Notre équipe dévouée vous accueille pour transformer votre repas en souvenir inoubliable. Réservez dès maintenant et vivez l'expérience Epicentre.",
+  "brand": {
+    "displayName": "Epicentre",
+    "domain": "restaurant-epicentre.com",
+    "tagline": "Restaurant Gastronomique à Nice"
+  },
+  "composeStyle": "cinematic",
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Epicentre",
+      "subtitle": "Une Expérience Émotionnelle",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    },
+    {
+      "type": "overlay",
+      "text": "Il ne s'agit pas simplement d'une expérience gustative",
+      "position": "bottom",
+      "categoryId": "branding",
+      "dwellMs": 3500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "click",
+      "selector": "div.container > div.items-center > div.items-center:nth-of-type(2) > button.transition-colors:nth-of-type(1)",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Consultez notre menu raffiné",
+      "position": "center",
+      "categoryId": "branding",
+      "dwellMs": 2500
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Notre Philosophie",
+      "subtitle": "Produits Frais & Saison",
+      "dwellMs": 2500
+    },
+    {
+      "type": "overlay",
+      "text": "Innovation et tradition réunies",
+      "position": "center",
+      "categoryId": "features",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "testimonials",
+      "title": "Le Chef & L'Équipe",
+      "subtitle": "Passion Culinaire",
+      "dwellMs": 2500
+    },
+    {
+      "type": "overlay",
+      "text": "Une équipe dévouée à votre service",
+      "position": "center",
+      "categoryId": "testimonials",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1500
+    },
+    {
+      "type": "section",
+      "categoryId": "cta",
+      "title": "Réservez Votre Table",
+      "subtitle": "Vivez l'Expérience",
+      "dwellMs": 2500
+    },
+    {
+      "type": "scroll",
+      "to": 0,
+      "dwellMs": 1500
+    },
+    {
+      "type": "click",
+      "selector": "div.relative > div.space-y-4:nth-of-type(2) > div:nth-of-type(3) > a.inline-block",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Transformez votre repas en souvenir",
+      "position": "center",
+      "categoryId": "cta",
+      "dwellMs": 3000
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2000
+    }
+  ]
+}

@@ -145,5 +145,7 @@
       "type": "wait",
       "dwellMs": 2000
     }
-  ]
+  ],
+  "frame3d": "macbook",
+  "cameraPreset3d": "hero-tilt"
 }

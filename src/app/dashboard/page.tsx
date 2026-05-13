@@ -16,6 +16,7 @@ import { getPublicConfig } from "@/lib/config";
 import NewTourButton from "../_components/new-tour-button";
 import GenerateWithAiButton from "../_components/generate-with-ai-button";
 import ScaffoldFromProjectButton from "../_components/scaffold-from-project-button";
+import SettingsMenu from "../_components/settings-menu";
 import TourCard from "../_components/tour-card";
 
 /**
@@ -67,12 +68,6 @@ export default function DashboardPage() {
                 <HelpCircle className="w-3.5 h-3.5" />
                 Aide
               </Link>
-              <Link
-                href="/notary"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                Notary
-              </Link>
               <a
                 href="https://github.com/ben-ndui/webgen-motion"
                 target="_blank"
@@ -82,6 +77,7 @@ export default function DashboardPage() {
                 <ExternalLink className="w-3.5 h-3.5" />
                 GitHub
               </a>
+              <SettingsMenu />
               <ConfigChip configured={config.configured} />
             </div>
           </div>
