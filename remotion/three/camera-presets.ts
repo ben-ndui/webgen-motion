@@ -107,39 +107,36 @@ export function resolveCamera(
       };
     }
     case "cinematic-spin": {
-      // Chorégraphie 4 temps avec camera statique en arrière :
-      //   t=0..0.20 : face caméra (rotY=0), centré
-      //   t=0.20..0.50 : rotate +0.45 rad (3/4 droite) + drift +X
-      //   t=0.50..0.75 : drift de +X vers -X (cross l'écran)
-      //   t=0.75..1.0 : rotate -0.45 rad (3/4 gauche), pos stable
-      // Couplé avec une légère élévation au milieu pour casser
-      // l'horizontalité.
-      const phase = t * 4; // 4 phases sur [0..1]
+      // Chorégraphie 4 temps avec camera statique en arrière. Le
+      // device tourne sur lui-même + drift léger sans jamais sortir
+      // du cadre (amplitude réduite pour respecter le FoV cam).
+      //   t=0..0.25 : face caméra → début 3/4 droite
+      //   t=0.25..0.50 : 3/4 droite stable, drift léger
+      //   t=0.50..0.75 : revient au centre, rotation passe par 0
+      //   t=0.75..1.0 : 3/4 gauche, settle
+      // Camera reculée (z=8) pour avoir plus de marge latérale.
+      const phase = t * 4;
       let rotY = 0;
       let posX = 0;
       let posY = 0;
       if (phase < 1) {
-        // Phase 1 : face → début 3/4
-        rotY = lerp(0, 0.45, phase);
-        posX = lerp(0, 0.6, phase);
+        rotY = lerp(0, 0.4, phase);
+        posX = lerp(0, 0.35, phase);
       } else if (phase < 2) {
-        // Phase 2 : 3/4 droite stable, drift vers +X plus marqué
-        rotY = 0.45;
-        posX = lerp(0.6, 1.1, phase - 1);
-        posY = lerp(0, 0.15, phase - 1);
+        rotY = lerp(0.4, 0.45, phase - 1);
+        posX = lerp(0.35, 0.55, phase - 1);
+        posY = lerp(0, 0.1, phase - 1);
       } else if (phase < 3) {
-        // Phase 3 : traverse de +X vers -X, rotation flip Y vers 0
-        rotY = lerp(0.45, 0, phase - 2);
-        posX = lerp(1.1, -1.1, phase - 2);
-        posY = lerp(0.15, 0.15, phase - 2);
+        rotY = lerp(0.45, -0.45, phase - 2);
+        posX = lerp(0.55, -0.55, phase - 2);
+        posY = lerp(0.1, 0.1, phase - 2);
       } else {
-        // Phase 4 : 3/4 gauche, settle
-        rotY = lerp(0, -0.45, phase - 3);
-        posX = lerp(-1.1, -0.6, phase - 3);
-        posY = lerp(0.15, 0, phase - 3);
+        rotY = lerp(-0.45, -0.4, phase - 3);
+        posX = lerp(-0.55, -0.35, phase - 3);
+        posY = lerp(0.1, 0, phase - 3);
       }
       return {
-        position: [0, 0.4, 7],
+        position: [0, 0.4, 8],
         lookAt: [0, 0, 0],
         fov: 36,
         deviceRotation: [0, rotY, 0],

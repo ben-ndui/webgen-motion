@@ -30,22 +30,15 @@ import * as THREE from "three";
  * MacBook). Le user n'a pas à se soucier de l'échelle du GLB Sketchfab.
  */
 
-/** Matching élargi pour la mesh écran. Sketchfab varie beaucoup
- *  côté naming (Cube_001, mesh_screen, Front, Glass…), donc on
- *  match plusieurs patterns lowercase. Si rien match, on assume
- *  un flip Y par défaut (convention Sketchfab back-facing). */
-const SCREEN_NAME_HINTS = [
-  "screen",
-  "display",
-  "front",
-  "glass",
-  "lcd",
-  "oled",
-];
+/** Matching STRICT par exact name pour ne pas attraper de false
+ *  positives (genre "front_panel" qui matchait "front"). Si rien
+ *  match, on tombe sur l'heuristique géométrie qui pick la mesh
+ *  la plus plate. */
+const SCREEN_NAME_HINTS = ["screen", "display", "écran", "ecran"];
 
 function isScreenMesh(name: string): boolean {
   const lower = name.toLowerCase();
-  return SCREEN_NAME_HINTS.some((hint) => lower.includes(hint));
+  return SCREEN_NAME_HINTS.includes(lower);
 }
 
 export default function GLBDevice({
@@ -130,25 +123,85 @@ export default function GLBDevice({
     return { scale: s, rotation: rot };
   }, [gltf.scene, targetHeight]);
 
-  // Override the screen mesh material with the video texture. Walk
-  // the scene graph (the GLB peut être nested arbitrairement) et
-  // patche la première mesh dont le nom matche notre convention.
+  // Debug : log TOUS les meshes du GLB dès qu'il est chargé (avant
+  // même que la texture vidéo soit prête). Permet à l'utilisateur de
+  // voir quelle mesh c'est l'écran et la renommer si besoin.
+  useEffect(() => {
+    if (!gltf.scene) return;
+    const allMeshes: THREE.Mesh[] = [];
+    gltf.scene.traverse((obj) => {
+      if (obj instanceof THREE.Mesh) allMeshes.push(obj);
+    });
+    if (allMeshes.length === 0) return;
+    const summary = allMeshes
+      .map((m) => {
+        const b = new THREE.Box3().setFromObject(m);
+        const s = new THREE.Vector3();
+        b.getSize(s);
+        const dims = [s.x, s.y, s.z];
+        const ratio = Math.min(...dims) / Math.max(...dims);
+        return `  - "${m.name || "(unnamed)"}" : ${s.x.toFixed(2)}×${s.y.toFixed(2)}×${s.z.toFixed(2)} (flat ${ratio.toFixed(3)})`;
+      })
+      .join("\n");
+    console.warn(
+      `[webgen-motion] Meshes du GLB ${glbPath} :\n${summary}`,
+    );
+  }, [gltf.scene, glbPath]);
+
+  // Override the screen mesh material with the video texture. Trois
+  // stratégies en fallback :
+  //   1. Match par nom strict (screen / display / écran / ecran)
+  //   2. Si rien : heuristique géométrie — pick la mesh la plus PLATE
+  //      (smallest_dim / largest_dim minimal). C'est très probablement
+  //      le screen plane.
+  //   3. Si rien quand même : log warn.
   useEffect(() => {
     if (!gltf.scene || !videoTexture) return;
-    let patched = false;
+    const allMeshes: THREE.Mesh[] = [];
     gltf.scene.traverse((obj) => {
-      if (patched || !(obj instanceof THREE.Mesh)) return;
-      if (isScreenMesh(obj.name)) {
-        obj.material = new THREE.MeshBasicMaterial({
+      if (obj instanceof THREE.Mesh) allMeshes.push(obj);
+    });
+
+    // Stratégie 1 : mesh nommée explicitement (screen/display/etc.)
+    const named = allMeshes.find((m) => isScreenMesh(m.name));
+    if (named) {
+      named.material = new THREE.MeshBasicMaterial({
+        map: videoTexture,
+        toneMapped: false,
+      });
+      return;
+    }
+
+    // Stratégie 2 : applique à TOUTES les meshes plates significatives
+    // (flat ratio < 0.06, surface > 0.5). Comme on ne peut pas
+    // distinguer screen avant vs vitre arrière sans naming, on
+    // tartine — la mesh visible côté caméra montrera la vidéo, les
+    // autres seront cachées dedans le device. Pragmatique mais robuste.
+    let appliedCount = 0;
+    for (const mesh of allMeshes) {
+      const meshBox = new THREE.Box3().setFromObject(mesh);
+      const meshSize = new THREE.Vector3();
+      meshBox.getSize(meshSize);
+      const dims = [meshSize.x, meshSize.y, meshSize.z];
+      const max = Math.max(...dims);
+      const min = Math.min(...dims);
+      const surface = dims.reduce((a, b) => a * b, 1) / Math.max(min, 0.001);
+      const flatRatio = min / Math.max(max, 0.001);
+      if (flatRatio < 0.06 && surface > 0.5 && max > 1.0) {
+        mesh.material = new THREE.MeshBasicMaterial({
           map: videoTexture,
           toneMapped: false,
         });
-        patched = true;
+        appliedCount++;
       }
-    });
-    if (!patched) {
+    }
+    if (appliedCount === 0) {
       console.warn(
-        `[webgen-motion] Aucune mesh "screen" / "display" trouvée dans ${glbPath} — la vidéo ne s'affichera pas sur l'écran du device. Renomme une mesh dans Blender en "screen" et ré-exporte le GLB.`,
+        `[webgen-motion] Aucune mesh écran candidate trouvée dans ${glbPath}. Tu peux renommer la mesh écran en "screen" dans Blender pour forcer.`,
+      );
+    } else {
+      console.warn(
+        `[webgen-motion] Texture vidéo appliquée à ${appliedCount} mesh(es) plate(s) du GLB ${glbPath}. La plus visible côté caméra montrera la capture.`,
       );
     }
   }, [gltf.scene, videoTexture, glbPath]);
