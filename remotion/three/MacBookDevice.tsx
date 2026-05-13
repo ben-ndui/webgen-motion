@@ -1,6 +1,7 @@
 "use client";
 
 import { useOffthreadVideoTexture } from "@remotion/three";
+import { useMemo } from "react";
 
 /**
  * MacBook procedural 3D pour les compositions Sprint 7.
@@ -48,14 +49,37 @@ export default function MacBookDevice({
         />
       </mesh>
 
-      {/* Trackpad — subtle dimple sur la base */}
-      <mesh position={[0, 0.001, baseDepth / 2 - 0.7]}>
-        <boxGeometry args={[1.6, 0.005, 1.1]} />
+      {/* Trackpad — vitre sombre légèrement renfoncée */}
+      <mesh position={[0, 0.005, baseDepth / 2 - 0.7]}>
+        <boxGeometry args={[1.7, 0.01, 1.15]} />
         <meshStandardMaterial
-          color="#bbb"
-          metalness={0.4}
-          roughness={0.45}
+          color="#1d1d1f"
+          metalness={0.3}
+          roughness={0.25}
         />
+      </mesh>
+
+      {/* Keyboard area — fond noir + grille de touches */}
+      <mesh position={[0, 0.005, -0.55]}>
+        <boxGeometry args={[3.6, 0.008, 1.1]} />
+        <meshStandardMaterial color="#1a1a1c" roughness={0.6} metalness={0.1} />
+      </mesh>
+      <KeyboardGrid />
+
+      {/* Ports USB-C — 2 à gauche, 1 à droite (MagSafe simulated)
+       *  + jack 3.5mm. Ces côtés ne sont visibles qu'avec pan-right
+       *  ou flip-reveal mais ajoutent du détail au look. */}
+      <mesh position={[-baseWidth / 2 - 0.001, -baseHeight / 2, 0.3]}>
+        <boxGeometry args={[0.005, 0.04, 0.18]} />
+        <meshStandardMaterial color="#0a0a0a" metalness={0.5} roughness={0.4} />
+      </mesh>
+      <mesh position={[-baseWidth / 2 - 0.001, -baseHeight / 2, 0]}>
+        <boxGeometry args={[0.005, 0.04, 0.18]} />
+        <meshStandardMaterial color="#0a0a0a" metalness={0.5} roughness={0.4} />
+      </mesh>
+      <mesh position={[baseWidth / 2 + 0.001, -baseHeight / 2, 0]}>
+        <boxGeometry args={[0.005, 0.04, 0.18]} />
+        <meshStandardMaterial color="#0a0a0a" metalness={0.5} roughness={0.4} />
       </mesh>
 
       {/* Screen group — pivoté sur la hinge (bord arrière de la base) */}
@@ -97,6 +121,41 @@ export default function MacBookDevice({
           </mesh>
         </group>
       </group>
+    </group>
+  );
+}
+
+/** Grille de touches du clavier MacBook — 6 rangées × 15 colonnes
+ *  d'instances de petits cubes noirs. Pas une vraie réplique mais
+ *  donne l'impression d'un clavier de loin. */
+function KeyboardGrid() {
+  const keys = useMemo(() => {
+    const list: Array<[number, number]> = [];
+    const cols = 15;
+    const rows = 5;
+    const colGap = 0.21;
+    const rowGap = 0.16;
+    const xStart = -((cols - 1) * colGap) / 2;
+    const zStart = -0.55 - ((rows - 1) * rowGap) / 2;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        list.push([xStart + c * colGap, zStart + r * rowGap]);
+      }
+    }
+    return list;
+  }, []);
+  return (
+    <group position={[0, 0.013, 0]}>
+      {keys.map(([x, z], i) => (
+        <mesh key={i} position={[x, 0, z]}>
+          <boxGeometry args={[0.16, 0.008, 0.13]} />
+          <meshStandardMaterial
+            color="#2a2a2c"
+            roughness={0.7}
+            metalness={0.1}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }

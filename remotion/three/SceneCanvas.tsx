@@ -2,18 +2,32 @@
 
 import { ThreeCanvas } from "@remotion/three";
 import { useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { Environment } from "@react-three/drei";
+import {
+  EffectComposer,
+  Bloom,
+  Vignette,
+  BrightnessContrast,
+} from "@react-three/postprocessing";
 import IPhoneDevice from "./iPhoneDevice";
 import MacBookDevice from "./MacBookDevice";
 import { resolveCamera, type CameraPresetId } from "./camera-presets";
+import { useThree } from "@react-three/fiber";
+import { useEffect } from "react";
 
 /**
- * Scene wrapper qui assemble device + lighting + camera animée.
- * Utilisé par SectionPlayer quand `composeStyle` / `frame3d` opt-in
- * et que le flag `frames-3d` est activé (Studio Edition).
+ * Scene wrapper qui assemble device + lighting + camera animée +
+ * post-processing. Sprint 7 phase 2 : on passe d'un setup basique
+ * (3 directionalLights, no env map) à un studio look :
+ *  - Environment HDRI "studio" via drei → reflections vraies sur
+ *    le titanium body + glass screen
+ *  - Bloom modéré pour faire luire les edges
+ *  - Vignette subtle pour cadrer l'attention
+ *  - BrightnessContrast pour booster le contrast du software
+ *    rendering SwiftShader
  *
- * Sprint 7 phase 1 — version procédurale (pas de GLB), Three.js
- * basic lighting. Phase 2 ajoutera env map (chrome/studio lighting
- * realistic) + post-process (bloom, AO).
+ * Phase 3 ajoutera : real GLBs (drop-in via public/models/),
+ * multi-device scene, ambient occlusion + DOF.
  */
 export type Frame3DDeviceId = "iphone" | "macbook";
 
@@ -34,10 +48,8 @@ export default function SceneCanvas({
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  void fps;
 
-  // Progress 0..1 sur la durée de la section. Clamp pour rester
-  // dans [0, 1] même si la composition étend le rendu pendant les
-  // crossfades.
   const progress = interpolate(frame, [0, durationFrames], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -48,62 +60,53 @@ export default function SceneCanvas({
     <ThreeCanvas
       width={width}
       height={height}
-      // Canvas transparent — le 3D flotte par-dessus le compositor
-      // backdrop existant (BeatsLayer, transitions, motion design
-      // par catégorie). Pas de fond uni qui couvre tout.
       style={{ background: "transparent" }}
-      gl={{ alpha: true }}
+      gl={{ alpha: true, antialias: true }}
       camera={{
         position: cam.position,
         fov: cam.fov,
       }}
     >
-      {/* Lighting setup — augmenté pour SwiftShader software
-       *  rendering (sans GPU les PBR materials paraissent trop
-       *  sombres). 3-points classique (key + fill + rim) +
-       *  ambient généreux pour ne pas perdre le device dans le
-       *  noir. Phase 2 swappera contre un Environment HDRI. */}
-      <ambientLight intensity={0.9} />
-      <directionalLight
-        position={[5, 6, 6]}
-        intensity={2.4}
-        castShadow
-      />
-      <directionalLight position={[-4, 3, 2]} intensity={1.2} />
-      <directionalLight position={[0, -2, -5]} intensity={0.6} />
-      {/* Subtle key light directly facing camera pour lever les
-       *  zones d'ombre du body titanium qui se confond avec le
-       *  background sombre. */}
-      <directionalLight position={[0, 0, 8]} intensity={0.8} />
+      {/* HDRI environment — apporte reflections vraies sur titanium
+       *  + glass. Preset "studio" = lighting trois-points équivalent
+       *  professionnel sans avoir à set ses propres lights. */}
+      <Environment preset="studio" background={false} />
 
-      {/* Camera target — on bouge le lookAt via key prop pour forcer
-       *  Three à reset l'orientation. Pas idéal mais simple. */}
+      {/* Subtle direct lights pour creuser le volume — l'env map
+       *  donne le base lighting + reflections, ces directionals
+       *  ajoutent du modeling. */}
+      <ambientLight intensity={0.3} />
+      <directionalLight position={[5, 6, 6]} intensity={1.2} />
+      <directionalLight position={[-4, 3, 2]} intensity={0.5} />
+
       <CameraTarget lookAt={cam.lookAt} />
 
-      {/* Device */}
       {device === "iphone" && (
         <IPhoneDevice videoSrc={videoSrc} scale={1} />
       )}
       {device === "macbook" && (
         <MacBookDevice videoSrc={videoSrc} scale={1} />
       )}
+
+      {/* Post-process — bloom modéré sur les highlights (edges
+       *  du device, screen glow) + vignette pour cadrer l'attention
+       *  + contrast bump pour compenser le rendering software un
+       *  peu plat de SwiftShader. */}
+      <EffectComposer>
+        <Bloom
+          intensity={0.4}
+          luminanceThreshold={0.8}
+          luminanceSmoothing={0.4}
+          mipmapBlur
+        />
+        <BrightnessContrast brightness={0.02} contrast={0.08} />
+        <Vignette eskil={false} offset={0.18} darkness={0.55} />
+      </EffectComposer>
     </ThreeCanvas>
   );
 }
 
-/** Petit helper qui re-oriente la caméra active vers `lookAt`. R3F
- *  ne nous donne pas ça par défaut côté <ThreeCanvas> ; on accède
- *  à la caméra via useThree. */
 function CameraTarget({ lookAt }: { lookAt: [number, number, number] }) {
-  return (
-    <Reorient lookAt={lookAt} />
-  );
-}
-
-import { useThree } from "@react-three/fiber";
-import { useEffect } from "react";
-
-function Reorient({ lookAt }: { lookAt: [number, number, number] }) {
   const { camera } = useThree();
   useEffect(() => {
     camera.lookAt(lookAt[0], lookAt[1], lookAt[2]);

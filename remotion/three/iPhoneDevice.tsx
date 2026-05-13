@@ -106,6 +106,73 @@ export default function IPhoneDevice({
         <boxGeometry args={[0.46, 0.13, 0.005]} />
         <meshStandardMaterial color="#000" roughness={0.4} metalness={0.1} />
       </mesh>
+
+      {/* Camera bump dos — square plate avec 3 lentilles (iPhone Pro)
+       *  Positionné dans le coin haut-gauche, légèrement en relief. */}
+      <group position={[-bodyWidth / 2 + 0.45, bodyHeight / 2 - 0.55, -0.02]}>
+        {/* Plateau caméra */}
+        <mesh>
+          <boxGeometry args={[0.7, 0.7, 0.04]} />
+          <meshStandardMaterial
+            color="#8b8b8e"
+            metalness={0.75}
+            roughness={0.5}
+          />
+        </mesh>
+        {/* 3 lentilles disposées en triangle */}
+        <Lens position={[-0.15, 0.15, 0.025]} />
+        <Lens position={[0.15, 0.15, 0.025]} />
+        <Lens position={[0, -0.15, 0.025]} />
+        {/* LiDAR (petit cercle) en bas à droite */}
+        <mesh position={[0.2, -0.15, 0.025]}>
+          <cylinderGeometry args={[0.06, 0.06, 0.01, 24]} />
+          <meshStandardMaterial
+            color="#1a1a1c"
+            metalness={0.4}
+            roughness={0.3}
+          />
+        </mesh>
+      </group>
+
+      {/* Boutons latéraux — power à droite, volume à gauche */}
+      <mesh
+        position={[bodyWidth / 2 + 0.005, 0.6, bodyDepth / 2]}
+        rotation={[0, 0, Math.PI / 2]}
+      >
+        <boxGeometry args={[0.4, 0.02, 0.04]} />
+        <meshStandardMaterial color="#7a7a7d" metalness={0.85} roughness={0.4} />
+      </mesh>
+      <mesh
+        position={[-bodyWidth / 2 - 0.005, 0.9, bodyDepth / 2]}
+        rotation={[0, 0, Math.PI / 2]}
+      >
+        <boxGeometry args={[0.25, 0.02, 0.04]} />
+        <meshStandardMaterial color="#7a7a7d" metalness={0.85} roughness={0.4} />
+      </mesh>
+      <mesh
+        position={[-bodyWidth / 2 - 0.005, 0.45, bodyDepth / 2]}
+        rotation={[0, 0, Math.PI / 2]}
+      >
+        <boxGeometry args={[0.25, 0.02, 0.04]} />
+        <meshStandardMaterial color="#7a7a7d" metalness={0.85} roughness={0.4} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Une lentille caméra — anneau gris extérieur + verre noir glossy
+ *  au centre. Donne le look "iPhone Pro" pour pas cher. */
+function Lens({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.12, 0.12, 0.02, 32]} />
+        <meshStandardMaterial color="#3a3a3c" metalness={0.85} roughness={0.3} />
+      </mesh>
+      <mesh position={[0, 0.011, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.01, 32]} />
+        <meshStandardMaterial color="#0a0a0a" metalness={0.4} roughness={0.1} />
+      </mesh>
     </group>
   );
 }
