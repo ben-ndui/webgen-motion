@@ -151,10 +151,9 @@ async function main(): Promise<void> {
       });
     }
 
-    // Safety net 2 : le LLM est mauvais en matching numérique — il
-    // génère souvent les scrollY de la section SUIVANTE au lieu de
-    // celle qu'on vient d'annoncer. On force-aligne chaque scroll
-    // sur le scrollY réel du snapshot par fuzzy match du titre.
+    // Safety net 2 : aligne les scroll.to sur le snapshot par fuzzy
+    // match titre + INSÈRE un scroll après chaque section qui n'en
+    // a pas (sinon MP4 stagne et caption se désynchronise du visuel).
     const realigned = realignScrollsToSnapshot(reorderedSteps, snapshot.sections);
     if (realigned.fixed > 0) {
       emit({
@@ -162,10 +161,16 @@ async function main(): Promise<void> {
         message: `Réaligné ${realigned.fixed} scroll(s) sur les vraies positions du snapshot`,
       });
     }
+    if (realigned.inserted > 0) {
+      emit({
+        type: "info",
+        message: `Injecté ${realigned.inserted} scroll(s) manquant(s) après section(s)`,
+      });
+    }
     if (realigned.skipped > 0) {
       emit({
         type: "warn",
-        message: `${realigned.skipped} scroll(s) n'ont pas pu être matchés au snapshot — valeurs LLM conservées`,
+        message: `${realigned.skipped} section(s) sans match snapshot — pas de scroll injecté`,
       });
     }
     result.tour.steps = realigned.steps;

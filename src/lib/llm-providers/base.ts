@@ -259,17 +259,21 @@ export function normalizeStepOrder(
 
 /**
  * Filet de sécurité critique : le LLM est mauvais avec les
- * correspondances numériques. Il génère souvent des sections avec
- * les bons titres mais des scrolls qui pointent vers la mauvaise
- * position (off-by-one fréquent). Cette fonction réaligne chaque
- * \`scroll.to\` qui suit un \`section\` step sur le \`scrollY\`
- * réel du snapshot, en matchant par titre.
+ * correspondances numériques ET saute parfois les scrolls entre
+ * sections consécutives. Cette fonction garantit que chaque
+ * section step est SUIVIE d'un scroll vers la bonne scrollY :
+ *
+ * — Si le LLM a déjà placé un scroll après la section, on override
+ *   son \`to\` avec le scrollY réel du snapshot (matché par titre).
+ * — Si le LLM a oublié de mettre un scroll, on en INSÈRE un
+ *   automatiquement. Sans ça, le MP4 reste figé sur la position
+ *   précédente et le caption ne correspond plus au visuel.
  *
  * Matching : lowercase + remove diacritics + count common tokens.
  * On retient le snapshot section avec le meilleur score, à condition
  * qu'au moins 1 token significatif soit partagé. Si rien ne match
  * (le LLM a paraphrasé trop loin), on garde la valeur originale du
- * LLM — pas pire que ce qu'on avait.
+ * LLM ou on n'insère rien — pas pire que ce qu'on avait.
  *
  * Retourne un nouveau tableau ; n'altère pas l'entrée.
  */
@@ -279,33 +283,54 @@ export function realignScrollsToSnapshot(
 ): {
   steps: GeneratedTourStep[];
   fixed: number;
+  inserted: number;
   skipped: number;
 } {
   if (snapshotSections.length === 0) {
-    return { steps, fixed: 0, skipped: 0 };
+    return { steps, fixed: 0, inserted: 0, skipped: 0 };
   }
-  const result: GeneratedTourStep[] = [...steps];
+  const result: GeneratedTourStep[] = [];
   let fixed = 0;
+  let inserted = 0;
   let skipped = 0;
-  // Scan : pour chaque section suivi d'un scroll, override le
-  // scroll.to avec la scrollY de la section trouvée dans le snapshot.
-  for (let i = 0; i < result.length - 1; i++) {
-    const cur = result[i];
-    const next = result[i + 1];
-    if (cur.type !== "section" || next.type !== "scroll") continue;
+
+  for (let i = 0; i < steps.length; i++) {
+    const cur = steps[i];
+    result.push(cur);
+    if (cur.type !== "section") continue;
+
     const match = findBestSectionMatch(cur.title, cur.subtitle, snapshotSections);
     if (!match) {
       skipped++;
       continue;
     }
-    if (next.to === match.scrollY) {
-      // Already aligned, no fix needed.
+
+    // First section qui est au top (scrollY < 50px) → pas de scroll
+    // requis, la page démarre à 0.
+    if (match.scrollY < 50 && i === 0) {
       continue;
     }
-    result[i + 1] = { ...next, to: match.scrollY };
-    fixed++;
+
+    const next = steps[i + 1];
+    if (next && next.type === "scroll") {
+      // Override le scroll existant avec la vraie scrollY.
+      if (next.to !== match.scrollY) {
+        fixed++;
+      }
+      result.push({ ...next, to: match.scrollY, dwellMs: next.dwellMs ?? 1500 });
+      i++; // skip the original scroll, we just emitted the corrected version
+    } else {
+      // Aucun scroll après cette section → on en insère un d'office.
+      // Sans ça le MP4 stagne sur la position précédente.
+      result.push({
+        type: "scroll",
+        to: match.scrollY,
+        dwellMs: 1500,
+      });
+      inserted++;
+    }
   }
-  return { steps: result, fixed, skipped };
+  return { steps: result, fixed, inserted, skipped };
 }
 
 function findBestSectionMatch(
