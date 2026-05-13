@@ -55,6 +55,7 @@ export function resolveCamera(
 ): CameraState {
   const t = ease(Math.max(0, Math.min(1, progress)));
 
+  switch (preset) {
     case "hero-tilt": {
       // Caméra en 3/4 cinematic : décalée de 1.5 unités sur X pour
       // un angle plus dynamique qu'un full-front (qui paraît figé).
