@@ -256,3 +256,123 @@ export function normalizeStepOrder(
   }
   return result;
 }
+
+/**
+ * Filet de sécurité critique : le LLM est mauvais avec les
+ * correspondances numériques. Il génère souvent des sections avec
+ * les bons titres mais des scrolls qui pointent vers la mauvaise
+ * position (off-by-one fréquent). Cette fonction réaligne chaque
+ * \`scroll.to\` qui suit un \`section\` step sur le \`scrollY\`
+ * réel du snapshot, en matchant par titre.
+ *
+ * Matching : lowercase + remove diacritics + count common tokens.
+ * On retient le snapshot section avec le meilleur score, à condition
+ * qu'au moins 1 token significatif soit partagé. Si rien ne match
+ * (le LLM a paraphrasé trop loin), on garde la valeur originale du
+ * LLM — pas pire que ce qu'on avait.
+ *
+ * Retourne un nouveau tableau ; n'altère pas l'entrée.
+ */
+export function realignScrollsToSnapshot(
+  steps: GeneratedTourStep[],
+  snapshotSections: SiteSection[],
+): {
+  steps: GeneratedTourStep[];
+  fixed: number;
+  skipped: number;
+} {
+  if (snapshotSections.length === 0) {
+    return { steps, fixed: 0, skipped: 0 };
+  }
+  const result: GeneratedTourStep[] = [...steps];
+  let fixed = 0;
+  let skipped = 0;
+  // Scan : pour chaque section suivi d'un scroll, override le
+  // scroll.to avec la scrollY de la section trouvée dans le snapshot.
+  for (let i = 0; i < result.length - 1; i++) {
+    const cur = result[i];
+    const next = result[i + 1];
+    if (cur.type !== "section" || next.type !== "scroll") continue;
+    const match = findBestSectionMatch(cur.title, cur.subtitle, snapshotSections);
+    if (!match) {
+      skipped++;
+      continue;
+    }
+    if (next.to === match.scrollY) {
+      // Already aligned, no fix needed.
+      continue;
+    }
+    result[i + 1] = { ...next, to: match.scrollY };
+    fixed++;
+  }
+  return { steps: result, fixed, skipped };
+}
+
+function findBestSectionMatch(
+  title: string,
+  subtitle: string | undefined,
+  sections: SiteSection[],
+): SiteSection | null {
+  const titleTokens = tokenize(`${title} ${subtitle ?? ""}`);
+  if (titleTokens.length === 0) return null;
+  let best: SiteSection | null = null;
+  let bestScore = 0;
+  for (const s of sections) {
+    const headTokens = tokenize(`${s.heading} ${s.excerpt.slice(0, 200)}`);
+    const score = countSharedTokens(titleTokens, headTokens);
+    if (score > bestScore) {
+      bestScore = score;
+      best = s;
+    }
+  }
+  // Need at least one shared significant token to trust the match.
+  return bestScore >= 1 ? best : null;
+}
+
+/** Lowercase + strip accents + split on non-word + drop stopwords
+ *  + drop tokens shorter than 3 chars. */
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((t) => t.length >= 3 && !STOP_WORDS.has(t));
+}
+
+const STOP_WORDS = new Set([
+  "the",
+  "and",
+  "for",
+  "with",
+  "you",
+  "votre",
+  "vous",
+  "nos",
+  "les",
+  "des",
+  "que",
+  "qui",
+  "est",
+  "une",
+  "tout",
+  "tous",
+  "son",
+  "ses",
+  "par",
+  "par",
+  "pour",
+  "sur",
+  "dans",
+  "plus",
+  "trop",
+]);
+
+function countSharedTokens(a: string[], b: string[]): number {
+  const setB = new Set(b);
+  let count = 0;
+  for (const t of a) {
+    if (setB.has(t)) count++;
+  }
+  return count;
+}

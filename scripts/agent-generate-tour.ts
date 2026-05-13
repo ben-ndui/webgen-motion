@@ -33,7 +33,10 @@ import type {
   SiteInteractiveElement,
   GenerateTourParams,
 } from "../src/lib/llm-providers/base";
-import { normalizeStepOrder } from "../src/lib/llm-providers/base";
+import {
+  normalizeStepOrder,
+  realignScrollsToSnapshot,
+} from "../src/lib/llm-providers/base";
 import { createProvider } from "../src/lib/llm-providers";
 import { resolveAgent } from "../src/lib/config";
 
@@ -127,10 +130,9 @@ async function main(): Promise<void> {
     result.tour.id = outputId!;
     result.tour.baseUrl = baseUrl!;
 
-    // Safety net : si le LLM met encore des `scroll` avant des
+    // Safety net 1 : si le LLM met encore des `scroll` avant des
     // `section` (le pattern qu'on combat dans le prompt), on les
-    // réordonne automatiquement. Le scroll appartient au MP4 de la
-    // section qu'il introduit, pas au MP4 d'avant.
+    // réordonne automatiquement.
     const before = result.tour.steps.length;
     const reorderedSteps = normalizeStepOrder(result.tour.steps);
     const moved = reorderedSteps.filter(
@@ -142,13 +144,31 @@ async function main(): Promise<void> {
         message: `Réordonné ${moved} step(s) pour mettre les scrolls après leur section`,
       });
     }
-    result.tour.steps = reorderedSteps;
     if (reorderedSteps.length !== before) {
       emit({
         type: "warn",
         message: `normalizeStepOrder a changé le nombre de steps (${before} → ${reorderedSteps.length})`,
       });
     }
+
+    // Safety net 2 : le LLM est mauvais en matching numérique — il
+    // génère souvent les scrollY de la section SUIVANTE au lieu de
+    // celle qu'on vient d'annoncer. On force-aligne chaque scroll
+    // sur le scrollY réel du snapshot par fuzzy match du titre.
+    const realigned = realignScrollsToSnapshot(reorderedSteps, snapshot.sections);
+    if (realigned.fixed > 0) {
+      emit({
+        type: "info",
+        message: `Réaligné ${realigned.fixed} scroll(s) sur les vraies positions du snapshot`,
+      });
+    }
+    if (realigned.skipped > 0) {
+      emit({
+        type: "warn",
+        message: `${realigned.skipped} scroll(s) n'ont pas pu être matchés au snapshot — valeurs LLM conservées`,
+      });
+    }
+    result.tour.steps = realigned.steps;
 
     const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
     const toursDir = join(repoRoot, "tours");
