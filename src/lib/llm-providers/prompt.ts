@@ -145,25 +145,61 @@ Règles :
 - **Évite** les hallucinations : ne mentionne PAS de features / chiffres / témoignages absents du snapshot fourni
 - **Évite** les phrases génériques type "Découvrez nos services" — sois spécifique aux signaux extraits
 
-# Flow OBLIGATOIRE — ordre des steps
+# Flow OBLIGATOIRE — ordre + cible des scrolls
 
-⚠️ **Règle d'or** : un \`section\` (splash plein écran) ANNONCE ce
-qui arrive. Le scroll vers cette section se fait APRÈS le splash,
-PAS avant. C'est le seul ordre qui donne une UX cohérente — le
-spectateur voit "Features", puis la page se déplace smooth vers
-Features, puis on filme cette zone.
+⚠️ **Règle d'or n°1 : ordre.** Un \`section\` (splash plein écran)
+ANNONCE ce qui arrive. Le scroll vers cette section se fait APRÈS
+le splash, PAS avant. C'est le seul ordre qui donne une UX cohérente
+— le spectateur voit "Features", puis la page se déplace smooth
+vers Features, puis on filme cette zone.
+
+⚠️ **Règle d'or n°2 : chaque scroll vise la section qu'il
+introduit, JAMAIS la suivante.** Imagine que tu rédiges le contenu
+de chaque MP4 indépendamment : la séquence \`section X → scroll →
+wait → section X+1\` produit le MP4 de X. Donc le scroll dans cette
+séquence DOIT viser le \`scrollY\` de X (la section qu'on vient
+juste d'annoncer), pas celui de X+1.
+
+Tableau de correspondance attendu (où le \`scrollY\` vient du
+snapshot des sections) :
+
+| Step                            | scrollY cible           |
+|---------------------------------|-------------------------|
+| section "branding"              | (juste splash, pas de scroll suivant requis si c'est la 1re section et la page est à 0) |
+| section "features" → scroll     | scrollY de **features** |
+| section "pricing" → scroll      | scrollY de **pricing**  |
+| section "testimonials" → scroll | scrollY de **testimonials** |
 
 **Séquence canonique pour chaque section** :
 1. \`section\` (splash card avec title + categoryId)
-2. \`scroll\` vers le \`scrollY\` exact de cette section
+2. \`scroll\` vers le \`scrollY\` **de cette même section** (pas la suivante)
 3. \`wait\` ou \`hover\` ou \`overlay\` pour filmer la zone qui vient d'apparaître
-4. → la \`section\` suivante recommence le cycle
+4. → la \`section\` suivante recommence le cycle (elle a son propre splash + son propre scroll vers ELLE-MÊME)
 
-❌ **NE JAMAIS faire** \`scroll → section\` : le scroll se passe
-alors avant l'annonce, du coup le spectateur voit la page bouger
-puis le splash arrive "trop tard". Ça désynchronise tout.
+❌ **Anti-pattern formellement interdit** :
+\`\`\`json
+{ "type": "section", "title": "Features" }
+{ "type": "scroll", "to": <scrollY de pricing> }   // ← FAUX : on scroll vers la suivante
+{ "type": "section", "title": "Pricing" }
+\`\`\`
 
-Exemple correct :
+Cela filme la page glissant vers Pricing à la fin du MP4 de
+Features. Ben déteste ça : le splash "Pricing" arrive après que la
+page soit déjà passée à Pricing.
+
+✅ **Pattern correct** :
+\`\`\`json
+{ "type": "section", "title": "Features" }
+{ "type": "scroll", "to": <scrollY de features> }  // ← scroll DANS Features
+{ "type": "wait", "dwellMs": 2000 }
+{ "type": "section", "title": "Pricing" }
+{ "type": "scroll", "to": <scrollY de pricing> }   // ← scroll DANS Pricing
+{ "type": "wait", "dwellMs": 2000 }
+\`\`\`
+
+Exemple complet (en supposant que features scrollY = 1400 et
+pricing scrollY = 2800 dans le snapshot) :
+
 \`\`\`json
 [
   { "type": "section", "categoryId": "branding", "title": "ACME", "subtitle": "Votre nouvelle plateforme", "dwellMs": 2500 },
