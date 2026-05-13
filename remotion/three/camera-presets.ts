@@ -21,12 +21,19 @@ export type CameraPresetId =
   | "feature-zoom"
   | "pan-right"
   | "flip-reveal"
-  | "static-front";
+  | "static-front"
+  | "cinematic-spin";
 
 export interface CameraState {
   position: [number, number, number];
   lookAt: [number, number, number];
   fov: number;
+  /** Optional device transform — quand set, le device est rotated /
+   *  translated en plus du mouvement camera. Utilisé par les
+   *  presets "cinematic-spin" pour chorégraphier face → 3/4 droite
+   *  → drift → 3/4 gauche autour d'une camera fixe. */
+  deviceRotation?: [number, number, number];
+  devicePosition?: [number, number, number];
 }
 
 /** Lerp utilitaire — Remotion ferait pareil via interpolate mais on
@@ -97,6 +104,46 @@ export function resolveCamera(
         ],
         lookAt: [0, 0, 0],
         fov: 36,
+      };
+    }
+    case "cinematic-spin": {
+      // Chorégraphie 4 temps avec camera statique en arrière :
+      //   t=0..0.20 : face caméra (rotY=0), centré
+      //   t=0.20..0.50 : rotate +0.45 rad (3/4 droite) + drift +X
+      //   t=0.50..0.75 : drift de +X vers -X (cross l'écran)
+      //   t=0.75..1.0 : rotate -0.45 rad (3/4 gauche), pos stable
+      // Couplé avec une légère élévation au milieu pour casser
+      // l'horizontalité.
+      const phase = t * 4; // 4 phases sur [0..1]
+      let rotY = 0;
+      let posX = 0;
+      let posY = 0;
+      if (phase < 1) {
+        // Phase 1 : face → début 3/4
+        rotY = lerp(0, 0.45, phase);
+        posX = lerp(0, 0.6, phase);
+      } else if (phase < 2) {
+        // Phase 2 : 3/4 droite stable, drift vers +X plus marqué
+        rotY = 0.45;
+        posX = lerp(0.6, 1.1, phase - 1);
+        posY = lerp(0, 0.15, phase - 1);
+      } else if (phase < 3) {
+        // Phase 3 : traverse de +X vers -X, rotation flip Y vers 0
+        rotY = lerp(0.45, 0, phase - 2);
+        posX = lerp(1.1, -1.1, phase - 2);
+        posY = lerp(0.15, 0.15, phase - 2);
+      } else {
+        // Phase 4 : 3/4 gauche, settle
+        rotY = lerp(0, -0.45, phase - 3);
+        posX = lerp(-1.1, -0.6, phase - 3);
+        posY = lerp(0.15, 0, phase - 3);
+      }
+      return {
+        position: [0, 0.4, 7],
+        lookAt: [0, 0, 0],
+        fov: 36,
+        deviceRotation: [0, rotY, 0],
+        devicePosition: [posX, posY, 0],
       };
     }
     case "static-front":

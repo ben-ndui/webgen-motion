@@ -97,19 +97,28 @@ export default function SceneCanvas({
         fov={cam.fov}
       />
 
-      {glbPath ? (
-        <Suspense fallback={null}>
-          <GLBDevice
-            glbPath={glbPath}
-            videoSrc={videoSrc}
-            targetHeight={device === "iphone" ? 3.4 : 4}
-          />
-        </Suspense>
-      ) : device === "iphone" ? (
-        <IPhoneDevice videoSrc={videoSrc} scale={1} />
-      ) : (
-        <MacBookDevice videoSrc={videoSrc} scale={1} />
-      )}
+      {/* Wrapper qui applique deviceRotation + devicePosition pour
+       *  les presets type cinematic-spin (camera statique, c'est le
+       *  device qui danse). Pour les autres presets ces valeurs sont
+       *  undefined → wrapper neutre. */}
+      <group
+        rotation={cam.deviceRotation ?? [0, 0, 0]}
+        position={cam.devicePosition ?? [0, 0, 0]}
+      >
+        {glbPath ? (
+          <Suspense fallback={null}>
+            <GLBDevice
+              glbPath={glbPath}
+              videoSrc={videoSrc}
+              targetHeight={device === "iphone" ? 3.4 : 4}
+            />
+          </Suspense>
+        ) : device === "iphone" ? (
+          <IPhoneDevice videoSrc={videoSrc} scale={1} />
+        ) : (
+          <MacBookDevice videoSrc={videoSrc} scale={1} />
+        )}
+      </group>
 
       {/* Post-process — bloom réduit pour éviter les halos blancs
        *  autour du device (SwiftShader software amplifie les

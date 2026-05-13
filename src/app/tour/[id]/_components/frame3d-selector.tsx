@@ -29,10 +29,12 @@ type CameraPresetId =
   | "feature-zoom"
   | "pan-right"
   | "flip-reveal"
-  | "static-front";
+  | "static-front"
+  | "cinematic-spin";
 
 const CAMERA_PRESETS: Array<{ id: CameraPresetId; label: string; hint: string }> = [
-  { id: "hero-tilt", label: "Hero tilt", hint: "Tilt down subtil, style showcase Apple" },
+  { id: "cinematic-spin", label: "Cinematic spin", hint: "Face → 3/4 droite → drift → 3/4 gauche · le device danse, camera fixe" },
+  { id: "hero-tilt", label: "Hero tilt", hint: "Tilt down subtil 3/4, style showcase Apple" },
   { id: "feature-zoom", label: "Feature zoom", hint: "Pull-in qui rapproche l'écran" },
   { id: "pan-right", label: "Pan right", hint: "Caméra slide horizontale" },
   { id: "flip-reveal", label: "Flip reveal", hint: "Rotation 90° autour du device" },

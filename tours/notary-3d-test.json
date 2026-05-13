@@ -10,7 +10,7 @@
   "narrativeScript": "[step:0] Test 3D device frame.",
   "composeStyle": "energetic",
   "frame3d": "iphone",
-  "cameraPreset3d": "hero-tilt",
+  "cameraPreset3d": "cinematic-spin",
   "steps": [
     { "type": "section", "categoryId": "branding", "title": "Test 3D", "dwellMs": 2500 },
     { "type": "wait", "dwellMs": 2000 }
