@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { getEdition } from "./edition";
 
 /**
  * User-managed config stored in `~/.webgen-motion/config.json`.
@@ -286,6 +287,10 @@ export interface PublicConfig {
   };
   /** True iff the resolved DEFAULT backend has enough info to run. */
   configured: boolean;
+  /** Sprint 6 — edition active (community / studio / enterprise),
+   *  pour que le client puisse grayed-out les features Studio quand
+   *  pas débloquées. */
+  edition: "community" | "studio" | "enterprise";
 }
 export function getPublicConfig(): PublicConfig {
   const cfg = getConfig();
@@ -325,6 +330,7 @@ export function getPublicConfig(): PublicConfig {
       hasVoiceId: !!process.env.ELEVENLABS_VOICE_ID,
     },
     configured: !!resolveVoiceBackend(),
+    edition: getEdition(),
   };
 }
 

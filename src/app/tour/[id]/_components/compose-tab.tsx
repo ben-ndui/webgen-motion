@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, Download, ExternalLink, Film, Info, Sparkles } from "lucide-react";
 import Link from "next/link";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
+import Frame3DSelector from "./frame3d-selector";
 import type { CapturedSection } from "./capture-tab";
 import type { VoState } from "./voice-tab";
 import type { AudioTrack } from "./music-library";
@@ -156,6 +157,9 @@ export default function ComposeTab({
           {activeStylePreset.hint}
         </p>
       </div>
+
+      {/* Sprint 7 — sélecteur frame3d + camera preset (Studio gated) */}
+      <Frame3DSelector tour={tour} onTourChange={onTourChange} />
 
       <div className="flex flex-col gap-2">
         <button
