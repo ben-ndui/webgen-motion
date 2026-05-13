@@ -105,7 +105,31 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ---
 
+### Added (Sprint 7 phase 1 — Frames 3D R3F) · 2026-05-13
+
+- **Devices procéduraux** (`remotion/three/`) :
+  - `iPhoneDevice.tsx` : silhouette iPhone 15 Pro via `ExtrudeGeometry` (rounded shape) + screen plane avec `useOffthreadVideoTexture` + glass overlay + Dynamic Island. Material titanium PBR (`metalness 0.7`, `roughness 0.45`).
+  - `MacBookDevice.tsx` : base aluminium + hinge à 100° (angle laptop ouvert réaliste) + écran 16:10 + notch + trackpad.
+- **Camera presets** (`remotion/three/camera-presets.ts`) : 5 animations cinematic (`hero-tilt`, `feature-zoom`, `pan-right`, `flip-reveal`, `static-front`) avec easing cubique. Camera distance optimisée pour cadrer correctement les devices à FoV 36°.
+- **Scene wrapper** (`remotion/three/SceneCanvas.tsx`) : `ThreeCanvas` avec lighting 3-points + ambient boosté pour SwiftShader software rendering. Canvas transparent — le 3D flotte par-dessus le compositor backdrop existant (BeatsLayer, transitions, motion design), pas de fond plein.
+- **Integration SectionPlayer** : prop `frame3d?` + `cameraPreset3d?`. Quand set + feature flag `frames-3d` actif → render `SceneCanvas` au lieu du Mac chrome / iPhone frame 2D.
+- **Compose-tour gating** : `isFeatureEnabled('frames-3d')` check serveur avant de propager les props à Remotion. Community Edition fallback silencieux sur 2D, log info pour le dev.
+- **UI Compose tab** (`frame3d-selector.tsx`) : 3 boutons pill (2D default / iPhone 3D / MacBook 3D) avec lock badge ambre sur les options Studio quand Community. Dropdown camera preset visible quand 3D actif. `/api/motion/config` retourne `edition` pour le gating client.
+- **Remotion flag `--gl=angle`** dans compose-tour quand frame3d actif (Chromium headless SwiftShader software rendering pour WebGL sans GPU).
+- **TourEntry** étendu avec `frame3d?: "iphone" | "macbook"` et `cameraPreset3d?: ...`.
+
+Test end-to-end validé : `notary-3d-test` tour 9:16 avec iPhone hero-tilt rendu en 30s → final.mp4 1.2 MB, device procédural visible flottant sur backdrop catégorie + transitions.
+
+### Backlog (Sprint 7 phase 2)
+
+- Real GLBs iPhone 15 Pro + MacBook Air/Pro (Sketchfab ou achat).
+- Environment HDRI studio pour reflections vraies (vs lighting basique software).
+- Post-process : bloom, AO, color grading.
+- Multi-device scene preset (phone + mac côte à côte).
+
+---
+
 **À venir** :
+- **Sprint 7 phase 2** — Polish 3D (GLBs réels + HDRI + post-process).
 - **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546).
-- **Sprint 7** — Frames 3D via React Three Fiber (iPhone/MacBook GLB + camera presets), look "publicité Apple Keynote".
 - **License key offline-first** — vérification crypto locale qui débloque Studio Edition. Pré-requis pour la commercialisation.
