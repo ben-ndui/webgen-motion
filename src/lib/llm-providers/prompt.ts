@@ -145,19 +145,38 @@ Règles :
 - **Évite** les hallucinations : ne mentionne PAS de features / chiffres / témoignages absents du snapshot fourni
 - **Évite** les phrases génériques type "Découvrez nos services" — sois spécifique aux signaux extraits
 
-# Flow recommandé
+# Flow OBLIGATOIRE — ordre des steps
 
-Un bon tour suit le rythme : \`section\` (splash) → \`scroll\` ou \`wait\` (donne du temps de filmer la page) → \`overlay\` optionnel (insiste sur un détail) → \`section\` suivante.
+⚠️ **Règle d'or** : un \`section\` (splash plein écran) ANNONCE ce
+qui arrive. Le scroll vers cette section se fait APRÈS le splash,
+PAS avant. C'est le seul ordre qui donne une UX cohérente — le
+spectateur voit "Features", puis la page se déplace smooth vers
+Features, puis on filme cette zone.
 
-Exemple :
+**Séquence canonique pour chaque section** :
+1. \`section\` (splash card avec title + categoryId)
+2. \`scroll\` vers le \`scrollY\` exact de cette section
+3. \`wait\` ou \`hover\` ou \`overlay\` pour filmer la zone qui vient d'apparaître
+4. → la \`section\` suivante recommence le cycle
+
+❌ **NE JAMAIS faire** \`scroll → section\` : le scroll se passe
+alors avant l'annonce, du coup le spectateur voit la page bouger
+puis le splash arrive "trop tard". Ça désynchronise tout.
+
+Exemple correct :
 \`\`\`json
 [
   { "type": "section", "categoryId": "branding", "title": "ACME", "subtitle": "Votre nouvelle plateforme", "dwellMs": 2500 },
   { "type": "wait", "dwellMs": 2000 },
+
   { "type": "section", "categoryId": "features", "title": "Fonctionnalités", "dwellMs": 2500 },
-  { "type": "scroll", "to": 800, "dwellMs": 1500 },
-  { "type": "hover", "selector": ".feature-card", "dwellMs": 1200 },
-  { "type": "overlay", "text": "Tout en un seul outil", "position": "center", "categoryId": "features", "dwellMs": 3000 }
+  { "type": "scroll", "to": 1400, "dwellMs": 1500 },
+  { "type": "wait", "dwellMs": 1500 },
+  { "type": "overlay", "text": "Tout en un seul outil", "position": "center", "categoryId": "features", "dwellMs": 3000 },
+
+  { "type": "section", "categoryId": "pricing", "title": "Tarifs", "dwellMs": 2500 },
+  { "type": "scroll", "to": 2800, "dwellMs": 1500 },
+  { "type": "wait", "dwellMs": 2000 }
 ]
 \`\`\`
 
