@@ -55,14 +55,13 @@ export function resolveCamera(
 ): CameraState {
   const t = ease(Math.max(0, Math.min(1, progress)));
 
-  switch (preset) {
     case "hero-tilt": {
-      // Caméra légèrement haute et inclinée vers le bas → tilt-down
-      // subtil pendant la durée de la section. Style "showcase Apple".
-      // z=7 + FoV 36° pour que un iPhone 3.4u rentre confortablement
-      // dans un viewport 9:16.
+      // Caméra en 3/4 cinematic : décalée de 1.5 unités sur X pour
+      // un angle plus dynamique qu'un full-front (qui paraît figé).
+      // Légère élévation + tilt down subtil pendant la durée. Style
+      // "showcase Apple Keynote". z=7 + FoV 36° pour cadrer.
       return {
-        position: lerpVec3([0, 0.6, 7], [0, 0.85, 7], t),
+        position: lerpVec3([1.2, 0.5, 6.5], [1.6, 0.7, 6.5], t),
         lookAt: lerpVec3([0, 0, 0], [0, -0.1, 0], t),
         fov: 36,
       };

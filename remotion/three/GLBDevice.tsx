@@ -48,16 +48,41 @@ export default function GLBDevice({
   const videoTexture = useOffthreadVideoTexture({ src: videoSrc });
   const groupRef = useRef<THREE.Group>(null);
 
-  // Auto-scale : compute bounding box of the scene then scale so
-  // height matches targetHeight. Cached via memo dependent on the
-  // GLB scene (rebuilt seulement si GLB change).
-  const scale = useMemo(() => {
-    if (!gltf.scene) return 1;
+  // Auto-scale + auto-orient. Sketchfab exports varient beaucoup
+  // dans leur orientation par défaut (device couché sur la tronche,
+  // sur le côté, etc.). On détecte le shape via bounding box :
+  //  - l'axe le PLUS COURT = thickness (épaisseur du device)
+  //  - on rotate pour que cet axe pointe vers +Z (la caméra),
+  //    ce qui revient à mettre l'écran face caméra par convention
+  //    (la majorité des Sketchfab posent le device avec screen
+  //    perpendiculaire au thickness axis)
+  //  - le scale aligne ensuite la dimension la plus longue sur
+  //    targetHeight (3.4 unités pour iPhone, 4 pour MacBook)
+  const { scale, rotation } = useMemo(() => {
+    if (!gltf.scene) return { scale: 1, rotation: [0, 0, 0] as [number, number, number] };
     const box = new THREE.Box3().setFromObject(gltf.scene);
     const size = new THREE.Vector3();
     box.getSize(size);
-    const currentHeight = Math.max(size.x, size.y, size.z);
-    return currentHeight > 0 ? targetHeight / currentHeight : 1;
+
+    // Find the shortest axis = thickness
+    const dims = [size.x, size.y, size.z];
+    const shortestIdx = dims.indexOf(Math.min(...dims));
+    let rot: [number, number, number] = [0, 0, 0];
+    if (shortestIdx === 0) {
+      // X is shortest → device lying with thickness on X.
+      // Rotate around Y by π/2 to bring thickness onto Z.
+      rot = [0, Math.PI / 2, 0];
+    } else if (shortestIdx === 1) {
+      // Y is shortest → device lying flat (screen up or down).
+      // Rotate around X by -π/2 to stand it up screen-facing camera.
+      rot = [-Math.PI / 2, 0, 0];
+    }
+    // shortestIdx === 2 → thickness déjà sur Z, rien à faire
+    // (best case, mais peut nécessiter un flip 180° si back-facing)
+
+    const longest = Math.max(...dims);
+    const s = longest > 0 ? targetHeight / longest : 1;
+    return { scale: s, rotation: rot };
   }, [gltf.scene, targetHeight]);
 
   // Override the screen mesh material with the video texture. Walk
@@ -94,7 +119,7 @@ export default function GLBDevice({
   }, [gltf.scene]);
 
   return (
-    <group ref={groupRef} scale={scale}>
+    <group ref={groupRef} scale={scale} rotation={rotation}>
       <primitive object={gltf.scene} />
     </group>
   );
