@@ -92,8 +92,8 @@ export default function SectionCard({
               <span
                 className="text-[9px] font-mono uppercase tracking-[0.15em] px-1.5 py-0.5 rounded"
                 style={{
-                  background: cat.bgSubtle,
-                  color: cat.fg,
+                  background: `${cat.bgColor}15`,
+                  color: cat.bgColor,
                 }}
               >
                 {String(section.index).padStart(2, "0")} · {cat.label}

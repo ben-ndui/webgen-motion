@@ -110,6 +110,21 @@ export interface TourEntry {
    *  and beats layer strength inside the Remotion composition.
    *  Defaults to "energetic" when missing or unknown. */
   composeStyle?: string;
+  /** Optional 3D device frame (Sprint 7 — Studio Edition). When set,
+   *  les captures sont plaquées sur un device 3D animé via camera
+   *  preset au lieu du Mac chrome / iPhone frame 2D classique. Le
+   *  rendu 3D n'est activé que si le feature flag `frames-3d` est
+   *  débloqué (Community fallback sur le 2D, ignore silencieusement). */
+  frame3d?: "iphone" | "macbook";
+  /** Camera preset utilisé quand `frame3d` est set. Default
+   *  "hero-tilt" — un tilt-down subtil cinematic. Autres options :
+   *  feature-zoom, pan-right, flip-reveal, static-front. */
+  cameraPreset3d?:
+    | "hero-tilt"
+    | "feature-zoom"
+    | "pan-right"
+    | "flip-reveal"
+    | "static-front";
   /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
    *  All fields optional ; runner falls back to sensible defaults
    *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).

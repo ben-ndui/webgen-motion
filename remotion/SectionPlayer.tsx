@@ -5,6 +5,10 @@ import { MacChrome } from "./MacChrome";
 import { IPhoneFrame } from "./IPhoneFrame";
 import { applyTransition, kenBurns, pickTransition } from "./lib/transitions";
 import { resolveStyle } from "./lib/style-presets";
+import SceneCanvas, {
+  type Frame3DDeviceId,
+} from "./three/SceneCanvas";
+import type { CameraPresetId } from "./three/camera-presets";
 
 /**
  * Single section playback in the chosen device frame.
@@ -28,6 +32,8 @@ export function SectionPlayer({
   crossfadeFrames,
   sectionIndex,
   styleId,
+  frame3d,
+  cameraPreset3d,
 }: {
   section: ManifestSection;
   cat: MotionCategory;
@@ -37,6 +43,12 @@ export function SectionPlayer({
   crossfadeFrames: number;
   sectionIndex: number;
   styleId: string;
+  /** Sprint 7 — quand set, on rend en 3D via SceneCanvas au lieu
+   *  des frames 2D Mac chrome / iPhone. Compose-tour ne propage
+   *  cette valeur que si Studio Edition est active (feature flag
+   *  `frames-3d`). */
+  frame3d?: Frame3DDeviceId;
+  cameraPreset3d?: string;
 }) {
   // useCurrentFrame() inside a <Sequence> returns frames relative
   // to the sequence's `from`. Negative during the premount window,
@@ -117,16 +129,27 @@ export function SectionPlayer({
     />
   );
 
-  const frame =
-    format === "9:16" ? (
-      <IPhoneFrame cat={cat} tabTitle={section.title}>
-        {video}
-      </IPhoneFrame>
-    ) : (
-      <MacChrome url={url} tabTitle={section.title} cat={cat}>
-        {video}
-      </MacChrome>
-    );
+  // Frame 3D (Sprint 7 — Studio Edition) si le tour le demande.
+  // Sinon fallback sur les frames 2D Mac chrome / iPhone classiques.
+  const frame = frame3d ? (
+    <SceneCanvas
+      videoSrc={staticFile(section.fileName)}
+      device={frame3d}
+      cameraPreset={(cameraPreset3d ?? "hero-tilt") as CameraPresetId}
+      durationFrames={durationFrames}
+      width={format === "9:16" ? 1080 : 1920}
+      height={format === "9:16" ? 1920 : 1080}
+      backdrop={cat.bgColor ?? "#0a0a0a"}
+    />
+  ) : format === "9:16" ? (
+    <IPhoneFrame cat={cat} tabTitle={section.title}>
+      {video}
+    </IPhoneFrame>
+  ) : (
+    <MacChrome url={url} tabTitle={section.title} cat={cat}>
+      {video}
+    </MacChrome>
+  );
 
   return (
     <div

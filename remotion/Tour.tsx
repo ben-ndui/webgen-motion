@@ -40,6 +40,8 @@ export function Tour({
   bgBeats,
   voPauses,
   composeStyle,
+  frame3d,
+  cameraPreset3d,
 }: TourCompositionProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -143,6 +145,8 @@ export function Tour({
               crossfadeFrames={crossfadeFrames}
               sectionIndex={i}
               styleId={composeStyle}
+              frame3d={frame3d}
+              cameraPreset3d={cameraPreset3d}
             />
           </Sequence>
         );

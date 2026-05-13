@@ -61,6 +61,13 @@ export interface TourCompositionProps extends Record<string, unknown> {
    *  backdrop motion, and beats layer strength. Falls back to
    *  "energetic" when missing or unknown. */
   composeStyle: string;
+  /** Sprint 7 — Studio Edition only. Si set, les captures sont
+   *  rendues sur un device 3D (iPhone / MacBook procédural) avec
+   *  camera animée selon le preset. Gated par feature flag
+   *  `frames-3d` côté SectionPlayer — Community ignore silencieusement.
+   */
+  frame3d?: "iphone" | "macbook";
+  cameraPreset3d?: string;
   /** Voiceover filename inside the publicDir staging directory.
    *  Null if no VO was generated yet. */
   voiceoverFile: string | null;

@@ -30,6 +30,7 @@ import {
   type VoPause,
 } from "../remotion/lib/types";
 import { getTour } from "../src/lib/tour-loader";
+import { isFeatureEnabled } from "../src/lib/edition";
 
 function arg(flag: string, fallback?: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -316,6 +317,28 @@ async function main(): Promise<void> {
       tour?.brand?.tagline ?? tour?.brand?.domain ?? derivedDomain,
   };
 
+  // Sprint 7 — frame3d gated par feature flag (Studio Edition).
+  // Si le tour demande un device 3D MAIS qu'on est en Community,
+  // on strip silencieusement → fallback sur le 2D Mac chrome /
+  // iPhone frame classique. L'edition est lue côté process Node
+  // ici, donc le check se fait avant le spawn Remotion (pas de
+  // dépendance browser sur process.env côté SectionPlayer).
+  const frame3dEnabled = isFeatureEnabled("frames-3d");
+  const frame3d =
+    frame3dEnabled &&
+    (tour?.frame3d === "iphone" || tour?.frame3d === "macbook")
+      ? tour.frame3d
+      : undefined;
+  const cameraPreset3d =
+    frame3d && typeof tour?.cameraPreset3d === "string"
+      ? tour.cameraPreset3d
+      : undefined;
+  if (tour?.frame3d && !frame3dEnabled) {
+    console.log(
+      `  ℹ frame3d demandé mais Community Edition → fallback 2D. Active Studio via WEBGEN_MOTION_EDITION=studio pour unlock.`,
+    );
+  }
+
   const props: TourCompositionProps = {
     tourId: tourId!,
     format,
@@ -332,6 +355,8 @@ async function main(): Promise<void> {
       typeof tour?.composeStyle === "string" && tour.composeStyle.length > 0
         ? tour.composeStyle
         : "energetic",
+    ...(frame3d ? { frame3d } : {}),
+    ...(cameraPreset3d ? { cameraPreset3d } : {}),
   };
 
   const durationFrames = computeDurationInFrames(sections, fps);
