@@ -33,6 +33,7 @@ import type {
   SiteInteractiveElement,
   GenerateTourParams,
 } from "../src/lib/llm-providers/base";
+import { normalizeStepOrder } from "../src/lib/llm-providers/base";
 import { createProvider } from "../src/lib/llm-providers";
 import { resolveAgent } from "../src/lib/config";
 
@@ -125,6 +126,29 @@ async function main(): Promise<void> {
     // canonical.
     result.tour.id = outputId!;
     result.tour.baseUrl = baseUrl!;
+
+    // Safety net : si le LLM met encore des `scroll` avant des
+    // `section` (le pattern qu'on combat dans le prompt), on les
+    // réordonne automatiquement. Le scroll appartient au MP4 de la
+    // section qu'il introduit, pas au MP4 d'avant.
+    const before = result.tour.steps.length;
+    const reorderedSteps = normalizeStepOrder(result.tour.steps);
+    const moved = reorderedSteps.filter(
+      (s, i) => s !== result.tour.steps[i],
+    ).length;
+    if (moved > 0) {
+      emit({
+        type: "info",
+        message: `Réordonné ${moved} step(s) pour mettre les scrolls après leur section`,
+      });
+    }
+    result.tour.steps = reorderedSteps;
+    if (reorderedSteps.length !== before) {
+      emit({
+        type: "warn",
+        message: `normalizeStepOrder a changé le nombre de steps (${before} → ${reorderedSteps.length})`,
+      });
+    }
 
     const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
     const toursDir = join(repoRoot, "tours");

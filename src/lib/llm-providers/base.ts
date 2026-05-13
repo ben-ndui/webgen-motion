@@ -205,3 +205,54 @@ function isGeneratedTourStep(value: unknown): value is GeneratedTourStep {
       return false;
   }
 }
+
+/**
+ * Filet de sécurité : si le LLM met un \`scroll\` juste avant un
+ * \`section\`, on déplace le scroll APRÈS le section. Le scroll
+ * appartient au MP4 de la section qu'il introduit (visuellement le
+ * splash doit s'afficher AVANT le glissement), donc il doit suivre
+ * le step \`section\`.
+ *
+ * On gère aussi le cas chained où plusieurs steps non-section sont
+ * coincés entre un \`scroll\` et un \`section\` : on déplace tout
+ * le bloc \`[wait/hover/overlay…, scroll]\` après la section
+ * suivante. C'est rare mais préférable à du data-loss.
+ *
+ * Retourne un nouveau tableau, ne mute pas l'entrée.
+ */
+export function normalizeStepOrder(
+  steps: GeneratedTourStep[],
+): GeneratedTourStep[] {
+  const result: GeneratedTourStep[] = [];
+  let i = 0;
+  while (i < steps.length) {
+    const cur = steps[i];
+    // Detect "scroll immediately before a section step" pattern,
+    // optionally with one filler step between (wait/hover/overlay).
+    if (cur.type === "scroll") {
+      // Find the next section step
+      let j = i + 1;
+      let sawNonSection = false;
+      while (j < steps.length && steps[j].type !== "section") {
+        sawNonSection = true;
+        j++;
+      }
+      if (j < steps.length && steps[j].type === "section") {
+        // Move the section step BEFORE the scroll, scroll stays
+        // right after it. The fillers between go after the scroll.
+        result.push(steps[j]); // section first
+        result.push(cur); // then the (formerly mis-ordered) scroll
+        // Re-emit the fillers that were between the scroll and the
+        // section, preserving their order.
+        for (let k = i + 1; k < j; k++) {
+          if (sawNonSection) result.push(steps[k]);
+        }
+        i = j + 1;
+        continue;
+      }
+    }
+    result.push(cur);
+    i++;
+  }
+  return result;
+}

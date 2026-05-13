@@ -145,76 +145,89 @@ Règles :
 - **Évite** les hallucinations : ne mentionne PAS de features / chiffres / témoignages absents du snapshot fourni
 - **Évite** les phrases génériques type "Découvrez nos services" — sois spécifique aux signaux extraits
 
-# Flow OBLIGATOIRE — ordre + cible des scrolls
+# Flow OBLIGATOIRE — modèle mental "chaque section = un MP4"
 
-⚠️ **Règle d'or n°1 : ordre.** Un \`section\` (splash plein écran)
-ANNONCE ce qui arrive. Le scroll vers cette section se fait APRÈS
-le splash, PAS avant. C'est le seul ordre qui donne une UX cohérente
-— le spectateur voit "Features", puis la page se déplace smooth
-vers Features, puis on filme cette zone.
+🎬 **Modèle mental crucial.** Chaque step \`section\` OUVRE un
+nouveau fichier MP4 et y joue son splash plein écran. Tous les steps
+qui suivent un \`section\` (jusqu'au prochain \`section\`) sont
+filmés DANS ce MP4. Donc :
 
-⚠️ **Règle d'or n°2 : chaque scroll vise la section qu'il
-introduit, JAMAIS la suivante.** Imagine que tu rédiges le contenu
-de chaque MP4 indépendamment : la séquence \`section X → scroll →
-wait → section X+1\` produit le MP4 de X. Donc le scroll dans cette
-séquence DOIT viser le \`scrollY\` de X (la section qu'on vient
-juste d'annoncer), pas celui de X+1.
+- MP4 #1 (branding) = splash branding + tout ce qui vient APRÈS le
+  step section "branding" et AVANT le step section "features".
+- MP4 #2 (features) = splash features + tout ce qui vient APRÈS le
+  step section "features" et AVANT le step section "pricing".
+- Etc.
 
-Tableau de correspondance attendu (où le \`scrollY\` vient du
-snapshot des sections) :
+⚠️ **Règle d'or absolue.** Un \`scroll\` doit TOUJOURS suivre le
+\`section\` step qu'il accompagne, JAMAIS le précéder. Le scroll
+qui vise la position de la section "features" doit être à
+l'INTÉRIEUR du MP4 #2 (donc APRÈS le step \`section\` "features",
+PAS avant lui dans le tableau \`steps\`).
 
-| Step                            | scrollY cible           |
-|---------------------------------|-------------------------|
-| section "branding"              | (juste splash, pas de scroll suivant requis si c'est la 1re section et la page est à 0) |
-| section "features" → scroll     | scrollY de **features** |
-| section "pricing" → scroll      | scrollY de **pricing**  |
-| section "testimonials" → scroll | scrollY de **testimonials** |
-
-**Séquence canonique pour chaque section** :
-1. \`section\` (splash card avec title + categoryId)
-2. \`scroll\` vers le \`scrollY\` **de cette même section** (pas la suivante)
-3. \`wait\` ou \`hover\` ou \`overlay\` pour filmer la zone qui vient d'apparaître
-4. → la \`section\` suivante recommence le cycle (elle a son propre splash + son propre scroll vers ELLE-MÊME)
-
-❌ **Anti-pattern formellement interdit** :
+🚫 **Anti-pattern formellement interdit (c'est ce que tu produis
+trop souvent — STOP)** :
 \`\`\`json
-{ "type": "section", "title": "Features" }
-{ "type": "scroll", "to": <scrollY de pricing> }   // ← FAUX : on scroll vers la suivante
-{ "type": "section", "title": "Pricing" }
+{ "type": "section", "categoryId": "branding", "title": "ACME" }
+{ "type": "wait", "dwellMs": 1500 }
+{ "type": "scroll", "to": 1080 }   ❌ ← cette ligne fait scroller AU SEIN DU MP4 BRANDING
+{ "type": "section", "categoryId": "features", "title": "Features" }
 \`\`\`
 
-Cela filme la page glissant vers Pricing à la fin du MP4 de
-Features. Ben déteste ça : le splash "Pricing" arrive après que la
-page soit déjà passée à Pricing.
+Pourquoi c'est interdit : à la fin du MP4 #1, le spectateur voit la
+page glisser jusqu'à 1080 (qui est la position de Features). Puis
+MP4 #2 démarre et splash "Features" joue par-dessus une page qui
+est DÉJÀ à Features. Donc l'annonce arrive APRÈS le glissement.
+Désastre UX.
 
-✅ **Pattern correct** :
+✅ **Pattern OBLIGATOIRE (le seul que tu dois produire)** :
 \`\`\`json
-{ "type": "section", "title": "Features" }
-{ "type": "scroll", "to": <scrollY de features> }  // ← scroll DANS Features
-{ "type": "wait", "dwellMs": 2000 }
-{ "type": "section", "title": "Pricing" }
-{ "type": "scroll", "to": <scrollY de pricing> }   // ← scroll DANS Pricing
-{ "type": "wait", "dwellMs": 2000 }
+{ "type": "section", "categoryId": "branding", "title": "ACME" }
+{ "type": "wait", "dwellMs": 1500 }
+{ "type": "section", "categoryId": "features", "title": "Features" }
+{ "type": "scroll", "to": 1080, "dwellMs": 1500 }   ✅ ← scroll DANS le MP4 FEATURES (après son splash)
+{ "type": "wait", "dwellMs": 1500 }
 \`\`\`
 
-Exemple complet (en supposant que features scrollY = 1400 et
-pricing scrollY = 2800 dans le snapshot) :
+Ici le spectateur voit : MP4 #1 = splash branding + page calme au
+top. MP4 #2 démarre = splash "Features" plein écran, dismisses,
+PUIS smooth scroll de 0 vers 1080. Annonce d'abord, glissement
+ensuite. UX cohérente.
+
+📐 **Cible du scroll.** Le \`to\` doit être exactement le \`scrollY\`
+de la section qu'on vient de splasher dans le step juste avant. Si
+le snapshot dit features.scrollY = 1080, le scroll dans le MP4
+features fait \`to: 1080\`.
+
+📌 **Cas spécial : première section.** Si la première section
+(souvent "branding") a \`scrollY: 0\`, alors PAS de step \`scroll\`
+derrière elle — la page est déjà au top, rien à glisser. Juste un
+\`wait\` pour la laisser respirer.
+
+Exemple COMPLET correct (en supposant que features.scrollY = 1080,
+pricing.scrollY = 2972, testimonials.scrollY = 3731) :
 
 \`\`\`json
 [
-  { "type": "section", "categoryId": "branding", "title": "ACME", "subtitle": "Votre nouvelle plateforme", "dwellMs": 2500 },
+  { "type": "section", "categoryId": "branding", "title": "ACME", "subtitle": "Votre plateforme", "dwellMs": 2500 },
   { "type": "wait", "dwellMs": 2000 },
 
   { "type": "section", "categoryId": "features", "title": "Fonctionnalités", "dwellMs": 2500 },
-  { "type": "scroll", "to": 1400, "dwellMs": 1500 },
+  { "type": "scroll", "to": 1080, "dwellMs": 1500 },
   { "type": "wait", "dwellMs": 1500 },
   { "type": "overlay", "text": "Tout en un seul outil", "position": "center", "categoryId": "features", "dwellMs": 3000 },
 
   { "type": "section", "categoryId": "pricing", "title": "Tarifs", "dwellMs": 2500 },
-  { "type": "scroll", "to": 2800, "dwellMs": 1500 },
+  { "type": "scroll", "to": 2972, "dwellMs": 1500 },
+  { "type": "wait", "dwellMs": 2000 },
+
+  { "type": "section", "categoryId": "testimonials", "title": "Témoignages", "dwellMs": 2500 },
+  { "type": "scroll", "to": 3731, "dwellMs": 1500 },
   { "type": "wait", "dwellMs": 2000 }
 ]
 \`\`\`
+
+Note bien : aucun \`scroll\` n'apparaît AVANT un step \`section\`.
+Tous les scrolls sont POST-section.
 
 # Output
 
