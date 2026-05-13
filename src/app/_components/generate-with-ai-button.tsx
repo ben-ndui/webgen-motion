@@ -178,6 +178,7 @@ export default function GenerateWithAiButton() {
   return (
     <>
       <button
+        data-wm-id="dashboard.generate-ai-button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-900 text-sm font-medium hover:bg-slate-50 transition-colors"
       >

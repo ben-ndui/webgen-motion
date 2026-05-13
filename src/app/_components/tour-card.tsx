@@ -123,6 +123,8 @@ export default function TourCard({
         </div>
 
         <Link
+          data-wm-id="dashboard.tour-card-link"
+          data-tour-id={tour.id}
           href={`/tour/${tour.id}`}
           className="block cursor-pointer"
         >

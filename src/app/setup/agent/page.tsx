@@ -144,7 +144,7 @@ export default function AgentSetupPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-12">
+      <main data-wm-id="setup.agent.page" className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-10 grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-7">
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-3">
@@ -259,6 +259,7 @@ export default function AgentSetupPage() {
             </label>
             <div className="relative">
               <input
+                data-wm-id="setup.agent.apikey"
                 type={revealKey ? "text" : "password"}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
@@ -266,6 +267,7 @@ export default function AgentSetupPage() {
                 className="w-full px-3 py-2.5 pr-10 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
               />
               <button
+                data-wm-id="setup.agent.apikey-reveal"
                 type="button"
                 onClick={() => setRevealKey(!revealKey)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
@@ -318,6 +320,7 @@ export default function AgentSetupPage() {
               Retour au hub
             </Link>
             <button
+              data-wm-id="setup.agent.save"
               onClick={save}
               disabled={saving || !apiKey.trim()}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"

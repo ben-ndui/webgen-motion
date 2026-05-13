@@ -171,6 +171,7 @@ export default function NotaryPage() {
               </span>
             )}
             <button
+              data-wm-id="notary.refresh"
               onClick={fetchHistory}
               disabled={fetching}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 transition disabled:opacity-50"
@@ -185,7 +186,7 @@ export default function NotaryPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main data-wm-id="notary.page" className="max-w-5xl mx-auto px-6 py-12">
         {/* Editorial header — matches landing DA */}
         <div className="mb-12 grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-7">

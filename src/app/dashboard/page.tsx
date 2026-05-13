@@ -108,7 +108,10 @@ export default function DashboardPage() {
       )}
 
       {/* Main */}
-      <main className="flex-1 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full px-6 lg:px-8 py-8">
+      <main
+        data-wm-id="dashboard.page"
+        className="flex-1 max-w-7xl 2xl:max-w-[1600px] mx-auto w-full px-6 lg:px-8 py-8"
+      >
         {/* Page header — compact, no hero */}
         <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
           <div>
@@ -121,7 +124,7 @@ export default function DashboardPage() {
                 : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${totalSec}s cumulés · prêts à filmer`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-wm-id="dashboard.actions">
             <GenerateWithAiButton />
             <NewTourButton />
           </div>
@@ -131,7 +134,10 @@ export default function DashboardPage() {
         {tours.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <div
+            data-wm-id="dashboard.tours-grid"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+          >
             {tours.map((t) => {
               const firstSection = t.steps.find(
                 (s): s is Extract<typeof s, { type: "section" }> =>

@@ -115,6 +115,7 @@ export default function NewTourButton() {
   return (
     <>
       <button
+        data-wm-id="dashboard.new-tour-button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
       >
