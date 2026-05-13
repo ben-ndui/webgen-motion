@@ -30,7 +30,23 @@ import * as THREE from "three";
  * MacBook). Le user n'a pas à se soucier de l'échelle du GLB Sketchfab.
  */
 
-const SCREEN_MESH_NAMES = ["screen", "display", "Screen", "Display"];
+/** Matching élargi pour la mesh écran. Sketchfab varie beaucoup
+ *  côté naming (Cube_001, mesh_screen, Front, Glass…), donc on
+ *  match plusieurs patterns lowercase. Si rien match, on assume
+ *  un flip Y par défaut (convention Sketchfab back-facing). */
+const SCREEN_NAME_HINTS = [
+  "screen",
+  "display",
+  "front",
+  "glass",
+  "lcd",
+  "oled",
+];
+
+function isScreenMesh(name: string): boolean {
+  const lower = name.toLowerCase();
+  return SCREEN_NAME_HINTS.some((hint) => lower.includes(hint));
+}
 
 export default function GLBDevice({
   glbPath,
@@ -83,7 +99,7 @@ export default function GLBDevice({
     let screenCenter: THREE.Vector3 | null = null;
     gltf.scene.traverse((obj) => {
       if (screenCenter || !(obj instanceof THREE.Mesh)) return;
-      if (SCREEN_MESH_NAMES.includes(obj.name)) {
+      if (isScreenMesh(obj.name)) {
         const meshBox = new THREE.Box3().setFromObject(obj);
         screenCenter = new THREE.Vector3();
         meshBox.getCenter(screenCenter);
@@ -99,6 +115,14 @@ export default function GLBDevice({
         // Screen est derrière → flip Y de π pour le ramener devant.
         rot = [rot[0], rot[1] + Math.PI, rot[2]];
       }
+    } else {
+      // Aucune mesh screen détectable → convention Sketchfab : la
+      // plupart des GLBs sont exportés avec le device "back facing
+      // forward" (screen sur -Z natif). On flip Y par défaut pour
+      // que la majorité des cas marchent sans renommer dans Blender.
+      // Si le résultat est inversé, l'utilisateur pourra toggle via
+      // UI dans /setup/models (phase future).
+      rot = [rot[0], rot[1] + Math.PI, rot[2]];
     }
 
     const longest = Math.max(...dims);
@@ -114,7 +138,7 @@ export default function GLBDevice({
     let patched = false;
     gltf.scene.traverse((obj) => {
       if (patched || !(obj instanceof THREE.Mesh)) return;
-      if (SCREEN_MESH_NAMES.includes(obj.name)) {
+      if (isScreenMesh(obj.name)) {
         obj.material = new THREE.MeshBasicMaterial({
           map: videoTexture,
           toneMapped: false,
