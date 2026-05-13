@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -53,10 +52,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const repoRoot = dirname(
-    dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))),
-  );
-  const modelsDir = join(repoRoot, "public", "models");
+  const modelsDir = join(process.cwd(), "public", "models");
   mkdirSync(modelsDir, { recursive: true });
   const targetPath = join(modelsDir, `${role}.glb`);
 

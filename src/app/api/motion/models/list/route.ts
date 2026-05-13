@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 /**
  * Liste les modèles 3D présents dans public/models/.
@@ -15,12 +14,10 @@ import { fileURLToPath } from "node:url";
  *              attendu par compose-tour.
  */
 export async function GET() {
-  const repoRoot = dirname(
-    dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))),
-  );
-  // route.ts vit dans src/app/api/motion/models/list/ (5 niveaux
-  // depuis le root). On construit le path public/models/.
-  const modelsDir = join(repoRoot, "public", "models");
+  // process.cwd() = répertoire où next dev tourne = repo root.
+  // Plus robuste que dirname × N depuis import.meta.url qui dépend
+  // de la profondeur du fichier route.ts.
+  const modelsDir = join(process.cwd(), "public", "models");
   if (!existsSync(modelsDir)) {
     mkdirSync(modelsDir, { recursive: true });
     return NextResponse.json({ models: [] });

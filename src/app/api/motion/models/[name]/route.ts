@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { existsSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 
 /**
  * DELETE d'un modèle 3D. Sprint 7 phase 3.
@@ -24,10 +23,7 @@ export async function DELETE(
       { status: 400 },
     );
   }
-  const repoRoot = dirname(
-    dirname(dirname(dirname(dirname(fileURLToPath(import.meta.url))))),
-  );
-  const target = join(repoRoot, "public", "models", name);
+  const target = join(process.cwd(), "public", "models", name);
   if (!existsSync(target)) {
     return NextResponse.json({ error: "Fichier introuvable" }, { status: 404 });
   }
