@@ -74,19 +74,28 @@ export default function SceneCanvas({
         fov: cam.fov,
       }}
     >
-      {/* HDRI environment — apporte reflections vraies sur titanium
-       *  + glass. Preset "studio" = lighting trois-points équivalent
-       *  professionnel sans avoir à set ses propres lights. */}
-      <Environment preset="studio" background={false} />
+      {/* Force le scene background à null — sinon SwiftShader laisse
+       *  passer un dégradé clair du HDRI Environment même avec
+       *  `background={false}`. Doit être set explicitement. */}
+      <ForceTransparentBackground />
 
-      {/* Subtle direct lights pour creuser le volume — l'env map
-       *  donne le base lighting + reflections, ces directionals
-       *  ajoutent du modeling. */}
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 6, 6]} intensity={1.2} />
-      <directionalLight position={[-4, 3, 2]} intensity={0.5} />
+      {/* HDRI environment uniquement pour les reflections sur le
+       *  titanium / glass. background={false} + null fait que le HDRI
+       *  ne contribue PAS au render direct du fond, seulement aux
+       *  matériaux PBR du device. */}
+      <Environment preset="apartment" background={false} />
 
-      <CameraTarget lookAt={cam.lookAt} />
+      {/* Lighting plus chaleureux pour compenser. */}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 6, 6]} intensity={1.8} />
+      <directionalLight position={[-4, 3, 2]} intensity={0.8} />
+      <directionalLight position={[0, 0, 8]} intensity={0.6} />
+
+      <CameraDriver
+        position={cam.position}
+        lookAt={cam.lookAt}
+        fov={cam.fov}
+      />
 
       {glbPath ? (
         <Suspense fallback={null}>
@@ -102,28 +111,58 @@ export default function SceneCanvas({
         <MacBookDevice videoSrc={videoSrc} scale={1} />
       )}
 
-      {/* Post-process — bloom modéré sur les highlights (edges
-       *  du device, screen glow) + vignette pour cadrer l'attention
-       *  + contrast bump pour compenser le rendering software un
-       *  peu plat de SwiftShader. */}
+      {/* Post-process — bloom réduit pour éviter les halos blancs
+       *  autour du device (SwiftShader software amplifie les
+       *  bordures). Threshold pushé pour ne crame que les vraies
+       *  highlights, pas les edges. Vignette + contrast légers. */}
       <EffectComposer>
         <Bloom
-          intensity={0.4}
-          luminanceThreshold={0.8}
-          luminanceSmoothing={0.4}
+          intensity={0.2}
+          luminanceThreshold={0.92}
+          luminanceSmoothing={0.6}
           mipmapBlur
         />
-        <BrightnessContrast brightness={0.02} contrast={0.08} />
-        <Vignette eskil={false} offset={0.18} darkness={0.55} />
+        <BrightnessContrast brightness={0.0} contrast={0.05} />
+        <Vignette eskil={false} offset={0.25} darkness={0.45} />
       </EffectComposer>
     </ThreeCanvas>
   );
 }
 
-function CameraTarget({ lookAt }: { lookAt: [number, number, number] }) {
+/** Drive la camera (position + FoV + lookAt) à chaque frame.
+ *  Le prop `camera` du ThreeCanvas applique uniquement au mount,
+ *  donc pour avoir une animation cinematic (hero-tilt, feature-zoom,
+ *  pan-right, flip-reveal) il faut updater per frame. useCurrentFrame
+ *  côté parent re-trigger le re-render qui re-trigger ce useEffect. */
+function CameraDriver({
+  position,
+  lookAt,
+  fov,
+}: {
+  position: [number, number, number];
+  lookAt: [number, number, number];
+  fov: number;
+}) {
   const { camera } = useThree();
   useEffect(() => {
+    camera.position.set(position[0], position[1], position[2]);
     camera.lookAt(lookAt[0], lookAt[1], lookAt[2]);
-  }, [camera, lookAt]);
+    // PerspectiveCamera a un fov ; on cast pour TS
+    if ("fov" in camera) {
+      (camera as unknown as { fov: number }).fov = fov;
+      (camera as unknown as { updateProjectionMatrix: () => void }).updateProjectionMatrix();
+    }
+  }, [camera, position, lookAt, fov]);
+  return null;
+}
+
+/** Force scene.background = null pour vraiment retirer le HDRI du
+ *  rendu de fond. Drei Environment `background={false}` n'est pas
+ *  toujours respecté par SwiftShader. */
+function ForceTransparentBackground() {
+  const { scene } = useThree();
+  useEffect(() => {
+    scene.background = null;
+  }, [scene]);
   return null;
 }

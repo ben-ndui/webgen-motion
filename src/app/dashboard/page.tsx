@@ -5,9 +5,7 @@ import {
   Check,
   ChevronRight,
   Cog,
-  ExternalLink,
   Film,
-  HelpCircle,
   Mic,
 } from "lucide-react";
 import { getAllTours } from "@/lib/tour-loader";
@@ -59,26 +57,12 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* Right actions */}
+            {/* Right actions — clean : juste status au glance +
+             *  Settings dropdown qui contient tout le reste (Config,
+             *  Outils, External). */}
             <div className="flex items-center gap-2">
-              <Link
-                href="/help"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-                Aide
-              </Link>
-              <a
-                href="https://github.com/ben-ndui/webgen-motion"
-                target="_blank"
-                rel="noreferrer"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                GitHub
-              </a>
-              <SettingsMenu />
               <ConfigChip configured={config.configured} />
+              <SettingsMenu />
             </div>
           </div>
         </div>

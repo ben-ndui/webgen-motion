@@ -6,6 +6,8 @@ import {
   Bot,
   Box,
   ChevronDown,
+  ExternalLink,
+  HelpCircle,
   Mic,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -66,9 +68,11 @@ export default function SettingsMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1 w-64 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50"
+          className="absolute right-0 top-full mt-1 w-72 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50"
           data-wm-id="dashboard.settings-dropdown"
         >
+          {/* Config produits */}
+          <SectionHeader label="Config" />
           <MenuLink
             href="/setup"
             icon={<Mic className="w-3.5 h-3.5" />}
@@ -91,7 +95,11 @@ export default function SettingsMenu() {
             badge="Studio"
             onClick={() => setOpen(false)}
           />
+
           <div className="border-t border-slate-100" />
+
+          {/* Outils */}
+          <SectionHeader label="Outils" />
           <MenuLink
             href="/notary"
             icon={<ShieldCheck className="w-3.5 h-3.5" />}
@@ -99,8 +107,35 @@ export default function SettingsMenu() {
             hint="Soumissions Apple"
             onClick={() => setOpen(false)}
           />
+          <MenuLink
+            href="/help"
+            icon={<HelpCircle className="w-3.5 h-3.5" />}
+            label="Aide"
+            hint="Docs intégrées · FAQ"
+            onClick={() => setOpen(false)}
+          />
+
+          <div className="border-t border-slate-100" />
+
+          {/* External */}
+          <MenuLink
+            href="https://github.com/ben-ndui/webgen-motion"
+            external
+            icon={<ExternalLink className="w-3.5 h-3.5" />}
+            label="GitHub"
+            hint="ben-ndui/webgen-motion"
+            onClick={() => setOpen(false)}
+          />
         </div>
       )}
+    </div>
+  );
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="px-3 pt-2 pb-1 text-[9px] font-mono uppercase tracking-[0.18em] text-slate-400">
+      {label}
     </div>
   );
 }
@@ -111,6 +146,7 @@ function MenuLink({
   label,
   hint,
   badge,
+  external,
   onClick,
 }: {
   href: string;
@@ -118,15 +154,13 @@ function MenuLink({
   label: string;
   hint: string;
   badge?: string;
+  external?: boolean;
   onClick?: () => void;
 }) {
-  return (
-    <Link
-      href={href}
-      role="menuitem"
-      onClick={onClick}
-      className="flex items-start gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors"
-    >
+  const className =
+    "flex items-start gap-3 px-3 py-2.5 hover:bg-slate-50 transition-colors";
+  const body = (
+    <>
       <span className="text-slate-500 mt-0.5">{icon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -139,6 +173,25 @@ function MenuLink({
         </div>
         <div className="text-[11px] text-slate-500 mt-0.5">{hint}</div>
       </div>
+    </>
+  );
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        role="menuitem"
+        onClick={onClick}
+        className={className}
+      >
+        {body}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} role="menuitem" onClick={onClick} className={className}>
+      {body}
     </Link>
   );
 }
