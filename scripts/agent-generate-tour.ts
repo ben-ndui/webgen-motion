@@ -169,6 +169,15 @@ async function launchBrowser(): Promise<Browser> {
 async function openPage(browser: Browser, url: string): Promise<Page> {
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(45_000);
+  // tsx/esbuild wraps named function declarations inside
+  // `page.evaluate(() => { ... })` with a `__name` helper that
+  // doesn't exist in the page's window context. Inject a no-op shim
+  // before navigation so every script can call it harmlessly.
+  // Same fix as in scripts/capture-tour.ts (see CLAUDE.md).
+  await page.evaluateOnNewDocument(() => {
+    // @ts-expect-error — injected on the browser window, no TS view here
+    window.__name = (fn: unknown) => fn;
+  });
   await page.goto(url, { waitUntil: "networkidle2" });
   // Some sites lazy-load below the fold — scroll to bottom + back
   // so heroes, features, etc. are all materialized before we extract.
@@ -357,12 +366,17 @@ async function extractSnapshot(
 
 // ── Screenshot ─────────────────────────────────────────────────────
 async function captureScreenshot(page: Page): Promise<string> {
-  // Full-page JPEG at quality 70 — keeps the payload around 200-400
-  // KB even for long landing pages. Claude's image cap is 5 MB so
-  // we're comfortable. Encoded base64 (no data: prefix — provider
-  // wraps it).
+  // Claude's vision API rejects any image with a dimension > 8000 px,
+  // so we can't just `fullPage: true` on long marketing landings.
+  // We measure the page height first, then clip to a hard ceiling
+  // safely below Claude's limit. The model still gets multi-section
+  // context — typically 4-5 sections fit in 7800 px.
+  const pageHeight = await page.evaluate(
+    () => document.documentElement.scrollHeight,
+  );
+  const clipHeight = Math.min(pageHeight, 7800);
   const buf = await page.screenshot({
-    fullPage: true,
+    clip: { x: 0, y: 0, width: 1920, height: clipHeight },
     type: "jpeg",
     quality: 70,
   });

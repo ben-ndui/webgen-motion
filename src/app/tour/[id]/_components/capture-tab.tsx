@@ -3,13 +3,16 @@
 import {
   AlertCircle,
   Download,
+  Expand,
   Info,
   Monitor,
   Smartphone,
   Sparkles,
   Video,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { getCategory } from "@/lib/motion-categories";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 
@@ -50,6 +53,7 @@ export default function CaptureTab({
   onCapture,
 }: Props) {
   const isRunning = capture.kind === "running";
+  const [zoom, setZoom] = useState<CapturedSection | null>(null);
 
   const captureDescription = `Puppeteer ouvre une fenêtre Chromium au format ${captureFormat}, film le tour section par section et encode chaque section en MP4 + manifest.json.\nSortie : ~/.webgen-motion/tours/${tourId}/`;
 
@@ -241,11 +245,25 @@ function CaptureResults({
                   <span>{s.frames}f</span>
                 </div>
               </div>
-              <video
-                controls
-                src={s.mp4Url}
-                className="w-full bg-black block"
-              />
+              <button
+                type="button"
+                onClick={() => setZoom(s)}
+                className="relative group w-full bg-black block overflow-hidden cursor-zoom-in"
+                aria-label="Agrandir la capture"
+              >
+                <video
+                  src={s.mp4Url}
+                  className="w-full block pointer-events-none"
+                  muted
+                  preload="metadata"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/95 text-zinc-900 text-xs font-medium">
+                    <Expand className="w-3 h-3" />
+                    Agrandir
+                  </span>
+                </div>
+              </button>
               <div className="p-2.5 border-t border-slate-100 flex items-center justify-end">
                 <a
                   href={s.mp4Url}
@@ -260,7 +278,80 @@ function CaptureResults({
           );
         })}
       </div>
+
+      <SectionLightbox section={zoom} onClose={() => setZoom(null)} />
     </div>
+  );
+}
+
+function SectionLightbox({
+  section,
+  onClose,
+}: {
+  section: CapturedSection | null;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!section) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [section, onClose]);
+  return (
+    <AnimatePresence>
+      {section && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6"
+          onClick={onClose}
+        >
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Fermer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="w-full max-w-6xl max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-white mb-3">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
+                Section {String(section.index).padStart(2, "0")} · {section.categoryId}
+              </p>
+              <h3 className="text-lg font-semibold mt-0.5">{section.title}</h3>
+              {section.subtitle && (
+                <p className="text-sm text-white/70 mt-0.5">{section.subtitle}</p>
+              )}
+            </div>
+            <video
+              src={section.mp4Url}
+              controls
+              autoPlay
+              className="w-full bg-black rounded-lg shadow-2xl"
+            />
+            <div className="text-xs text-white/50 mt-3 font-mono flex items-center gap-2">
+              <span>{section.durationSec.toFixed(1)}s</span>
+              <span>·</span>
+              <span>{(section.sizeBytes / 1024 / 1024).toFixed(1)} MB</span>
+              <span>·</span>
+              <span>{section.frames}f</span>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

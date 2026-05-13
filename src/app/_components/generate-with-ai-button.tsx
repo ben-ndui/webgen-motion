@@ -228,12 +228,14 @@ export default function GenerateWithAiButton() {
 
             {busy && (
               <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 space-y-1">
-                <div className="flex items-center gap-2 text-sm text-zinc-900">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span className="font-medium">{phase ?? "En cours…"}</span>
+                <div className="flex items-center gap-2 text-sm text-zinc-900 min-w-0">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
+                  <span className="font-medium truncate">{phase ?? "En cours…"}</span>
                 </div>
                 {info && (
-                  <p className="text-xs text-zinc-600 pl-5">{info}</p>
+                  <p className="text-xs text-zinc-600 pl-5 break-words">
+                    {info}
+                  </p>
                 )}
               </div>
             )}
@@ -331,7 +333,11 @@ export default function GenerateWithAiButton() {
             {error && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-rose-900 break-words">{error}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-rose-900 break-all whitespace-pre-wrap max-h-40 overflow-y-auto">
+                    {error}
+                  </p>
+                </div>
               </div>
             )}
 

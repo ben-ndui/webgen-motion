@@ -65,7 +65,7 @@ export interface SiteInteractiveElement {
 
 /** Output : the agent returns a TourEntry-compatible JSON. We re-
  *  validate it on receipt so a malformed LLM output doesn't crash
- *  the rest of the pipeline. */
+ *  the rest of the pipeline. Mirrors src/lib/types/tour.ts exactly. */
 export interface GeneratedTour {
   id: string;
   name: string;
@@ -74,23 +74,40 @@ export interface GeneratedTour {
   startPath: string;
   baseUrl: string;
   format: "16:9" | "9:16";
+  voiceMode?: "per-step" | "narrative";
+  narrativeScript?: string;
+  brand?: {
+    displayName?: string;
+    domain?: string;
+    tagline?: string;
+  };
+  composeStyle?: string;
   steps: GeneratedTourStep[];
 }
 
-export interface GeneratedTourStep {
-  type: "section" | "overlay" | "scroll" | "wait" | "click" | "hover";
-  /** Section title (when type=section) or step description. */
-  label?: string;
-  /** Selector to act on (when type=click/hover/scroll). */
-  selector?: string;
-  /** Wait duration in ms (when type=wait), or section duration target. */
-  ms?: number;
-  /** Voice-over text (FR, conversational, 5-10 s when spoken). */
-  voiceover?: string;
-  /** Category for backdrop / motion preset (cf. categories.json) :
-   *  hero / features / pricing / testimonials / etc. */
-  category?: string;
-}
+/** Mirror of TourStep union from src/lib/types/tour.ts. We only
+ *  list the step types the agent is allowed to emit (no `goto`,
+ *  `type`, `select`, `keypress` for now — those need precise inputs
+ *  the LLM can't reliably infer). */
+export type GeneratedTourStep =
+  | {
+      type: "section";
+      categoryId: string;
+      title: string;
+      subtitle?: string;
+      dwellMs?: number;
+    }
+  | { type: "scroll"; to: number; selector?: string; dwellMs?: number }
+  | { type: "click"; selector: string; dwellMs?: number }
+  | { type: "hover"; selector: string; dwellMs?: number }
+  | {
+      type: "overlay";
+      text: string;
+      position?: "top" | "bottom" | "center";
+      categoryId?: string;
+      dwellMs?: number;
+    }
+  | { type: "wait"; dwellMs: number };
 
 export interface GenerateTourParams {
   snapshot: SiteSnapshot;
@@ -133,7 +150,9 @@ export interface AgentProvider {
 
 /** Validation : ensures the LLM output really matches our expected
  *  shape before we hand it back. Cheaper to throw here than to let a
- *  malformed JSON crash compose-tour later. */
+ *  malformed JSON crash compose-tour later. Per-type field check
+ *  catches the easy mistakes (section without categoryId/title,
+ *  overlay without text, scroll without `to`, etc.). */
 export function isGeneratedTour(value: unknown): value is GeneratedTour {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -143,9 +162,41 @@ export function isGeneratedTour(value: unknown): value is GeneratedTour {
     return false;
   if (!Array.isArray(v.steps)) return false;
   for (const step of v.steps) {
-    if (!step || typeof step !== "object") return false;
-    const s = step as Record<string, unknown>;
-    if (typeof s.type !== "string") return false;
+    if (!isGeneratedTourStep(step)) return false;
+  }
+  // narrativeScript should reference at least the first step (the
+  // runner depends on a [step:0] anchor to start the timeline).
+  if (
+    v.voiceMode === "narrative" &&
+    typeof v.narrativeScript === "string" &&
+    !v.narrativeScript.includes("[step:0]")
+  ) {
+    return false;
   }
   return true;
+}
+
+function isGeneratedTourStep(value: unknown): value is GeneratedTourStep {
+  if (!value || typeof value !== "object") return false;
+  const s = value as Record<string, unknown>;
+  switch (s.type) {
+    case "section":
+      return (
+        typeof s.categoryId === "string" &&
+        s.categoryId.length > 0 &&
+        typeof s.title === "string" &&
+        s.title.length > 0
+      );
+    case "scroll":
+      return typeof s.to === "number" && Number.isFinite(s.to);
+    case "click":
+    case "hover":
+      return typeof s.selector === "string" && s.selector.length > 0;
+    case "overlay":
+      return typeof s.text === "string" && s.text.length > 0;
+    case "wait":
+      return typeof s.dwellMs === "number" && s.dwellMs >= 0;
+    default:
+      return false;
+  }
 }
