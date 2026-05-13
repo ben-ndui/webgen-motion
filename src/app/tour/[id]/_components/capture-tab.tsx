@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getCategory } from "@/lib/motion-categories";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
+import RecaptureSectionButton from "./recapture-section-button";
 
 export interface CapturedSection {
   index: number;
@@ -44,6 +45,10 @@ interface Props {
   captureFormat: "16:9" | "9:16";
   tourId: string;
   onCapture: () => void;
+  /** Appelé quand une section a été recapturée — le parent doit
+   *  refetch le manifest pour rafraîchir les cards (Sprint UX
+   *  post-capture · Phase 1). */
+  onSectionRecaptured: () => void;
 }
 
 export default function CaptureTab({
@@ -51,6 +56,7 @@ export default function CaptureTab({
   captureFormat,
   tourId,
   onCapture,
+  onSectionRecaptured,
 }: Props) {
   const isRunning = capture.kind === "running";
 
@@ -146,6 +152,7 @@ export default function CaptureTab({
             totalSizeBytes={capture.totalSizeBytes}
             captureWallTimeSec={capture.captureWallTimeSec}
             tourId={tourId}
+            onSectionRecaptured={onSectionRecaptured}
           />
         )}
 
@@ -180,12 +187,14 @@ function CaptureResults({
   totalSizeBytes,
   captureWallTimeSec,
   tourId,
+  onSectionRecaptured,
 }: {
   sections: CapturedSection[];
   totalDurationSec: number;
   totalSizeBytes: number;
   captureWallTimeSec: number;
   tourId: string;
+  onSectionRecaptured: () => void;
 }) {
   const [zoom, setZoom] = useState<CapturedSection | null>(null);
   return (
@@ -264,7 +273,12 @@ function CaptureResults({
                   </span>
                 </div>
               </button>
-              <div className="p-2.5 border-t border-slate-100 flex items-center justify-end">
+              <div className="p-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                <RecaptureSectionButton
+                  tourId={tourId}
+                  sectionIndex={s.index}
+                  onDone={onSectionRecaptured}
+                />
                 <a
                   href={s.mp4Url}
                   download={`webgen-${tourId}-section-${String(s.index).padStart(2, "0")}.mp4`}

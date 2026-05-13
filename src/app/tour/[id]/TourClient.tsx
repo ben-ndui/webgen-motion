@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -125,49 +125,52 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   // Auto-load existing artifacts from disk so a returning session
   // doesn't have to re-run Capturer. /api/motion/tour/status returns
   // hasManifest / hasVoiceover / hasFinal + section URLs cache-busted
-  // by file mtime.
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/motion/tour/status?id=${encodeURIComponent(tour.id)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (cancelled || !data) return;
-        if (data.hasManifest && data.manifest) {
-          interface StatusSection extends CapturedSection {
-            mp4Url: string;
-          }
-          const sections: CapturedSection[] = (
-            data.manifest.sections as StatusSection[]
-          ).map((s) => ({ ...s }));
-          setCapture({
-            kind: "ready",
-            sections,
-            totalDurationSec: Number(data.manifest.totalDurationSec ?? 0),
-            totalSizeBytes: Number(data.manifest.totalSizeBytes ?? 0),
-            captureWallTimeSec: 0,
-          });
+  // by file mtime. Réutilisé après une recapture partielle pour
+  // rafraîchir les cards du Capture tab.
+  const reloadStatus = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/motion/tour/status?id=${encodeURIComponent(tour.id)}`,
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data) return;
+      if (data.hasManifest && data.manifest) {
+        interface StatusSection extends CapturedSection {
+          mp4Url: string;
         }
-        if (data.hasVoiceover && data.voiceoverUrl) {
-          setVo({
-            kind: "ready",
-            voiceoverUrl: String(data.voiceoverUrl),
-            captureWallTimeSec: 0,
-          });
-        }
-        if (data.hasFinal && data.finalUrl) {
-          setCompose({
-            kind: "ready",
-            finalUrl: String(data.finalUrl),
-            sizeBytes: Number(data.finalSizeBytes ?? 0),
-            captureWallTimeSec: 0,
-          });
-        }
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+        const sections: CapturedSection[] = (
+          data.manifest.sections as StatusSection[]
+        ).map((s) => ({ ...s }));
+        setCapture({
+          kind: "ready",
+          sections,
+          totalDurationSec: Number(data.manifest.totalDurationSec ?? 0),
+          totalSizeBytes: Number(data.manifest.totalSizeBytes ?? 0),
+          captureWallTimeSec: 0,
+        });
+      }
+      if (data.hasVoiceover && data.voiceoverUrl) {
+        setVo({
+          kind: "ready",
+          voiceoverUrl: String(data.voiceoverUrl),
+          captureWallTimeSec: 0,
+        });
+      }
+      if (data.hasFinal && data.finalUrl) {
+        setCompose({
+          kind: "ready",
+          finalUrl: String(data.finalUrl),
+          sizeBytes: Number(data.finalSizeBytes ?? 0),
+          captureWallTimeSec: 0,
+        });
+      }
+    } catch {}
   }, [tour.id]);
+
+  useEffect(() => {
+    reloadStatus();
+  }, [reloadStatus]);
 
   // ── Capture handler — POST + NDJSON streaming ───────────────────
   const handleCapture = async () => {
@@ -639,6 +642,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
             captureFormat={captureFormat}
             tourId={tour.id}
             onCapture={handleCapture}
+            onSectionRecaptured={reloadStatus}
           />
         )}
 

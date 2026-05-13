@@ -19,7 +19,14 @@
  *     --out ~/.webgen-motion/tours/uzme-landing
  */
 
-import { mkdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import puppeteer, { type Cookie, type Page } from "puppeteer";
@@ -46,6 +53,16 @@ const tourId = arg("--tour-id");
 const baseUrlOverride = arg("--base-url");
 const fps = parseInt(arg("--fps", "30") ?? "30", 10);
 const outDir = arg("--out", "/tmp/webgen-tour") ?? "/tmp/webgen-tour";
+/**
+ * --only-section <N>  (1-based)
+ * Recapture une seule section, patch le manifest existant au lieu
+ * de tout réécrire. Utilisé par l'UI "Recapturer cette section" du
+ * Capture tab pour fix une section sans re-filmer tout le tour.
+ */
+const onlySectionArg = arg("--only-section");
+const onlySectionIdx = onlySectionArg
+  ? parseInt(onlySectionArg, 10)
+  : null;
 
 if (!tourId) {
   console.error("Missing --tour-id");
@@ -144,10 +161,27 @@ main().catch((err) => {
 });
 
 async function main(): Promise<void> {
-  rmSync(outDir, { recursive: true, force: true });
-  mkdirSync(outDir, { recursive: true });
+  // Full capture wipe le outDir et regénère tout. Recapture partielle
+  // (--only-section N) garde les MP4s existants et ne touche QUE la
+  // section ciblée — sinon on perd 5-10 min à re-filmer pour rien.
+  if (onlySectionIdx === null) {
+    rmSync(outDir, { recursive: true, force: true });
+    mkdirSync(outDir, { recursive: true });
+  } else {
+    mkdirSync(outDir, { recursive: true });
+  }
 
-  const sections = planSections(tour!);
+  const allSections = planSections(tour!);
+  const sections =
+    onlySectionIdx !== null
+      ? allSections.filter((s) => s.index === onlySectionIdx)
+      : allSections;
+  if (onlySectionIdx !== null && sections.length === 0) {
+    console.error(
+      `Section ${onlySectionIdx} introuvable (le tour a ${allSections.length} section(s)).`,
+    );
+    process.exit(1);
+  }
   const showSplashes = sections.some((s) => s.splashDwellMs > 0);
 
   console.log(`▶ Tour: ${tour!.name} (${tour!.steps.length} steps · ${sections.length} section${sections.length > 1 ? "s" : ""})`);
@@ -312,21 +346,56 @@ async function main(): Promise<void> {
   // Output dimensions = actual screenshot size (logical × dpr).
   const outputWidth = isPortrait ? viewport.width * (viewport.deviceScaleFactor ?? 1) : width;
   const outputHeight = isPortrait ? viewport.height * (viewport.deviceScaleFactor ?? 1) : height;
-  const manifest = {
-    tourId,
-    format,
-    width: outputWidth,
-    height: outputHeight,
-    fps,
-    sections: manifestSections,
-    totalFrames,
-    totalDurationSec: Math.round((totalFrames / fps) * 100) / 100,
-    generatedAt: new Date().toISOString(),
-  };
-  writeFileSync(join(outDir, "manifest.json"), JSON.stringify(manifest, null, 2));
 
-  console.log("");
-  console.log(`✓ Done · ${sections.length} clip(s) · ${(manifest.totalDurationSec).toFixed(1)}s · ${outDir}/manifest.json`);
+  const manifestPath = join(outDir, "manifest.json");
+
+  if (onlySectionIdx !== null) {
+    // Patch mode : on charge le manifest existant et on remplace la
+    // ligne de la section recapturée. Les autres MP4s sont intacts.
+    if (!existsSync(manifestPath)) {
+      console.error(
+        `Recapture partielle impossible : manifest.json absent dans ${outDir}.`,
+      );
+      process.exit(1);
+    }
+    const existing = JSON.parse(readFileSync(manifestPath, "utf-8")) as {
+      sections: typeof manifestSections;
+      totalFrames: number;
+      totalDurationSec: number;
+      [k: string]: unknown;
+    };
+    const patched = manifestSections[0];
+    const before = existing.sections.find((s) => s.index === patched.index);
+    const otherFrames =
+      existing.totalFrames - (before?.frames ?? 0);
+    existing.sections = existing.sections.map((s) =>
+      s.index === patched.index ? patched : s,
+    );
+    existing.totalFrames = otherFrames + patched.frames;
+    existing.totalDurationSec =
+      Math.round((existing.totalFrames / fps) * 100) / 100;
+    existing.generatedAt = new Date().toISOString();
+    writeFileSync(manifestPath, JSON.stringify(existing, null, 2));
+    console.log("");
+    console.log(
+      `✓ Section ${patched.index} recapturée · ${(patched.durationSec).toFixed(1)}s · ${manifestPath}`,
+    );
+  } else {
+    const manifest = {
+      tourId,
+      format,
+      width: outputWidth,
+      height: outputHeight,
+      fps,
+      sections: manifestSections,
+      totalFrames,
+      totalDurationSec: Math.round((totalFrames / fps) * 100) / 100,
+      generatedAt: new Date().toISOString(),
+    };
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    console.log("");
+    console.log(`✓ Done · ${sections.length} clip(s) · ${(manifest.totalDurationSec).toFixed(1)}s · ${manifestPath}`);
+  }
 }
 
 // ── Capture helpers ───────────────────────────────────────────────
