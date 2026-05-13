@@ -49,6 +49,22 @@ export async function PUT(req: NextRequest) {
       }
     }
   }
+  if (body.agent) {
+    sanitized.agent = {};
+    if (
+      body.agent.provider === "anthropic" ||
+      body.agent.provider === "openai" ||
+      body.agent.provider === "mistral"
+    ) {
+      sanitized.agent.provider = body.agent.provider;
+    }
+    if (typeof body.agent.apiKey === "string") {
+      sanitized.agent.apiKey = body.agent.apiKey.trim() || undefined;
+    }
+    if (typeof body.agent.model === "string") {
+      sanitized.agent.model = body.agent.model.trim() || undefined;
+    }
+  }
   saveConfig(sanitized);
   return NextResponse.json(getPublicConfig());
 }

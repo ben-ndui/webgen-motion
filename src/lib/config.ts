@@ -14,6 +14,7 @@ import { join } from "node:path";
  */
 
 export type VoiceBackendKind = "elevenlabs" | "voicebox";
+export type AgentProviderKind = "anthropic" | "openai" | "mistral";
 
 export interface MotionConfig {
   /** Which TTS backend the runner targets when a tour doesn't pick
@@ -42,6 +43,17 @@ export interface MotionConfig {
     modelSize?: string;
     /** Language code passed to /generate — Voicebox requires it. */
     language?: string;
+  };
+  /** AI agent for auto-tour generation (Sprint 5). User brings their
+   *  own key — webgen-motion ne proxifie rien, le user paie ses
+   *  tokens directement à Anthropic / OpenAI / Mistral. */
+  agent?: {
+    /** Provider sélectionné dans le Setup wizard. */
+    provider?: AgentProviderKind;
+    /** Clé API du provider (plaintext, local-first config). */
+    apiKey?: string;
+    /** Modèle utilisé. Default Anthropic : claude-sonnet-4-6. */
+    model?: string;
   };
 }
 
@@ -83,6 +95,10 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
       ...current.voicebox,
       ...partial.voicebox,
     },
+    agent: {
+      ...current.agent,
+      ...partial.agent,
+    },
   };
   // Drop empty sub-objects so the JSON file stays clean.
   if (
@@ -100,6 +116,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
     !next.voicebox?.language
   ) {
     delete next.voicebox;
+  }
+  if (!next.agent?.apiKey && !next.agent?.provider && !next.agent?.model) {
+    delete next.agent;
   }
   writeFileSync(getConfigPath(), JSON.stringify(next, null, 2));
   return next;
@@ -202,6 +221,40 @@ export function resolveVoiceBackend(tour?: {
 }
 
 /**
+ * Resolves the configured AI agent (Sprint 5). Config wins over env
+ * (`ANTHROPIC_API_KEY`) so the wizard remains the canonical source.
+ * Returns null when nothing is set or the apiKey is empty.
+ */
+export interface ResolvedAgent {
+  provider: AgentProviderKind;
+  apiKey: string;
+  model: string;
+}
+export function resolveAgent(): ResolvedAgent | null {
+  const cfg = getConfig();
+  const provider = cfg.agent?.provider ?? "anthropic";
+  const apiKey =
+    cfg.agent?.apiKey ??
+    (provider === "anthropic"
+      ? process.env.ANTHROPIC_API_KEY
+      : provider === "openai"
+        ? process.env.OPENAI_API_KEY
+        : process.env.MISTRAL_API_KEY);
+  if (!apiKey) return null;
+  const defaultModel =
+    provider === "anthropic"
+      ? "claude-sonnet-4-6"
+      : provider === "openai"
+        ? "gpt-4o"
+        : "mistral-large-latest";
+  return {
+    provider,
+    apiKey,
+    model: cfg.agent?.model ?? defaultModel,
+  };
+}
+
+/**
  * Returns a redacted view of the config for client-side display
  * (Setup wizard pre-fill, status indicators). API keys are masked
  * to last 4 chars.
@@ -221,6 +274,12 @@ export interface PublicConfig {
     modelSize: string;
     language: string;
   };
+  agent: {
+    provider: AgentProviderKind;
+    hasApiKey: boolean;
+    apiKeyMasked: string | null;
+    model: string;
+  };
   envFallback: {
     hasApiKey: boolean;
     hasVoiceId: boolean;
@@ -232,6 +291,14 @@ export function getPublicConfig(): PublicConfig {
   const cfg = getConfig();
   const apiKey = cfg.elevenlabs?.apiKey;
   const defaultBackend = cfg.defaultBackend ?? "elevenlabs";
+  const agentProvider = cfg.agent?.provider ?? "anthropic";
+  const agentKey = cfg.agent?.apiKey;
+  const agentDefaultModel =
+    agentProvider === "anthropic"
+      ? "claude-sonnet-4-6"
+      : agentProvider === "openai"
+        ? "gpt-4o"
+        : "mistral-large-latest";
   return {
     defaultBackend,
     elevenlabs: {
@@ -246,6 +313,12 @@ export function getPublicConfig(): PublicConfig {
       engine: cfg.voicebox?.engine ?? DEFAULT_VOICEBOX_ENGINE,
       modelSize: cfg.voicebox?.modelSize ?? DEFAULT_VOICEBOX_MODEL_SIZE,
       language: cfg.voicebox?.language ?? DEFAULT_VOICEBOX_LANGUAGE,
+    },
+    agent: {
+      provider: agentProvider,
+      hasApiKey: !!agentKey,
+      apiKeyMasked: agentKey ? mask(agentKey) : null,
+      model: cfg.agent?.model ?? agentDefaultModel,
     },
     envFallback: {
       hasApiKey: !!process.env.ELEVENLABS_API_KEY,
