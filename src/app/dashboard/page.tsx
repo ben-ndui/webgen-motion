@@ -14,6 +14,7 @@ import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
 import { getPublicConfig } from "@/lib/config";
 import NewTourButton from "../_components/new-tour-button";
+import GenerateWithAiButton from "../_components/generate-with-ai-button";
 import TourCard from "../_components/tour-card";
 
 /**
@@ -120,7 +121,10 @@ export default function DashboardPage() {
                 : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${totalSec}s cumulés · prêts à filmer`}
             </p>
           </div>
-          <NewTourButton />
+          <div className="flex items-center gap-2">
+            <GenerateWithAiButton />
+            <NewTourButton />
+          </div>
         </div>
 
         {/* Tours grid */}
