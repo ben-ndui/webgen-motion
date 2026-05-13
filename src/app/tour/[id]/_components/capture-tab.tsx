@@ -280,7 +280,12 @@ function CaptureResults({
         ))}
       </div>
 
-      <SectionLightbox section={zoom} onClose={() => setZoom(null)} />
+      <SectionLightbox
+        section={zoom}
+        tourId={tourId}
+        onClose={() => setZoom(null)}
+        onSectionUpdated={onSectionRecaptured}
+      />
     </div>
   );
 }

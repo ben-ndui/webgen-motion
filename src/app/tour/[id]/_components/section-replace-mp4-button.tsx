@@ -23,10 +23,14 @@ export default function SectionReplaceMp4Button({
   tourId,
   sectionIndex,
   onDone,
+  variant = "default",
 }: {
   tourId: string;
   sectionIndex: number;
   onDone: () => void;
+  /** "default" : ligne claire dans la card. "glass" : pastille
+   *  blanche translucide pour le contexte dark du lightbox. */
+  variant?: "default" | "glass";
 }) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
@@ -78,7 +82,11 @@ export default function SectionReplaceMp4Button({
         onClick={onPick}
         disabled={busy}
         title="Remplacer le MP4 de cette section par un fichier perso"
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait"
+        className={
+          variant === "glass"
+            ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/15 disabled:opacity-60 disabled:cursor-wait"
+            : "inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait"
+        }
       >
         {busy ? (
           <Loader2 className="w-3 h-3 animate-spin" />

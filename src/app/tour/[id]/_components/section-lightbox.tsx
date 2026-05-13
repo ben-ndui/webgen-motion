@@ -1,23 +1,41 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Download, Scissors, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import RecaptureSectionButton from "./recapture-section-button";
+import SectionReplaceMp4Button from "./section-replace-mp4-button";
+import SectionTrimControls from "./section-trim-controls";
 import type { CapturedSection } from "./capture-tab";
 
 /**
  * Lightbox fullscreen pour zoom une capture de section.
  *
- * Extrait de `capture-tab.tsx` pour alléger ce fichier — la modale
- * a son cycle de vie autonome (ESC, click-out, autoplay).
+ * Les mêmes actions que la card (Recapturer / Upload / Trim /
+ * Download) sont accessibles ici — ergonomie : quand on est en
+ * train d'examiner une capture en grand, on veut pouvoir agir
+ * dessus sans devoir fermer la modale d'abord.
+ *
+ * Cycle de vie autonome (ESC, click-out, autoplay). Le panel
+ * trim s'ouvre EN DESSOUS de la vidéo dans le modal (et non
+ * partout dans la grille), donc on doit lever ses limites de
+ * largeur.
  */
 export default function SectionLightbox({
   section,
+  tourId,
   onClose,
+  onSectionUpdated,
 }: {
   section: CapturedSection | null;
+  tourId: string;
   onClose: () => void;
+  /** Appelé quand une action (recapture / upload / trim) a modifié
+   *  le manifest. Le parent doit refetch les sections pour mettre
+   *  à jour la modale qui reste ouverte. */
+  onSectionUpdated: () => void;
 }) {
+  const [trimOpen, setTrimOpen] = useState(false);
   useEffect(() => {
     if (!section) return;
     const onKey = (e: KeyboardEvent) => {
@@ -26,62 +44,150 @@ export default function SectionLightbox({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [section, onClose]);
+  // Reset trim open state when the section changes (e.g. user
+  // navigates between captures via keyboard / parent).
+  useEffect(() => {
+    if (!section) setTrimOpen(false);
+  }, [section]);
 
+  if (!section) {
+    return <AnimatePresence />;
+  }
+  const hasTrim =
+    section.trimStartSec !== undefined || section.trimEndSec !== undefined;
   return (
     <AnimatePresence>
-      {section && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6 overflow-y-auto"
+        onClick={onClose}
+      >
+        <button
+          type="button"
           onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          aria-label="Fermer"
         >
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            aria-label="Fermer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="w-full max-w-6xl max-h-[90vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-white mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
-                Section {String(section.index).padStart(2, "0")} ·{" "}
-                {section.categoryId}
-              </p>
-              <h3 className="text-lg font-semibold mt-0.5">{section.title}</h3>
-              {section.subtitle && (
-                <p className="text-sm text-white/70 mt-0.5">
-                  {section.subtitle}
-                </p>
-              )}
-            </div>
+          <X className="w-5 h-5" />
+        </button>
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          className="w-full max-w-6xl flex flex-col my-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="text-white mb-3">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
+              Section {String(section.index).padStart(2, "0")} ·{" "}
+              {section.categoryId}
+            </p>
+            <h3 className="text-lg font-semibold mt-0.5">{section.title}</h3>
+            {section.subtitle && (
+              <p className="text-sm text-white/70 mt-0.5">{section.subtitle}</p>
+            )}
+          </div>
+
+          {/* Video + floating glass action bar */}
+          <div className="relative">
             <video
               src={section.mp4Url}
               controls
               autoPlay
-              className="w-full bg-black rounded-lg shadow-2xl"
+              className="w-full bg-black rounded-2xl shadow-2xl"
             />
-            <div className="text-xs text-white/50 mt-3 font-mono flex items-center gap-2">
-              <span>{section.durationSec.toFixed(1)}s</span>
-              <span>·</span>
-              <span>{(section.sizeBytes / 1024 / 1024).toFixed(1)} MB</span>
-              <span>·</span>
-              <span>{section.frames}f</span>
+
+            {/* Liquid glass floating bar — overlays the bottom of the
+             *  video, backdrop-blur + semi-transparent dark surface
+             *  + subtle white border + inner highlight for depth. */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 max-w-[calc(100%-1.5rem)]">
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-black/40 backdrop-blur-2xl backdrop-saturate-150 border border-white/15 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)]">
+                {/* Stats pill */}
+                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono text-white/80">
+                  <span className="text-white">
+                    {section.durationSec.toFixed(1)}s
+                  </span>
+                  <span className="text-white/30">·</span>
+                  <span className="text-white">
+                    {(section.sizeBytes / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                  <span className="text-white/30">·</span>
+                  <span className="text-white">{section.frames}f</span>
+                </div>
+                <span className="hidden sm:block w-px h-4 bg-white/15" />
+                {/* Actions — liquid pill buttons */}
+                <div className="flex items-center gap-1">
+                  <RecaptureSectionButton
+                    tourId={tourId}
+                    sectionIndex={section.index}
+                    onDone={onSectionUpdated}
+                    variant="glass"
+                  />
+                  <SectionReplaceMp4Button
+                    tourId={tourId}
+                    sectionIndex={section.index}
+                    onDone={onSectionUpdated}
+                    variant="glass"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setTrimOpen((v) => !v)}
+                    className={`inline-flex items-center gap-1.5 text-[11px] font-medium transition-colors px-3 py-1.5 rounded-full ${
+                      trimOpen
+                        ? "bg-white text-zinc-900"
+                        : hasTrim
+                          ? "bg-white/20 text-white hover:bg-white/30"
+                          : "text-white/80 hover:text-white hover:bg-white/15"
+                    }`}
+                    title={
+                      hasTrim
+                        ? "Trim actif — click pour modifier"
+                        : "Trim in/out"
+                    }
+                  >
+                    <Scissors className="w-3 h-3" />
+                    {hasTrim ? "Trim ✓" : "Trim"}
+                  </button>
+                  <a
+                    href={section.mp4Url}
+                    download={`webgen-${tourId}-section-${String(section.index).padStart(2, "0")}.mp4`}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white hover:bg-white/15 transition-colors px-3 py-1.5 rounded-full"
+                  >
+                    <Download className="w-3 h-3" />
+                    MP4
+                  </a>
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </div>
+
+          {/* Trim panel — slides in under the video when open */}
+          {trimOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mt-3 bg-white rounded-2xl overflow-hidden shadow-2xl"
+            >
+              <SectionTrimControls
+                tourId={tourId}
+                sectionIndex={section.index}
+                mp4Url={section.mp4Url}
+                capturedDurationSec={section.durationSec}
+                initialTrimStartSec={section.trimStartSec}
+                initialTrimEndSec={section.trimEndSec}
+                onSaved={onSectionUpdated}
+                onClose={() => setTrimOpen(false)}
+              />
+            </motion.div>
+          )}
         </motion.div>
-      )}
+      </motion.div>
     </AnimatePresence>
   );
 }

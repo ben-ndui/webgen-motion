@@ -25,10 +25,14 @@ export default function RecaptureSectionButton({
   tourId,
   sectionIndex,
   onDone,
+  variant = "default",
 }: {
   tourId: string;
   sectionIndex: number;
   onDone: () => void;
+  /** "default" : ligne claire dans la card. "glass" : pastille
+   *  blanche translucide pour le contexte dark du lightbox. */
+  variant?: "default" | "glass";
 }) {
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<string | null>(null);
@@ -97,13 +101,17 @@ export default function RecaptureSectionButton({
     }
   };
 
+  const cls =
+    variant === "glass"
+      ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/15 disabled:opacity-60 disabled:cursor-wait"
+      : "inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait";
   return (
     <>
       <button
         type="button"
         onClick={recapture}
         disabled={busy}
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait"
+        className={cls}
         title="Recapturer cette section sans recapturer le tour entier"
       >
         {busy ? (
