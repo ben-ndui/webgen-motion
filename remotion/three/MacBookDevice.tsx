@@ -1,6 +1,6 @@
 "use client";
 
-import { useVideoTexture } from "@remotion/three";
+import { useOffthreadVideoTexture } from "@remotion/three";
 
 /**
  * MacBook procedural 3D pour les compositions Sprint 7.
@@ -34,7 +34,7 @@ export default function MacBookDevice({
   // bureau" naturel.
   const openAngle = (100 * Math.PI) / 180;
 
-  const videoTexture = useVideoTexture(videoSrc);
+  const videoTexture = useOffthreadVideoTexture({ src: videoSrc });
 
   return (
     <group scale={scale}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useVideoTexture } from "@remotion/three";
+import { useOffthreadVideoTexture } from "@remotion/three";
 import * as THREE from "three";
 
 /**
@@ -37,10 +37,11 @@ export default function IPhoneDevice({
   const screenWidth = bodyWidth - 0.14;
   const screenHeight = bodyHeight - 0.14;
 
-  // Video texture sur le screen plane. useVideoTexture vient de
-  // @remotion/three et frame-aligne automatiquement la vidéo sur le
-  // currentFrame de la composition — pas de glitch entre frames.
-  const videoTexture = useVideoTexture(videoSrc);
+  // Video texture sur le screen plane. useOffthreadVideoTexture
+  // accepte un src direct et participe au pipeline offthread de
+  // Remotion (frame-accurate sans glitch). Indispensable pour
+  // que la texture suive currentFrame pendant le render.
+  const videoTexture = useOffthreadVideoTexture({ src: videoSrc });
 
   // Body geometry — rounded box approx via une box + corners adoucis.
   // ExtrudeGeometry sur une shape rounded donne le look "Pro" sans

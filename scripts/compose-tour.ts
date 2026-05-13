@@ -396,6 +396,14 @@ async function main(): Promise<void> {
     stagingDir,
     "--concurrency",
     "4",
+    // Sprint 7 — quand frame3d est actif, WebGL est requis pour
+    // Three.js. Chromium headless de Remotion ne crée pas de
+    // context WebGL par défaut → on force "angle" (Almost Native
+    // GL Layer Engine) qui utilise SwiftShader software renderer
+    // si pas de GPU dispo. Aucun impact négatif sur les composes
+    // 2D (juste un peu plus de RAM côté Chromium).
+    "--gl",
+    frame3d ? "angle" : "swangle",
     "--log",
     "info",
   ];

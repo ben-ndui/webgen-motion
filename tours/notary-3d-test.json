@@ -1,0 +1,18 @@
+{
+  "id": "notary-3d-test",
+  "name": "Notary 3D",
+  "description": "Test Sprint 7 frame3d iPhone",
+  "estimatedSec": 15,
+  "startPath": "/notary",
+  "baseUrl": "http://localhost:3000",
+  "format": "9:16",
+  "voiceMode": "narrative",
+  "narrativeScript": "[step:0] Test 3D device frame.",
+  "composeStyle": "energetic",
+  "frame3d": "iphone",
+  "cameraPreset3d": "hero-tilt",
+  "steps": [
+    { "type": "section", "categoryId": "branding", "title": "Test 3D", "dwellMs": 2500 },
+    { "type": "wait", "dwellMs": 2000 }
+  ]
+}
