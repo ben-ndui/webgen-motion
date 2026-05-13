@@ -11,9 +11,10 @@ import {
 } from "@react-three/postprocessing";
 import IPhoneDevice from "./iPhoneDevice";
 import MacBookDevice from "./MacBookDevice";
+import GLBDevice from "./GLBDevice";
 import { resolveCamera, type CameraPresetId } from "./camera-presets";
 import { useThree } from "@react-three/fiber";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 /**
  * Scene wrapper qui assemble device + lighting + camera animée +
@@ -38,6 +39,7 @@ export default function SceneCanvas({
   durationFrames,
   width,
   height,
+  glbPath,
 }: {
   videoSrc: string;
   device: Frame3DDeviceId;
@@ -45,6 +47,11 @@ export default function SceneCanvas({
   durationFrames: number;
   width: number;
   height: number;
+  /** Path d'un GLB Sketchfab optionnel (relatif à public/). Si
+   *  fourni, on rend ce GLB au lieu du device procédural. La
+   *  validation existence se fait côté compose-tour avant de
+   *  passer la prop. */
+  glbPath?: string;
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -81,10 +88,17 @@ export default function SceneCanvas({
 
       <CameraTarget lookAt={cam.lookAt} />
 
-      {device === "iphone" && (
+      {glbPath ? (
+        <Suspense fallback={null}>
+          <GLBDevice
+            glbPath={glbPath}
+            videoSrc={videoSrc}
+            targetHeight={device === "iphone" ? 3.4 : 4}
+          />
+        </Suspense>
+      ) : device === "iphone" ? (
         <IPhoneDevice videoSrc={videoSrc} scale={1} />
-      )}
-      {device === "macbook" && (
+      ) : (
         <MacBookDevice videoSrc={videoSrc} scale={1} />
       )}
 

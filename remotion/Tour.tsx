@@ -42,6 +42,7 @@ export function Tour({
   composeStyle,
   frame3d,
   cameraPreset3d,
+  frame3dGlbPath,
 }: TourCompositionProps) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -147,6 +148,7 @@ export function Tour({
               styleId={composeStyle}
               frame3d={frame3d}
               cameraPreset3d={cameraPreset3d}
+              frame3dGlbPath={frame3dGlbPath}
             />
           </Sequence>
         );

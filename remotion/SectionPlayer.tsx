@@ -34,6 +34,7 @@ export function SectionPlayer({
   styleId,
   frame3d,
   cameraPreset3d,
+  frame3dGlbPath,
 }: {
   section: ManifestSection;
   cat: MotionCategory;
@@ -49,6 +50,9 @@ export function SectionPlayer({
    *  `frames-3d`). */
   frame3d?: Frame3DDeviceId;
   cameraPreset3d?: string;
+  /** Path optionnel d'un GLB Sketchfab à utiliser à la place du
+   *  device procédural. Set par compose-tour si fichier existe. */
+  frame3dGlbPath?: string;
 }) {
   // useCurrentFrame() inside a <Sequence> returns frames relative
   // to the sequence's `from`. Negative during the premount window,
@@ -139,6 +143,7 @@ export function SectionPlayer({
       durationFrames={durationFrames}
       width={format === "9:16" ? 1080 : 1920}
       height={format === "9:16" ? 1920 : 1080}
+      glbPath={frame3dGlbPath}
     />
   ) : format === "9:16" ? (
     <IPhoneFrame cat={cat} tabTitle={section.title}>

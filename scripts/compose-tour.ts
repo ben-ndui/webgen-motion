@@ -21,7 +21,8 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   computeDurationInFrames,
   type AudioBeat,
@@ -339,6 +340,25 @@ async function main(): Promise<void> {
     );
   }
 
+  // GLB loader optionnel — si le user a drop un modèle Sketchfab
+  // dans public/models/<frame3d>.glb, on prend ce GLB à la place
+  // du device procédural. Convention de naming : iphone.glb /
+  // macbook.glb. Le path est passé en relatif à public/ pour que
+  // Remotion staticFile() le résolve correctement.
+  let frame3dGlbPath: string | undefined;
+  if (frame3d) {
+    const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+    const glbCandidate = join(repoRoot, "public", "models", `${frame3d}.glb`);
+    if (existsSync(glbCandidate)) {
+      frame3dGlbPath = `models/${frame3d}.glb`;
+      console.log(`  ✓ GLB détecté → ${frame3dGlbPath} (override du procédural)`);
+    } else {
+      console.log(
+        `  ℹ Pas de GLB dans public/models/${frame3d}.glb → fallback procédural. Drop un modèle Sketchfab pour upgrade.`,
+      );
+    }
+  }
+
   const props: TourCompositionProps = {
     tourId: tourId!,
     format,
@@ -357,6 +377,7 @@ async function main(): Promise<void> {
         : "energetic",
     ...(frame3d ? { frame3d } : {}),
     ...(cameraPreset3d ? { cameraPreset3d } : {}),
+    ...(frame3dGlbPath ? { frame3dGlbPath } : {}),
   };
 
   const durationFrames = computeDurationInFrames(sections, fps);

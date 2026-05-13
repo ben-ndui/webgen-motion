@@ -68,6 +68,12 @@ export interface TourCompositionProps extends Record<string, unknown> {
    */
   frame3d?: "iphone" | "macbook";
   cameraPreset3d?: string;
+  /** Path relatif au public/ d'un GLB optionnel à utiliser à la
+   *  place du device procédural. Set par compose-tour si
+   *  `public/models/<frame3d>.glb` existe. Permet de drop un modèle
+   *  iPhone 15 Pro / MacBook réel depuis Sketchfab et qu'il
+   *  remplace automatiquement le procédural. */
+  frame3dGlbPath?: string;
   /** Voiceover filename inside the publicDir staging directory.
    *  Null if no VO was generated yet. */
   voiceoverFile: string | null;
