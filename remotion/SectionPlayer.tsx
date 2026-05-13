@@ -139,7 +139,6 @@ export function SectionPlayer({
       durationFrames={durationFrames}
       width={format === "9:16" ? 1080 : 1920}
       height={format === "9:16" ? 1920 : 1080}
-      backdrop={cat.bgColor ?? "#0a0a0a"}
     />
   ) : format === "9:16" ? (
     <IPhoneFrame cat={cat} tabTitle={section.title}>

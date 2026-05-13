@@ -24,7 +24,6 @@ export default function SceneCanvas({
   durationFrames,
   width,
   height,
-  backdrop = "#0a0a0a",
 }: {
   videoSrc: string;
   device: Frame3DDeviceId;
@@ -32,9 +31,6 @@ export default function SceneCanvas({
   durationFrames: number;
   width: number;
   height: number;
-  /** Couleur de fond derrière le device. Slightly off-black par
-   *  défaut, on peut overrider par catégorie. */
-  backdrop?: string;
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -52,7 +48,11 @@ export default function SceneCanvas({
     <ThreeCanvas
       width={width}
       height={height}
-      style={{ background: backdrop }}
+      // Canvas transparent — le 3D flotte par-dessus le compositor
+      // backdrop existant (BeatsLayer, transitions, motion design
+      // par catégorie). Pas de fond uni qui couvre tout.
+      style={{ background: "transparent" }}
+      gl={{ alpha: true }}
       camera={{
         position: cam.position,
         fov: cam.fov,
