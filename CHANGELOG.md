@@ -82,8 +82,30 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ---
 
+### Added (Sprint UX post-capture) · 2026-05-13
+
+- **Recapture section** : `capture-tour --only-section N` patche le manifest sans wipe, API `/api/motion/tour/recapture/run`, composant `RecaptureSectionButton`. Divise par ~7 le temps d'itération quand l'agent IA produit un tour imparfait.
+- **Drag-and-drop reorder** : drag handle sur chaque card, API `/api/motion/tour/reorder-sections/run` qui valide la permutation et réécrit le manifest. Native HTML5 D&D, zero dep externe.
+- **Trim in/out non-destructif** : dual-range slider (CSS-only) avec live seek preview, API `/api/motion/tour/trim-section/run`. Les MP4 restent intacts — compose-tour applique le trim via `OffthreadVideo startFrom + endAt`. Reset = restore full clip.
+- **Upload custom MP4** : remplace une section par un fichier perso (B-roll, screen recording externe, etc.). API `/api/motion/tour/replace-section/run` multipart + ffprobe pour récupérer la durée et patcher le manifest.
+- **Lightbox liquid-glass** : fullscreen viewer des captures avec les 4 actions accessibles en pill design backdrop.
+- Extraction `section-card.tsx` + `section-lightbox.tsx` depuis `capture-tab.tsx` (377 → 287 lignes).
+
+### Added (Sprint refactor wizard) · 2026-05-13
+
+- Extraction des 6 step components inline de `/setup/page.tsx` (1018 → 329 lignes) dans `_components/wizard-<step>-step.tsx` + types partagés dans `wizard-types.ts`.
+- **Convention `data-wm-id`** : 52 attributs ajoutés sur les éléments significatifs (wizard + dashboard + tour tabs + notary + setup/agent) pour tour-ability future via l'Agent IA.
+
+### Added (Sprint 6 — Extraction Motion Studio standalone) · 2026-05-13
+
+- **Project scaffolder** (`scripts/scaffold-tours-from-project.ts`) : scanne un repo Next.js cible (App Router ou Pages Router), extrait routes + headings, émet un fichier tour squelette par route dans `<projectPath>/tours-scaffold/`. CLI + API `/api/motion/tour/scaffold-from-project/run` + bouton modal dashboard "Scaffold projet".
+- **Open-core foundation** : `webgen-motion.config.ts` au root avec champ `edition` (community / studio / enterprise) + `src/lib/edition.ts` qui expose `isFeatureEnabled(flag)`. 23 feature flags définis (10 Community actifs, 8 Studio gated, 5 Enterprise gated). Architecture en place pour le tiering Davinci-style sans refactor futur.
+- **Brand rename** : `src/lib/brand.ts` exporte `BRAND` (ex-`UZME`, transitionnel — personne ne l'importait).
+- **README** réécrit pour adoption externe : section "Trois façons de créer un tour" (manuel / Agent IA / Scaffold projet) + section "Editions" qui documente le tiering Community/Studio/Enterprise et son architecture.
+
+---
+
 **À venir** :
-- **Sprint UX post-capture** — éditer les MP4 sans re-filmer : recapture par section, drag-and-drop reorder, upload custom MP4, trim in/out.
-- **Sprint refactor wizard** — extraire les 6 step components inline de `/setup/page.tsx` (1018 lignes) dans `_components/`.
-- **Sprint 6** — extraction Motion Studio en repo standalone clonable + guide intégration.
-- **Sprint 7** — frames 3D via React Three Fiber (iPhone/MacBook GLB + camera presets), look "publicité Apple".
+- **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546).
+- **Sprint 7** — Frames 3D via React Three Fiber (iPhone/MacBook GLB + camera presets), look "publicité Apple Keynote".
+- **License key offline-first** — vérification crypto locale qui débloque Studio Edition. Pré-requis pour la commercialisation.

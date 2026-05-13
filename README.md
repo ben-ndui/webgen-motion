@@ -72,6 +72,30 @@ npm run dev
 
 ---
 
+## 🚀 Trois façons de créer un tour
+
+webgen-motion couvre tous les onboarding workflows — du bricoleur qui veut tout contrôler au designer qui veut un résultat en 2 clics.
+
+### 1. **Manuel** — tu connais ton site, tu sais quoi raconter
+**Nouveau tour** sur le dashboard → un squelette JSON s'écrit dans `tours/<slug>.json`. Tu édites dans le tab Script. ~5 min pour un pitch propre.
+
+### 2. **Agent IA** — bring-your-own-key Claude (recommandé pour découverte rapide)
+1. `/setup/agent` → colle ta clé Anthropic (Sonnet 4.6 par défaut, $3/$15 par M tokens)
+2. Dashboard → **Générer avec IA** → URL du site + preset (pitch / demo / walkthrough / showcase)
+3. L'agent fetch via Puppeteer headless, parse les sections (`data-tour-section`, semantic HTML), screenshot full-page, et produit un `TourEntry` complet avec narratif FR aligné sur les vraies positions scroll
+4. Ouvre le tour → review dans le tab Script → capture
+
+### 3. **Scaffold depuis ton repo** — multi-routes en un coup
+Tu as un Next.js app existante, tu veux des seed tours pour chaque page ?
+1. Dashboard → **Scaffold projet**
+2. Colle le chemin absolu de ton repo + URL servie pendant capture
+3. Le scanner walks `src/app/**/page.tsx` (App Router) ou `pages/` (legacy), extrait h1/h2 du source, écrit un fichier tour squelette par route dans `<projectPath>/tours-scaffold/`
+4. Copie ceux qui t'intéressent dans `webgen-motion/tours/`, raffine avec l'Agent IA si besoin
+
+Les trois workflows peuvent se chainer : scaffold pour la structure rapide → Agent IA pour le narratif → édition manuelle pour le polish.
+
+---
+
 ## 🎛 Le workflow en 5 onglets
 
 Une page `/tour/<id>` rassemble tout dans 5 tabs avec un bouton **Save persistant** dans le top bar :
@@ -211,6 +235,22 @@ npm run remotion:render  # one-shot hello-world sanity check
 - **FFmpeg** sur le PATH (`brew install ffmpeg` sur macOS, `apt install ffmpeg` Linux)
 - **Chromium** : fourni automatiquement par Puppeteer au premier `npm install`
 - **Backend voix off** : ElevenLabs (Starter ≥ $5/mois pour le voice cloning) **OU** [Voicebox desktop](https://github.com/jamiepine/voicebox) (gratuit, 100% local)
+
+---
+
+## 💎 Editions
+
+webgen-motion suit un modèle **open-core** (style Davinci Resolve / Sentry / Plausible) : le core est entièrement gratuit et OSS, des features avancées peuvent unlock via une license future. Aujourd'hui **TOUT est Community Edition**, mais l'architecture est en place dès maintenant pour éviter un refactor plus tard.
+
+| Edition | Cible | Inclus |
+|---|---|---|
+| 🟢 **Community** *(gratuit, perpétuel, ce que tu as)* | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (sober / energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX post-capture (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
+| 🟣 **Studio** *(à venir, one-time)* | Créateurs pro, agences | Frames 3D (R3F + GLB iPhone/MacBook) · Presets cinematic / glitch · Music library intégrée · Multi-format export simultané · Watermark removal · Cloud rendering optionnel · Auto-update prioritaire |
+| ⚫ **Enterprise** *(sur mesure)* | Agences digitales, plateformes | White-label · API headless (CI/CD) · SSO · Support dédié + SLA |
+
+L'edition active est résolue depuis `webgen-motion.config.ts` (champ `edition`, default `community`). Un license key offline-first (signature crypto validée localement) débloquera Studio/Enterprise au launch. Pas d'appel serveur obligatoire — respect du local-first.
+
+Voir `src/lib/edition.ts` pour la liste des feature flags définis (23 à date, dont 10 actifs en Community).
 
 ---
 
