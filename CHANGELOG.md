@@ -58,6 +58,32 @@ dans cette tag dès qu'Apple aura validé la notarization.
 - Runner spawn packaged : abandon de `npx` (PATH non hérité dans `.app` macOS) → `process.execPath` + chemin explicite vers `tsx/dist/cli.mjs`.
 - Compose-tour subspawns (analyze-audio + remotion render) : canonical CLI scripts au lieu des symlinks `.bin/*` qui cassent la résolution de modules dans le bundle.
 
+### Added (Sprint 5 — Agent IA auto-tour generation) · 2026-05-13
+
+- **Provider abstraction** (`src/lib/llm-providers/{base,anthropic,prompt,index}.ts`) : interface `AgentProvider` commune, implémentation Anthropic Claude via fetch direct (Sonnet 4.6 par défaut, Opus + Haiku supportés). Pricing intégré pour cost estimation. Multimodal (image_block) pour Claude.
+- **Setup wizard tab Agent IA** (`/setup/agent`) : provider selector, sélection modèle avec pricing visible, clé API masquée stockée dans `~/.webgen-motion/config.json`.
+- **Site scraper Puppeteer** (`scripts/agent-generate-tour.ts`) : navigation + scroll-prefetch, extraction sections (`data-tour-section` / `data-section` / sémantique `<section>` avec heading) avec **scrollY pixel exact** capturé, éléments interactifs, screenshot full-page JPEG capé à 7800px (sous la limite Claude 8000).
+- **API route streaming NDJSON** (`/api/motion/tour/generate/run`) : POST baseUrl + outputId + preset (pitch / demo / walkthrough / showcase) + tone + format. Pre-validation creds, forward stderr du runner.
+- **UI "Générer avec IA"** dans le `/dashboard` : bouton + modale avec URL / slug auto / preset / tone / format / skip-screenshot, streaming live des phases, navigate vers `/tour/<id>` à la fin.
+- **Filets de sécurité programmatiques** (`base.ts`) :
+  - `normalizeStepOrder` — réordonne `scroll → section` en `section → scroll` (le scroll appartient au MP4 de la section qu'il introduit, pas celui d'avant).
+  - `realignScrollsToSnapshot` — pour chaque section, fuzzy-match son titre vs les headings du snapshot, force le `scroll.to` sur le vrai scrollY, **INSÈRE un scroll si manquant** (sans ça les MP4 stagnent et caption désynchronise du visuel).
+- **Prompt engineering** (`prompt.ts`) : schéma TourEntry inline avec tous les types de steps (`section`, `scroll`, `overlay`, `wait`, etc.), force `voiceMode: "narrative"` avec markers `[step:N]`, anti-pattern interdit + pattern obligatoire montrés côte à côte avec exemples concrets.
+
+### Fixed (itérations Sprint 5)
+
+- Schéma agent → vrai TourEntry : `label`/`ms`/`category` étaient les mauvais noms, fixés en `text`/`dwellMs`/`categoryId`.
+- `voiceMode: "narrative"` obligatoire pour éviter le crash audio-tour exit code 1 quand les VO per-step ne matchaient pas la durée.
+- Bug zoom captures : `useState` déplacé dans `CaptureResults` (où le lightbox vit), pas `CaptureTab`.
+- Screenshot Puppeteer capé à 7800px (Claude rejette > 8000).
+- Overflow modal d'erreurs : `break-all` + `min-w-0` + `max-h-40 overflow-y-auto`.
+- `__name` shim Puppeteer (tsx/esbuild wrapper) via `evaluateOnNewDocument`.
+- Off-by-one numérique LLM : safety net programmatique override les valeurs scroll avec celles du snapshot par fuzzy match.
+
 ---
 
-**À venir (Sprint 5)** : Agent IA d'auto-tour generation. Setup wizard tab "Agent IA" + provider abstraction (Anthropic / OpenAI / Mistral) + bouton "Générer avec IA" qui fetch un site, parse les `data-*` attrs / structure sémantique, et génère un `TourEntry` complet via LLM. Bring-your-own-key. Multimodal bonus (Claude Opus + screenshot) pour qualité narrative.
+**À venir** :
+- **Sprint UX post-capture** — éditer les MP4 sans re-filmer : recapture par section, drag-and-drop reorder, upload custom MP4, trim in/out.
+- **Sprint refactor wizard** — extraire les 6 step components inline de `/setup/page.tsx` (1018 lignes) dans `_components/`.
+- **Sprint 6** — extraction Motion Studio en repo standalone clonable + guide intégration.
+- **Sprint 7** — frames 3D via React Three Fiber (iPhone/MacBook GLB + camera presets), look "publicité Apple".
