@@ -271,16 +271,25 @@ function buildTour(
 function extractHeadings(source: string): Array<{ tag: string; text: string }> {
   const matches: Array<{ tag: string; text: string }> = [];
   // Match JSX <h1>...</h1>, <h2>...</h2>, <h3>...</h3> with simple
-  // text content. Doesn't handle complex children — that's fine for
-  // a heuristic scaffolder.
+  // text content. Skip headings whose content is a JSX expression
+  // (starts with `{`) ou contient un mix template — pas utilisable
+  // comme titre statique. Skip aussi placeholders type "Section X".
   const re = /<(h[1-3])[^>]*>([^<{][^<]*?)<\/h[1-3]>/g;
   let m;
   while ((m = re.exec(source)) !== null) {
     const tag = m[1];
     const text = m[2].replace(/\s+/g, " ").trim();
-    if (text.length >= 2 && text.length <= 120) {
-      matches.push({ tag, text });
+    // Filter JSX expressions, empty content, and useless placeholders.
+    if (
+      text.length < 2 ||
+      text.length > 120 ||
+      text.startsWith("{") ||
+      text.includes("{") ||
+      /^section\s+\d+$/i.test(text)
+    ) {
+      continue;
     }
+    matches.push({ tag, text });
   }
   return matches;
 }
