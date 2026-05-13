@@ -59,53 +59,53 @@ export function resolveCamera(
     case "hero-tilt": {
       // Caméra légèrement haute et inclinée vers le bas → tilt-down
       // subtil pendant la durée de la section. Style "showcase Apple".
+      // z=7 + FoV 36° pour que un iPhone 3.4u rentre confortablement
+      // dans un viewport 9:16.
       return {
-        position: lerpVec3([0, 0.4, 4], [0, 0.55, 4], t),
-        lookAt: lerpVec3([0, 0, 0], [0, -0.05, 0], t),
-        fov: 32,
+        position: lerpVec3([0, 0.6, 7], [0, 0.85, 7], t),
+        lookAt: lerpVec3([0, 0, 0], [0, -0.1, 0], t),
+        fov: 36,
       };
     }
     case "feature-zoom": {
       // Pull-in : camera rapproche le device, met l'écran en avant.
       return {
-        position: lerpVec3([0, 0.1, 5.2], [0, 0.05, 3.6], t),
+        position: lerpVec3([0, 0.2, 8], [0, 0.1, 5.5], t),
         lookAt: [0, 0, 0],
-        fov: lerp(36, 28, t),
+        fov: lerp(40, 32, t),
       };
     }
     case "pan-right": {
       // Slide horizontal : camera dérive de gauche à droite, le
       // device reste centré.
       return {
-        position: lerpVec3([-1.4, 0.2, 4.2], [1.4, 0.2, 4.2], t),
+        position: lerpVec3([-2.2, 0.3, 7], [2.2, 0.3, 7], t),
         lookAt: [0, 0, 0],
-        fov: 34,
+        fov: 38,
       };
     }
     case "flip-reveal": {
       // Démarre légèrement par derrière, finit face caméra. On
       // simule la rotation via la caméra qui contourne le device.
       const angle = lerp(Math.PI * 0.55, 0, t);
-      const radius = 4.2;
+      const radius = 7;
       return {
         position: [
           Math.sin(angle) * radius,
-          0.3,
+          0.5,
           Math.cos(angle) * radius,
         ],
         lookAt: [0, 0, 0],
-        fov: 32,
+        fov: 36,
       };
     }
     case "static-front":
     default:
-      // Fallback : caméra fixe, droit devant. Utile pour les
-      // sections où on veut pas de mouvement parasite (cas "compose
-      // classique en 3D mais sans animation cam").
+      // Fallback : caméra fixe, droit devant.
       return {
-        position: [0, 0, 4],
+        position: [0, 0, 7],
         lookAt: [0, 0, 0],
-        fov: 32,
+        fov: 36,
       };
   }
 }

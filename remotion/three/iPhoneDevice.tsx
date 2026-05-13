@@ -71,12 +71,15 @@ export default function IPhoneDevice({
 
   return (
     <group scale={scale}>
-      {/* Body — titanium dark, légère metalness */}
+      {/* Body — titanium gris clair, metalness modérée pour rester
+       *  visible avec SwiftShader software (un titanium trop foncé
+       *  se confond avec le backdrop sombre). Look "natural
+       *  titanium" iPhone 15 Pro. */}
       <mesh geometry={bodyGeometry} castShadow receiveShadow>
         <meshStandardMaterial
-          color="#2a2a2c"
-          metalness={0.85}
-          roughness={0.35}
+          color="#9a9a9d"
+          metalness={0.7}
+          roughness={0.45}
         />
       </mesh>
 

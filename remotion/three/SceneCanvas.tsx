@@ -58,17 +58,23 @@ export default function SceneCanvas({
         fov: cam.fov,
       }}
     >
-      {/* Lighting setup — key light + fill + rim pour donner du
-       *  volume au device. Sprint 7 phase 2 swappera contre un
-       *  Environment (HDRI studio) pour des reflections vraies. */}
-      <ambientLight intensity={0.35} />
+      {/* Lighting setup — augmenté pour SwiftShader software
+       *  rendering (sans GPU les PBR materials paraissent trop
+       *  sombres). 3-points classique (key + fill + rim) +
+       *  ambient généreux pour ne pas perdre le device dans le
+       *  noir. Phase 2 swappera contre un Environment HDRI. */}
+      <ambientLight intensity={0.9} />
       <directionalLight
         position={[5, 6, 6]}
-        intensity={1.4}
+        intensity={2.4}
         castShadow
       />
-      <directionalLight position={[-4, 3, 2]} intensity={0.7} />
-      <directionalLight position={[0, -2, -5]} intensity={0.45} />
+      <directionalLight position={[-4, 3, 2]} intensity={1.2} />
+      <directionalLight position={[0, -2, -5]} intensity={0.6} />
+      {/* Subtle key light directly facing camera pour lever les
+       *  zones d'ombre du body titanium qui se confond avec le
+       *  background sombre. */}
+      <directionalLight position={[0, 0, 8]} intensity={0.8} />
 
       {/* Camera target — on bouge le lookAt via key prop pour forcer
        *  Three à reset l'orientation. Pas idéal mais simple. */}
