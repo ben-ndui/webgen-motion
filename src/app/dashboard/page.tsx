@@ -65,6 +65,12 @@ export default function DashboardPage() {
                 <HelpCircle className="w-3.5 h-3.5" />
                 Aide
               </Link>
+              <Link
+                href="/notary"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                Notary
+              </Link>
               <a
                 href="https://github.com/ben-ndui/webgen-motion"
                 target="_blank"
