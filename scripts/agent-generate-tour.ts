@@ -286,11 +286,17 @@ async function extractSnapshot(
           undefined;
         const heading = el.querySelector("h1, h2");
         const firstP = el.querySelector("p");
+        // Pixel Y from page top, after the scroll-prefetch pass — so
+        // images / lazy content above are materialized and the rect
+        // is stable. Math.round to avoid sub-pixel noise in the prompt.
+        const rect = el.getBoundingClientRect();
+        const scrollY = Math.round(rect.top + window.scrollY);
         return {
           id: explicitId ?? `section-${i + 1}`,
           heading: trimText(heading?.textContent, 120) || `Section ${i + 1}`,
           excerpt: trimText(firstP?.textContent ?? el.textContent, 500),
           selector: cssPath(el),
+          scrollY,
         };
       });
 

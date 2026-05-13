@@ -69,15 +69,21 @@ export function buildSystemPrompt(params: GenerateTourParams): string {
 }
 \`\`\`
 
-**scroll** — scroll vers un point précis (Y en pixels) ou un selector.
+**scroll** — scroll vers une position Y précise en pixels.
 \`\`\`json
 {
   "type": "scroll",
-  "to": 600,
-  "selector": "<optionnel — si fourni, scroll jusqu'à cet élément>",
+  "to": <pixel-Y de la section ciblée>,
   "dwellMs": 1500
 }
 \`\`\`
+
+⚠️ **CRUCIAL** : le \`to\` doit être la valeur \`scrollY\` exacte
+fournie dans la liste des sections du snapshot. Ne JAMAIS inventer
+une valeur arbitraire (genre 600 ou 800). Si tu veux scroller vers la
+section "Projets" qui a \`scrollY: 2480\` dans le snapshot, tu emets
+\`{ "type": "scroll", "to": 2480, "dwellMs": 1500 }\`. Pas de valeur
+fantaisiste : ça désynchronise les captures vs les captions.
 
 **click** — click sur un élément.
 \`\`\`json
@@ -165,7 +171,7 @@ export function buildUserPrompt(params: GenerateTourParams): string {
   const sections = snapshot.sections
     .map(
       (s, i) =>
-        `${i + 1}. **${s.heading}** (selector: \`${s.selector}\`)\n   ${s.excerpt.slice(0, 300)}`,
+        `${i + 1}. **${s.heading}**\n   - selector : \`${s.selector}\`\n   - scrollY : **${s.scrollY} px** (utilise CETTE valeur pour scroller vers cette section)\n   - excerpt : ${s.excerpt.slice(0, 300)}`,
     )
     .join("\n\n");
   const interactives = snapshot.interactiveElements

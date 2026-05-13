@@ -48,6 +48,11 @@ export interface SiteSection {
   /** CSS selector that uniquely targets this section — used by the
    *  capture runner later. */
   selector: string;
+  /** Pixel offset from page top (rect.top + window.scrollY at
+   *  scraping time). Used by the LLM to emit accurate `scroll`
+   *  steps with the right `to` values — without this it just
+   *  guesses 600 / 800 and never lands on the actual section. */
+  scrollY: number;
 }
 
 export interface SiteInteractiveElement {
