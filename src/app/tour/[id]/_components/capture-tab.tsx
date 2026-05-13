@@ -2,20 +2,16 @@
 
 import {
   AlertCircle,
-  Download,
-  Expand,
   Info,
   Monitor,
   Smartphone,
   Sparkles,
   Video,
-  X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
-import { getCategory } from "@/lib/motion-categories";
+import { useState } from "react";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
-import RecaptureSectionButton from "./recapture-section-button";
+import SectionCard from "./section-card";
+import SectionLightbox from "./section-lightbox";
 
 export interface CapturedSection {
   index: number;
@@ -197,6 +193,35 @@ function CaptureResults({
   onSectionRecaptured: () => void;
 }) {
   const [zoom, setZoom] = useState<CapturedSection | null>(null);
+  // Drag & drop reorder — Sprint UX post-capture · Phase 2.
+  // On manipule un état local pour l'optimistic update + on appelle
+  // /api/motion/tour/reorder-sections/run pour persister.
+  const [dragSrc, setDragSrc] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<number | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
+
+  const handleDrop = async (srcIdx: number, destIdx: number) => {
+    if (srcIdx === destIdx) return;
+    // Reconstruit le nouvel ordre. On enlève srcIdx du tableau et on
+    // l'insère à la position destIdx.
+    const order = sections.map((s) => s.index);
+    const src = order.splice(srcIdx, 1)[0];
+    order.splice(destIdx, 0, src);
+    try {
+      const res = await fetch("/api/motion/tour/reorder-sections/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tourId, order }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      setReorderError(null);
+      onSectionRecaptured(); // reuse the manifest-refetch callback
+    } catch (e) {
+      setReorderError((e as Error).message);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -213,159 +238,44 @@ function CaptureResults({
         </div>
       </div>
 
+      {reorderError && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900">
+          Erreur reorder : {reorderError}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-        {sections.map((s) => {
-          const cat = getCategory(s.categoryId);
-          const accent = cat?.bgColor ?? "#0f172a";
-          return (
-            <motion.div
-              key={s.index}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: s.index * 0.04 }}
-              className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:border-slate-300 hover:shadow-md transition-all"
-            >
-              <div
-                className="h-1.5"
-                style={{ backgroundColor: accent }}
-              />
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span
-                    className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: `${accent}15`, color: accent }}
-                  >
-                    {String(s.index).padStart(2, "0")} · {cat?.label ?? "—"}
-                  </span>
-                </div>
-                <h4 className="text-sm font-semibold text-slate-900 leading-tight">
-                  {s.title}
-                </h4>
-                {s.subtitle && (
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                    {s.subtitle}
-                  </p>
-                )}
-                <div className="flex items-center gap-1.5 mt-2 text-[11px] font-mono text-slate-400">
-                  <span>{s.durationSec.toFixed(1)}s</span>
-                  <span>·</span>
-                  <span>{(s.sizeBytes / 1024 / 1024).toFixed(1)} MB</span>
-                  <span>·</span>
-                  <span>{s.frames}f</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setZoom(s)}
-                className="relative group w-full bg-black block overflow-hidden cursor-zoom-in"
-                aria-label="Agrandir la capture"
-              >
-                <video
-                  src={s.mp4Url}
-                  className="w-full block pointer-events-none"
-                  muted
-                  preload="metadata"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/95 text-zinc-900 text-xs font-medium">
-                    <Expand className="w-3 h-3" />
-                    Agrandir
-                  </span>
-                </div>
-              </button>
-              <div className="p-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                <RecaptureSectionButton
-                  tourId={tourId}
-                  sectionIndex={s.index}
-                  onDone={onSectionRecaptured}
-                />
-                <a
-                  href={s.mp4Url}
-                  download={`webgen-${tourId}-section-${String(s.index).padStart(2, "0")}.mp4`}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100"
-                >
-                  <Download className="w-3 h-3" />
-                  MP4
-                </a>
-              </div>
-            </motion.div>
-          );
-        })}
+        {sections.map((s, idx) => (
+          <SectionCard
+            key={s.index}
+            section={s}
+            tourId={tourId}
+            idx={idx}
+            onZoom={setZoom}
+            onSectionRecaptured={onSectionRecaptured}
+            isDragging={dragSrc === idx}
+            isDropTarget={dropTarget === idx && dragSrc !== idx}
+            onDragStart={() => setDragSrc(idx)}
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (dragSrc !== null && dragSrc !== idx) setDropTarget(idx);
+            }}
+            onDragLeave={() => setDropTarget((t) => (t === idx ? null : t))}
+            onDrop={() => {
+              if (dragSrc !== null && dragSrc !== idx) handleDrop(dragSrc, idx);
+              setDragSrc(null);
+              setDropTarget(null);
+            }}
+            onDragEnd={() => {
+              setDragSrc(null);
+              setDropTarget(null);
+            }}
+          />
+        ))}
       </div>
 
       <SectionLightbox section={zoom} onClose={() => setZoom(null)} />
     </div>
-  );
-}
-
-function SectionLightbox({
-  section,
-  onClose,
-}: {
-  section: CapturedSection | null;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    if (!section) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [section, onClose]);
-  return (
-    <AnimatePresence>
-      {section && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6"
-          onClick={onClose}
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            aria-label="Fermer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            className="w-full max-w-6xl max-h-[90vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="text-white mb-3">
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
-                Section {String(section.index).padStart(2, "0")} · {section.categoryId}
-              </p>
-              <h3 className="text-lg font-semibold mt-0.5">{section.title}</h3>
-              {section.subtitle && (
-                <p className="text-sm text-white/70 mt-0.5">{section.subtitle}</p>
-              )}
-            </div>
-            <video
-              src={section.mp4Url}
-              controls
-              autoPlay
-              className="w-full bg-black rounded-lg shadow-2xl"
-            />
-            <div className="text-xs text-white/50 mt-3 font-mono flex items-center gap-2">
-              <span>{section.durationSec.toFixed(1)}s</span>
-              <span>·</span>
-              <span>{(section.sizeBytes / 1024 / 1024).toFixed(1)} MB</span>
-              <span>·</span>
-              <span>{section.frames}f</span>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
   );
 }
 
