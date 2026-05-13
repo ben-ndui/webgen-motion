@@ -180,7 +180,12 @@ export function SectionPlayer({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transform: kenBurnsTransform,
+          // Disable Ken Burns CSS quand on est en mode 3D — la
+          // scène a déjà sa propre animation camera + device, le
+          // Ken Burns par-dessus crée un double mouvement qui fait
+          // sortir le device du cadre. Pour le 2D rendering classique
+          // (Mac chrome / iPhone frame), Ken Burns reste actif.
+          transform: frame3d ? undefined : kenBurnsTransform,
           transformOrigin: "center",
         }}
       >
