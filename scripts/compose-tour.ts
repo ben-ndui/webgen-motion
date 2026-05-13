@@ -91,6 +91,11 @@ interface ManifestRaw {
     subtitle?: string;
     file: string;
     durationSec: number;
+    /** Optional trim in/out points stored from the UI trim controls
+     *  (Sprint UX post-capture · Phase 3). Both are in seconds,
+     *  relative to the MP4 start. If absent, the full MP4 plays. */
+    trimStartSec?: number;
+    trimEndSec?: number;
   }>;
   totalDurationSec: number;
 }
@@ -134,11 +139,25 @@ async function main(): Promise<void> {
     const absPath = resolve(tourDir!, s.file);
     linkInto(absPath, s.file);
     const probedSec = probeMediaDurationSec(absPath);
-    const effectiveSec =
+    const captured =
       probedSec > 0 ? Math.min(s.durationSec, probedSec) : s.durationSec;
     if (probedSec > 0 && Math.abs(probedSec - s.durationSec) > 0.05) {
       console.log(
-        `  ⚠ section ${s.index} : manifest ${s.durationSec.toFixed(2)}s vs media ${probedSec.toFixed(2)}s — using ${effectiveSec.toFixed(2)}s`,
+        `  ⚠ section ${s.index} : manifest ${s.durationSec.toFixed(2)}s vs media ${probedSec.toFixed(2)}s — using ${captured.toFixed(2)}s`,
+      );
+    }
+    // Trim values written by the UI (Sprint UX phase 3). Clamp to
+    // [0, captured] to be tolerant of stale values when the user
+    // recaptured a section after setting trim.
+    const trimStart = Math.max(0, Math.min(s.trimStartSec ?? 0, captured));
+    const trimEnd = Math.max(
+      trimStart + 0.1,
+      Math.min(s.trimEndSec ?? captured, captured),
+    );
+    const effectiveSec = trimEnd - trimStart;
+    if (trimStart > 0 || trimEnd < captured) {
+      console.log(
+        `  ✂ section ${s.index} trim : ${trimStart.toFixed(2)}s → ${trimEnd.toFixed(2)}s (was ${captured.toFixed(2)}s)`,
       );
     }
     return {
@@ -148,7 +167,8 @@ async function main(): Promise<void> {
       subtitle: s.subtitle,
       fileName: s.file,
       durationSec: effectiveSec,
-      capturedDurationSec: s.durationSec,
+      capturedDurationSec: captured,
+      startFromSec: trimStart > 0 ? trimStart : undefined,
     };
   });
 

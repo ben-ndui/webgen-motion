@@ -50,10 +50,16 @@ export function SectionPlayer({
     section.categoryId,
     style.transitionOverride,
   );
-  // OffthreadVideo plays the MP4 from frame 0 up to `endAt`. We cap
-  // it at the section's (possibly trimmed) duration so a section that
-  // was shortened by pacing analysis doesn't keep playing its tail.
-  const videoEndAt = Math.round(section.durationSec * fps);
+  // OffthreadVideo plays the MP4 from `startFrom` to `endAt`.
+  //   - startFrom = section.startFromSec * fps (default 0)
+  //   - endAt    = startFrom + section.durationSec * fps
+  // section.durationSec is the EFFECTIVE playback window (already
+  // takes the trim into account — compose-tour does the math). This
+  // way SectionPlayer reasons in section-local frame land sans avoir
+  // à connaître la longueur du MP4 source.
+  const videoStartFrom = Math.round((section.startFromSec ?? 0) * fps);
+  const videoEndAt =
+    videoStartFrom + Math.round(section.durationSec * fps);
 
   // Entrance: rises 0→1 over the first `crossfadeFrames`.
   // Exit: falls 1→0 over the last `crossfadeFrames`.
@@ -96,6 +102,7 @@ export function SectionPlayer({
   const video = (
     <OffthreadVideo
       src={staticFile(section.fileName)}
+      startFrom={videoStartFrom}
       endAt={videoEndAt}
       style={{
         width: "100%",

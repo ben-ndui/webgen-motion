@@ -18,12 +18,17 @@ export interface ManifestSection {
   fileName: string;
   /** Per-section playback duration (seconds). The composition uses
    *  this for the timeline window AND as the OffthreadVideo cut
-   *  point — `analyze-audio.ts` may shorten it relative to the
-   *  captured MP4 if the VO ends earlier than the visual. */
+   *  point. May be smaller than the captured MP4 duration if a
+   *  user-defined trim is in effect (Sprint UX post-capture · Phase 3). */
   durationSec: number;
-  /** Original captured MP4 duration — kept around so chunk 5 can
-   *  reference the pre-trim length if needed. */
+  /** Original captured MP4 duration — kept around so the UI can
+   *  show "trim 2s removed from a 12s capture" and the Remotion
+   *  composition can fall back if trim values look stale. */
   capturedDurationSec?: number;
+  /** Trim in-point in seconds (offset from MP4 start). Default 0.
+   *  Passed to OffthreadVideo's `startFrom` so the section plays
+   *  from this point. Set via the trim controls in the Capture tab. */
+  startFromSec?: number;
 }
 
 export interface TourBrand {

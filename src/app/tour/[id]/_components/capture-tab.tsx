@@ -23,6 +23,11 @@ export interface CapturedSection {
   durationSec: number;
   sizeBytes: number;
   frames: number;
+  /** Optional trim in/out points persisted to manifest by the UI
+   *  trim controls (Sprint UX post-capture · Phase 3). Both in
+   *  seconds, relative to MP4 start. When absent, full clip plays. */
+  trimStartSec?: number;
+  trimEndSec?: number;
 }
 
 export type CaptureState =

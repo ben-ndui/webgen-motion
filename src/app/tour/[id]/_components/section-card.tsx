@@ -1,9 +1,11 @@
 "use client";
 
-import { Download, Expand, GripVertical } from "lucide-react";
+import { Download, Expand, GripVertical, Scissors } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { getCategory } from "@/lib/motion-categories";
 import RecaptureSectionButton from "./recapture-section-button";
+import SectionTrimControls from "./section-trim-controls";
 import type { CapturedSection } from "./capture-tab";
 
 /**
@@ -53,6 +55,9 @@ export default function SectionCard({
   onDragEnd: () => void;
 }) {
   const cat = getCategory(section.categoryId);
+  const [trimOpen, setTrimOpen] = useState(false);
+  const hasTrim =
+    section.trimStartSec !== undefined || section.trimEndSec !== undefined;
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -133,13 +138,33 @@ export default function SectionCard({
         </div>
       </button>
 
-      {/* Footer : recapture + download */}
-      <div className="p-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-        <RecaptureSectionButton
-          tourId={tourId}
-          sectionIndex={section.index}
-          onDone={onSectionRecaptured}
-        />
+      {/* Footer : recapture + trim toggle + download */}
+      <div className="p-2.5 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-1">
+          <RecaptureSectionButton
+            tourId={tourId}
+            sectionIndex={section.index}
+            onDone={onSectionRecaptured}
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setTrimOpen((v) => !v);
+            }}
+            className={`inline-flex items-center gap-1.5 text-[11px] font-medium transition-colors px-2 py-1 rounded-md ${
+              trimOpen
+                ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                : hasTrim
+                  ? "text-zinc-900 bg-zinc-100 hover:bg-zinc-200"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+            title={hasTrim ? "Trim actif — click pour modifier" : "Trim in/out"}
+          >
+            <Scissors className="w-3 h-3" />
+            {hasTrim ? "Trim ✓" : "Trim"}
+          </button>
+        </div>
         <a
           href={section.mp4Url}
           download={`webgen-${tourId}-section-${String(section.index).padStart(2, "0")}.mp4`}
@@ -149,6 +174,18 @@ export default function SectionCard({
           MP4
         </a>
       </div>
+      {trimOpen && (
+        <SectionTrimControls
+          tourId={tourId}
+          sectionIndex={section.index}
+          mp4Url={section.mp4Url}
+          capturedDurationSec={section.durationSec}
+          initialTrimStartSec={section.trimStartSec}
+          initialTrimEndSec={section.trimEndSec}
+          onSaved={onSectionRecaptured}
+          onClose={() => setTrimOpen(false)}
+        />
+      )}
     </motion.div>
   );
 }
