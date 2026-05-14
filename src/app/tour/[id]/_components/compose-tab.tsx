@@ -9,6 +9,7 @@ import type { CapturedSection } from "./capture-tab";
 import type { VoState } from "./voice-tab";
 import type { AudioTrack } from "./music-library";
 import type { TourEntry } from "@/lib/types/tour";
+import { formatDuration } from "@/lib/format-duration";
 
 /** Mirror of the Remotion style preset list (remotion/lib/style-presets.ts).
  *  Kept inline rather than imported because the Remotion module pulls
@@ -175,7 +176,7 @@ export default function ComposeTab({
           {isRunning ? (
             <>
               <Sparkles className="w-4 h-4 animate-pulse" />
-              Compose · {compose.progress.sinceSec}s
+              Compose · {formatDuration(compose.progress.sinceSec)}
             </>
           ) : (
             <>
@@ -256,7 +257,7 @@ export default function ComposeTab({
             </div>
             <p className="text-xs font-mono text-slate-500">
               {(compose.sizeBytes / 1024 / 1024).toFixed(1)} MB · compose
-              wall {compose.captureWallTimeSec}s
+              wall {formatDuration(compose.captureWallTimeSec)}
             </p>
           </div>
           <video

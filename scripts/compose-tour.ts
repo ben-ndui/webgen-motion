@@ -335,8 +335,8 @@ async function main(): Promise<void> {
       ? tour.cameraPreset3d
       : undefined;
   if (tour?.frame3d && !frame3dEnabled) {
-    console.log(
-      `  ℹ frame3d demandé mais Community Edition → fallback 2D. Active Studio via WEBGEN_MOTION_EDITION=studio pour unlock.`,
+    console.warn(
+      `  ⚠ frame3d=${tour.frame3d} demandé mais Community Edition → fallback 2D. Active Studio via WEBGEN_MOTION_EDITION=studio dans .env.local et restart le dev server.`,
     );
   }
 

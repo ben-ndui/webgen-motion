@@ -20,7 +20,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-14">
             <Link href="/" className="font-semibold text-sm tracking-tight">
-              webgen-motion
+              GEN MOTION
               <span className="hidden sm:inline ml-2 text-zinc-400 font-normal">
                 — Smooth &amp; Design
               </span>
@@ -68,7 +68,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="max-w-xl text-base sm:text-lg text-zinc-700 leading-relaxed mb-10">
-              webgen-motion film n&apos;importe quelle interface web, mixe la
+              GEN MOTION film n&apos;importe quelle interface web, mixe la
               voix off clonée, compose en clip vidéo prêt à publier.{" "}
               <strong className="text-zinc-950 font-medium">
                 Sur votre machine.
@@ -130,7 +130,7 @@ export default function LandingPage() {
             />
           </div>
           <p className="mt-6 text-xs text-zinc-500 max-w-3xl leading-relaxed">
-            Cette démo a été produite par webgen-motion lui-même. Capture
+            Cette démo a été produite par GEN MOTION lui-même. Capture
             Puppeteer · voix off ElevenLabs en mode narratif (alignment
             char-level) · compose Remotion avec preset Energetic · 1920×1080
             h264. Le tour source est versionné dans le repo.
@@ -288,7 +288,7 @@ export default function LandingPage() {
               Studio digital
             </p>
             <h3 className="text-3xl sm:text-5xl font-medium leading-[1.05] tracking-[-0.025em] text-white mb-6">
-              webgen-motion est un produit
+              GEN MOTION est un produit
               <br />
               <a
                 href="https://www.smoothandesign.fr"
@@ -301,7 +301,7 @@ export default function LandingPage() {
               , à Nice.
             </h3>
             <p className="text-zinc-400 max-w-md leading-relaxed">
-              On code vos idées, vous changez le monde. webgen-motion fait
+              On code vos idées, vous changez le monde. GEN MOTION fait
               partie du WebGen ecosystem — d&apos;autres outils internes
               arrivent.
             </p>

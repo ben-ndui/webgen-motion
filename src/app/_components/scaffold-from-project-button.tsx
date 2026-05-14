@@ -239,7 +239,7 @@ export default function ScaffoldFromProjectButton() {
                 </p>
                 <p className="text-xs text-emerald-700">
                   Copie-les dans le <code className="font-mono">tours/</code> de
-                  webgen-motion pour les voir dans le hub. Tu peux ensuite
+                  GEN MOTION pour les voir dans le hub. Tu peux ensuite
                   enrichir le narratif via l&apos;Agent IA ou éditer
                   manuellement dans le tab Script.
                 </p>

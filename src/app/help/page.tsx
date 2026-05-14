@@ -41,7 +41,7 @@ export default function HelpPage() {
                   <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
                 </span>
                 <span className="font-semibold text-sm tracking-tight">
-                  webgen-motion
+                  GEN MOTION
                 </span>
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
@@ -66,10 +66,10 @@ export default function HelpPage() {
             Documentation
           </div>
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-            Comment fonctionne webgen-motion
+            Comment fonctionne GEN MOTION
           </h1>
           <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
-            webgen-motion film ton site/app et le transforme en vidéo motion
+            GEN MOTION film ton site/app et le transforme en vidéo motion
             design — capture E2E + voix off ElevenLabs + compose final, le
             tout 100% local. Ce guide te fait passer du clone à ta première
             vidéo en ~5 minutes.
@@ -84,9 +84,9 @@ export default function HelpPage() {
         >
           <p className="text-sm text-slate-700 leading-relaxed">
             Un <strong>tour</strong> = un fichier JSON qui scénarise ce que
-            webgen-motion doit filmer. L'outil est totalement{" "}
+            GEN MOTION doit filmer. L'outil est totalement{" "}
             <strong>agnostique au projet</strong> : il n'y a pas de
-            "liaison" formelle entre un projet et webgen-motion. Le seul
+            "liaison" formelle entre un projet et GEN MOTION. Le seul
             lien c'est le champ <Code>baseUrl</Code> du tour : Puppeteer va
             ouvrir cette URL dans Chromium et exécuter les steps en
             séquence (sections, overlays, clicks, scrolls…).
@@ -393,7 +393,7 @@ export default function HelpPage() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-12 flex items-center justify-between text-xs text-slate-500">
           <p>
-            <span className="font-medium text-slate-700">webgen-motion</span>{" "}
+            <span className="font-medium text-slate-700">GEN MOTION</span>{" "}
             · Smooth &amp; Design · local-first
           </p>
         </div>

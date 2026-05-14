@@ -11,6 +11,7 @@ import {
 import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
 import { getPublicConfig } from "@/lib/config";
+import { formatDuration } from "@/lib/format-duration";
 import NewTourButton from "../_components/new-tour-button";
 import GenerateWithAiButton from "../_components/generate-with-ai-button";
 import ScaffoldFromProjectButton from "../_components/scaffold-from-project-button";
@@ -45,7 +46,7 @@ export default function DashboardPage() {
                   <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
                 </span>
                 <span className="font-semibold text-sm tracking-tight">
-                  webgen-motion
+                  GEN MOTION
                 </span>
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
@@ -102,7 +103,7 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-500 mt-0.5">
               {tours.length === 0
                 ? "Aucun tour. Drop un JSON dans tours/."
-                : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${totalSec}s cumulés · prêts à filmer`}
+                : `${tours.length} tour${tours.length > 1 ? "s" : ""} · ${formatDuration(totalSec)} cumulés · prêts à filmer`}
             </p>
           </div>
           <div className="flex items-center gap-2" data-wm-id="dashboard.actions">
@@ -136,7 +137,7 @@ export default function DashboardPage() {
       <footer className="border-t border-border bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 h-12 flex items-center justify-between text-xs text-slate-500">
           <p>
-            <span className="font-medium text-slate-700">webgen-motion</span> ·
+            <span className="font-medium text-slate-700">GEN MOTION</span> ·
             Smooth &amp; Design · local-first
           </p>
           <Link

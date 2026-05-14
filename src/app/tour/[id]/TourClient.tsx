@@ -573,7 +573,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
                   <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
                 </span>
                 <span className="font-semibold text-sm tracking-tight">
-                  webgen-motion
+                  GEN MOTION
                 </span>
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300" />

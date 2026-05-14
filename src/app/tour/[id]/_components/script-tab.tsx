@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { TourEntry, TourStep } from "@/lib/types/tour";
 import { getCategory, MOTION_CATEGORIES } from "@/lib/motion-categories";
+import { formatDuration } from "@/lib/format-duration";
 
 // Re-exported for the few tabs that still mirror the save state
 // inline (Voice tab shows it next to its narrative script title).
@@ -144,7 +145,7 @@ function StatsCard({
       <dl className="space-y-2 text-sm">
         <Row
           label="Dwell total"
-          value={`${(totalDwellMs / 1000).toFixed(1)}s`}
+          value={formatDuration(totalDwellMs / 1000, { precise: true })}
           mono
         />
         <Row

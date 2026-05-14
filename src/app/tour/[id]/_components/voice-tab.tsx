@@ -13,6 +13,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { formatDuration } from "@/lib/format-duration";
 import type { TourEntry, TourStep } from "@/lib/types/tour";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import type { SaveStatus } from "./script-tab";
@@ -340,7 +341,7 @@ export default function VoiceTab({
             onChange={(e) => setNarrative(e.target.value)}
             rows={8}
             className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
-            placeholder="[step:0]Bienvenue sur webgen-motion. [step:2]Génère des vidéos motion design [step:5]depuis n'importe quel site."
+            placeholder="[step:0]Bienvenue sur GEN MOTION. [step:2]Génère des vidéos motion design [step:5]depuis n'importe quel site."
             spellCheck={false}
           />
           <div className="flex items-center gap-2 flex-wrap">
@@ -473,7 +474,7 @@ export default function VoiceTab({
             </p>
             <p className="text-xs text-emerald-700 mt-0.5">
               {calibrate.updatedSteps} step(s) recalés ·{" "}
-              {calibrate.totalNarrativeSec.toFixed(1)}s de narration. Lance la{" "}
+              {formatDuration(calibrate.totalNarrativeSec, { precise: true })} de narration. Lance la{" "}
               <strong>Capture</strong> pour resynchroniser les sections.
             </p>
           </div>

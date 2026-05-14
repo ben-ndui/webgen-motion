@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { formatDuration } from "@/lib/format-duration";
 
 export interface RunningProgress {
   /** High-level phase label (e.g. "Section 2/3 · Pipeline · Splash"). */
@@ -67,7 +68,7 @@ export default function PhaseLoader({
             {progress.phase}
           </p>
           <p className="text-xs text-slate-500 mt-0.5">
-            {progress.sinceSec}s écoulées
+            {formatDuration(progress.sinceSec)} écoulées
             {variant === "compose" && progress.frames !== undefined
               ? ` · ${progress.frames} frames capturées`
               : ""}

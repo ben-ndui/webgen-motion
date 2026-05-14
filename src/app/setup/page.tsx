@@ -191,7 +191,7 @@ export default function SetupPage() {
                 <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
               </span>
               <span className="font-semibold text-sm tracking-tight">
-                webgen-motion
+                GEN MOTION
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-300 ml-1" />
               <span className="text-sm text-slate-500 font-medium">Setup</span>

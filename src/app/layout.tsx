@@ -4,7 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "webgen-motion · Smooth & Design",
+  title: "GEN MOTION · Smooth & Design",
   description:
     "Génère des vidéos motion design à partir de ton site ou ton app. E2E filmé, voice-over IA, bg music, Mac chrome / iPhone frame. Local-first.",
   robots: "noindex, nofollow",

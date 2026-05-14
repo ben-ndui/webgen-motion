@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { formatDuration } from "@/lib/format-duration";
 import type { TourEntry } from "@/lib/types/tour";
 import type { MotionCategory } from "@/lib/motion-categories";
 
@@ -161,7 +162,7 @@ export default function TourCard({
             <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
               <span>{tour.steps.length} steps</span>
               <span>·</span>
-              <span>~{tour.estimatedSec}s</span>
+              <span>~{formatDuration(tour.estimatedSec)}</span>
               {cat && (
                 <>
                   <span>·</span>

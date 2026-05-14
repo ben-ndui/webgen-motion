@@ -39,7 +39,7 @@ export default function WizardWelcomeStep({
             Bienvenue
           </p>
           <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">
-            Setup webgen-motion
+            Setup GEN MOTION
           </h1>
           <p className="text-sm text-slate-600 leading-relaxed">
             En 2 minutes : on connecte ta voix ElevenLabs pour la voix off
