@@ -114,17 +114,19 @@ export interface TourEntry {
    *  les captures sont plaquées sur un device 3D animé via camera
    *  preset au lieu du Mac chrome / iPhone frame 2D classique. Le
    *  rendu 3D n'est activé que si le feature flag `frames-3d` est
-   *  débloqué (Community fallback sur le 2D, ignore silencieusement). */
-  frame3d?: "iphone" | "macbook";
+   *  débloqué (Community fallback sur le 2D, ignore silencieusement).
+   *  `duo` = MacBook + iPhone côte à côte (mirroring du même MP4),
+   *  optimisé 16:9 uniquement. */
+  frame3d?: "iphone" | "macbook" | "duo";
   /** Camera preset utilisé quand `frame3d` est set. Default
-   *  "hero-tilt" — un tilt-down subtil cinematic. Autres options :
-   *  feature-zoom, pan-right, flip-reveal, static-front. */
+   *  "hero-tilt" — un tilt-down subtil cinematic. */
   cameraPreset3d?:
     | "hero-tilt"
     | "feature-zoom"
     | "pan-right"
     | "flip-reveal"
-    | "static-front";
+    | "static-front"
+    | "cinematic-spin";
   /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
    *  All fields optional ; runner falls back to sensible defaults
    *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).

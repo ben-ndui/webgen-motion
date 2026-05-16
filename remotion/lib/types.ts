@@ -66,7 +66,7 @@ export interface TourCompositionProps extends Record<string, unknown> {
    *  camera animée selon le preset. Gated par feature flag
    *  `frames-3d` côté SectionPlayer — Community ignore silencieusement.
    */
-  frame3d?: "iphone" | "macbook";
+  frame3d?: "iphone" | "macbook" | "duo";
   cameraPreset3d?: string;
   /** Path relatif au public/ d'un GLB optionnel à utiliser à la
    *  place du device procédural. Set par compose-tour si
