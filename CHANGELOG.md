@@ -11,6 +11,20 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+(rien pour l'instant — Sprint 7 vient de fermer, prochaine ouverture quand on s'attaque à la notarization Apple ou au license key offline-first)
+
+---
+
+## [0.1.7] — 2026-05-17
+
+Sprint 7 closure. Studio Edition débloque les **frames 3D** : iPhone /
+MacBook procéduraux (R3F + @remotion/three) avec HDRI studio, post-
+process, 6 camera presets dont `cinematic-spin` (device qui danse,
+camera fixe), GLB loader optionnel pour upgrade Sketchfab, UI Settings
+de gestion des modèles, et un nouveau preset **Duo** qui place phone +
+mac côte à côte (mirroring du même MP4 source). Brand UI passe à
+`GEN MOTION` (slug repo + paths `~/.webgen-motion/` inchangés).
+
 ### Added
 
 #### Desktop (Tauri 2 native)
@@ -120,16 +134,58 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 Test end-to-end validé : `notary-3d-test` tour 9:16 avec iPhone hero-tilt rendu en 30s → final.mp4 1.2 MB, device procédural visible flottant sur backdrop catégorie + transitions.
 
-### Backlog (Sprint 7 phase 2)
+### Added (Sprint 7 phase 2 — HDRI studio + post-process) · 2026-05-13
 
-- Real GLBs iPhone 15 Pro + MacBook Air/Pro (Sketchfab ou achat).
-- Environment HDRI studio pour reflections vraies (vs lighting basique software).
-- Post-process : bloom, AO, color grading.
-- Multi-device scene preset (phone + mac côte à côte).
+- **HDRI environment** (`SceneCanvas.tsx`) : `<Environment preset="apartment" background={false}>` de drei pour des reflections vraies sur le titanium frame + glass screen. Le HDRI ne contribue PAS au render direct du fond (canvas transparent conservé) — seulement aux matériaux PBR du device.
+- **Post-process chain** (`@react-three/postprocessing`) : `Bloom` (intensity 0.2, luminanceThreshold 0.92) pour faire luire les vraies highlights sans cramer les edges, `BrightnessContrast` (+0.05 contrast pour compenser le software rendering SwiftShader), `Vignette` subtle (offset 0.25, darkness 0.45) pour cadrer l'attention.
+- **Lighting plus chaleureux** : ambient boosté à 0.5 + 3 directionalLights (1.8 / 0.8 / 0.6) pour compenser le HDRI background absent.
+- **Détails procéduraux enrichis** : iPhone gagne dynamic Island + camera bump dos (plateau + 3 lentilles + LiDAR) + boutons latéraux (power / volume up/down). MacBook gagne trackpad + keyboard area + grille 5×15 de touches + 3 ports USB-C latéraux + notch.
+- `ForceTransparentBackground` helper qui set `scene.background = null` — drei `background={false}` n'est pas toujours respecté par SwiftShader, fix manuel obligatoire.
+
+### Added (Sprint 7 phase 3 — GLB loader + UI Settings + cinematic-spin) · 2026-05-13 → 2026-05-14
+
+- **GLB loader optionnel** (`GLBDevice.tsx`) : drop un modèle Sketchfab dans `public/models/iphone.glb` ou `public/models/macbook.glb` → compose-tour détecte, le stage dans `.remotion-public/models/` et SceneCanvas le rend à la place du procédural. Suspense fallback pendant le load. Heuristique multi-mesh pour détecter l'écran (mesh nommée `screen`/`display`/`écran`/`ecran`), auto-flip Y si elle atterrit derrière la caméra, auto-orient le GLB par bbox.
+- **UI gestion models 3D** (`/setup/models`) : upload GLB (max 100 MB), preview thumbnail, suppression, list avec role (iphone/macbook/other). API routes `/api/motion/models/{upload,list,delete}`. Dropdown Settings consolidé dans l'appbar — accès rapide aux GLBs depuis le dashboard.
+- **Preset `cinematic-spin`** (`camera-presets.ts`) : chorégraphie 4 temps avec camera statique reculée (z=9) + device qui danse face → 3/4 droite → drift → 3/4 gauche → settle. Camera fixe, ce sont `deviceRotation` + `devicePosition` qui animent. Amplitudes conservatrices après 2 passes de tuning (rotY ±0.35, posX ±0.3) pour rester dans le frustum.
+- Bouton "Cinematic spin" en premier dans le dropdown camera preset du Compose tab.
+
+### Added (Sprint 7 phase 4 — Duo multi-device preset) · 2026-05-17
+
+- **Duo preset** (`remotion/three/DuoDevice.tsx`) : MacBook + iPhone côte à côte dans la même scène 3D, les 2 écrans rendent le MÊME `videoSrc` (mirroring). Layout "Apple Keynote" : MacBook à gauche, iPhone à droite légèrement en avant + surélevé + tourné vers la caméra. Outer scale 0.85 pour que la bounding-box rentre dans le frustum des camera presets existants.
+- **TourEntry étendu** : `frame3d?: "iphone" | "macbook" | "duo"`. Le type `cameraPreset3d` gagne aussi `"cinematic-spin"` (oversight de la phase 3 rattrapé).
+- **UI Frame3DSelector** : grid passe de 3 à 4 colonnes, ajoute la 4e option "Duo 3D" avec icône `Layers` + lock badge ambre en Community. Procédural-only en v1 (un futur sprint pourra stager 2 GLBs séparés — `iphone.glb` + `macbook.glb` — quand frame3d === "duo").
+- Compose-tour gating étendu pour reconnaître `"duo"` + skip le GLB lookup quand duo (procédural-only). Optimisé 16:9 — en 9:16 la composition déborde, l'utilisateur est orienté vers iPhone seul.
+
+### Changed (Rebrand UI → GEN MOTION + durations human-readable) · 2026-05-14
+
+- Le wordmark UI dans le dashboard + l'appbar + le launch screen passe à **GEN MOTION** (Geist Mono caps). Le slug du repo (`webgen-motion`), le storage path (`~/.webgen-motion/`), les noms d'API routes et l'identifier Tauri (`fr.smoothandesign.webgen-motion`) restent inchangés — rebrand visuel pur.
+- Durations dans les section cards passent en format human-readable (ex: "1m 23s" au lieu de "83.42s") via helper centralisé.
+
+### Fixed (Sprint 7 polish 3D) · 2026-05-13 → 2026-05-14
+
+- **GLB auto-orient par bbox** : certains GLBs Sketchfab arrivent rotated arbitrairement (vertical, latéral, à l'envers). On compute la bounding-box, on aligne le plus grand axe vertical + on snap face caméra.
+- **GLB auto-flip si screen mesh derrière la caméra** : après auto-orient, si la mesh `screen` est sur le Z négatif on flip 180° pour faire face. Sinon on rend le derrière du device.
+- **Détection mesh screen élargie** : matche `screen` | `display` | `écran` | `ecran` (case-insensitive). Multi-mesh texture mapping si plusieurs candidats.
+- **Camera hero-tilt en 3/4** : décalée X=+1.2 (vs 0) pour un angle dynamique style Apple Keynote (vs full-front qui paraît figé).
+- **Ken Burns CSS disabled quand frame3d actif** : la scène a déjà sa propre animation camera/device, le Ken Burns CSS par-dessus créait un double mouvement qui faisait sortir le device du cadre.
+- **cinematic-spin amplitude réduite × 2 passes** : amplitude initiale 0.5/0.4 trop violente, settled à 0.35/0.3 puis 0.35/0.3 + camera reculée z=9 pour garder le device cadré pendant les 4 phases.
+- **Appbar nettoyé + 3 bugs visuels 3D** (ffbq849) : icônes alignées, padding cohérent, dropdown z-index fixé.
+- **GLBs uploadés au bon path** : conventions normalisées (`public/models/<role>.glb`), staging Remotion publicDir auto.
+- **Restore switch preset** : un commit antérieur avait sauté le `<switch>` du preset selector, réintégré (c0c7448).
+
+### Fixed (build) · 2026-05-17
+
+- `mkdtempSync` importé depuis `node:os` (n'existe pas là) → déplacé vers `node:fs` (`replace-section/run/route.ts`).
+- `motion` utilisé dans `capture-tab.tsx` sans être importé de `framer-motion` → ajout à l'import existant à côté de `AnimatePresence`.
+- Build local clean restauré (`npm run build` passe sans TS error).
 
 ---
 
+## [Unreleased précédent — historique cumulé pré-0.1.7]
+
+(Tout ce qui suit était sous Unreleased avant le tag v0.1.7. Conservé tel quel pour traçabilité.)
+
 **À venir** :
-- **Sprint 7 phase 2** — Polish 3D (GLBs réels + HDRI + post-process).
-- **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546).
+- **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546). Pré-requis au tag v0.2.0 (première version distribuable publique).
 - **License key offline-first** — vérification crypto locale qui débloque Studio Edition. Pré-requis pour la commercialisation.
+- **GLBs duo** — stager les 2 GLBs séparés (`iphone.glb` + `macbook.glb`) quand `frame3d === "duo"`, pour upgrade du procédural-only actuel.
