@@ -8,7 +8,7 @@ import {
   Sparkles,
   Video,
 } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import SectionCard from "./section-card";
