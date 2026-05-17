@@ -24,7 +24,7 @@
 
 /** DEV key — à remplacer par la prod key avant commercial launch. */
 const LICENSE_PUBLIC_KEY_B64_EMBEDDED =
-  "7LAnMY6/gEJslwzlEu3Iho2fLuBsWHKaFPyjvdsa8fE=";
+  "lCU3dfKuEbpkqTbKW894qS8bhcJXCoTlz1GVkKoZNiE=";
 
 /** Resolved public key (env override priorité sur embed). */
 export function getLicensePublicKeyB64(): string {
