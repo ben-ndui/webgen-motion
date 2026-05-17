@@ -1,16 +1,18 @@
 <div align="center">
 
-# webgen-motion
+# GEN MOTION
 
 **Motion Studio local-first** — capture, mixe et compose des vidéos motion design depuis n'importe quel site web. Aucun cloud, ta voix clonée, frame-accurate.
 
+[![License](https://img.shields.io/badge/license-Open--core_MIT-blue.svg)](#-license--open-core)
+[![Studio Edition](https://img.shields.io/badge/Studio_Edition-%2449_one--time-0A0A0A?logo=stripe&logoColor=white)](https://genmotion.app/download)
+[![Apple Notarized](https://img.shields.io/badge/macOS-Apple%20Notarized-007AFF?logo=apple)](https://github.com/ben-ndui/webgen-motion/releases/latest)
 [![Node](https://img.shields.io/badge/Node-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org/)
 [![Remotion](https://img.shields.io/badge/Remotion-4-0B84FF?logo=remotion)](https://remotion.dev/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](#license)
 [![by Smooth & Design](https://img.shields.io/badge/by-Smooth%20%26%20Design-EC4899)](https://www.smoothandesign.fr)
 
-`npx create-webgen-motion@latest my-promo` &nbsp;·&nbsp; [Démo live](#-démo) &nbsp;·&nbsp; [Docs](#-quickstart) &nbsp;·&nbsp; [Site](https://www.smoothandesign.fr)
+**[⬇ Télécharger pour macOS](https://genmotion.app/download)** &nbsp;·&nbsp; **[💎 Acheter Studio $49](https://genmotion.app/download)** &nbsp;·&nbsp; [Démo live](#-démo) &nbsp;·&nbsp; [Site](https://genmotion.app)
 
 </div>
 
@@ -38,28 +40,31 @@
 
 ---
 
-## ⚡ Quickstart
+## ⬇ Installation
 
-### Option 1 — Scaffold (recommandé)
+### Option 1 — Télécharge l'app (recommandé)
 
-```bash
-npx create-webgen-motion@latest my-promo
-cd my-promo
-brew install ffmpeg      # macOS — pour l'encode des frames
-npm run dev              # http://localhost:3000
-```
+Pour la majorité des utilisateurs. App desktop signée + notarisée Apple, lancement direct.
 
-Tu atterris sur la **landing** webgen-motion. Clique **Lancer le studio** → tu es sur le hub avec tes tours.
+1. **Télécharge** le `.dmg` macOS arm64 : [genmotion.app/download](https://genmotion.app/download)
+2. **Double-clique** → glisse `GEN MOTION` dans Applications
+3. **Lance l'app** → le wizard de setup te guide pour configurer ta voix off (ElevenLabs cloud ou Voicebox local)
 
-### Option 2 — Clone direct (contributions)
+⚠ Windows + Linux + macOS Intel arrivent au prochain tag.
+
+### Option 2 — Clone + dev (contributeurs / customization)
+
+Pour contribuer, customiser, ou si tu veux runner depuis le source.
 
 ```bash
 git clone https://github.com/ben-ndui/webgen-motion.git
 cd webgen-motion
+brew install ffmpeg      # macOS — pour l'encode des frames
 npm install              # Next.js + Puppeteer + Chromium + Remotion
-brew install ffmpeg
-npm run dev
+npm run dev              # http://localhost:3000
 ```
+
+Tu atterris sur la **landing** GEN MOTION. Clique **Lancer le studio** → tu es sur le hub avec tes tours.
 
 ### Première vidéo
 
@@ -240,32 +245,40 @@ npm run remotion:render  # one-shot hello-world sanity check
 
 ## 💎 Editions
 
-webgen-motion suit un modèle **open-core** (style Davinci Resolve / Sentry / Plausible) : le core est entièrement gratuit et OSS, des features avancées peuvent unlock via une license future. Aujourd'hui **TOUT est Community Edition**, mais l'architecture est en place dès maintenant pour éviter un refactor plus tard.
+GEN MOTION suit un modèle **open-core fair-code** (style Davinci Resolve / Sketch / Obsidian) : **le code source entier est public sous licence MIT**, forkable et auditable. La Studio Edition est une **licence d'usage** payante des features premium — le code reste libre, ce qui se paie c'est le droit d'usage commercial de fonctionnalités gated.
 
-| Edition | Cible | Inclus |
-|---|---|---|
-| 🟢 **Community** *(gratuit, perpétuel, ce que tu as)* | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (sober / energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX post-capture (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
-| 🟣 **Studio** *(à venir, one-time)* | Créateurs pro, agences | Frames 3D (R3F + GLB iPhone/MacBook) · Presets cinematic / glitch · Music library intégrée · Multi-format export simultané · Watermark removal · Cloud rendering optionnel · Auto-update prioritaire |
-| ⚫ **Enterprise** *(sur mesure)* | Agences digitales, plateformes | White-label · API headless (CI/CD) · SSO · Support dédié + SLA |
+| Edition | Prix | Cible | Inclus |
+|---|---|---|---|
+| 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (Sober / Energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
+| 🟣 **Studio** | **[$49 one-time perpétuel](https://genmotion.app/download)** | Créateurs pro, agences | Tout Community + Frames 3D iPhone/MacBook (R3F) · Presets Cinematic & Glitch · Music library managée · Multi-format export simultané · Watermark removal · Mises à jour incluses à vie |
+| ⚫ **Enterprise** | Sur devis | Agences digitales, plateformes | Tout Studio + White-label · API headless (CI/CD) · SSO · Support dédié + SLA · [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr) |
 
-L'edition active est résolue depuis `webgen-motion.config.ts` (champ `edition`, default `community`). Un license key offline-first (signature crypto validée localement) débloquera Studio/Enterprise au launch. Pas d'appel serveur obligatoire — respect du local-first.
+**Achat one-time perpétuel** (Davinci-style) : pas d'abonnement, pas de SaaS lock-in, mises à jour à vie. La license est un fichier `.license` signé Ed25519 que tu télécharges après paiement, à installer dans Settings → License de l'app. Vérification 100% locale, aucun appel serveur.
 
-Voir `src/lib/edition.ts` pour la liste des feature flags définis (23 à date, dont 10 actifs en Community).
+Voir `src/lib/edition.ts` pour la liste des 23 feature flags définis (10 actifs en Community, 8 unlock en Studio, 5 en Enterprise).
 
 ---
 
 ## 🤝 Contributing
 
-Issues et PRs bienvenues. Pour les chantiers ouverts voir [`ROADMAP.md`](ROADMAP.md).
+Issues et PRs bienvenues. Pour les chantiers ouverts voir [`ROADMAP.md`](ROADMAP.md) et [`CHANGELOG.md`](CHANGELOG.md).
 
-## License
+Contribuer au code source (Community + Studio + Enterprise — tout le code est sous MIT) ne te donne pas automatiquement une license Studio. Si tu shippes une contribution significative, ping [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr) — on peut t'attribuer une license complimentaire.
 
-MIT — voir [`LICENSE`](LICENSE).
+## 📜 License & open-core
+
+- **Code source** : [MIT](LICENSE) — public, forkable, modifiable, redistribuable. Pas de restriction sur l'usage du code.
+- **Studio Edition** : licence d'usage **commerciale** des fonctionnalités gated (`frames-3d`, `compose-cinematic`, `compose-glitch`, `multi-format-export`, `music-library`, `watermark-removal`). Cf. [CGV](https://genmotion.app/cgv) + [Mentions légales](https://genmotion.app/mentions-legales).
+- **Marques** : "GEN MOTION", "Smooth & Design" sont des marques de NDUI Amadou Be-Ngally — usage à des fins commerciales sans accord interdit.
+
+Modèle inspiré de : [Sentry](https://blog.sentry.io/) (fair-source) · [Sketch](https://www.sketch.com/license/) · [Davinci Resolve Free vs Studio](https://www.blackmagicdesign.com/products/davinciresolve) · [Obsidian](https://obsidian.md/license).
 
 ---
 
 <div align="center">
 
-Made with ❤ in Nice by **[Smooth & Design](https://www.smoothandesign.fr)**
+**[genmotion.app](https://genmotion.app)** &nbsp;·&nbsp; **[Acheter Studio $49](https://genmotion.app/download)** &nbsp;·&nbsp; [Contact](mailto:contact@smoothandesign.fr)
+
+Made in Nice by **[Smooth & Design](https://www.smoothandesign.fr)** · Open-core MIT · Davinci-style perpetual
 
 </div>
