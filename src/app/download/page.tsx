@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Check } from "lucide-react";
 import BuyButton from "../_components/buy-button";
+import SmartDownloadButton from "../_components/smart-download-button";
 
 /**
  * Page /download — landing pour visiteurs de la vitrine Vercel qui
@@ -72,15 +73,7 @@ export default function DownloadPage() {
           </p>
 
           <div className="flex flex-wrap items-center gap-4">
-            <a
-              href="https://github.com/ben-ndui/webgen-motion/releases/latest"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
-            >
-              Télécharger gratuit (.dmg)
-              <ArrowUpRight className="w-4 h-4" />
-            </a>
+            <SmartDownloadButton variant="primary" showHint={false} />
             <BuyButton variant="secondary" />
             <a
               href="https://github.com/ben-ndui/webgen-motion/releases"
