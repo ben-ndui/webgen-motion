@@ -245,8 +245,6 @@ npm run remotion:render  # one-shot hello-world sanity check
 
 ## 💎 Editions
 
-GEN MOTION suit un modèle **open-core fair-code** (style Davinci Resolve / Sketch / Obsidian) : **le code source entier est public sous licence MIT**, forkable et auditable. La Studio Edition est une **licence d'usage** payante des features premium — le code reste libre, ce qui se paie c'est le droit d'usage commercial de fonctionnalités gated.
-
 | Edition | Prix | Cible | Inclus |
 |---|---|---|---|
 | 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (Sober / Energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
