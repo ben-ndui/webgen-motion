@@ -106,10 +106,16 @@ export default function SlidesCarousel({ children, slideLabels }: Props) {
       onTouchEnd={onTouchEnd}
     >
       {/* Track contains all slides side-by-side, translateX pour montrer
-          la slide active. Transition cubic-bezier douce 500ms. */}
+          la slide active. Transition cubic-bezier douce 500ms.
+          translateX(%) est relatif à la WIDTH de l'élément translaté
+          (le track), pas au container. Track fait `count * 100%`,
+          donc 1 viewport = 100/count % du track. */}
       <div
         className="flex h-full transition-transform duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)]"
-        style={{ transform: `translateX(-${index * 100}%)`, width: `${count * 100}%` }}
+        style={{
+          transform: `translateX(-${(index * 100) / count}%)`,
+          width: `${count * 100}%`,
+        }}
       >
         {slides.map((slide, i) => {
           const label = slideLabels?.[i] ?? `slide-${i + 1}`;
