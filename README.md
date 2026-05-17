@@ -245,6 +245,8 @@ npm run remotion:render  # one-shot hello-world sanity check
 
 ## 💎 Editions
 
+**Open-source · MIT · made in Nice.** GEN MOTION est sur [GitHub](https://github.com/ben-ndui/webgen-motion). La Studio Edition débloque les outils pro.
+
 | Edition | Prix | Cible | Inclus |
 |---|---|---|---|
 | 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (Sober / Energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |

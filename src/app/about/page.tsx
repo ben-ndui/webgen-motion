@@ -60,12 +60,25 @@ export default function About() {
               indépendantes — souvent en partant d&apos;une note vocale et en
               shipping en quelques semaines.
             </p>
-            <p className="text-base sm:text-lg text-zinc-700 leading-relaxed max-w-2xl">
+            <p className="text-base sm:text-lg text-zinc-700 leading-relaxed max-w-2xl mb-6">
               GEN MOTION fait partie du <strong className="text-zinc-950 font-medium">WebGen
               ecosystem</strong> — une suite d&apos;outils internes que nous
               utilisons quotidiennement pour livrer plus vite et plus propre.
               Tous sont conçus <strong className="text-zinc-950 font-medium">local-first</strong> :
               vos données restent sur votre machine.
+            </p>
+            <p className="text-sm text-zinc-500 leading-relaxed max-w-2xl">
+              <strong className="text-zinc-700 font-medium">Open-source · MIT · made in Nice.</strong>{" "}
+              GEN MOTION est sur{" "}
+              <a
+                href="https://github.com/ben-ndui/webgen-motion"
+                target="_blank"
+                rel="noreferrer"
+                className="text-zinc-700 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950 transition-colors"
+              >
+                GitHub
+              </a>
+              . La Studio Edition débloque les outils pro.
             </p>
           </div>
         </section>
