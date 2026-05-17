@@ -11,7 +11,31 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
-(rien pour l'instant — Sprint 7 vient de fermer, prochaine ouverture quand on s'attaque à la notarization Apple ou au license key offline-first)
+(rien pour l'instant — v0.2.0 vient de sortir, prochaine ouverture quand on s'attaque au license key offline-first ou au polish 3D)
+
+---
+
+## [0.2.0] — 2026-05-17
+
+**Première version distribuable publique** sur macOS. `.dmg` signé + notarisé Apple + stapled + vérifié `spctl --assess`. CI workflow `desktop-release.yml` produit automatiquement les installers macOS arm64/x86_64, Windows et Linux à chaque push de tag `v*`.
+
+### Added (Sprint 8 — Notarization Apple + CI signing) · 2026-05-17
+
+- **Helper script `scripts/notarize-and-staple.mjs`** : pipeline end-to-end `build → submit Apple Notary → wait → staple .dmg + .app → verify (stapler validate + spctl --assess)`. Options `--skip-build` et `--dmg <path>`. `.env.local` optionnel (CI assume env vars déjà set). Discovery `.dmg` flexible (default + per-triple paths `target/<rust-triple>/release/bundle/dmg/`). Idempotent.
+- **CI signing + notarize** : `.github/workflows/desktop-release.yml` injecte 6 secrets Apple (`APPLE_SIGNING_IDENTITY`, `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID`) sur le job macOS. Step `Notarize + staple (macOS)` post-build invoque notre helper avec `--skip-build`. Comment header documente les secrets GitHub requis.
+- **Release notes auto-générées** : nouveau step CI extrait la section `## [X.Y.Z]` correspondante du CHANGELOG.md et la passe comme `releaseBody` à `tauri-action` (draft GitHub release pré-rempli avec les notes du tag).
+
+### Notarized · 2026-05-17
+
+- `webgen-motion_0.2.0_aarch64.dmg` (433 MB) Apple Notary **Accepted** (id `507f1160-fc5e-45b1-82f0-eaab734a8626`), stapled, `xcrun stapler validate` OK.
+- `webgen-motion.app` Apple Notary **Accepted** (id `3a0774ec-c758-4e40-b681-f0e2e3f79483`), stapled, `spctl --assess` = `accepted source=Notarized Developer ID`.
+- Bundle prune : **653 MB libérés** depuis `runners/node_modules` (next, @next, react-icons, @rspack, typescript, @tailwindcss, webpack, @swc, @img, lightningcss). 42 Mach-O binaries nested codesigned avec hardened runtime + secure timestamp + entitlements (allow-jit + disable-library-validation pour Chromium/Node sidecars).
+
+### Known (ship as-is, polish futur)
+
+- DMG `aarch64` 433 MB > cible 300 MB. Probablement Next standalone non-pruné ou assets Remotion. Acceptable pour v0.2.0, optimisation possible sprint futur.
+- DMG `x86_64` (Intel Mac) à produire via CI matrix au push du tag v0.2.0 (le build local n'a fait que arm64 natif).
+- Frames 3D toujours en **Beta expérimental** (cf. v0.1.7 Known Issues — rotations parasites non résolues). Badge UI + tooltips warning toujours actifs.
 
 ---
 

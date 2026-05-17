@@ -86,6 +86,27 @@ jobs:
       - name: Fetch sidecar binaries (Node + ffmpeg)
         run: node scripts/desktop-fetch-binaries.mjs
 
+      # Extrait la section CHANGELOG correspondante au tag (ex. v0.2.0
+      # → cherche `## [0.2.0]` jusqu'au prochain `## [`). Vide si pas
+      # trouvé — dans ce cas tauri-action utilise un body default.
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES=$(awk -v ver="$VERSION" '
+            /^## \[/{
+              if (found) exit
+              if (index($0, "[" ver "]")) { found = 1; next }
+            }
+            found
+          ' CHANGELOG.md)
+          {
+            echo "notes<<RELNOTES_EOF"
+            echo "$NOTES"
+            echo "RELNOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Tauri build
         uses: tauri-apps/tauri-action@v0
         env:
@@ -101,6 +122,7 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "webgen-motion ${{ github.ref_name }}"
+          releaseBody: ${{ steps.notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.rust-target }}
