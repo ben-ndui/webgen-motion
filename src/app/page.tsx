@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 import SlidesCarousel from "./_components/slides-carousel";
 import BuyButton from "./_components/buy-button";
+import SmartDownloadButton from "./_components/smart-download-button";
 
 /**
  * Landing — Sprint 13 redesign en carrousel horizontal 5 slides.
@@ -17,9 +18,24 @@ import BuyButton from "./_components/buy-button";
  * crawlers lisent le contenu complet — SEO friendly même si carrousel.
  */
 export default function LandingPage() {
+  // En prod Vercel = vitrine commerciale → boutons download direct (SmartDownloadButton).
+  // En local dev (npm run dev) = app desktop ou test = "Lancer le studio" pointe sur le dashboard.
   const isWeb = process.env.VERCEL === "1";
   const studioHref = isWeb ? "/download" : "/dashboard";
   const studioLabel = isWeb ? "Télécharger l'app" : "Lancer le studio";
+
+  // Réutilisé dans Hero CTA + Pricing Community card + CTA final
+  const primaryCta = isWeb ? (
+    <SmartDownloadButton variant="primary" showHint={false} />
+  ) : (
+    <Link
+      href={studioHref}
+      className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+    >
+      {studioLabel}
+      <ArrowRight className="w-4 h-4" />
+    </Link>
+  );
 
   return (
     <>
@@ -47,13 +63,7 @@ export default function LandingPage() {
                 Sans cloud, sans vendor lock-in.
               </p>
               <div className="flex items-center gap-6">
-                <Link
-                  href={studioHref}
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
-                >
-                  {studioLabel}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {primaryCta}
                 <Link
                   href="/help"
                   className="text-sm text-zinc-700 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950 transition-colors"
@@ -149,8 +159,13 @@ export default function LandingPage() {
               <PricingCard
                 name="Community"
                 price="Gratuit"
-                ctaLabel={studioLabel}
-                ctaHref={studioHref}
+                cta={
+                  isWeb ? (
+                    <SmartDownloadButton variant="secondary" showHint={false} />
+                  ) : undefined
+                }
+                ctaLabel={isWeb ? undefined : studioLabel}
+                ctaHref={isWeb ? undefined : studioHref}
                 features={[
                   "Pipeline capture + voix off + compose",
                   "Presets Sober + Energetic",
@@ -209,13 +224,17 @@ export default function LandingPage() {
                 <span className="text-zinc-400">est à 5 minutes.</span>
               </h2>
               <div className="flex flex-wrap items-center gap-4 mb-10">
-                <Link
-                  href={studioHref}
-                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
-                >
-                  {studioLabel}
-                  <ArrowUpRight className="w-4 h-4" />
-                </Link>
+                {isWeb ? (
+                  <SmartDownloadButton variant="primary" showHint={true} />
+                ) : (
+                  <Link
+                    href={studioHref}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+                  >
+                    {studioLabel}
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                )}
                 <BuyButton variant="secondary" />
                 <Link
                   href="/help"
