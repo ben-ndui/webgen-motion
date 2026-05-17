@@ -117,14 +117,14 @@ export interface TourEntry {
    *  débloqué (Community fallback sur le 2D, ignore silencieusement). */
   frame3d?: "iphone" | "macbook";
   /** Camera preset utilisé quand `frame3d` est set. Default
-   *  "hero-tilt" — un tilt-down subtil cinematic. Autres options :
-   *  feature-zoom, pan-right, flip-reveal, static-front. */
+   *  "hero-tilt" — un tilt-down subtil cinematic. */
   cameraPreset3d?:
     | "hero-tilt"
     | "feature-zoom"
     | "pan-right"
     | "flip-reveal"
-    | "static-front";
+    | "static-front"
+    | "cinematic-spin";
   /** ElevenLabs voice settings — surfaced in the Script tab as sliders.
    *  All fields optional ; runner falls back to sensible defaults
    *  (stability 0.55, similarity 0.78, style 0.12, speaker boost on).
