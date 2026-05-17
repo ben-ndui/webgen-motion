@@ -97,12 +97,6 @@ export default function CGV() {
         d&apos;achat. La revente, le partage ou la rediffusion de la license
         à des tiers sont interdits.
       </p>
-      <p>
-        Le code source du logiciel reste sous licence MIT et reste
-        consultable, modifiable et redistribuable conformément à cette
-        licence — la Studio Edition ne porte que sur le droit d&apos;usage
-        des fonctionnalités gated.
-      </p>
 
       <h2>Article 7 — Mises à jour</h2>
       <p>

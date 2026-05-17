@@ -261,15 +261,11 @@ Voir `src/lib/edition.ts` pour la liste des 23 feature flags définis (10 actifs
 
 Issues et PRs bienvenues. Pour les chantiers ouverts voir [`ROADMAP.md`](ROADMAP.md) et [`CHANGELOG.md`](CHANGELOG.md).
 
-Contribuer au code source (Community + Studio + Enterprise — tout le code est sous MIT) ne te donne pas automatiquement une license Studio. Si tu shippes une contribution significative, ping [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr) — on peut t'attribuer une license complimentaire.
+Pour une contribution significative, ping [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr).
 
-## 📜 License & open-core
+## License
 
-- **Code source** : [MIT](LICENSE) — public, forkable, modifiable, redistribuable. Pas de restriction sur l'usage du code.
-- **Studio Edition** : licence d'usage **commerciale** des fonctionnalités gated (`frames-3d`, `compose-cinematic`, `compose-glitch`, `multi-format-export`, `music-library`, `watermark-removal`). Cf. [CGV](https://genmotion.app/cgv) + [Mentions légales](https://genmotion.app/mentions-legales).
-- **Marques** : "GEN MOTION", "Smooth & Design" sont des marques de NDUI Amadou Be-Ngally — usage à des fins commerciales sans accord interdit.
-
-Modèle inspiré de : [Sentry](https://blog.sentry.io/) (fair-source) · [Sketch](https://www.sketch.com/license/) · [Davinci Resolve Free vs Studio](https://www.blackmagicdesign.com/products/davinciresolve) · [Obsidian](https://obsidian.md/license).
+MIT — voir [`LICENSE`](LICENSE). "GEN MOTION" et "Smooth & Design" sont des marques de NDUI Amadou Be-Ngally. Conditions de vente : [CGV](https://genmotion.app/cgv).
 
 ---
 

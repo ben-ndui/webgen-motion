@@ -33,14 +33,7 @@ export default function CGU() {
         tourner sur sa propre machine.
       </p>
 
-      <h2>Article 2 — Licence et éditions</h2>
-      <p>
-        GEN MOTION est distribué sous licence <strong>open-core MIT</strong>.
-        Le code source est public sur{" "}
-        <a href={LEGAL.product.repo} target="_blank" rel="noreferrer">
-          {LEGAL.product.repo}
-        </a>.
-      </p>
+      <h2>Article 2 — Éditions</h2>
       <ul>
         <li>
           <strong>Community Edition</strong> ({LEGAL.product.editions.community.price}) :{" "}
@@ -81,7 +74,7 @@ export default function CGU() {
         </li>
         <li>
           Ne pas tenter de contourner le système de license (signature Ed25519,
-          edition flags) en modifiant le code après installation.
+          edition flags).
         </li>
         <li>
           Respecter les conditions des services IA tiers (ElevenLabs, Claude)

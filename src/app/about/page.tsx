@@ -73,32 +73,27 @@ export default function About() {
         <section className="border-b border-zinc-200">
           <div className="max-w-3xl mx-auto px-6 lg:px-10 py-16 sm:py-20">
             <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-8">
-              Pourquoi open-core
+              Deux éditions
             </p>
             <h2 className="text-3xl sm:text-4xl font-medium leading-tight tracking-[-0.02em] text-zinc-950 mb-8">
-              Le code est libre.
+              Community gratuite.
               <br />
-              <span className="text-zinc-400">L&apos;outil professionnel ne l&apos;est pas tout à fait.</span>
+              <span className="text-zinc-400">Studio pour aller plus loin.</span>
             </h2>
             <p className="text-base text-zinc-700 leading-relaxed max-w-2xl mb-5">
-              GEN MOTION est sous licence <strong className="text-zinc-950 font-medium">MIT</strong>.
-              Le code source est public, forkable, contributable. Vous pouvez
-              l&apos;auditer, le modifier, le redistribuer.
-            </p>
-            <p className="text-base text-zinc-700 leading-relaxed max-w-2xl mb-5">
               La <strong className="text-zinc-950 font-medium">Community Edition</strong>{" "}
-              est gratuite et couvre 90% des usages : capture, voix off,
-              compose 2D, formats 16:9 + 9:16. C&apos;est l&apos;outil que
-              nous utilisons en interne pour nos propres promo videos.
+              est gratuite et couvre l&apos;essentiel : capture E2E, voix off,
+              compose 2D, formats 16:9 + 9:16, deux presets compose. C&apos;est
+              l&apos;outil que nous utilisons en interne pour nos propres promo
+              videos.
             </p>
             <p className="text-base text-zinc-700 leading-relaxed max-w-2xl">
               La <strong className="text-zinc-950 font-medium">Studio Edition</strong>{" "}
-              ({LEGAL.product.editions.studio.price}) débloque les
-              fonctionnalités premium — frames 3D, presets Cinematic & Glitch,
-              multi-format export, music library. C&apos;est un{" "}
-              <strong className="text-zinc-950 font-medium">paiement unique perpétuel</strong>{" "}
-              (Davinci-style) qui finance le développement continu. Pas
-              d&apos;abonnement, pas de tracking, pas de SaaS lock-in.
+              ({LEGAL.product.editions.studio.price}, paiement unique perpétuel)
+              débloque les frames 3D, les presets Cinematic & Glitch, le
+              multi-format export et la music library. Pas d&apos;abonnement,
+              pas de tracking, pas de SaaS lock-in — un seul paiement, mises à
+              jour à vie.
             </p>
           </div>
         </section>

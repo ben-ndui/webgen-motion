@@ -43,17 +43,12 @@ export default function MentionsLegales() {
 
       <h2>Propriété intellectuelle</h2>
       <p>
-        Le logiciel <strong>GEN MOTION</strong> est distribué sous licence{" "}
-        <strong>{LEGAL.product.license}</strong>. Le code source est public à l&apos;adresse{" "}
-        <a href={LEGAL.product.repo} target="_blank" rel="noreferrer">{LEGAL.product.repo}</a>.
-        La Studio Edition est une license d&apos;usage des fonctionnalités premium
-        — le code reste sous MIT.
-      </p>
-      <p>
-        La marque <strong>GEN MOTION</strong> et le nom commercial{" "}
+        Le logiciel <strong>GEN MOTION</strong>, la marque{" "}
+        <strong>GEN MOTION</strong> et le nom commercial{" "}
         <strong>Smooth &amp; Design</strong> sont propriété de {p.legalName}.
         Toute utilisation à des fins commerciales sans autorisation expresse
-        est interdite.
+        est interdite. Le logiciel est distribué sous licence{" "}
+        <strong>{LEGAL.product.license}</strong>.
       </p>
 
       <h2>Crédits</h2>
