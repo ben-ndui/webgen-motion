@@ -11,6 +11,75 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+(rien pour l'instant — v0.2.1 vient de sortir, prochaine ouverture quand on attaque le re-tag CI matrix validation ou auto-fulfillment license)
+
+---
+
+## [0.2.1] — 2026-05-17
+
+**Polish session post-v0.2.0** : commercialisation complète Studio Edition $49 via Stripe checkout end-to-end, domain genmotion.app live, pages légales FR RGPD-compliant, app icons next/og, update popup desktop, landing slides carrousel + direct download UX. La pipeline CI desktop-release.yml a été fixée Phase B (commit `968ed46`) pour les 3 plateformes qui avaient échoué au tag v0.2.0 — premier vrai test au prochain push de ce tag.
+
+### Added (Sprint 14 — Direct download API + smart OS detection) · 2026-05-17
+
+- **Route `/api/download/[platform]`** : fetch GitHub Releases API latest, find asset par regex pattern, 302 redirect direct vers `browser_download_url`. ISR cache 5min + stale-while-revalidate. Plateformes : `macos-arm64` (aarch64.dmg), `macos-intel` (x86_64.dmg), `macos` (arm64 fallback intel), `windows` (.msi/.exe), `linux-appimage` (.AppImage), `linux-deb` (.deb).
+- **Composant `<SmartDownloadButton />`** client : détecte OS via `navigator.userAgent` + `navigator.platform`, propose le download direct du bon asset. macOS dispo, Windows/Linux disabled avec hint "Bientôt — disponible au prochain tag CI". Hint optionnel "macOS Apple Silicon · .dmg notarisé".
+- **Propagé dans `/download` page + 3 slides landing** (Hero CTA + Pricing Community + CTA final) conditional sur `process.env.VERCEL`. Sur vitrine : DL direct macOS. Sur local dev : Link "Lancer le studio" → /dashboard.
+
+### Added (Sprint 13 — Landing slides carrousel horizontal) · 2026-05-17
+
+- **Refonte `src/app/page.tsx`** en mode slides immersif full-viewport : Hero · Démo · Comment ça marche · Pricing · CTA final.
+- **`<SlidesCarousel />`** client : navigation flèches ← → + clavier + swipe touch + dots indicator + counter mono. Auto-play 5s pause-on-hover/focus/touch, resume 8s post-interaction.
+- **Tous les slides en DOM** (CSS `translateX`) → SEO + accessibility friendly. `aria-roledescription`, `aria-current`, `aria-hidden` par slide.
+- **Indications IA** pour Agent scraping : `data-wm-id="landing.slide.<name>"`, `data-tour-section="landing-slide-<name>"`, `data-tour-slide-index`.
+- **Fix `cb813d0`** : formule `translateX` était `-index*100%` sur track de width `count*100%` → shiftait `count` viewports au lieu d'1. Corrigé en `-(index*100/count)%`.
+
+### Added (Sprint 12 — Update popup desktop app) · 2026-05-17
+
+- **Route `/api/version`** ISR 5min : wrap GitHub Releases API latest, return `{latest, releaseUrl, downloadUrl, notes, publishedAt, assets[]}`.
+- **`<UpdateChecker />`** client mounted dans layout.tsx : 2s delay au mount, fetch genmotion.app/api/version, compare semver vs `NEXT_PUBLIC_APP_VERSION` (injecté build-time depuis `package.json` via `next.config.ts`). Si newer → floating card bottom-right 360px avec dot vert + version current → latest + notes excerpt + boutons "Voir la release" / "Plus tard".
+- **Dismiss persistance** localStorage `webgen-motion:dismissed-update-version` keyed par version. Re-show seulement si release encore plus récente.
+- **Skip silencieusement** sur hostname Vercel (genmotion.app, *.vercel.app) — pas d'update à proposer aux visiteurs de la vitrine.
+
+### Added (Sprint 11 — Domain genmotion.app + icons + pages légales) · 2026-05-17
+
+- **Domain swap** `webgen-motion.vercel.app` → **`genmotion.app`** dans `src/lib/stripe.ts` default URL + doc, `src/app/api/stripe/webhook/route.ts` doc, `src/app/layout.tsx` metadataBase + openGraph, `src/app/thanks/page.tsx` mention.
+- **App icons next/og** (vire le favicon Vercel par défaut) :
+  - `src/app/icon.tsx` 32×32 monogramme "GM" noir/blanc
+  - `src/app/apple-icon.tsx` 180×180 "GM" blanc sur noir
+  - `src/app/opengraph-image.tsx` 1200×630 share card avec wordmark + tagline + footer
+  - `public/wordmark.svg` + `public/wordmark-studio.svg` backups statiques
+- **Route `/wordmark-studio.png`** edge runtime : rasterize 512×512 le wordmark Studio Edition pour upload Stripe product image.
+- **Pages légales FR RGPD-compliant** (réutilise pattern tempo) :
+  - `src/lib/legal/config.ts` single source publisher (NDUI Smooth & Design, SIRET 904 264 223 000 10, Nice) + hosting Vercel + 4 subprocessors (Vercel, Stripe Europe, Anthropic BYOK, ElevenLabs BYOK) + jurisdiction + editions pricing
+  - `src/app/(legal)/{layout,mentions-legales,confidentialite,cgu,cgv}/page.tsx`
+  - `src/app/about/page.tsx` présentation Smooth & Design + section "Deux éditions"
+- **Footer landing** : ajout liens légaux + "À propos" + label "Open-core MIT · 2026".
+- Mention open-source courte + positive ("Open-source · MIT · made in Nice. GEN MOTION est sur GitHub. La Studio Edition débloque les outils pro.") dans README + about, sans paragraphe rationale technique (feedback Ben : pas mettre en avant le pavé fair-code).
+
+### Added (Sprint 10 — Stripe checkout MVP one-time $49) · 2026-05-17
+
+Studio Edition désormais **achetable** depuis la vitrine Vercel. Pipeline complet : visiteur clique "Acheter Studio Edition" → Stripe Checkout hosted (carte CB) → paiement → webhook → notification Discord à Ben → Ben run `scripts/issue-license.mjs` localement + email le `.license` au client (fulfillment manuel MVP-1).
+
+- **Dependency** : `stripe` v22 (zero runtime config, juste env vars).
+- **`src/lib/stripe.ts`** : `getStripe()` lazy + `getAppBaseUrl()` pour les success/cancel redirects.
+- **Route POST `/api/stripe/checkout`** : crée Stripe Checkout Session one-time avec `STRIPE_PRICE_ID`, return `{url}`. Customer email capturé côté Stripe-hosted.
+- **Route POST `/api/stripe/webhook`** : verify signature via `stripe.webhooks.constructEvent` (raw body lu via `req.text()` AVANT verify), gère `checkout.session.completed` → POST vers `WEBGEN_MOTION_DISCORD_WEBHOOK` avec email client + montant + session ID + commande prête à copier pour run `issue-license.mjs`. Indique `🟢 LIVE` ou `🟡 TEST` selon `event.livemode`.
+- **Page `/thanks`** server component : fetch la session Stripe pour afficher email destinataire + montant + 3 steps (réception email, télécharge app, install license).
+- **Composant `<BuyButton />`** réutilisable client : POST `/api/stripe/checkout` + `window.location.href` redirect Stripe.
+- **UI buttons "Acheter Studio Edition · $49"** dans `/download` (secondary variant) + `/setup/license` (primary CTA).
+
+#### Env vars Vercel requis (Settings → Environment Variables, production scope)
+
+| Var | Source | Exemple |
+|---|---|---|
+| `STRIPE_SECRET_KEY` | Stripe Dashboard → Developers → API keys | `sk_live_...` ou `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe Dashboard → Webhooks → endpoint → Signing secret | `whsec_...` |
+| `STRIPE_PRICE_ID` | Stripe Dashboard → Products → Studio Edition → Price ID | `price_...` |
+| `WEBGEN_MOTION_DISCORD_WEBHOOK` | Discord channel → Settings → Integrations → Webhook URL | `https://discord.com/api/webhooks/...` |
+| `NEXT_PUBLIC_APP_URL` | URL de prod | `https://genmotion.app` |
+
+**Verified end-to-end** : Ben a fait un test paiement (mode test_) → Discord notif reçue avec commande prête à copier pour `issue-license.mjs`. Fulfillment manuel fonctionnel.
+
 ### Added (Sprint 9 — License key offline-first / Studio Edition commercialisable) · 2026-05-17
 
 - **Ed25519 keypair system** (`scripts/generate-license-keypair.mjs`) : génère une paire de clés Ed25519 (PKCS8 private + SPKI public + 32-bytes raw base64). Ben run une fois pour sa prod key, garde le private OFFLINE, embed le public dans `src/lib/license/public-key.ts`. Support `--prefix dev-` pour des dev keys séparées du prod.
