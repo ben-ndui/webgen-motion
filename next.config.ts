@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 
 // Pin the file-tracing root to THIS directory. Without this, Next
 // detects a sibling lockfile in `$HOME/` and walks up the file system
@@ -9,9 +10,20 @@ import { fileURLToPath } from "node:url";
 // repo (~100 MB instead of ~2.4 GB).
 const repoRoot = dirname(fileURLToPath(import.meta.url));
 
+// Inject la version courante depuis package.json au build pour que
+// le client (UpdateChecker) puisse comparer à la latest release
+// GitHub via genmotion.app/api/version. Build-time constant, donc
+// le rebuild Vercel / Tauri auto-update à chaque bump version.
+const pkg = JSON.parse(
+  readFileSync(join(repoRoot, "package.json"), "utf-8"),
+) as { version: string };
+
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: repoRoot,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: pkg.version,
+  },
   // Exclude heavy runtime-only deps from the Next.js trace : the
   // routes spawn `tsx scripts/<runner>.ts` as a child process, they
   // never IMPORT puppeteer / remotion / ffmpeg / nodejs-whisper /
