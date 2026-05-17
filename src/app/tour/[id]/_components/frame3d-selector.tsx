@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Layers, Lock, Smartphone } from "lucide-react";
+import { Box, Lock, Smartphone } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
 
 /**
@@ -23,7 +23,7 @@ import type { TourEntry } from "@/lib/types/tour";
  * Community fallback silencieux sur 2D.
  */
 
-type Frame3DId = "iphone" | "macbook" | "duo";
+type Frame3DId = "iphone" | "macbook";
 type CameraPresetId =
   | "hero-tilt"
   | "feature-zoom"
@@ -94,7 +94,7 @@ export default function Frame3DSelector({
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
+      <div className="grid grid-cols-3 gap-1.5">
         <FrameOption
           active={activeFrame3d === null}
           onClick={() => setFrame3d(null)}
@@ -125,18 +125,6 @@ export default function Frame3DSelector({
               : "Studio Edition — fallback 2D en Community"
           }
           icon={<Box className="w-3 h-3" />}
-          locked={!isStudio}
-        />
-        <FrameOption
-          active={activeFrame3d === "duo"}
-          onClick={() => setFrame3d("duo")}
-          label="Duo 3D"
-          hint={
-            isStudio
-              ? "MacBook + iPhone côte à côte (mirroring · 16:9)"
-              : "Studio Edition — fallback 2D en Community"
-          }
-          icon={<Layers className="w-3 h-3" />}
           locked={!isStudio}
         />
       </div>

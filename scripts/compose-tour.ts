@@ -327,9 +327,7 @@ async function main(): Promise<void> {
   const frame3dEnabled = isFeatureEnabled("frames-3d");
   const frame3d =
     frame3dEnabled &&
-    (tour?.frame3d === "iphone" ||
-      tour?.frame3d === "macbook" ||
-      tour?.frame3d === "duo")
+    (tour?.frame3d === "iphone" || tour?.frame3d === "macbook")
       ? tour.frame3d
       : undefined;
   const cameraPreset3d =
@@ -347,10 +345,8 @@ async function main(): Promise<void> {
   // du device procédural. Convention de naming : iphone.glb /
   // macbook.glb. Le GLB est stagé dans .remotion-public/models/
   // pour que staticFile() le résolve via le bundler Remotion.
-  // `duo` est procédural-only en v1 (un seul GLB ne couvre pas les
-  // 2 devices ; un futur sprint pourra stager les 2 GLBs séparés).
   let frame3dGlbPath: string | undefined;
-  if (frame3d && frame3d !== "duo") {
+  if (frame3d) {
     const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
     const glbCandidate = join(repoRoot, "public", "models", `${frame3d}.glb`);
     if (existsSync(glbCandidate)) {

@@ -11,7 +11,6 @@ import {
 } from "@react-three/postprocessing";
 import IPhoneDevice from "./iPhoneDevice";
 import MacBookDevice from "./MacBookDevice";
-import DuoDevice from "./DuoDevice";
 import GLBDevice from "./GLBDevice";
 import { resolveCamera, type CameraPresetId } from "./camera-presets";
 import { useThree } from "@react-three/fiber";
@@ -31,7 +30,7 @@ import { Suspense, useEffect } from "react";
  * Phase 3 ajoutera : real GLBs (drop-in via public/models/),
  * multi-device scene, ambient occlusion + DOF.
  */
-export type Frame3DDeviceId = "iphone" | "macbook" | "duo";
+export type Frame3DDeviceId = "iphone" | "macbook";
 
 export default function SceneCanvas({
   videoSrc,
@@ -106,7 +105,7 @@ export default function SceneCanvas({
         rotation={cam.deviceRotation ?? [0, 0, 0]}
         position={cam.devicePosition ?? [0, 0, 0]}
       >
-        {glbPath && device !== "duo" ? (
+        {glbPath ? (
           <Suspense fallback={null}>
             <GLBDevice
               glbPath={glbPath}
@@ -116,10 +115,8 @@ export default function SceneCanvas({
           </Suspense>
         ) : device === "iphone" ? (
           <IPhoneDevice videoSrc={videoSrc} scale={1} />
-        ) : device === "macbook" ? (
-          <MacBookDevice videoSrc={videoSrc} scale={1} />
         ) : (
-          <DuoDevice videoSrc={videoSrc} />
+          <MacBookDevice videoSrc={videoSrc} scale={1} />
         )}
       </group>
 
