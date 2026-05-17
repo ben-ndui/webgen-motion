@@ -58,3 +58,4 @@ next-env.d.ts
 # and rebuilt in CI for cross-platform releases.
 /src-tauri/binaries/
 issued/
+claude-code-audit-prompt.md
