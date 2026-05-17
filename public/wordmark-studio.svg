@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="GEN MOTION Studio Edition">
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <g font-family="'Geist Sans', Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" fill="#0A0A0A">
+    <text x="256" y="232" text-anchor="middle" font-size="78" font-weight="600" letter-spacing="-3">GEN</text>
+    <text x="256" y="316" text-anchor="middle" font-size="78" font-weight="600" letter-spacing="-3">MOTION</text>
+  </g>
+  <line x1="226" y1="358" x2="286" y2="358" stroke="#0A0A0A" stroke-width="2"/>
+  <text x="256" y="394" text-anchor="middle" font-family="'Geist Mono', 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#52525B" letter-spacing="3.5">STUDIO EDITION</text>
+</svg>

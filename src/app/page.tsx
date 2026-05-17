@@ -319,11 +319,10 @@ export default function LandingPage() {
           <div className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-zinc-800">
             <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
               <FooterLink href={studioHref}>{isWeb ? "Télécharger" : "Studio"}</FooterLink>
+              <FooterLink href="/about">À propos</FooterLink>
               <FooterLink href="/help">Documentation</FooterLink>
               <FooterLink href="/setup">Setup</FooterLink>
-              <FooterLink href="/tour/webgen-motion-pitch">
-                Tour démo
-              </FooterLink>
+              <FooterLink href="/tour/webgen-motion-pitch">Tour démo</FooterLink>
               <FooterLink
                 href="https://github.com/ben-ndui/webgen-motion"
                 external
@@ -334,8 +333,14 @@ export default function LandingPage() {
                 smoothandesign.fr
               </FooterLink>
             </ul>
-            <p className="mt-10 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-600">
-              MIT · 2026
+            <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-zinc-500">
+              <li><FooterLink href="/mentions-legales">Mentions légales</FooterLink></li>
+              <li><FooterLink href="/confidentialite">Confidentialité</FooterLink></li>
+              <li><FooterLink href="/cgu">CGU</FooterLink></li>
+              <li><FooterLink href="/cgv">CGV</FooterLink></li>
+            </ul>
+            <p className="mt-8 text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-600">
+              Open-core MIT · 2026
             </p>
           </div>
         </div>

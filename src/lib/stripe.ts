@@ -9,7 +9,7 @@ import Stripe from "stripe";
  *   STRIPE_WEBHOOK_SECRET            whsec_... (Stripe Dashboard → Webhooks)
  *   STRIPE_PRICE_ID                  price_... du product "GEN MOTION Studio"
  *   WEBGEN_MOTION_DISCORD_WEBHOOK    https://discord.com/api/webhooks/...
- *   NEXT_PUBLIC_APP_URL              https://webgen-motion.vercel.app
+ *   NEXT_PUBLIC_APP_URL              https://genmotion.app
  */
 
 let cached: Stripe | null = null;
@@ -28,5 +28,5 @@ export function getStripe(): Stripe {
 
 /** Base URL utilisée pour les success/cancel redirects. */
 export function getAppBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "https://webgen-motion.vercel.app";
+  return process.env.NEXT_PUBLIC_APP_URL ?? "https://genmotion.app";
 }

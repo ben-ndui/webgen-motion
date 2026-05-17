@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * + email direct au client via Resend.
  *
  * Stripe Dashboard config :
- *   URL    : https://webgen-motion.vercel.app/api/stripe/webhook
+ *   URL    : https://genmotion.app/api/stripe/webhook
  *   Events : checkout.session.completed (+ optionnel payment_intent.succeeded)
  *
  * Signature verification via Stripe webhook secret — sans ça n'importe
