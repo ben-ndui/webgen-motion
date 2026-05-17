@@ -23,6 +23,10 @@
  *  4. default "community"
  */
 
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { verifyLicense } from "./license/verify";
 import type { WebgenMotionEdition } from "./webgen-motion-config-types";
 
 /** Identifiants stables des features gated. Add new flags here
@@ -91,17 +95,48 @@ const FLAG_SETS: Record<WebgenMotionEdition, ReadonlySet<FeatureFlag>> = {
   enterprise: ENTERPRISE_FLAGS,
 };
 
-/** Cached resolved edition. Reset on next process boot. */
-let cachedEdition: WebgenMotionEdition | null = null;
+/** Cached resolved edition. Reset on next process boot ou via
+ *  resetEditionCache() après un install/remove license. */
+let cachedResolution: EditionResolution | null = null;
 
-/** Résout l'edition active. Source de vérité :
- *  1. env WEBGEN_MOTION_EDITION (override dev/CI)
- *  2. webgen-motion.config.ts (default community)
- *  3. fallback community
+/** Path du fichier license — `~/.webgen-motion/.license`. */
+function getLicensePath(): string {
+  return join(homedir(), ".webgen-motion", ".license");
+}
+
+/** Résolution complète de l'edition : edition + source + license info
+ *  si applicable. Utile pour l'UI Settings qui affiche "Studio Edition
+ *  · License jusqu'au X · email Y". */
+export interface EditionResolution {
+  edition: WebgenMotionEdition;
+  source: "env" | "license" | "config" | "default";
+  /** Snapshot non-sensible du payload license, présent uniquement
+   *  quand source === "license". */
+  license?: {
+    email: string;
+    issuedAt: number;
+    expiresAt: number | null;
+    features?: FeatureFlag[];
+    note?: string;
+  };
+  /** Si un fichier .license existe mais est invalide, l'erreur. UI
+   *  peut afficher "License expirée, contacte le support" etc. */
+  licenseError?: import("./license/types").LicenseError;
+}
+
+/** Résout l'edition active. Source de vérité (ordre de priorité) :
+ *  1. env WEBGEN_MOTION_EDITION (override dev/CI/CI tests)
+ *  2. ~/.webgen-motion/.license (Ed25519 signed, vérifié localement)
+ *  3. webgen-motion.config.ts:edition (default community)
+ *  4. community fallback
  *
- *  (Le license key local sera lu ici dans une phase future.) */
-export function getEdition(): WebgenMotionEdition {
-  if (cachedEdition) return cachedEdition;
+ *  Sprint 9 (2026-05-17) : la lecture du license file est branchée.
+ *  Ben peut désormais issuer des licenses signées via
+ *  scripts/issue-license.mjs et les distribuer aux clients Studio. */
+export function resolveEdition(): EditionResolution {
+  if (cachedResolution) return cachedResolution;
+
+  // 1. env override
   const envEdition = process.env.WEBGEN_MOTION_EDITION as
     | WebgenMotionEdition
     | undefined;
@@ -110,14 +145,55 @@ export function getEdition(): WebgenMotionEdition {
     envEdition === "studio" ||
     envEdition === "enterprise"
   ) {
-    cachedEdition = envEdition;
-    return envEdition;
+    cachedResolution = { edition: envEdition, source: "env" };
+    return cachedResolution;
   }
-  // TODO Sprint future : lire ~/.webgen-motion/.license (offline-first
-  // signature check) pour autoriser studio/enterprise.
-  // Pour l'instant default community.
-  cachedEdition = "community";
-  return "community";
+
+  // 2. license file (signed Ed25519)
+  const licensePath = getLicensePath();
+  if (existsSync(licensePath)) {
+    try {
+      const content = readFileSync(licensePath, "utf-8");
+      const result = verifyLicense(content);
+      if (result.valid) {
+        cachedResolution = {
+          edition: result.payload.edition,
+          source: "license",
+          license: {
+            email: result.payload.email,
+            issuedAt: result.payload.issuedAt,
+            expiresAt: result.payload.expiresAt,
+            features: result.payload.features,
+            note: result.payload.note,
+          },
+        };
+        return cachedResolution;
+      }
+      console.warn(
+        `[edition] license file présent mais invalide (${result.error}) → fallback community`,
+      );
+      cachedResolution = {
+        edition: "community",
+        source: "default",
+        licenseError: result.error,
+      };
+      return cachedResolution;
+    } catch (e) {
+      console.warn(
+        `[edition] erreur lecture ${licensePath} : ${(e as Error).message}`,
+      );
+    }
+  }
+
+  // 3. fallback community (config edition pas encore lu — c'est un
+  // override compile-time, rare en pratique)
+  cachedResolution = { edition: "community", source: "default" };
+  return cachedResolution;
+}
+
+/** Raccourci : retourne juste l'edition. */
+export function getEdition(): WebgenMotionEdition {
+  return resolveEdition().edition;
 }
 
 /** Check si une feature est dispo dans l'edition active. */
@@ -126,8 +202,8 @@ export function isFeatureEnabled(flag: FeatureFlag): boolean {
   return FLAG_SETS[ed].has(flag);
 }
 
-/** Test-only : reset le cache. Utile pour les tests qui changent
- *  l'edition à la volée via env. */
+/** Reset le cache. À appeler après un install/remove license pour
+ *  que la prochaine résolution lise le nouveau .license. */
 export function resetEditionCache(): void {
-  cachedEdition = null;
+  cachedResolution = null;
 }

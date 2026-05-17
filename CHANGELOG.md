@@ -11,7 +11,29 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
-(rien pour l'instant — v0.2.0 vient de sortir, prochaine ouverture quand on s'attaque au license key offline-first ou au polish 3D)
+### Added (Sprint 9 — License key offline-first / Studio Edition commercialisable) · 2026-05-17
+
+- **Ed25519 keypair system** (`scripts/generate-license-keypair.mjs`) : génère une paire de clés Ed25519 (PKCS8 private + SPKI public + 32-bytes raw base64). Ben run une fois pour sa prod key, garde le private OFFLINE, embed le public dans `src/lib/license/public-key.ts`. Support `--prefix dev-` pour des dev keys séparées du prod.
+- **License file format PEM-style** (`src/lib/license/serialize.ts`) : `-----BEGIN WEBGEN-MOTION LICENSE v1-----` + ligne `<base64url(payload)>.<base64url(signature)>` + `-----END WEBGEN-MOTION LICENSE-----`. Payload JSON typé (`src/lib/license/types.ts` : `LicensePayload` = v, email, edition, issuedAt, expiresAt nullable pour perpetual, features whitelist optionnel, note optionnelle).
+- **Verify module** (`src/lib/license/verify.ts`) : `verifyLicense(content) → {valid, payload?, error?}`. Utilise `crypto.verify(null, signedData, publicKey, signature)` Node natif (Ed25519, no hash arg). Cache mémoire keyed par sha256(content) pour pas re-verify à chaque `isFeatureEnabled` call. Reset via `resetLicenseCache()` après install/remove. Errors enum : malformed / bad-signature / unknown-version / expired / no-public-key.
+- **Edition resolution refactor** (`src/lib/edition.ts`) : `resolveEdition()` returns `{edition, source, license?, licenseError?}`. Source priorité : env `WEBGEN_MOTION_EDITION` → `~/.webgen-motion/.license` (vérifié Ed25519) → fallback community. Le TODO Sprint future est résolu.
+- **Issue CLI** (`scripts/issue-license.mjs`) : Ben backoffice tool. `--email --edition --expires perpetual|ISO --features csv? --note s? --output? --key keys/license-private.pem`. Charge private key PKCS8, sign + write `.license` PEM-style, print summary + path. Auto-output dans `issued/<email>-<ts>.license` (gitignored).
+- **Route API** `/api/motion/license` (`route.ts` consolidé GET/POST/DELETE) : GET retourne `resolveEdition()`, POST `{content}` vérifie + écrit `~/.webgen-motion/.license` (mode 0600) + reset cache, DELETE supprime + reset cache. Toutes opérations locales, aucun appel réseau.
+- **UI page** `/setup/license` (server component qui lit edition + delegates au client `LicenseForm`) : affiche edition active + source + license info (email, dates, features, note), warning si licenseError, textarea paste + boutons Install/Remove. Disabled si env override. Lien mailto contact@smoothandesign.fr pour acheter.
+- **`.gitignore`** : `/keys/` (private keys) + `/issued/` (licenses émises, par sécurité même si pas critique).
+
+### Verified E2E
+
+- Valid perpetual license `email=alice@example.com edition=studio expires=perpetual` → `resolveEdition()` returns `edition: "studio", source: "license"`. `isFeatureEnabled("frames-3d")` → `true`, `isFeatureEnabled("sso")` → `false` (enterprise only).
+- License `expires=2020-01-01` → `edition: community, source: default, licenseError: "expired"`.
+- License signature corrompue → `edition: community, licenseError: "malformed"`.
+- License removed → `edition: community, source: default`.
+
+### Reste à brancher (Sprint 9 follow-up)
+
+- **Génération prod keypair** : Ben doit `node scripts/generate-license-keypair.mjs` (sans `--prefix`), copier le base64 public output dans `src/lib/license/public-key.ts` (replace le DEV key actuellement embed), commit le swap, et garder `keys/license-private.pem` offline dans son coffre.
+- **Nav link** : ajouter une entrée "License" dans `/setup` hub ou dashboard sidebar pour que les users trouvent `/setup/license`.
+- **Stripe checkout (futur)** : automatiser l'achat one-time + email auto du `.license`. Pour MVP, fulfillment manuel (Ben reçoit l'order, run `scripts/issue-license.mjs`, email au client). Sprint 10+ candidate.
 
 ---
 

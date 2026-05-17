@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# license keypairs (private key MUST stay offline / never commit)
+# Public key embed va dans src/lib/license/public-key.ts manuellement.
+/keys/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -53,3 +57,4 @@ next-env.d.ts
 # Fetched fresh on each machine via `node scripts/desktop-fetch-binaries.mjs`
 # and rebuilt in CI for cross-platform releases.
 /src-tauri/binaries/
+issued/
