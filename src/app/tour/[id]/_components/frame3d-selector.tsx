@@ -84,14 +84,22 @@ export default function Frame3DSelector({
         <label className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
           Device frame
         </label>
-        {!isStudio && (
+        <div className="flex items-center gap-1">
           <span
-            className="text-[9px] uppercase tracking-wider font-mono text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"
-            title="Les frames 3D sont gated en Studio Edition. Tu peux activer la valeur (elle reste sauvegardée) mais le compose fallback sur le frame 2D classique tant que l'edition n'est pas débloquée."
+            className="text-[9px] uppercase tracking-wider font-mono text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200"
+            title="Frames 3D = preview expérimental. Bug connu : rotation parasite de l'iPhone à certains timestamps/sections (root cause non identifiée après diagnostic Sprint 8). Recommandé : fallback 2D pour usage production. Polish en sprint futur."
           >
-            Studio gated
+            3D Beta
           </span>
-        )}
+          {!isStudio && (
+            <span
+              className="text-[9px] uppercase tracking-wider font-mono text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200"
+              title="Les frames 3D sont gated en Studio Edition. Tu peux activer la valeur (elle reste sauvegardée) mais le compose fallback sur le frame 2D classique tant que l'edition n'est pas débloquée."
+            >
+              Studio gated
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
@@ -109,8 +117,8 @@ export default function Frame3DSelector({
           label="iPhone 3D"
           hint={
             isStudio
-              ? "iPhone procédural rendu via R3F"
-              : "Studio Edition — fallback 2D en Community"
+              ? "iPhone procédural R3F — ⚠ beta, rotation parasite à certains frames"
+              : "Studio Edition + beta 3D — fallback 2D en Community"
           }
           icon={<Smartphone className="w-3 h-3" />}
           locked={!isStudio}
@@ -121,8 +129,8 @@ export default function Frame3DSelector({
           label="MacBook 3D"
           hint={
             isStudio
-              ? "MacBook procédural rendu via R3F"
-              : "Studio Edition — fallback 2D en Community"
+              ? "MacBook procédural R3F — ⚠ beta, screen orientation reverse"
+              : "Studio Edition + beta 3D — fallback 2D en Community"
           }
           icon={<Box className="w-3 h-3" />}
           locked={!isStudio}

@@ -184,13 +184,26 @@ Test end-to-end validé : `notary-3d-test` tour 9:16 avec iPhone hero-tilt rendu
 - `motion` utilisé dans `capture-tab.tsx` sans être importé de `framer-motion` → ajout à l'import existant à côté de `AnimatePresence`.
 - Build local clean restauré (`npm run build` passe sans TS error).
 
+### Known Issues — Frames 3D (Beta) · 2026-05-17
+
+> ⚠️ **Les frames 3D sont en preview expérimental.** Après diagnostic exhaustif Sprint 8 (15+ renders, 10+ frames analysées sur `notary-scaffolded` + `notary-3d-test`), les bugs visuels suivants restent non résolus :
+
+- **iPhone rotation parasite** — l'iPhone se présente edge-on (90° autour de Y) ou rotated 90° autour de Z à certains timestamps/sections selon un pattern non-déterministe. Le bug se produit indépendamment du `cameraPreset3d` (testé avec `static-front` qui n'applique AUCUNE rotation device → bug présent), du `composeStyle` (testé avec `sober` qui force `fade` transition partout → bug présent), et du nombre de sections (testé sur tour mono-section → bug présent à certains frames).
+- **MacBook screen orientation inverse** — après la rotation hinge `-(Math.PI - openAngle)`, la face avec la video texture pointe vers -Y/-Z. La camera voit le BACK aluminium au lieu du screen avec contenu. Bug systématique (pas frame-dependent).
+
+**Hypothèse résiduelle** : interaction Remotion + @remotion/three + R3F où le state du Three.js scene leak entre frames, ou `useOffthreadVideoTexture` force un re-render avec une orientation différente. Investigation poussée requise (instrumenter le code Three.js, repro minimal hors Remotion, lire les internals de @remotion/three).
+
+**Path validé visuellement** : `frame3d: "iphone"` + `cameraPreset3d: "hero-tilt"` sur tour **mono-section** à certains timestamps (notamment au début de la section). C'est ce que le CHANGELOG Sprint 7 phase 1 testait. Toute autre combinaison peut produire des artefacts.
+
+**UI** : badge `3D Beta` ajouté sur `Frame3DSelector` + tooltip sur chaque option 3D pour avertir l'utilisateur. Recommandation par défaut = frames 2D (Mac chrome / iPhone frame natifs) pour usage production.
+
 ---
 
 ## [Unreleased précédent — historique cumulé pré-0.1.7]
 
 (Tout ce qui suit était sous Unreleased avant le tag v0.1.7. Conservé tel quel pour traçabilité.)
 
-**À venir** :
-- **Sprint 8 — 3D polish + duo (test-first)** — la phase 4 duo revert le 2026-05-17 a surfacé 2 bugs latents Sprint 7 jamais visuellement validés : (1) MacBookDevice screen orientation — après rotation hinge `-(Math.PI - openAngle)`, la face avec la video texture pointe vers -Y/-Z, camera voit le BACK aluminium ; (2) cinematic-spin — single iPhone montré edge-on alors que les valeurs lerp du preset disent max ±20° rot Y, donc soit le `progress` calculé est faux soit `deviceRotation` est appliqué sur un mauvais axe. Sprint 8 : fixer ces 2 bugs en isolation (single iPhone/MacBook + tous les presets), puis revisiter le duo avec un workflow test-first (golden frame check obligatoire avant merge).
-- **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546). Pré-requis au tag v0.2.0 (première version distribuable publique).
+**À venir (re-priorisé 2026-05-17 après diagnostic Sprint 8)** :
+- **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546). **Priorité 1 désormais** — bloque le tag v0.2.0 (première version distribuable publique).
 - **License key offline-first** — vérification crypto locale qui débloque Studio Edition. Pré-requis pour la commercialisation.
+- **Frames 3D polish (deferred)** — diagnostic Sprint 8 (15+ renders) n'a pas isolé la root cause des rotations parasites iPhone/MacBook. Tous les paths obvious éliminés (preset, transition, composeStyle, section count). Hypothèse résiduelle : interaction Remotion+@remotion/three+R3F internals. À reprendre quand on aura un budget temps dédié OU un repro minimal hors Remotion. En attendant 3D = beta documentée UI (badge `3D Beta` + tooltips). Duo phase 4 deferred avec.
