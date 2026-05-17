@@ -1,75 +1,122 @@
-# CLAUDE.md — webgen-motion
+# CLAUDE.md — GEN MOTION
 
 > Guide pour agents IA (Claude Code, Cursor, Copilot, etc.) qui
-> installent / configurent / itèrent sur webgen-motion.
+> installent / configurent / itèrent sur GEN MOTION.
+>
+> **Repo slug** : `webgen-motion` (préservé pour rétro-compat git/npm).
+> **Brand UI + domain** : `GEN MOTION` / `genmotion.app`.
 
 ## TL;DR pour un agent
 
 1. `cd ~/IdeaProjects && git clone https://github.com/ben-ndui/webgen-motion.git && cd webgen-motion`
 2. `brew install ffmpeg` (macOS) ou équivalent système
 3. `npm install` (puppeteer télécharge Chromium au passage)
-4. Créer `.env.local` avec `ELEVENLABS_API_KEY=sk_...` et `ELEVENLABS_VOICE_ID=<id>` si voix off requise
+4. Créer `.env.local` avec `ELEVENLABS_API_KEY=sk_...` et `ELEVENLABS_VOICE_ID=<id>` si voix off requise. Pour le checkout Stripe local : `STRIPE_SECRET_KEY=sk_test_...` + `STRIPE_PRICE_ID=price_...` + `STRIPE_WEBHOOK_SECRET=whsec_...` + `WEBGEN_MOTION_DISCORD_WEBHOOK=<url>`.
 5. `npm run dev` → ouvre http://localhost:3000
-6. Tester un tour bundlé : `/tour/uzme-landing` → tab Capture → bouton Capturer → tab Compose → bouton Composer
+6. Tester un tour bundlé : `/dashboard` → click un tour → tab Capture → Capturer → tab Compose → Composer
 
-Pas de cloud, pas de SaaS, pas de DB. Tout local. Outputs dans `~/.webgen-motion/`.
+Pas de cloud requis pour le pipeline core. Outputs dans `~/.webgen-motion/`.
 
 ---
 
 ## Ce que c'est
 
-**webgen-motion** est un outil portable de génération de vidéos motion design pour des sites / apps web. Il fait :
+**GEN MOTION** est un outil **desktop installable** de génération de vidéos motion design pour des sites / apps web. Il fait :
 
 1. **Capture E2E** : Puppeteer film un site cible section par section, avec splash cards animés et overlays motion design
-2. **Voice-over** : ElevenLabs TTS (voix clonée) avec cache disk + pronunciation map
+2. **Voice-over** : ElevenLabs TTS (voix clonée) avec cache disk + pronunciation map, ou Voicebox local 100% offline
 3. **Background music** : library MP3/WAV upload via UI, mix avec sidechain ducking sur la voix off
-4. **Compose final** : re-films la timeline dans une animated Mac browser chrome (16:9) ou iPhone frame (9:16) avec backdrop coloré par catégorie
-5. **Tout en local** : aucun cloud requis, aucun lock-in vendor
+4. **Compose final** : Remotion assemble dans Mac browser chrome (16:9) ou iPhone frame (9:16), avec 4 style presets (Sober / Energetic / Cinematic / Glitch) + 5 transitions par catégorie + Ken Burns + BeatsLayer audio-réactif + (Studio Edition) frames 3D iPhone/MacBook
+5. **Tout en local** : aucun cloud requis pour le pipeline. Vitrine `genmotion.app` (Next.js sur Vercel) sert juste de marketing + checkout Stripe.
 
-C'est un produit Smooth & Design pensé pour devenir un package portable cloneable.
+C'est un produit **Smooth & Design** sous modèle open-core MIT :
+- **Community Edition** gratuite (pipeline complet, presets Sober + Energetic, formats 16:9 + 9:16, Agent IA BYOK)
+- **Studio Edition** $49 paiement unique perpétuel (frames 3D, presets Cinematic & Glitch, multi-format export, music library, watermark removal) — license `.license` Ed25519 signée, vérifiée offline
+- **Enterprise** sur devis (white-label, API headless, SSO)
 
 ## Stack
 
 - **Next.js 16** (App Router + Turbopack) — `node_modules/next/dist/docs/` pour la doc embedded
-- **Tailwind v4** — design tokens light slate (`globals.css`)
+- **Tailwind v4** — design tokens light slate + brand noir & blanc strict (`globals.css`)
 - **Geist Sans / Geist Mono** — fonts via `next/font`
-- **lucide-react** — icons partout (sauf legacy react-icons dans le tour preview, en cours de migration)
+- **lucide-react** — icons partout
 - **framer-motion** — transitions phase loader / cards
-- **Puppeteer** — runner E2E (capture + compose headless)
-- **FFmpeg** — encode des frames JPEG → MP4
-- **ElevenLabs** — TTS via REST API (`scripts/audio-tour.ts`)
+- **Puppeteer** — runner E2E (capture headless)
+- **FFmpeg** — encode des frames JPEG → MP4 + analyse audio (silencedetect + onset)
+- **Remotion 4 + @remotion/three** — compositor final.mp4 frame-accurate (intro/outro + Ken Burns + 5 transitions par catégorie + 3D R3F Beta)
+- **ElevenLabs** — TTS via REST API (`scripts/audio-tour.ts`) ou Voicebox local
+- **Tauri 2** — coque desktop natif macOS / Windows / Linux (Rust shell + WebView, sidecars Node + ffmpeg + ffprobe bundlés)
+- **Stripe** v22 — checkout one-time $49 Studio Edition (`/api/stripe/checkout` + `/api/stripe/webhook`)
+- **Ed25519 (`node:crypto`)** — license offline-first signée + vérifiée localement
 
 ## Structure
 
 ```
-webgen-motion/
-├── tours/                       # Catalogue de tours JSON (data-driven)
-│   ├── uzme-landing.json        # Tour démo 16:9
-│   └── uzme-landing-portrait.json
+webgen-motion/                   # slug repo (rétro-compat)
+├── tours/                       # Catalogue tours JSON (data-driven)
+│   ├── uzme-landing.json        # Demo public 16:9
+│   ├── webgen-motion-pitch.json # Meta-démo : GEN MOTION filme GEN MOTION
+│   └── notary-3d-test.json      # Test Sprint 7 frames 3D
 ├── scripts/
 │   ├── capture-tour.ts          # E2E filmé section par section
-│   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs)
+│   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs / Voicebox)
 │   ├── compose-tour.ts          # Compose runner — spawn `remotion render`
-│   └── analyze-audio.ts         # ffmpeg silencedetect + onset detection
+│   ├── analyze-audio.ts         # ffmpeg silencedetect + onset detection
+│   ├── agent-generate-tour.ts   # Agent IA Claude génère tour depuis URL
+│   ├── notarize-and-staple.mjs  # Pipeline Apple Notary end-to-end
+│   ├── generate-license-keypair.mjs  # Ed25519 keypair gen (Ben backoffice)
+│   ├── issue-license.mjs        # Sign + write .license (Ben backoffice)
+│   └── desktop-{prepare,fetch}-*.mjs # Tauri build helpers
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx             # Hub — liste les tours, design admin
-│   │   ├── tour/[id]/
-│   │   │   ├── page.tsx         # Server entry, fetch tour from JSON
-│   │   │   ├── TourClient.tsx   # Orchestrator (state + handlers + tabs)
-│   │   │   └── _components/     # 5 tabs (script/capture/audio/voice/compose)
-│   │   ├── compose/[id]/        # Live preview stage (audio playback synchro)
-│   │   └── api/motion/          # Routes streaming NDJSON
+│   │   ├── page.tsx                  # Landing slides carrousel 5 slides (Sprint 13)
+│   │   ├── dashboard/page.tsx        # Hub tours (route app, ex-/)
+│   │   ├── tour/[id]/                # Éditeur (5 tabs Script/Capture/Audio/Voice/Compose)
+│   │   ├── compose/[id]/             # Live preview (audio playback synchro)
+│   │   ├── about/page.tsx            # Présentation Smooth & Design (Sprint 11)
+│   │   ├── download/page.tsx         # Page download macOS .dmg + buy Studio
+│   │   ├── thanks/page.tsx           # After-Stripe success
+│   │   ├── setup/                    # Wizard config + agent + models + license
+│   │   ├── notary/                   # Dashboard Apple Notary submissions
+│   │   ├── (legal)/                  # Pages légales FR : mentions/confidentialite/cgu/cgv
+│   │   ├── icon.tsx + apple-icon.tsx # Favicons next/og
+│   │   ├── opengraph-image.tsx       # OG share card 1200×630
+│   │   ├── wordmark-studio.png/      # PNG route pour upload Stripe product image
+│   │   ├── _components/              # BuyButton, SlidesCarousel, UpdateChecker
+│   │   └── api/
+│   │       ├── motion/               # Routes pipeline (capture/audio/compose/license/notary/models/...)
+│   │       ├── stripe/{checkout,webhook}/  # Sprint 10
+│   │       └── version/              # Sprint 12 update checker
 │   └── lib/
-│       ├── tour-loader.ts       # Lit tours/<id>.json (server-side fs)
-│       ├── motion-tour-store.ts # Path ~/.webgen-motion/tours/
-│       ├── motion-audio-store.ts# Audio library + ffprobe
-│       ├── motion-categories.ts # Palette par category (data-driven en Sprint 4)
-│       ├── pronunciation.ts     # Phonetic respelling (UZME → Youzmi)
-│       ├── brand.ts             # Tokens UZME mappés slate (transitionnel)
-│       └── types/tour.ts        # TourEntry / TourStep
-├── ROADMAP.md                   # Sprints + futures + décisions
-└── README.md                    # Quickstart user
+│       ├── tour-loader.ts            # Lit tours/<id>.json (server-side fs)
+│       ├── motion-tour-store.ts      # Path ~/.webgen-motion/tours/
+│       ├── motion-audio-store.ts     # Audio library + ffprobe
+│       ├── motion-categories.ts      # Palette par category
+│       ├── pronunciation.ts          # Phonetic respelling
+│       ├── brand.ts                  # Tokens transitionnels
+│       ├── edition.ts                # resolveEdition() — env > license > community
+│       ├── license/                  # Ed25519 verify offline-first (Sprint 9)
+│       ├── stripe.ts                 # Stripe client + base URL (Sprint 10)
+│       ├── legal/config.ts           # Single source publisher (Sprint 11)
+│       ├── llm-providers/            # Anthropic Claude provider abstraction (Sprint 5)
+│       └── types/tour.ts             # TourEntry / TourStep
+├── remotion/                          # Compositions Remotion (Sprint 5 + 7)
+│   ├── Root.tsx + Tour.tsx
+│   ├── SectionPlayer.tsx + IPhoneFrame.tsx + MacChrome.tsx
+│   ├── BeatsLayer.tsx + IntroOutro.tsx
+│   ├── three/                         # Frames 3D R3F Beta : iPhone/MacBook procéduraux + GLBDevice + camera-presets
+│   └── lib/{transitions,style-presets,types}.ts
+├── src-tauri/                         # Coque desktop Tauri (Sprint Desktop)
+│   ├── tauri.conf.json + Cargo.toml
+│   ├── entitlements.plist (hardened runtime + JIT)
+│   ├── runners/ + standalone/ + binaries/  # Gitignored build artifacts
+│   └── icons/
+├── .github/workflows/desktop-release.yml  # CI matrix 4 OS (Phase B fixed)
+├── public/                            # Static assets (demo.mp4, wordmark.svg, ...)
+├── webgen-motion.config.ts            # Edition + defaults (Sprint 6)
+├── CHANGELOG.md                       # Détail commit + breaking changes
+├── ROADMAP.md                         # Sprints + chantiers + décisions
+└── README.md                          # Quickstart user + editions + features
 ```
 
 ## Concepts clés
