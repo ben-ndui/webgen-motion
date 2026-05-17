@@ -19,7 +19,7 @@
  */
 import { execSync, spawnSync } from "node:child_process";
 import { createWriteStream, existsSync, mkdirSync, statSync } from "node:fs";
-import { chmod, mkdtemp, rm, rename, readdir } from "node:fs/promises";
+import { chmod, copyFile, mkdtemp, rm, readdir, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -211,7 +211,11 @@ async function extractAndPlace({
     if (!existsSync(inner)) {
       throw new Error(`Inner binary not found at ${inner}`);
     }
-    await rename(inner, finalPath);
+    // Windows GitHub runner mounts the temp dir on C:\ and the workspace
+    // on D:\ → `rename` cross-device fails with EXDEV. Use copyFile +
+    // unlink as a portable fallback that works partition-cross.
+    await copyFile(inner, finalPath);
+    await unlink(inner);
     await chmod(finalPath, 0o755);
     console.log(`  ✓ ${finalName} (${triple})`);
   } finally {

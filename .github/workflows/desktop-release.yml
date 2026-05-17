@@ -83,6 +83,49 @@ jobs:
       - name: npm ci
         run: npm ci
 
+      # Linux runner ships sans linuxdeploy → tauri-cli ne peut pas
+      # produire les .AppImage / .deb. Install l'AppImage officielle,
+      # met dans PATH. (Setup typique GH Actions pour Tauri Linux.)
+      - name: Install linuxdeploy (Linux)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          curl -fL -o linuxdeploy.AppImage \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy.AppImage
+          sudo mv linuxdeploy.AppImage /usr/local/bin/linuxdeploy
+
+      # macOS uniquement : import .p12 cert dans un keychain temporaire.
+      # Sans ça, `desktop-prepare-standalone.mjs` qui tourne en
+      # `beforeBuildCommand` ne trouve pas la signing identity et
+      # tous les nested codesign échouent avec "specified item could
+      # not be found in the keychain". tauri-action plus tard ne
+      # signe que le top-level .app/.dmg, pas les binaries nested.
+      - name: Import Apple certificate to keychain (macOS)
+        if: startsWith(matrix.os, 'macos')
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$APPLE_CERTIFICATE" | base64 --decode > /tmp/cert.p12
+          KCHAIN_PW=$(openssl rand -base64 24)
+          security create-keychain -p "$KCHAIN_PW" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KCHAIN_PW" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security import /tmp/cert.p12 \
+            -k build.keychain \
+            -P "$APPLE_CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
+            -T /usr/bin/productbuild
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s -k "$KCHAIN_PW" \
+            build.keychain
+          rm /tmp/cert.p12
+          echo "—— Identités codesigning visibles dans le keychain :"
+          security find-identity -v -p codesigning build.keychain
+
       - name: Fetch sidecar binaries (Node + ffmpeg)
         run: node scripts/desktop-fetch-binaries.mjs
 
