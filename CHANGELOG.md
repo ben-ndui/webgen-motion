@@ -17,13 +17,21 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [0.1.7] — 2026-05-17
 
-Sprint 7 closure. Studio Edition débloque les **frames 3D** : iPhone /
-MacBook procéduraux (R3F + @remotion/three) avec HDRI studio, post-
-process, 6 camera presets dont `cinematic-spin` (device qui danse,
-camera fixe), GLB loader optionnel pour upgrade Sketchfab, UI Settings
-de gestion des modèles, et un nouveau preset **Duo** qui place phone +
-mac côte à côte (mirroring du même MP4 source). Brand UI passe à
-`GEN MOTION` (slug repo + paths `~/.webgen-motion/` inchangés).
+Sprint 7 closure (phases 1-3). Studio Edition débloque les **frames
+3D** : iPhone / MacBook procéduraux (R3F + @remotion/three) avec HDRI
+studio, post-process, 6 camera presets dont `cinematic-spin` (device
+qui danse, camera fixe), GLB loader optionnel pour upgrade Sketchfab,
+UI Settings de gestion des modèles. Brand UI passe à `GEN MOTION`
+(slug repo + paths `~/.webgen-motion/` inchangés).
+
+> ⚠️ **Phase 4 — Duo multi-device preset** : implémenté + commit
+> e82570f puis **revert 6f0e8fd** suite à un test visuel end-to-end
+> qui a révélé 2 bugs latents pré-existants (MacBookDevice screen
+> orientation + cinematic-spin comportement) jamais visuellement
+> validés en phase 1 (qui ne testait que iPhone + hero-tilt). Duo
+> + polish 3D reporté à Sprint 8 avec test visuel obligatoire
+> avant merge. Cf. section "À venir" + entrée `agent/decisions.md`
+> du smooth-brain.
 
 ### Added
 
@@ -149,12 +157,9 @@ Test end-to-end validé : `notary-3d-test` tour 9:16 avec iPhone hero-tilt rendu
 - **Preset `cinematic-spin`** (`camera-presets.ts`) : chorégraphie 4 temps avec camera statique reculée (z=9) + device qui danse face → 3/4 droite → drift → 3/4 gauche → settle. Camera fixe, ce sont `deviceRotation` + `devicePosition` qui animent. Amplitudes conservatrices après 2 passes de tuning (rotY ±0.35, posX ±0.3) pour rester dans le frustum.
 - Bouton "Cinematic spin" en premier dans le dropdown camera preset du Compose tab.
 
-### Added (Sprint 7 phase 4 — Duo multi-device preset) · 2026-05-17
+### Fixed (types — Sprint 7 phase 3 oversight) · 2026-05-17
 
-- **Duo preset** (`remotion/three/DuoDevice.tsx`) : MacBook + iPhone côte à côte dans la même scène 3D, les 2 écrans rendent le MÊME `videoSrc` (mirroring). Layout "Apple Keynote" : MacBook à gauche, iPhone à droite légèrement en avant + surélevé + tourné vers la caméra. Outer scale 0.85 pour que la bounding-box rentre dans le frustum des camera presets existants.
-- **TourEntry étendu** : `frame3d?: "iphone" | "macbook" | "duo"`. Le type `cameraPreset3d` gagne aussi `"cinematic-spin"` (oversight de la phase 3 rattrapé).
-- **UI Frame3DSelector** : grid passe de 3 à 4 colonnes, ajoute la 4e option "Duo 3D" avec icône `Layers` + lock badge ambre en Community. Procédural-only en v1 (un futur sprint pourra stager 2 GLBs séparés — `iphone.glb` + `macbook.glb` — quand frame3d === "duo").
-- Compose-tour gating étendu pour reconnaître `"duo"` + skip le GLB lookup quand duo (procédural-only). Optimisé 16:9 — en 9:16 la composition déborde, l'utilisateur est orienté vers iPhone seul.
+- **`TourEntry.cameraPreset3d`** étendu avec `"cinematic-spin"` (le preset existait dans `camera-presets.ts` et dans le selector UI mais le type tour ne l'acceptait pas → mismatch typecheck dans `frame3d-selector.tsx`). Bundlé à l'origine dans le commit duo, isolé en commit `f160cc4` après revert duo.
 
 ### Changed (Rebrand UI → GEN MOTION + durations human-readable) · 2026-05-14
 
@@ -186,6 +191,6 @@ Test end-to-end validé : `notary-3d-test` tour 9:16 avec iPhone hero-tilt rendu
 (Tout ce qui suit était sous Unreleased avant le tag v0.1.7. Conservé tel quel pour traçabilité.)
 
 **À venir** :
+- **Sprint 8 — 3D polish + duo (test-first)** — la phase 4 duo revert le 2026-05-17 a surfacé 2 bugs latents Sprint 7 jamais visuellement validés : (1) MacBookDevice screen orientation — après rotation hinge `-(Math.PI - openAngle)`, la face avec la video texture pointe vers -Y/-Z, camera voit le BACK aluminium ; (2) cinematic-spin — single iPhone montré edge-on alors que les valeurs lerp du preset disent max ±20° rot Y, donc soit le `progress` calculé est faux soit `deviceRotation` est appliqué sur un mauvais axe. Sprint 8 : fixer ces 2 bugs en isolation (single iPhone/MacBook + tous les presets), puis revisiter le duo avec un workflow test-first (golden frame check obligatoire avant merge).
 - **Notarization Apple** — relance la submission avec le bundle pruné (.dmg ~300 MB au lieu de 546). Pré-requis au tag v0.2.0 (première version distribuable publique).
 - **License key offline-first** — vérification crypto locale qui débloque Studio Edition. Pré-requis pour la commercialisation.
-- **GLBs duo** — stager les 2 GLBs séparés (`iphone.glb` + `macbook.glb`) quand `frame3d === "duo"`, pour upgrade du procédural-only actuel.
