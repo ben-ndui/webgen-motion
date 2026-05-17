@@ -7,6 +7,16 @@
 #
 # Trigger manually via the Actions tab too (`workflow_dispatch`) for
 # preview builds without tagging.
+#
+# === GitHub Secrets requis (Settings → Secrets and variables → Actions) ===
+#   APPLE_SIGNING_IDENTITY    "Developer ID Application: Ben NDUI (A24549KKK4)"
+#   APPLE_CERTIFICATE         base64 du .p12 cert exporté du Keychain
+#   APPLE_CERTIFICATE_PASSWORD password du .p12
+#   APPLE_ID                  ben.ndui@icloud.com
+#   APPLE_PASSWORD            app-specific password (appleid.apple.com)
+#   APPLE_TEAM_ID             A24549KKK4
+# Sans ces secrets, le job macOS produit un .dmg non-signé inutilisable.
+# Windows / Linux ignorent ces vars.
 
 name: desktop-release
 
@@ -80,9 +90,39 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS signing + notarization. Skipped silencieusement sur
+          # Windows / Linux qui n'utilisent pas ces vars.
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "webgen-motion ${{ github.ref_name }}"
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.rust-target }}
+
+      # macOS uniquement : notarize + staple le .dmg que tauri-action
+      # vient de produire. tauri-action v0 lance déjà notarytool si
+      # APPLE_ID / PASSWORD / TEAM_ID sont set ET signs si APPLE_*
+      # certificate vars sont là — mais comme on a un nested codesign
+      # complexe géré par desktop-prepare-standalone.mjs (étape
+      # beforeBuildCommand), la submission peut ne pas se déclencher
+      # automatiquement. Ce step force la pipeline complète via
+      # notre helper script local-equivalent.
+      - name: Notarize + staple (macOS)
+        if: startsWith(matrix.os, 'macos')
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          # Pas de .env.local en CI — set les vars directement
+          export APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID APPLE_SIGNING_IDENTITY
+          # --skip-build : tauri-action a déjà build, on saute juste
+          # le rebuild et on attaque submit + staple direct.
+          node scripts/notarize-and-staple.mjs --skip-build

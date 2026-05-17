@@ -42,16 +42,18 @@ function fail(msg) {
   process.exit(1);
 }
 
-// ─── 1. load .env.local ────────────────────────────────────────────
-if (!existsSync(ENV_LOCAL)) {
-  fail(`.env.local introuvable à ${ENV_LOCAL}`);
-}
-const envContent = readFileSync(ENV_LOCAL, "utf-8");
-for (const line of envContent.split("\n")) {
-  const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
-  if (!m) continue;
-  const [, k, v] = m;
-  if (!process.env[k]) process.env[k] = v.replace(/^["']|["']$/g, "");
+// ─── 1. load .env.local (optionnel — CI passe les vars directement) ─
+if (existsSync(ENV_LOCAL)) {
+  const envContent = readFileSync(ENV_LOCAL, "utf-8");
+  for (const line of envContent.split("\n")) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    const [, k, v] = m;
+    if (!process.env[k]) process.env[k] = v.replace(/^["']|["']$/g, "");
+  }
+  log(`.env.local chargé`);
+} else {
+  log(`.env.local absent — assume CI env (APPLE_* déjà set)`);
 }
 
 const APPLE_ID = process.env.APPLE_ID;
@@ -101,21 +103,33 @@ if (!skipBuild) {
 }
 
 // ─── 4. trouve le .dmg ─────────────────────────────────────────────
+// Cherche dans 3 endroits par ordre de priorité :
+//   1. --dmg <path> override explicite
+//   2. src-tauri/target/release/bundle/dmg/ (build local sans --target)
+//   3. src-tauri/target/<triple>/release/bundle/dmg/ (CI avec --target)
+// Filtre les `rw.*.dmg` qui sont des temps de hdiutil pendant le build.
 let dmgPath = dmgOverride;
 if (!dmgPath) {
-  if (!existsSync(BUNDLE_DMG_DIR)) {
-    fail(`bundle/dmg/ introuvable — build a peut-être échoué silencieusement`);
+  const candidates = [BUNDLE_DMG_DIR];
+  const targetRoot = join(REPO_ROOT, "src-tauri/target");
+  if (existsSync(targetRoot)) {
+    for (const triple of readdirSync(targetRoot)) {
+      const p = join(targetRoot, triple, "release/bundle/dmg");
+      if (existsSync(p)) candidates.push(p);
+    }
   }
-  const dmgs = readdirSync(BUNDLE_DMG_DIR)
-    .filter((f) => f.endsWith(".dmg") && !f.startsWith("rw."))
-    .map((f) => ({
-      name: f,
-      path: join(BUNDLE_DMG_DIR, f),
-      mtime: statSync(join(BUNDLE_DMG_DIR, f)).mtime.getTime(),
-    }))
-    .sort((a, b) => b.mtime - a.mtime);
+  const dmgs = [];
+  for (const dir of candidates) {
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith(".dmg") || f.startsWith("rw.")) continue;
+      const p = join(dir, f);
+      dmgs.push({ path: p, mtime: statSync(p).mtime.getTime() });
+    }
+  }
+  dmgs.sort((a, b) => b.mtime - a.mtime);
   if (!dmgs.length) {
-    fail(`aucun .dmg trouvé dans ${BUNDLE_DMG_DIR}`);
+    fail(`aucun .dmg trouvé sous src-tauri/target/ — build a peut-être échoué`);
   }
   dmgPath = dmgs[0].path;
 }
@@ -192,12 +206,14 @@ if (stapleDmg.status !== 0) {
   fail(`stapler staple <dmg> a échoué`);
 }
 
-// .app dans bundle/macos/
+// .app — chercher dans bundle/macos/ frères du dmg trouvé
 let appPath = null;
-if (existsSync(BUNDLE_APP_DIR)) {
-  const apps = readdirSync(BUNDLE_APP_DIR)
+const dmgBundleDir = dirname(dmgPath); // .../bundle/dmg
+const appBundleDir = join(dirname(dmgBundleDir), "macos"); // .../bundle/macos
+if (existsSync(appBundleDir)) {
+  const apps = readdirSync(appBundleDir)
     .filter((f) => f.endsWith(".app"))
-    .map((f) => join(BUNDLE_APP_DIR, f));
+    .map((f) => join(appBundleDir, f));
   if (apps.length) {
     appPath = apps[0];
     log(`.app : ${basename(appPath)}`);
