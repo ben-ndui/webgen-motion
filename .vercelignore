@@ -1,0 +1,19 @@
+# Tauri desktop build artifacts — exclus totalement de Vercel
+# (le déploiement Vercel ne sert que la vitrine Next.js, le desktop
+# Tauri est packagé séparément via desktop-release.yml CI).
+src-tauri/
+
+# Build outputs Next.js standalone copies + staging
+out/
+.next/cache/
+
+# Remotion staging dirs
+.remotion-public/
+remotion-output/
+
+# Test artifacts locaux
+.webgen-motion/
+tests/
+
+# Audit docs
+claude-code-audit-prompt.md
