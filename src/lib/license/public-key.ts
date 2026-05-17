@@ -22,7 +22,16 @@
  * licenses déjà émises.
  */
 
-/** DEV key — à remplacer par la prod key avant commercial launch. */
+/**
+ * PROD key (générée 2026-05-17). Le `keys/license-private.pem` matching
+ * est gardé OFFLINE par Ben (jamais commit). Toute license signée avec
+ * cette key sera vérifiée par tous les clients de l'app.
+ *
+ * Pour dev/test sans la prod private key, override via env var
+ * `WEBGEN_MOTION_LICENSE_PUBKEY` avec la dev pub key
+ * (`keys/dev-license-public-base64.txt`) et utiliser
+ * `keys/dev-license-private.pem` côté `scripts/issue-license.mjs --key`.
+ */
 const LICENSE_PUBLIC_KEY_B64_EMBEDDED =
   "lCU3dfKuEbpkqTbKW894qS8bhcJXCoTlz1GVkKoZNiE=";
 
