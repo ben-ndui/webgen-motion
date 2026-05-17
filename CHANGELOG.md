@@ -33,7 +33,47 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 - **Génération prod keypair** : Ben doit `node scripts/generate-license-keypair.mjs` (sans `--prefix`), copier le base64 public output dans `src/lib/license/public-key.ts` (replace le DEV key actuellement embed), commit le swap, et garder `keys/license-private.pem` offline dans son coffre.
 - **Nav link** : ajouter une entrée "License" dans `/setup` hub ou dashboard sidebar pour que les users trouvent `/setup/license`.
-- **Stripe checkout (futur)** : automatiser l'achat one-time + email auto du `.license`. Pour MVP, fulfillment manuel (Ben reçoit l'order, run `scripts/issue-license.mjs`, email au client). Sprint 10+ candidate.
+
+### Added (Sprint 10 — Stripe checkout MVP one-time $49) · 2026-05-17
+
+Studio Edition désormais **achetable** depuis la vitrine Vercel. Pipeline complet : visiteur clique "Acheter Studio Edition" → Stripe Checkout hosted (carte CB) → paiement → webhook → notification Discord à Ben → Ben run `scripts/issue-license.mjs` localement + email le `.license` au client (fulfillment manuel MVP-1).
+
+- **Dependency** : `stripe` v22 (zero runtime config, juste env vars).
+- **`src/lib/stripe.ts`** : `getStripe()` lazy + `getAppBaseUrl()` pour les success/cancel redirects.
+- **Route POST** `/api/stripe/checkout` : crée Stripe Checkout Session one-time avec `STRIPE_PRICE_ID`, return `{url}`. Customer email capturé sur l'écran Stripe-hosted.
+- **Route POST** `/api/stripe/webhook` : verify signature Ed25519 via `stripe.webhooks.constructEvent`, gère `checkout.session.completed` → POST vers `WEBGEN_MOTION_DISCORD_WEBHOOK` avec email client + montant + session ID + commande prête à copier pour run `issue-license.mjs`. Indique `🟢 LIVE` ou `🟡 TEST` selon event.livemode.
+- **Page `/thanks`** : server component qui fetch la session Stripe pour afficher l'email destinataire + montant + 3 steps (réception email, télécharge app, install license).
+- **Composant `BuyButton`** réutilisable (client) : POST `/api/stripe/checkout` + `window.location.href` redirect Stripe.
+- **UI buttons "Acheter Studio Edition · $49"** ajoutés dans `/download` (secondary variant à côté du Télécharger gratuit) + `/setup/license` (primary CTA dans la section "Pas encore de license"). Label mis à jour : "Open-core MIT · Community gratuit · Studio Edition $49 one-time perpetual".
+
+#### Env vars Vercel à set (Settings → Environment Variables, production scope)
+
+| Var | Source | Exemple |
+|---|---|---|
+| `STRIPE_SECRET_KEY` | Stripe Dashboard → Developers → API keys | `sk_live_...` ou `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | Stripe Dashboard → Webhooks → endpoint → Signing secret | `whsec_...` |
+| `STRIPE_PRICE_ID` | Stripe Dashboard → Products → GEN MOTION Studio → Price ID | `price_...` |
+| `WEBGEN_MOTION_DISCORD_WEBHOOK` | Discord channel → Settings → Integrations → Webhook URL | `https://discord.com/api/webhooks/...` |
+| `NEXT_PUBLIC_APP_URL` | URL de prod | `https://webgen-motion.vercel.app` |
+
+#### Setup Stripe Dashboard (à faire par Ben, 10 min)
+
+1. Products → New product "GEN MOTION Studio Edition" → Price one-time $49 USD → note le `price_...` pour `STRIPE_PRICE_ID`
+2. Developers → Webhooks → Add endpoint → URL `https://webgen-motion.vercel.app/api/stripe/webhook` → événement `checkout.session.completed` → note le `whsec_...` pour `STRIPE_WEBHOOK_SECRET`
+3. Test en mode `sk_test_...` d'abord (passe une fake CB `4242 4242 4242 4242` n'importe quelle date/CVC), verify webhook fire dans Discord, OK → swap pour `sk_live_...`
+
+#### Fulfillment workflow (MVP-1, manuel)
+
+1. Client paie → Discord notif arrive avec email + commande copier-coller
+2. Ben copie la commande, run dans son terminal local : `node scripts/issue-license.mjs --email <X> --edition studio --expires perpetual --note "Stripe <session_id>"`
+3. Ben email le `.license` généré au client (path printé par le script)
+4. Client install via `/setup/license` dans son app
+
+#### Sprint 11+ candidate (post-MVP)
+
+- **Auto-email license** : webhook → directement call `issue-license` inline → envoie via Resend/SendGrid. Pré-requis : prod keypair Ben stockée dans Vercel env (acceptable security pour MVP, à durcir HSM/KMS quand revenue justifie).
+- **Page pricing dédiée** : `/pricing` avec features grid Community vs Studio vs Enterprise, FAQ, témoignages.
+- **Refund flow** : Stripe Dashboard manuel pour MVP, automatisé v2.
 
 ---
 

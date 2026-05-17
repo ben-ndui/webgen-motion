@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
+import BuyButton from "@/app/_components/buy-button";
 
 interface Props {
   currentEdition: "community" | "studio" | "enterprise";
@@ -129,16 +130,23 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
         )}
       </div>
 
-      <div className="pt-6 border-t border-zinc-200">
-        <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-3">
-          Comment obtenir une license
-        </p>
-        <p className="text-sm text-zinc-700 leading-relaxed max-w-2xl">
-          GEN MOTION est <strong className="text-zinc-950 font-medium">open
-          source MIT</strong>. La Studio Edition débloque les frames 3D, les
-          presets Cinematic & Glitch, le multi-format export et la music
-          library via un achat one-time (Davinci-style, perpetual license).
-          Pour acheter ou obtenir une license d&apos;essai, contacte{" "}
+      <div className="pt-6 border-t border-zinc-200 space-y-5">
+        <div>
+          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-3">
+            Pas encore de license ?
+          </p>
+          <p className="text-sm text-zinc-700 leading-relaxed max-w-2xl mb-5">
+            GEN MOTION est <strong className="text-zinc-950 font-medium">open-core
+            MIT</strong> · Community Edition gratuite. La Studio Edition
+            débloque les frames 3D, les presets Cinematic & Glitch, le
+            multi-format export et la music library via un achat one-time
+            <strong className="text-zinc-950 font-medium"> $49 perpetual</strong>
+            (Davinci-style, valable à vie).
+          </p>
+          <BuyButton />
+        </div>
+        <p className="text-xs text-zinc-500">
+          Une question ? Écris-nous à{" "}
           <a
             href="mailto:contact@smoothandesign.fr"
             className="text-zinc-950 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950"

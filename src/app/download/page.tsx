@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Check } from "lucide-react";
+import BuyButton from "../_components/buy-button";
 
 /**
  * Page /download — landing pour visiteurs de la vitrine Vercel qui
@@ -77,9 +78,10 @@ export default function DownloadPage() {
               rel="noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
             >
-              Télécharger pour macOS (.dmg)
+              Télécharger gratuit (.dmg)
               <ArrowUpRight className="w-4 h-4" />
             </a>
+            <BuyButton variant="secondary" />
             <a
               href="https://github.com/ben-ndui/webgen-motion/releases"
               target="_blank"
@@ -91,7 +93,7 @@ export default function DownloadPage() {
           </div>
 
           <p className="mt-6 text-[11px] font-mono uppercase tracking-[0.18em] text-zinc-500">
-            Apple notarized · stapled · spctl accepted source=Notarized Developer ID
+            Community gratuit · Studio Edition $49 one-time · Apple notarized + stapled
           </p>
         </div>
       </section>
