@@ -13,6 +13,16 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
  * radicale. Le seul "media" qui parle = la démo vidéo.
  */
 export default function LandingPage() {
+  // En prod Vercel (vitrine publique), `process.env.VERCEL === "1"` →
+  // les routes Studio/Dashboard ne fonctionnent pas (filesystem local
+  // requis). On redirige les CTA vers /download, page qui pointe sur
+  // les releases GitHub signées+notarisées. En local dev (npm run dev),
+  // VERCEL n'est pas set → comportement original "Lancer le studio →
+  // /dashboard".
+  const isWeb = process.env.VERCEL === "1";
+  const studioHref = isWeb ? "/download" : "/dashboard";
+  const studioLabel = isWeb ? "Télécharger l'app" : "Lancer le studio";
+
   return (
     <div className="min-h-screen flex flex-col bg-white text-zinc-950">
       {/* Top bar — éditorial, peu d'ornement */}
@@ -41,10 +51,10 @@ export default function LandingPage() {
                 GitHub
               </a>
               <Link
-                href="/dashboard"
+                href={studioHref}
                 className="inline-flex items-center gap-1.5 text-zinc-950 font-medium hover:underline underline-offset-4 decoration-2"
               >
-                Lancer le studio
+                {studioLabel}
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </nav>
@@ -78,10 +88,10 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-6">
               <Link
-                href="/dashboard"
+                href={studioHref}
                 className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
               >
-                Lancer le studio
+                {studioLabel}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
@@ -229,10 +239,10 @@ export default function LandingPage() {
 
           <div className="mt-12 sm:mt-16">
             <Link
-              href="/dashboard"
+              href={studioHref}
               className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
             >
-              Lancer le studio
+              {studioLabel}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -308,7 +318,7 @@ export default function LandingPage() {
           </div>
           <div className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-zinc-800">
             <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <FooterLink href="/dashboard">Studio</FooterLink>
+              <FooterLink href={studioHref}>{isWeb ? "Télécharger" : "Studio"}</FooterLink>
               <FooterLink href="/help">Documentation</FooterLink>
               <FooterLink href="/setup">Setup</FooterLink>
               <FooterLink href="/tour/webgen-motion-pitch">
