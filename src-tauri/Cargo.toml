@@ -1,6 +1,6 @@
 [package]
 name = "webgen-motion"
-version = "0.2.1"
+version = "0.2.2"
 description = "Motion Studio local-first — capture, mix and compose motion design clips on your own machine."
 authors = ["Ben Ndui — Smooth & Design"]
 license = "MIT"

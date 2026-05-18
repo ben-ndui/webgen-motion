@@ -11,7 +11,54 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
-(rien pour l'instant — v0.2.1 vient de sortir, prochaine ouverture quand on attaque le re-tag CI matrix validation ou auto-fulfillment license)
+(rien pour l'instant — v0.2.2 vient de sortir, prochaine ouverture quand on attaque le fix Tauri sidecar terminal (Sprint 16) ou auto-fulfillment license)
+
+---
+
+## [0.2.2] — 2026-05-18
+
+Polish post-v0.2.1 — fixes des 3 issues remontées après le ship :
+
+### Fixed (CI Ubuntu — Linux build)
+
+- **Linux ffmpeg URL** : `johnvansickle.com` a fait timeout 135s sur le runner GitHub Ubuntu lors du tag v0.2.1 → switch vers `BtbN/FFmpeg-Builds` GitHub releases (même mirror éprouvé que pour Windows). Modifié `scripts/desktop-fetch-binaries.mjs` :
+  - ffmpeg : `https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz`, extractPath `ffmpeg-master-latest-linux64-gpl/bin/ffmpeg`
+  - ffprobe : même tarball, extractPath `bin/ffprobe`
+- Effectif au prochain tag — v0.2.2 va re-tester la matrix CI complète.
+
+### Changed (Tauri app icons → GM wordmark)
+
+- **`src-tauri/icons/source.svg`** réécrit : "GM" bold blanc sur fond noir squircle (rounded 220px), cohérent avec `apple-icon.tsx` web favicon. L'ancien était un placeholder geometric (carré avec dots + play triangle) du 12 mai pre-rebrand GEN MOTION.
+- **Tous les formats Tauri régénérés** via `npm run tauri:icon` : `icon.icns` macOS, `icon.ico` Windows, PNGs 32/64/128/128@2x, Square tiles UWP Windows, Android mipmaps complets. L'app installée affichera maintenant le bon icon dans Finder + Dock + launcher.
+
+### Improved (Landing slides — scroll trackpad / molette)
+
+- **`<SlidesCarousel />`** : ajout `onWheel` handler qui navigue entre slides quand l'utilisateur scroll avec le trackpad Mac (swipe horizontal `deltaX`) ou la molette souris (`deltaY`). Threshold 30px + debounce 800ms via `useRef<number>` pour éviter d'avancer plusieurs slides au moindre scroll. Pause auto-play temporairement après interaction.
+- Avant : seul touch swipe / clavier / boutons / dots navigaient. Maintenant trackpad scroll fonctionne aussi.
+
+### Fixed (translateX formula)
+
+- **Slide carousel** (commit `cb813d0` push hier soir, mentioned ici pour traçabilité) : formule était `translateX(-index * 100%)` mais le track fait `width: count * 100%`, donc le `%` était relatif au track (= `count` viewports), pas au container. Corrigé en `translateX(-(index * 100 / count)%)`.
+
+### Known issue — Tauri Node sidecar terminal sur macOS
+
+Quand on lance le `.dmg` installé, une **fenêtre noire CLI sans menu apparaît peu après le launch** de l'app GEN MOTION et galère à se fermer quand on quitte l'app. C'est le Node sidecar (cf. `src-tauri/src/lib.rs:119-131` `spawn_next_sidecar`) qui crée une fenêtre Dock + un process group attaché. Pas bloquant fonctionnellement (l'app marche), juste cosmétique gênant.
+
+**Fix prévu Sprint 16** : 2 options identifiées :
+- Quick — wrapper Node binary dans Info.plist `LSUIElement=true` (background-only sur macOS)
+- Proper — remplacer `app.shell().sidecar("node")` par `std::process::Command::new("node").process_group(0).spawn()` direct dans lib.rs (détache complètement le process group)
+
+Pas applicable à v0.2.2, sera dans v0.2.3+.
+
+### CI v0.2.1 résultats (pour mémoire)
+
+Le tag v0.2.1 (premier vrai test des fixes Phase B Sprint 8) :
+- ✅ macOS arm64 (macos-14) : success — `.dmg` bundled clean
+- ✅ Windows (windows-latest) : success — premier `.msi` GEN MOTION (Phase B `desktop-fetch-binaries.mjs` rename → copyFile fix EXDEV validé)
+- ❌ Ubuntu : failure — ffmpeg URL timeout (fixé en v0.2.2 → BtbN mirror)
+- ⏳ macOS Intel (macos-13) : queued au moment du tag v0.2.2
+
+3/4 jobs Phase B validés. Ubuntu sera le 4/4 au prochain tag v0.2.2.
 
 ---
 
