@@ -89,6 +89,25 @@ export default function SlidesCarousel({ children, slideLabels }: Props) {
     pauseTemporarily();
   }
 
+  // wheel / trackpad — intercept aussi bien deltaX (swipe horizontal
+  // trackpad Mac) que deltaY (molette souris) car sur un carrousel
+  // full-screen l'utilisateur s'attend à ce que LES DEUX naviguent.
+  // Debounce 800ms pour pas avancer multiple slides au moindre scroll.
+  const lastWheel = useRef<number>(0);
+  function onWheel(e: React.WheelEvent) {
+    // Prend la composante avec la magnitude la plus grande (trackpad
+    // swipe = principalement deltaX, molette = deltaY)
+    const delta =
+      Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (Math.abs(delta) < 30) return; // ignore micro-mouvements
+    const now = Date.now();
+    if (now - lastWheel.current < 800) return; // debounce
+    lastWheel.current = now;
+    if (delta > 0) next();
+    else prev();
+    pauseTemporarily();
+  }
+
   return (
     <section
       ref={containerRef}
@@ -104,6 +123,7 @@ export default function SlidesCarousel({ children, slideLabels }: Props) {
       onBlur={() => setPaused(false)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
+      onWheel={onWheel}
     >
       {/* Track contains all slides side-by-side, translateX pour montrer
           la slide active. Transition cubic-bezier douce 500ms.

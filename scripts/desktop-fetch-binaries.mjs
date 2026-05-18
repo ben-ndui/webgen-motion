@@ -110,12 +110,14 @@ function ffmpegUrlFor(triple) {
         extractPath: "ffmpeg",
       };
     case "x86_64-unknown-linux-gnu":
+      // BtbN GitHub releases comme pour Windows — johnvansickle a
+      // failed avec timeout 135s sur le runner GitHub Ubuntu (v0.2.1
+      // CI fail). BtbN est hébergé sur GitHub releases, plus fiable
+      // depuis le runner.
       return {
-        url: "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz",
+        url: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz",
         archive: "tar.xz",
-        // The tarball expands to ffmpeg-X.Y-amd64-static/ffmpeg — we
-        // glob the first matching subdir below.
-        extractPath: "ffmpeg-*-amd64-static/ffmpeg",
+        extractPath: "ffmpeg-master-latest-linux64-gpl/bin/ffmpeg",
       };
     case "x86_64-pc-windows-msvc":
       return {
@@ -142,12 +144,12 @@ function ffprobeUrlFor(triple) {
         extractPath: "ffprobe",
       };
     case "x86_64-unknown-linux-gnu":
+      // BtbN ships ffprobe dans le même tarball que ffmpeg, dans
+      // bin/ffprobe. Switched de johnvansickle (timeout) à BtbN.
       return {
-        // johnvansickle ships ffprobe alongside ffmpeg in the same
-        // tarball — same archive, different inner path.
-        url: "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz",
+        url: "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz",
         archive: "tar.xz",
-        extractPath: "ffmpeg-*-amd64-static/ffprobe",
+        extractPath: "ffmpeg-master-latest-linux64-gpl/bin/ffprobe",
       };
     case "x86_64-pc-windows-msvc":
       return {
