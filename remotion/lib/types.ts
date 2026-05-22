@@ -7,6 +7,24 @@
  * pulling in Next.js / fs.
  */
 
+/** Sprint 15.A — punch-in hotspot animé pendant une section. Doublon
+ *  léger du type côté `src/lib/types/tour.ts` pour garder ce module
+ *  autonome (les composants Remotion ne doivent pas importer du Next
+ *  app code — sinon le bundle Remotion tire `node:fs` et casse). */
+export interface Hotspot {
+  /** Secondes depuis le début de la section (après trim). */
+  t: number;
+  /** 0..1 horizontal dans la frame vidéo. */
+  x: number;
+  /** 0..1 vertical. */
+  y: number;
+  label: string;
+  /** Facteur zoom max — default 1.6. */
+  zoom?: number;
+  /** Palier visible avant pull-back — default 1.5s. */
+  dwellSec?: number;
+}
+
 export interface ManifestSection {
   index: number;
   categoryId: string;
@@ -29,6 +47,9 @@ export interface ManifestSection {
    *  Passed to OffthreadVideo's `startFrom` so the section plays
    *  from this point. Set via the trim controls in the Capture tab. */
   startFromSec?: number;
+  /** Sprint 15.A — punch-in hotspots animés pendant cette section.
+   *  Propagés depuis le TourStep "section" par compose-tour. */
+  hotspots?: Hotspot[];
 }
 
 export interface TourBrand {

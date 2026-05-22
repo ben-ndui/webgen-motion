@@ -32,6 +32,7 @@ import {
 } from "../remotion/lib/types";
 import { getTour } from "../src/lib/tour-loader";
 import { isFeatureEnabled } from "../src/lib/edition";
+import type { Hotspot, TourStep } from "../src/lib/types/tour";
 
 function arg(flag: string, fallback?: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -131,6 +132,20 @@ async function main(): Promise<void> {
     copyFileSync(absPath, dest);
   };
 
+  // Sprint 15.A — charger le tour pour propager les hotspots définis
+  // dans `steps[]` (type "section") vers les ManifestSection envoyés
+  // à Remotion. Le manifest sur disk ne porte pas les hotspots ; ils
+  // vivent dans le tour JSON versionné, donc on lit le tour ici et
+  // on matche la i-ème section du manifest avec la i-ème step
+  // "section" du tour.
+  const hotspotTour = getTour(tourId!);
+  const hotspotSectionSteps = (hotspotTour?.steps ?? []).filter(
+    (st): st is Extract<TourStep, { type: "section" }> =>
+      st.type === "section",
+  );
+  const hotspotsFor = (sectionIndex: number): Hotspot[] | undefined =>
+    hotspotSectionSteps[sectionIndex]?.hotspots;
+
   // Section MP4s — names preserved from manifest, but we re-probe
   // each file's actual duration with ffprobe and clamp the manifest
   // value to that. A manifest entry claiming "8s" against a 5s MP4
@@ -171,6 +186,7 @@ async function main(): Promise<void> {
       durationSec: effectiveSec,
       capturedDurationSec: captured,
       startFromSec: trimStart > 0 ? trimStart : undefined,
+      hotspots: hotspotsFor(s.index),
     };
   });
 

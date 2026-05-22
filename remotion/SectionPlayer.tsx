@@ -5,6 +5,11 @@ import { MacChrome } from "./MacChrome";
 import { IPhoneFrame } from "./IPhoneFrame";
 import { applyTransition, kenBurns, pickTransition } from "./lib/transitions";
 import { resolveStyle } from "./lib/style-presets";
+import {
+  getActiveHotspot,
+  labelStyle,
+  punchInTransform,
+} from "./lib/hotspots";
 import SceneCanvas, {
   type Frame3DDeviceId,
 } from "./three/SceneCanvas";
@@ -115,7 +120,7 @@ export function SectionPlayer({
   // Video plays cleanly inside the frame — no Ken Burns here. The
   // site content as captured stays steady ; it's the device that
   // moves on top, like a film maker panning a phone in hand.
-  const video = (
+  const rawVideo = (
     <OffthreadVideo
       src={staticFile(section.fileName)}
       startFrom={videoStartFrom}
@@ -131,6 +136,60 @@ export function SectionPlayer({
         display: "block",
       }}
     />
+  );
+
+  // Sprint 15.A — punch-in hotspots. Skip silently en mode 3D
+  // (gestion R3F différente, viendra en S15.D si on en a besoin).
+  // En 2D : on wrap la vidéo dans un conteneur transform-origin
+  // animé qui zoome vers (x, y), avec un label flottant collé.
+  const hotspotState = frame3d
+    ? null
+    : getActiveHotspot(section.hotspots, localFrame, fps);
+  const punchIn = punchInTransform(hotspotState);
+  const label = labelStyle(hotspotState);
+
+  const video = hotspotState ? (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        transform: punchIn.transform,
+        transformOrigin: punchIn.transformOrigin,
+      }}
+      data-wm-id="tour.hotspot-zoom"
+    >
+      {rawVideo}
+      {label.visible && (
+        <div style={label.containerStyle} data-wm-id="tour.hotspot-label">
+          <div
+            style={{
+              background: "rgba(8, 8, 12, 0.82)",
+              color: "#fff",
+              fontFamily:
+                'ui-sans-serif, system-ui, -apple-system, "Geist Sans", Inter, sans-serif',
+              fontWeight: 600,
+              fontSize: format === "9:16" ? 30 : 26,
+              letterSpacing: "-0.01em",
+              lineHeight: 1.2,
+              padding: "10px 18px",
+              borderRadius: 999,
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              boxShadow:
+                "0 8px 24px rgba(0, 0, 0, 0.32), 0 1px 0 rgba(255, 255, 255, 0.06) inset",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {hotspotState.hotspot.label}
+          </div>
+        </div>
+      )}
+    </div>
+  ) : (
+    rawVideo
   );
 
   // Frame 3D (Sprint 7 — Studio Edition) si le tour le demande.

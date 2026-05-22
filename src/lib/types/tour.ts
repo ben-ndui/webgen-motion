@@ -20,6 +20,27 @@
  *   - keypress   : send a keyboard key
  */
 
+/** Sprint 15 — point d'intérêt cliquable mis en avant pendant la
+ *  lecture d'une section. Le compositor zoome doucement sur (x,y) et
+ *  affiche un label flottant ("Clique ici pour…") façon Apple Keynote
+ *  demo. Coordonnées normalisées 0..1 relatives au cadre vidéo de la
+ *  section (0,0 = haut-gauche, 1,1 = bas-droite). */
+export interface Hotspot {
+  /** Secondes depuis le début de la section (après trim). */
+  t: number;
+  /** 0..1 — position horizontale dans la frame vidéo. */
+  x: number;
+  /** 0..1 — position verticale dans la frame vidéo. */
+  y: number;
+  /** Libellé court affiché collé au point. */
+  label: string;
+  /** Facteur de zoom au plus fort du punch-in. Default 1.6. */
+  zoom?: number;
+  /** Durée du palier hold (max zoom + label visibles). Default 1.5s.
+   *  La rampe d'entrée/sortie (0.4s in / 0.6s out) s'ajoute autour. */
+  dwellSec?: number;
+}
+
 export type TourStep =
   | {
       type: "section";
@@ -33,6 +54,11 @@ export type TourStep =
       dwellMs?: number;
       /** Section-level VO. Plays the entire section duration. */
       voiceover?: string;
+      /** Sprint 15.A — hotspots punch-in à animer dans cette section.
+       *  Pour S15.A : définis manuellement ici. Pour S15.B : auto-
+       *  écrits par capture-tour à partir des clics réels enregistrés
+       *  pendant la capture Puppeteer. */
+      hotspots?: Hotspot[];
     }
   | { type: "goto"; url: string; dwellMs?: number }
   | { type: "click"; selector: string; dwellMs?: number }
