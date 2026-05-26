@@ -11,7 +11,45 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
-(rien pour l'instant — v0.2.2 vient de sortir, prochaine ouverture quand on attaque le fix Tauri sidecar terminal (Sprint 16) ou auto-fulfillment license)
+### Added (Sprint 15.A — Hotspots punch-in zoom + label flottant) · 2026-05-22
+
+Première phase d'une feature inspirée **Supademo** et **Apple Keynote demos** : pendant la lecture d'une section, un ou plusieurs *hotspots* (points cliquables annotés) déclenchent un **zoom cinematic vers la zone** + une **pill label collée au point** pour montrer "clique ici pour aller à B". Transforme un screencast plat en storytelling visuel guidé.
+
+- **Type `Hotspot`** dans `src/lib/types/tour.ts` — `{ t, x, y, label, zoom?, dwellSec? }` exposé sur `TourStep` type `"section"` via `hotspots?: Hotspot[]`. Coordonnées (x, y) normalisées 0..1 relatives au cadre vidéo de la section.
+- **Type miroir** dans `remotion/lib/types.ts` — `ManifestSection.hotspots?` pour garder le bundle Remotion autonome (ne pas tirer `node:fs` via les types `src/lib/`).
+- **NEW `remotion/lib/hotspots.ts`** — 3 helpers :
+  - `getActiveHotspot(hotspots, localFrame, fps)` — au plus un hotspot actif à la fois, retourne `{ hotspot, progress }` où `progress` couvre ramp-in 0.4s cubic ease + hold `dwellSec` + ramp-out 0.6s
+  - `punchInTransform(state)` — calcule `transform: scale(...)` + `transformOrigin: "(x*100)% (y*100)%"` pour ancrer le zoom pile sur le point
+  - `labelStyle(state)` — positionne la pill collée au hotspot, quart décalé vers le centre de l'écran pour ne jamais sortir du cadre
+- **`remotion/SectionPlayer.tsx`** — wrap la vidéo 2D dans un container `transform`/`overflow:hidden` quand un hotspot est actif. Pill noir translucide `rgba(8,8,12,0.82)` + `backdropFilter: blur(8px)` + border 1px white/8 + box-shadow soft, Geist Sans 600. Skip silencieux en mode 3D (compositing R3F différent — viendra en Sprint 15.D si besoin).
+- **`scripts/compose-tour.ts`** — propage `tour.steps[].hotspots` (TourStep section) → `ManifestSection.hotspots` envoyé en props à Remotion. Matchant l'index linéaire des sections du tour avec celles du manifest.
+
+### Changed (Sprint 15.A · refonte full pitch v0.2.x + hotspots partout) · 2026-05-22
+
+- **`tours/webgen-motion-pitch.json`** réécrit en entier : le pitch officiel datait du Sprint 5-6 et ne mentionnait pas 3D Beta (S7), Notarization Apple (S8), License (S9), checkout (S10), pages légales (S11), update popup (S12), landing carrousel (S13), smart download (S14), ni la marque GEN MOTION.
+- **9 sections / 39 steps / ~95s estimés** :
+  0. `branding` — GEN MOTION (landing hero)
+  1. `motion` — 5 slides carrousel landing (Sprint 13)
+  2. `features` — Hub (/dashboard)
+  3. `motion` — Éditeur visuel (/tour/help-page, click tabs Script/Voice/Compose)
+  4. `ai` — Voix off IA (ElevenLabs cloud · Voicebox local)
+  5. `motion` — Compose 4 presets
+  6. `motion` — Studio 3D Beta (Frames iPhone/MacBook procédural)
+  7. `stores` — Desktop notarisé (/download Apple Notary)
+  8. `branding` — Outro Clone · Configure · Génère
+- **Brand rebrand intégral** : `webgen-motion` → `GEN MOTION` ; `webgen-motion.local` → `genmotion.app` (cohérent avec `CLAUDE.md` slug repo / brand UI split).
+- **narrativeScript reflowé** : 13 markers `[step:N]` alignés sur les indices linéaires des steps (vérifié, aucun marker hors plage). Voix off doit être re-générée après la refonte (`audio-tour.ts`).
+- **Hotspots sur 8/9 sections** (skip outro — fade out, pas pertinent de zoomer) — coords (x, y) best-guess depuis les patterns UI standards : CTA top-right, tabs centrés top, content middle. À affiner visuellement après le premier render.
+- **Pas de slide prix dans le scénario** — décision explicite : on ne filme pas `/setup/license` ni le checkout Stripe.
+
+### À venir — Sprint 15.B / 15.C
+
+- **15.B** : capture des clics réels pendant l'enregistrement Puppeteer → auto-écriture des hotspots dans le tour JSON. Plus besoin de définir manuellement les coords.
+- **15.C** : curseur iOS-like (cercle blanc translucide) + ripple/tap animation par-dessus le punch-in. Renforce le mimétisme "tap mobile" / "click desktop" selon le `frame`.
+
+Commits Sprint 15.A (locaux sur `main`, pas encore push) :
+- `9c87cc7` feat(sprint-15a): hotspots punch-in zoom + label flottant
+- `eb32e80` feat(sprint-15a): refonte full pitch v0.2.x + hotspots partout
 
 ---
 
