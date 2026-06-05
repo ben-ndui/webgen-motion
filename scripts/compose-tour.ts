@@ -143,8 +143,9 @@ async function main(): Promise<void> {
     (st): st is Extract<TourStep, { type: "section" }> =>
       st.type === "section",
   );
+  // manifest `s.index` is 1-based; hotspotSectionSteps is 0-based.
   const hotspotsFor = (sectionIndex: number): Hotspot[] | undefined =>
-    hotspotSectionSteps[sectionIndex]?.hotspots;
+    hotspotSectionSteps[sectionIndex - 1]?.hotspots;
 
   // Section MP4s — names preserved from manifest, but we re-probe
   // each file's actual duration with ffprobe and clamp the manifest

@@ -21,17 +21,7 @@
       "categoryId": "branding",
       "title": "GEN MOTION",
       "subtitle": "Vidéos motion design · local-first",
-      "dwellMs": 3200,
-      "hotspots": [
-        {
-          "t": 2.4,
-          "x": 0.5,
-          "y": 0.78,
-          "label": "Lancer le studio",
-          "zoom": 1.5,
-          "dwellSec": 1.2
-        }
-      ]
+      "dwellMs": 3200
     },
     {
       "type": "wait",
@@ -55,7 +45,7 @@
       "dwellMs": 2200,
       "hotspots": [
         {
-          "t": 3.0,
+          "t": 3.3,
           "x": 0.5,
           "y": 0.5,
           "label": "Carrousel horizontal",
@@ -87,9 +77,9 @@
       "dwellMs": 2200,
       "hotspots": [
         {
-          "t": 1.6,
+          "t": 3.3,
           "x": 0.86,
-          "y": 0.12,
+          "y": 0.06,
           "label": "Nouveau tour",
           "zoom": 1.7,
           "dwellSec": 1.4
@@ -115,13 +105,13 @@
       "categoryId": "motion",
       "title": "Éditeur visuel",
       "subtitle": "Contrôle complet sur ta timeline",
-      "goto": "/tour/help-page",
+      "goto": "/tour/uzme-landing",
       "dwellMs": 2200,
       "hotspots": [
         {
-          "t": 4.5,
-          "x": 0.42,
-          "y": 0.07,
+          "t": 3.5,
+          "x": 0.55,
+          "y": 0.1,
           "label": "Onglet Voix off",
           "zoom": 1.55,
           "dwellSec": 1.2
@@ -160,9 +150,9 @@
       "dwellMs": 1800,
       "hotspots": [
         {
-          "t": 1.6,
-          "x": 0.7,
-          "y": 0.45,
+          "t": 3.0,
+          "x": 0.72,
+          "y": 0.21,
           "label": "Générer",
           "zoom": 1.55,
           "dwellSec": 1.4
@@ -196,9 +186,9 @@
       "dwellMs": 1800,
       "hotspots": [
         {
-          "t": 1.6,
-          "x": 0.5,
-          "y": 0.4,
+          "t": 3.0,
+          "x": 0.72,
+          "y": 0.23,
           "label": "Choisis ton style",
           "zoom": 1.5,
           "dwellSec": 1.5
@@ -227,9 +217,9 @@
       "dwellMs": 1800,
       "hotspots": [
         {
-          "t": 1.8,
-          "x": 0.5,
-          "y": 0.5,
+          "t": 3.0,
+          "x": 0.72,
+          "y": 0.31,
           "label": "Frame iPhone 3D",
           "zoom": 1.55,
           "dwellSec": 1.4
@@ -259,9 +249,9 @@
       "dwellMs": 1800,
       "hotspots": [
         {
-          "t": 1.8,
-          "x": 0.5,
-          "y": 0.55,
+          "t": 3.0,
+          "x": 0.31,
+          "y": 0.52,
           "label": "Télécharger pour macOS",
           "zoom": 1.55,
           "dwellSec": 1.4

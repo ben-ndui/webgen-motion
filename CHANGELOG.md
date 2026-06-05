@@ -11,6 +11,20 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Fixed (Sprint 15.B — Hotspots validés visuellement + bug mapping) · 2026-06-05
+
+Premier rendu de bout en bout du pitch refondu (Sprint 15.A) + extraction de frames aux instants des hotspots → 3 défauts jamais détectés (faute de validation visuelle) corrigés :
+
+- **🐛 Bug off-by-one `scripts/compose-tour.ts`** — `hotspotsFor(s.index)` indexait `hotspotSectionSteps` (0-basé) avec le `s.index` du manifest (1-basé) → chaque label de hotspot était appliqué à la **section précédente** (ex. "Onglet Voix off" affiché sur le Hub). Fix : `hotspotSectionSteps[sectionIndex - 1]`. Latent depuis 15.A car toutes les sections portaient alors un hotspot ; révélé en retirant celui de la section 1.
+- **🔴 Sections 4-7 pointaient un tour mort** — le pitch faisait `goto /tour/help-page`, tour absent de `tours/*.json` (résidu d'un ancien état) → page "Tour introuvable" filmée sur 4 sections (éditeur / voix off / compose / 3D). Repointé vers `/tour/uzme-landing` (tour démo public existant). Un seul `goto` à changer, les sections 5-7 suivent.
+- **🟠 Timings dans le splash** — tous les `t` des hotspots tombaient pendant les splash cards (carte-titre plein écran, durée `dwellMs` + ~0.5s) → punch-in sur un aplat de couleur. Recalés post-splash (sec2-3 t=3.3, sec4 t=3.5, sec5-8 t=3.0).
+- **Coords (x, y) calées sur l'UI réelle** (relevées sur frames capturées) : Hub→Nouveau tour (0.86, 0.06) · Éditeur→onglet Voix off (0.55, 0.10) · Voix off→Générer (0.72, 0.21) · Compose→dropdown Style (0.72, 0.23) · Studio 3D→bouton iPhone 3D (0.72, 0.31) · Download→Télécharger macOS (0.31, 0.52, était centré à tort).
+- **🟡 Hotspot section 1 (hero) retiré** — label "Lancer le studio" sans cible (la landing est un carrousel auto-play ; le bouton n'apparaît que sur la slide CTA). Punch-in gratuit sur le hero supprimé.
+- **VO régénérée** (narrative ElevenLabs, 51s, 13 markers) après le reflow du narrativeScript. Pitch final = 83.7s.
+- **Validation** : 7/7 hotspots vérifiés visuellement sur le `final.mp4` (label correct + ancré sur le bon élément).
+
+> Connu, non bloquant : `scripts/analyze-audio.ts` lève `ReferenceError: Cannot access 'FFMPEG_BIN' before initialization` (catché, pacing trim de toute façon désactivé). À corriger hors chantier hotspots.
+
 ### Added (Sprint 15.A — Hotspots punch-in zoom + label flottant) · 2026-05-22
 
 Première phase d'une feature inspirée **Supademo** et **Apple Keynote demos** : pendant la lecture d'une section, un ou plusieurs *hotspots* (points cliquables annotés) déclenchent un **zoom cinematic vers la zone** + une **pill label collée au point** pour montrer "clique ici pour aller à B". Transforme un screencast plat en storytelling visuel guidé.
