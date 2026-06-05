@@ -49,7 +49,7 @@
           "x": 0.5,
           "y": 0.5,
           "label": "Carrousel horizontal",
-          "zoom": 1.45,
+          "zoom": 2,
           "dwellSec": 1.4
         }
       ]
@@ -81,7 +81,7 @@
           "x": 0.86,
           "y": 0.06,
           "label": "Nouveau tour",
-          "zoom": 1.7,
+          "zoom": 2,
           "dwellSec": 1.4
         }
       ]
@@ -113,7 +113,7 @@
           "x": 0.55,
           "y": 0.1,
           "label": "Onglet Voix off",
-          "zoom": 1.55,
+          "zoom": 2,
           "dwellSec": 1.2
         }
       ]
@@ -154,7 +154,7 @@
           "x": 0.72,
           "y": 0.21,
           "label": "Générer",
-          "zoom": 1.55,
+          "zoom": 2,
           "dwellSec": 1.4
         }
       ]
@@ -190,7 +190,7 @@
           "x": 0.72,
           "y": 0.23,
           "label": "Choisis ton style",
-          "zoom": 1.5,
+          "zoom": 2,
           "dwellSec": 1.5
         }
       ]
@@ -221,7 +221,7 @@
           "x": 0.72,
           "y": 0.31,
           "label": "Frame iPhone 3D",
-          "zoom": 1.55,
+          "zoom": 2,
           "dwellSec": 1.4
         }
       ]
@@ -253,7 +253,7 @@
           "x": 0.31,
           "y": 0.52,
           "label": "Télécharger pour macOS",
-          "zoom": 1.55,
+          "zoom": 2,
           "dwellSec": 1.4
         }
       ]
