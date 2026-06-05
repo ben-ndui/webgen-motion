@@ -38,7 +38,12 @@ jobs:
           - os: macos-14
             triple: aarch64-apple-darwin
             rust-target: aarch64-apple-darwin
-          - os: macos-13
+          # Intel macOS : cross-compilé sur le runner Apple Silicon
+          # (macos-14). Les runners Intel `macos-13` sont raréfiés par
+          # GitHub → le job restait 24h "awaiting a runner" puis timeout.
+          # Le SDK macOS de macos-14 build x86_64 sans souci ; les
+          # sidecars x86_64 viennent du fetch `--all` ci-dessous.
+          - os: macos-14
             triple: x86_64-apple-darwin
             rust-target: x86_64-apple-darwin
           - os: windows-latest
@@ -51,7 +56,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Linux WebKit & build deps
         if: matrix.os == 'ubuntu-22.04'
@@ -63,9 +68,10 @@ jobs:
             librsvg2-dev \
             patchelf \
             libgtk-3-dev \
-            libsoup-3.0-dev
+            libsoup-3.0-dev \
+            libfuse2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
           cache: "npm"
@@ -126,8 +132,12 @@ jobs:
           echo "—— Identités codesigning visibles dans le keychain :"
           security find-identity -v -p codesigning build.keychain
 
+      # `--all` fetch les sidecars des 4 triples. Indispensable pour la
+      # leg Intel cross-compilée sur le runner arm (sinon elle bundlerait
+      # des binaires arm64 dans une app x86_64). Coût négligeable sur les
+      # autres legs (quelques tarballs Node/ffmpeg).
       - name: Fetch sidecar binaries (Node + ffmpeg)
-        run: node scripts/desktop-fetch-binaries.mjs
+        run: node scripts/desktop-fetch-binaries.mjs --all
 
       # Extrait la section CHANGELOG correspondante au tag (ex. v0.2.0
       # → cherche `## [0.2.0]` jusqu'au prochain `## [`). Vide si pas
@@ -154,6 +164,13 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Linux : les runners CI n'ont pas de FUSE → linuxdeploy (lui
+          # même une AppImage) plantait avec "failed to run linuxdeploy".
+          # EXTRACT_AND_RUN fait extraire les AppImages au lieu de monter
+          # FUSE ; NO_STRIP évite l'échec strip sur les sidecars bundlés.
+          # Ignorés par les builds macOS / Windows.
+          APPIMAGE_EXTRACT_AND_RUN: 1
+          NO_STRIP: true
           # macOS signing + notarization. Skipped silencieusement sur
           # Windows / Linux qui n'utilisent pas ces vars.
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}

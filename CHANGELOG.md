@@ -11,6 +11,16 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Fixed (CI — desktop-release matrix débloquée) · 2026-06-05
+
+Les runs des tags v0.2.1 et v0.2.2 échouaient (jamais de release auto). Diagnostic des jobs : 2 legs vertes (macOS arm64, Windows), 2 cassées.
+
+- **macOS Intel ne démarrait jamais** — la leg `macos-13` restait 24h "awaiting a runner" puis timeout (GitHub raréfie les runners Intel). → cross-compilée sur le runner Apple Silicon `macos-14` (`--target x86_64-apple-darwin`), sidecars x86_64 fournis par le fetch passé en `--all`.
+- **Linux `failed to run linuxdeploy`** — linuxdeploy (une AppImage) ne peut pas monter FUSE en CI. → `APPIMAGE_EXTRACT_AND_RUN=1` + `NO_STRIP=true` sur le build Tauri + `libfuse2` dans les deps apt.
+- **Actions sur Node 20 déprécié** (effectif depuis le 2 juin 2026) → `actions/checkout@v5` + `actions/setup-node@v5` (Node 24).
+
+À valider via `workflow_dispatch` avant de couper un tag de release.
+
 ### Fixed (Sprint 15.B — Hotspots validés visuellement + bug mapping) · 2026-06-05
 
 Premier rendu de bout en bout du pitch refondu (Sprint 15.A) + extraction de frames aux instants des hotspots → 3 défauts jamais détectés (faute de validation visuelle) corrigés :
