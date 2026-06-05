@@ -49,9 +49,15 @@ jobs:
           - os: windows-latest
             triple: x86_64-pc-windows-msvc
             rust-target: x86_64-pc-windows-msvc
+          # Linux : .deb seulement. L'AppImage casse en CI — Tauri
+          # télécharge son propre linuxdeploy qui ne respecte pas
+          # APPIMAGE_EXTRACT_AND_RUN → hang FUSE ~1h47 puis "failed to
+          # run linuxdeploy". Le .deb se bundle parfaitement et couvre
+          # Debian/Ubuntu. AppImage = follow-up.
           - os: ubuntu-22.04
             triple: x86_64-unknown-linux-gnu
             rust-target: x86_64-unknown-linux-gnu
+            extra-args: "--bundles deb"
 
     runs-on: ${{ matrix.os }}
 
@@ -185,7 +191,7 @@ jobs:
           releaseBody: ${{ steps.notes.outputs.notes }}
           releaseDraft: true
           prerelease: false
-          args: --target ${{ matrix.rust-target }}
+          args: --target ${{ matrix.rust-target }} ${{ matrix.extra-args }}
 
       # macOS uniquement : notarize + staple le .dmg que tauri-action
       # vient de produire. tauri-action v0 lance déjà notarytool si

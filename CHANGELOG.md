@@ -15,11 +15,11 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 Les runs des tags v0.2.1 et v0.2.2 échouaient (jamais de release auto). Diagnostic des jobs : 2 legs vertes (macOS arm64, Windows), 2 cassées.
 
-- **macOS Intel ne démarrait jamais** — la leg `macos-13` restait 24h "awaiting a runner" puis timeout (GitHub raréfie les runners Intel). → cross-compilée sur le runner Apple Silicon `macos-14` (`--target x86_64-apple-darwin`), sidecars x86_64 fournis par le fetch passé en `--all`.
-- **Linux `failed to run linuxdeploy`** — linuxdeploy (une AppImage) ne peut pas monter FUSE en CI. → `APPIMAGE_EXTRACT_AND_RUN=1` + `NO_STRIP=true` sur le build Tauri + `libfuse2` dans les deps apt.
+- **macOS Intel ne démarrait jamais** — la leg `macos-13` restait 24h "awaiting a runner" puis timeout (GitHub raréfie les runners Intel). → cross-compilée sur le runner Apple Silicon `macos-14` (`--target x86_64-apple-darwin`), sidecars x86_64 fournis par le fetch passé en `--all`. **Validé vert** (32 min).
+- **Linux : `.deb` seulement** — l'AppImage cassait (`failed to run linuxdeploy` : Tauri télécharge son propre linuxdeploy qui ne respecte pas `APPIMAGE_EXTRACT_AND_RUN` → hang FUSE ~1h47 puis échec). Le `.deb` se bundle parfaitement → leg Linux passée en `--bundles deb`. AppImage = follow-up. `libfuse2` + `APPIMAGE_EXTRACT_AND_RUN`/`NO_STRIP` gardés pour la reprise AppImage.
 - **Actions sur Node 20 déprécié** (effectif depuis le 2 juin 2026) → `actions/checkout@v5` + `actions/setup-node@v5` (Node 24).
 
-À valider via `workflow_dispatch` avant de couper un tag de release.
+Validé via `workflow_dispatch` (run 27041718729) : macOS arm64 ✓, macOS Intel ✓, Windows ✓ ; Linux AppImage KO → bascule `.deb` seul.
 
 ### Fixed (Sprint 15.B — Hotspots validés visuellement + bug mapping) · 2026-06-05
 
