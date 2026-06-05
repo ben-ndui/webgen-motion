@@ -103,8 +103,6 @@ interface PacingPerSection {
   trimRecommended: boolean;
 }
 
-main();
-
 function main(): void {
   const manifestPath = join(tourDir!, "manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf-8")) as {
@@ -328,3 +326,9 @@ function computePacing(
 // Silence lint warning : ffprobe import not used yet — keep the helper
 // available for chunk 5 when we'll need exact bg music duration.
 void runFfprobe;
+
+// Invoked at module end so every top-level const (FFMPEG_BIN, parsed
+// args, …) is initialized before main()'s closures dereference them.
+// Calling it earlier hit a TDZ : "Cannot access 'FFMPEG_BIN' before
+// initialization".
+main();
