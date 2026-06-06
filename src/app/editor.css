@@ -74,6 +74,16 @@
 .gm-editor .type-legend { display: flex; flex-wrap: wrap; gap: 7px; margin-top: var(--s-3); }
 
 /* ============================================================
+   AUDIO TAB
+   ============================================================ */
+.gm-editor input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--accent); }
+.gm-editor .vol-card { display: flex; flex-direction: column; gap: var(--s-5); }
+.gm-editor .vol-row { display: grid; gap: 8px; }
+.gm-editor .vol-row .vh { display: flex; align-items: center; justify-content: space-between; }
+.gm-editor .vol-row .vl { font-size: var(--t-sm); color: var(--ink); font-weight: 500; }
+.gm-editor .vol-row .vv { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+/* ============================================================
    CAPTURE TAB
    ============================================================ */
 .gm-editor .cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-4); }

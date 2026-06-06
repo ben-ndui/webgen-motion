@@ -80,11 +80,11 @@ export default function MusicLibrary({
   const usingTrackId = bgMusicId && bgMusicId !== "" ? bgMusicId : null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+    <div className="rounded-2xl border border-line bg-surface p-5 space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
-          <Music className="w-4 h-4 text-zinc-900" />
-          <h3 className="text-sm font-semibold text-slate-900">
+          <Music className="w-4 h-4 text-ink" />
+          <h3 className="text-sm font-semibold text-ink">
             Musique de fond
           </h3>
           {usingDefault && tourBgMusic && (
@@ -96,7 +96,7 @@ export default function MusicLibrary({
             </span>
           )}
           {usingNone && (
-            <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+            <span className="font-mono text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-surface-2 text-muted">
               sans musique
             </span>
           )}
@@ -127,7 +127,7 @@ export default function MusicLibrary({
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 text-white text-xs font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ink text-bg text-xs font-medium hover:opacity-90 transition-colors disabled:opacity-60"
           >
             {uploading ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -140,11 +140,11 @@ export default function MusicLibrary({
       </div>
 
       {tracks.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center">
-          <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
+        <div className="rounded-xl border border-dashed border-line-strong bg-bg-sunken px-5 py-8 text-center">
+          <p className="text-xs text-muted leading-relaxed max-w-md mx-auto">
             Aucun morceau dans la librairie. Upload un MP3 / WAV / M4A
             (royalty-free, ≤ 25 MB) ou laisse{" "}
-            <code className="font-mono text-slate-700">tour.bgMusic</code> du
+            <code className="font-mono text-ink-soft">tour.bgMusic</code> du
             catalogue prendre le relais.
           </p>
         </div>
@@ -160,15 +160,15 @@ export default function MusicLibrary({
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
                   selected
-                    ? "border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900/10"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                    ? "border-accent bg-surface-2 ring-1 ring-line"
+                    : "border-line bg-surface hover:border-line-strong"
                 }`}
               >
                 <span
                   className={`w-7 h-7 rounded-lg grid place-items-center flex-shrink-0 ${
                     selected
-                      ? "bg-zinc-900 text-white"
-                      : "bg-slate-100 text-slate-500"
+                      ? "bg-ink text-bg"
+                      : "bg-surface-2 text-muted"
                   }`}
                 >
                   {selected ? (
@@ -178,10 +178,10 @@ export default function MusicLibrary({
                   )}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">
+                  <p className="text-sm font-medium text-ink truncate">
                     {t.originalName}
                   </p>
-                  <p className="text-[11px] font-mono text-slate-500 truncate">
+                  <p className="text-[11px] font-mono text-muted truncate">
                     {t.durationSec > 0 ? `${formatDur(t.durationSec)} · ` : ""}
                     {(t.sizeBytes / 1024 / 1024).toFixed(1)} MB
                   </p>
@@ -204,7 +204,7 @@ export default function MusicLibrary({
                       handleDelete(t.id);
                     }
                   }}
-                  className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                  className="p-1.5 rounded-md text-faint hover:text-rose-600 hover:bg-rose-50 transition-colors"
                   title="Supprimer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -242,8 +242,8 @@ function Pill({
       title={hint}
       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
         active
-          ? "bg-zinc-900 text-white"
-          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          ? "bg-ink text-bg"
+          : "bg-surface-2 text-muted hover:bg-bg-sunken"
       }`}
     >
       {label}
