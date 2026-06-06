@@ -139,7 +139,15 @@ function CreateControl() {
   );
 }
 
-export default function HubApp({ tours, edition }: { tours: HubTour[]; edition: string }) {
+export default function HubApp({
+  tours,
+  edition,
+  configured = true,
+}: {
+  tours: HubTour[];
+  edition: string;
+  configured?: boolean;
+}) {
   const [fmt, setFmt] = useState<"all" | "16:9" | "9:16">("all");
   const [cat, setCat] = useState("all");
   const [q, setQ] = useState("");
@@ -205,6 +213,26 @@ export default function HubApp({ tours, edition }: { tours: HubTour[]; edition: 
             <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un tour…" />
             <kbd>/</kbd>
           </label>
+          {configured ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-accent bg-accent-soft border border-accent-line"
+              data-wm-id="hub.config-chip"
+              title="Voix off configurée"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden />
+              Configuré
+            </span>
+          ) : (
+            <Link
+              href="/setup"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted border border-line hover:border-line-strong hover:text-ink transition-colors"
+              data-wm-id="hub.config-chip"
+              title="Lance le wizard de configuration"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-line-strong" aria-hidden />
+              Setup
+            </Link>
+          )}
           <SettingsMenu />
           <ThemeToggle />
         </header>

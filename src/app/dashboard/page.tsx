@@ -6,6 +6,7 @@ import { getCategory } from "@/lib/motion-categories";
 import { formatDuration } from "@/lib/format-duration";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveEdition } from "@/lib/edition";
+import { getPublicConfig } from "@/lib/config";
 import HubApp, { type HubTour } from "../_components/hub-app";
 
 /**
@@ -27,6 +28,7 @@ function statusFor(id: string): HubTour["status"] {
 export default function DashboardPage() {
   const tours = getAllTours();
   const edition = resolveEdition().edition;
+  const configured = getPublicConfig().configured;
 
   const cards: HubTour[] = tours.map((t) => {
     const firstSection = t.steps.find((s) => s.type === "section");
@@ -47,5 +49,5 @@ export default function DashboardPage() {
     };
   });
 
-  return <HubApp tours={cards} edition={edition} />;
+  return <HubApp tours={cards} edition={edition} configured={configured} />;
 }
