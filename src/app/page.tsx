@@ -114,11 +114,15 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="video-frame reveal d2" data-wm-id="landing.demo.player">
-              <div className="video-ph">
-                <div className="video-play" role="button" aria-label="Lire la démo" tabIndex={0} />
-              </div>
-              <div className="video-meta">demo.mp4 · 100s · 1080p · 16:9</div>
-              <div className="video-note">slot · /demo.mp4</div>
+              <video
+                className="video-el"
+                src="/demo.mp4"
+                poster="/demo-poster.jpg"
+                controls
+                preload="metadata"
+                playsInline
+              />
+              <div className="video-meta">Pitch officiel · 102s · 1080p · 16:9</div>
             </div>
           </div>
         </section>

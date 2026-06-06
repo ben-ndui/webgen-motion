@@ -21,7 +21,7 @@
       "categoryId": "branding",
       "title": "GEN MOTION",
       "subtitle": "Vidéos motion design · local-first",
-      "dwellMs": 3200
+      "dwellMs": 4075
     },
     {
       "type": "wait",
@@ -31,7 +31,7 @@
       "type": "overlay",
       "text": "Transformer ton site web en motion design ?",
       "position": "center",
-      "dwellMs": 2500
+      "dwellMs": 4156
     },
     {
       "type": "wait",
@@ -42,7 +42,7 @@
       "categoryId": "motion",
       "title": "Landing cinétique",
       "subtitle": "Une promesse · 3 étapes",
-      "dwellMs": 2200,
+      "dwellMs": 4098,
       "hotspots": [
         {
           "t": 3.3,
@@ -74,7 +74,7 @@
       "title": "Hub",
       "subtitle": "Tous tes tours en un coup d'œil",
       "goto": "/dashboard",
-      "dwellMs": 2200,
+      "dwellMs": 3460,
       "hotspots": [
         {
           "t": 3.3,
@@ -106,7 +106,7 @@
       "title": "Éditeur visuel",
       "subtitle": "Contrôle complet sur ta timeline",
       "goto": "/tour/uzme-landing",
-      "dwellMs": 2200,
+      "dwellMs": 3355,
       "hotspots": [
         {
           "t": 3.5,
@@ -131,7 +131,7 @@
       "type": "overlay",
       "text": "5 onglets · Save toujours visible",
       "position": "top",
-      "dwellMs": 2500
+      "dwellMs": 3309
     },
     {
       "type": "wait",
@@ -147,10 +147,10 @@
       "categoryId": "ai",
       "title": "Voix off IA",
       "subtitle": "Cloud ou 100% local",
-      "dwellMs": 1800,
+      "dwellMs": 1277,
       "hotspots": [
         {
-          "t": 3.0,
+          "t": 3,
           "x": 0.719,
           "y": 0.353,
           "label": "Générer la voix off",
@@ -167,7 +167,7 @@
       "type": "overlay",
       "text": "ElevenLabs cloud · ou Voicebox local",
       "position": "center",
-      "dwellMs": 3000
+      "dwellMs": 4679
     },
     {
       "type": "wait",
@@ -183,10 +183,10 @@
       "categoryId": "motion",
       "title": "Compose",
       "subtitle": "4 presets · 1 clic",
-      "dwellMs": 1800,
+      "dwellMs": 6211,
       "hotspots": [
         {
-          "t": 3.0,
+          "t": 3,
           "x": 0.349,
           "y": 0.372,
           "label": "4 presets · 1 clic",
@@ -214,10 +214,10 @@
       "categoryId": "motion",
       "title": "Studio 3D",
       "subtitle": "Frames iPhone & MacBook · Beta",
-      "dwellMs": 1800,
+      "dwellMs": 4215,
       "hotspots": [
         {
-          "t": 3.0,
+          "t": 3,
           "x": 0.403,
           "y": 0.509,
           "label": "Frame 3D · Beta",
@@ -246,10 +246,10 @@
       "title": "Desktop notarisé",
       "subtitle": "macOS · Windows · Linux",
       "goto": "/download",
-      "dwellMs": 1800,
+      "dwellMs": 3761,
       "hotspots": [
         {
-          "t": 3.0,
+          "t": 3,
           "x": 0.308,
           "y": 0.525,
           "label": "Télécharger pour macOS",
@@ -278,7 +278,7 @@
       "title": "Clone · Configure · Génère",
       "subtitle": "GEN MOTION par Smooth & Design",
       "goto": "/",
-      "dwellMs": 2200
+      "dwellMs": 3947
     },
     {
       "type": "wait",
@@ -288,7 +288,7 @@
       "type": "overlay",
       "text": "Ton premier clip motion en 5 minutes",
       "position": "center",
-      "dwellMs": 3000
+      "dwellMs": 2589
     },
     {
       "type": "wait",
