@@ -5,7 +5,7 @@ import { cn } from "./cn";
  * Input — token-styled text input (Design System .field input).
  * Focus shows the accent border + --ring.
  */
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
+export type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
 export function Input({ className, ...props }: InputProps) {
   return (
