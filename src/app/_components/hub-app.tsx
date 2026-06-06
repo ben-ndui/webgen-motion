@@ -6,6 +6,7 @@ import ThemeToggle from "./theme-toggle";
 import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
+import TourCardMenu from "./tour-card-menu";
 
 export interface HubTour {
   id: string;
@@ -27,7 +28,6 @@ const Search = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const Film = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4" /></svg>;
 const Music = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg>;
 const Gear = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8M4.6 9a1.6 1.6 0 0 0-.3-1.8" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>;
-const Kebab = () => <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="12" cy="19" r="1.7" /></svg>;
 const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
 const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
 const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
@@ -69,13 +69,7 @@ function TourCard({ tour }: { tour: HubTour }) {
       <div className="tbody">
         <div className="tbody-top">
           <h3 className="tname">{tour.name}</h3>
-          <button
-            className="kebab"
-            aria-label="Plus d'actions"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          >
-            <Kebab />
-          </button>
+          <TourCardMenu tourId={tour.id} tourName={tour.name} />
         </div>
         <div className="tmeta">
           <span className="tcat">{tour.cat}</span>
