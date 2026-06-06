@@ -2,6 +2,7 @@ import Link from "next/link";
 import "./landing.css";
 import ThemeToggle from "./_components/theme-toggle";
 import LandingChrome, { type LandingSection } from "./_components/landing-chrome";
+import LandingDownloadCta from "./_components/landing-download-cta";
 
 /**
  * Landing — Phase 4 portage. Vertical scroll-snap sections (Direction A
@@ -80,10 +81,7 @@ export default function LandingPage() {
                 compose en clip vidéo prêt à publier. <b>Sur votre machine.</b> Sans cloud, sans vendor&nbsp;lock-in.
               </p>
               <div className="hero-cta reveal d3">
-                <Link className="btn btn-primary btn-lg" href={DOWNLOAD} data-wm-id="landing.hero.cta-download">
-                  <DownloadIcon />
-                  Télécharger pour macOS
-                </Link>
+                <LandingDownloadCta className="btn btn-primary btn-lg" data-wm-id="landing.hero.cta-download" />
                 <a className="btn btn-ghost btn-lg" href="#demo">Voir la démo</a>
               </div>
               <div className="spec-strip reveal d4" data-wm-id="landing.hero.specs">
@@ -211,10 +209,7 @@ export default function LandingPage() {
             <div className="kicker reveal">Ready to ship&nbsp;?</div>
             <h2 className="cta-title reveal d1">Votre prochain clip motion est à 5&nbsp;minutes.</h2>
             <div className="cta-row reveal d2">
-              <Link className="btn btn-primary btn-lg" href={DOWNLOAD}>
-                <DownloadIcon />
-                Télécharger pour macOS
-              </Link>
+              <LandingDownloadCta className="btn btn-primary btn-lg" data-wm-id="landing.cta.download" />
               <Link className="btn btn-ink btn-lg" href={DOWNLOAD}>Acheter Studio · $49</Link>
               <Link className="btn btn-ghost btn-lg" href="/help">Lire la documentation</Link>
             </div>

@@ -20,7 +20,7 @@ import { ArrowUpRight } from "lucide-react";
  *   - Linux → /api/download/linux-appimage (bientôt)
  */
 
-interface PlatformInfo {
+export interface PlatformInfo {
   href: string;
   label: string;
   available: boolean;
@@ -70,6 +70,15 @@ function detectPlatform(): PlatformInfo {
   return FALLBACK;
 }
 
+/** Detected platform, resolved client-side after mount (SSR-safe). */
+export function usePlatform(): PlatformInfo {
+  const [plat, setPlat] = useState<PlatformInfo>(FALLBACK);
+  useEffect(() => {
+    setPlat(detectPlatform());
+  }, []);
+  return plat;
+}
+
 export default function SmartDownloadButton({
   variant = "primary",
   className,
@@ -79,11 +88,7 @@ export default function SmartDownloadButton({
   className?: string;
   showHint?: boolean;
 }) {
-  const [plat, setPlat] = useState<PlatformInfo>(FALLBACK);
-
-  useEffect(() => {
-    setPlat(detectPlatform());
-  }, []);
+  const plat = usePlatform();
 
   const baseCls =
     variant === "primary"
