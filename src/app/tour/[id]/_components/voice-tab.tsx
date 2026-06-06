@@ -43,7 +43,7 @@ interface Props {
   onGenerateVo: () => void;
   onJumpToScript: () => void;
   onTourChange: (tour: TourEntry) => void;
-  onSaveTour: () => Promise<void> | void;
+  onSaveTour: (tour?: TourEntry) => Promise<void> | void;
   saveStatus: SaveStatus;
 }
 
@@ -178,9 +178,10 @@ export default function VoiceTab({
       });
       const updated = { ...tour, steps: nextSteps };
       onTourChange(updated);
-      // Persist immediately — the user expects the calibration to
-      // stick, no need to make them hit "Save".
-      await onSaveTour();
+      // Persist immediately — pass the freshly-calibrated tour so the
+      // save doesn't race the async setLocalTour (stale-closure would
+      // otherwise re-write the pre-calibration dwellMs).
+      await onSaveTour(updated);
       setCalibrate({
         kind: "done",
         updatedSteps: dwellByStep.size,

@@ -506,7 +506,11 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
     if (saveStatus === "saved") setSaveStatus("idle"); // mark dirty
   };
 
-  const saveTour = async () => {
+  // Accepts an explicit tour to persist so callers that just mutated
+  // state (e.g. Calibrer in the Voix off tab) don't race the async
+  // setLocalTour — passing `localTour` from a stale closure would
+  // otherwise re-save the pre-change values. Defaults to localTour.
+  const saveTour = async (tourToSave: TourEntry = localTour) => {
     setSaveStatus("saving");
     setSaveError(null);
     try {
@@ -515,7 +519,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tour: localTour }),
+          body: JSON.stringify({ tour: tourToSave }),
         },
       );
       const data = await res.json().catch(() => ({}));
