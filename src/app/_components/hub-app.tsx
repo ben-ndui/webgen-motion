@@ -7,6 +7,7 @@ import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
 import TourCardMenu from "./tour-card-menu";
+import SettingsMenu from "./settings-menu";
 
 export interface HubTour {
   id: string;
@@ -206,6 +207,7 @@ export default function HubApp({ tours, edition }: { tours: HubTour[]; edition: 
             <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un tour…" />
             <kbd>/</kbd>
           </label>
+          <SettingsMenu />
           <ThemeToggle />
         </header>
 
