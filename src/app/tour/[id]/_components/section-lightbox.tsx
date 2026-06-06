@@ -3,6 +3,7 @@
 import { Download, Scissors, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import RecaptureSectionButton from "./recapture-section-button";
 import SectionReplaceMp4Button from "./section-replace-mp4-button";
 import SectionTrimControls from "./section-trim-controls";
@@ -36,6 +37,12 @@ export default function SectionLightbox({
   onSectionUpdated: () => void;
 }) {
   const [trimOpen, setTrimOpen] = useState(false);
+  // Render into <body> via a portal so the fixed inset-0 backdrop covers
+  // the WHOLE app — otherwise a transformed ancestor (framer-motion
+  // wrappers, .route-fade) becomes the containing block and confines the
+  // overlay to the editor content area instead of the viewport.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
     if (!section) return;
     const onKey = (e: KeyboardEvent) => {
@@ -50,12 +57,13 @@ export default function SectionLightbox({
     if (!section) setTrimOpen(false);
   }, [section]);
 
+  if (!mounted) return null;
   if (!section) {
-    return <AnimatePresence />;
+    return createPortal(<AnimatePresence />, document.body);
   }
   const hasTrim =
     section.trimStartSec !== undefined || section.trimEndSec !== undefined;
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -190,6 +198,7 @@ export default function SectionLightbox({
           )}
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
