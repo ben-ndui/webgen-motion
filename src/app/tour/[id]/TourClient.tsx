@@ -7,17 +7,14 @@ import {
   ArrowLeft,
   Check,
   ChevronRight,
-  FileText,
   Film,
   HelpCircle,
   Loader2,
-  Mic,
-  Music,
   Save,
-  Video,
 } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
-import TabsStrip, { type TabDef } from "./_components/tabs-strip";
+import { Tabs } from "@/components/ui";
+import ThemeToggle from "../../_components/theme-toggle";
 import ScriptTab, { type SaveStatus } from "./_components/script-tab";
 import CaptureTab, {
   type CaptureState,
@@ -550,48 +547,48 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
   const audioBadge = bgMusicId && bgMusicId !== "" ? "•" : null;
   const voiceBadge = vo.kind === "ready" ? "•" : null;
   const composeBadge = compose.kind === "ready" ? "•" : null;
-  const TABS: TabDef<TabKey>[] = [
-    { id: "script", label: "Script", icon: FileText },
-    { id: "capture", label: "Capture", icon: Video, badge: captureBadge },
-    { id: "audio", label: "Audio", icon: Music, badge: audioBadge },
-    { id: "voice", label: "Voix off", icon: Mic, badge: voiceBadge },
-    { id: "compose", label: "Compose", icon: Film, badge: composeBadge },
+  const TABS = [
+    { value: "script" as TabKey, label: "Script", number: "01", badge: tour.steps.length },
+    { value: "capture" as TabKey, label: "Capture", number: "02", badge: captureBadge },
+    { value: "audio" as TabKey, label: "Audio", number: "03", badge: audioBadge },
+    { value: "voice" as TabKey, label: "Voix off", number: "04", badge: voiceBadge },
+    { value: "compose" as TabKey, label: "Compose", number: "05", badge: composeBadge },
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Sticky top bar — same as hub */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+      {/* Sticky top bar — token-driven (light/dark) */}
+      <header className="sticky top-0 z-50 bg-surface border-b border-line">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <Link
-                href="/"
-                className="shrink-0 flex items-center gap-2 group"
-              >
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 text-white grid place-items-center group-hover:bg-zinc-800 transition-colors">
+              <Link href="/" className="shrink-0 flex items-center gap-2 group">
+                <span className="w-7 h-7 rounded-md bg-ink text-bg grid place-items-center">
                   <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
                 </span>
-                <span className="font-semibold text-sm tracking-tight">
+                <span className="font-semibold text-sm tracking-tight text-ink">
                   GEN MOTION
                 </span>
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+              <ChevronRight className="w-3.5 h-3.5 text-faint" />
               <Link
                 href="/dashboard"
-                className="text-sm text-slate-500 font-medium hover:text-slate-900 transition-colors"
+                className="text-sm text-muted font-medium hover:text-ink transition-colors"
               >
                 Tours
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+              <ChevronRight className="w-3.5 h-3.5 text-faint" />
               <span
-                className="text-sm text-slate-900 font-medium truncate"
+                className="text-sm text-ink font-medium truncate"
                 title={tour.description}
               >
                 {tour.name}
               </span>
-              <span className="hidden md:inline text-[10px] font-mono text-slate-400 truncate">
-                {tour.id}
+              {/* meta pill : format · durée · étapes */}
+              <span className="hidden md:inline-flex items-center gap-2 ml-1 px-2.5 py-1 rounded-full border border-line bg-surface-2 font-mono text-[11px] text-muted">
+                <span>{tour.format ?? "16:9"}</span>
+                <span className="w-1 h-1 rounded-full bg-line-strong" />
+                <span>{tour.steps.length} étapes</span>
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -602,28 +599,29 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
               />
               <Link
                 href="/help"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted hover:text-ink hover:bg-surface-2 rounded-md transition-colors"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
                 Aide
               </Link>
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted hover:text-ink hover:bg-surface-2 rounded-md transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Retour
               </Link>
+              <ThemeToggle />
             </div>
           </div>
         </div>
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-6 space-y-5">
-        <TabsStrip<TabKey>
+        <Tabs<TabKey>
           tabs={TABS}
-          activeTab={activeTab}
-          onChange={setActiveTab}
+          value={activeTab}
+          onValueChange={setActiveTab}
         />
 
         {/* Tab panes */}
