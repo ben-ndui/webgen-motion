@@ -1,73 +1,145 @@
 @import "tailwindcss";
 
-/*
- * webgen-motion — design tokens mirroring the WebGen / Smooth & Design
- * admin dashboard.
- *
- * Light theme by default. Slate palette + blue-600 accent. No serif.
- * Compact, dense, viewport-fit (no scroll on the hub by design).
- */
+/* GEN MOTION design tokens. Source: design_handoff_genmotion/assets/tokens.css
+   OKLCH, hue 257 accent. Light canonical; [data-theme="dark"] re-themes.
+   @theme inline maps vars to utilities so flipping data-theme re-themes live.
+   The alias block keeps legacy token names working during migration. */
+
+/* dark variant driven by [data-theme="dark"] on html (manual toggle), not prefers. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;            /* slate-900 */
+  /* ---- Type families (Geist via next/font, câblé dans layout.tsx) ---- */
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), "SF Mono", ui-monospace, "Cascadia Code", monospace;
 
-  --surface: #ffffff;
-  --surface-muted: #f8fafc;          /* slate-50 */
-  --surface-subtle: #f1f5f9;         /* slate-100 */
+  /* ---- Type scale (fluide, desktop-first) ---- */
+  --t-mono: 0.75rem; --t-xs: 0.8125rem; --t-sm: 0.9375rem; --t-base: 1.0625rem;
+  --t-lg: 1.25rem; --t-xl: 1.625rem; --t-2xl: 2.25rem;
+  --t-3xl: clamp(2.75rem, 4.4vw, 3.75rem);
+  --t-display: clamp(3.25rem, 7vw, 6.5rem);
+  --lh-tight: 1.02; --lh-snug: 1.12; --lh-body: 1.55;
+  --tracking-tight: -0.03em; --tracking-display: -0.045em; --tracking-mono: 0.08em;
 
-  --border: #e2e8f0;                 /* slate-200 */
-  --border-strong: #cbd5e1;          /* slate-300 */
+  /* ---- Radius ---- */
+  --r-sm: 7px; --r-md: 11px; --r-lg: 16px; --r-xl: 22px; --r-2xl: 30px; --r-full: 999px;
 
-  --text: #0f172a;                   /* slate-900 */
-  --text-muted: #475569;             /* slate-600 */
-  --text-subtle: #64748b;            /* slate-500 */
-  --text-faint: #94a3b8;             /* slate-400 */
+  /* ---- Layout ---- */
+  --maxw: 1240px; --nav-h: 68px;
 
-  --accent: #2563eb;                 /* blue-600 — primary CTA */
-  --accent-hover: #1d4ed8;           /* blue-700 */
-  --accent-soft: #dbeafe;            /* blue-100 */
+  /* ============ LIGHT ============ */
+  --bg: oklch(99% 0.002 255); --bg-sunken: oklch(97.2% 0.003 255);
+  --surface: oklch(100% 0 0); --surface-2: oklch(98% 0.002 255);
+  --ink: oklch(20% 0.012 262); --ink-soft: oklch(34% 0.012 262);
+  --muted: oklch(48% 0.01 262); --faint: oklch(63% 0.008 262);
+  --line: oklch(91.5% 0.004 262); --line-soft: oklch(94.5% 0.003 262); --line-strong: oklch(86% 0.006 262);
 
-  --destructive: #ef4444;            /* red-500 */
-  --destructive-soft: #fee2e2;       /* red-100 */
+  --accent-h: 257;
+  --accent: oklch(55% 0.205 var(--accent-h)); --accent-hover: oklch(48% 0.205 var(--accent-h));
+  --accent-press: oklch(43% 0.2 var(--accent-h)); --accent-ink: oklch(98% 0.01 var(--accent-h));
+  --accent-soft: oklch(96.5% 0.028 var(--accent-h)); --accent-line: oklch(89% 0.06 var(--accent-h));
 
-  --success: #16a34a;                /* green-600 */
+  --shadow-xs: 0 1px 2px oklch(20% 0.02 262 / 0.05);
+  --shadow-sm: 0 1px 2px oklch(20% 0.02 262 / 0.05), 0 2px 6px oklch(20% 0.02 262 / 0.05);
+  --shadow-md: 0 4px 14px oklch(20% 0.03 262 / 0.08), 0 1px 3px oklch(20% 0.02 262 / 0.06);
+  --shadow-pop: 0 18px 48px oklch(20% 0.04 262 / 0.14), 0 4px 12px oklch(20% 0.03 262 / 0.08);
+  --ring: 0 0 0 3px oklch(55% 0.205 var(--accent-h) / 0.18);
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-2xl: 1.25rem;
+  /* motion intensity 0..1 */
+  --motion: 0.6;
+
+  /* ---- Alias transitoires (anciens noms encore référencés dans le code).
+         À SUPPRIMER en fin de migration (Phase 4). ---- */
+  --background: var(--bg); --foreground: var(--ink);
+  --surface-muted: var(--bg-sunken); --surface-subtle: var(--surface-2);
+  --text: var(--ink); --text-muted: var(--muted); --text-subtle: var(--muted); --text-faint: var(--faint);
+  --border: var(--line); --border-strong: var(--line-strong);
+}
+
+[data-theme="dark"] {
+  --bg: oklch(15% 0.006 262); --bg-sunken: oklch(12.5% 0.006 262);
+  --surface: oklch(18.5% 0.007 262); --surface-2: oklch(21% 0.008 262);
+  --ink: oklch(96.5% 0.004 262); --ink-soft: oklch(86% 0.006 262);
+  --muted: oklch(70% 0.008 262); --faint: oklch(56% 0.009 262);
+  --line: oklch(27% 0.008 262); --line-soft: oklch(23% 0.008 262); --line-strong: oklch(34% 0.01 262);
+
+  --accent: oklch(66% 0.18 var(--accent-h)); --accent-hover: oklch(72% 0.17 var(--accent-h));
+  --accent-press: oklch(60% 0.18 var(--accent-h)); --accent-ink: oklch(16% 0.02 var(--accent-h));
+  --accent-soft: oklch(28% 0.05 var(--accent-h)); --accent-line: oklch(38% 0.08 var(--accent-h));
+
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.4);
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4), 0 2px 6px oklch(0% 0 0 / 0.35);
+  --shadow-md: 0 6px 18px oklch(0% 0 0 / 0.5), 0 1px 3px oklch(0% 0 0 / 0.4);
+  --shadow-pop: 0 24px 60px oklch(0% 0 0 / 0.6), 0 6px 16px oklch(0% 0 0 / 0.45);
+  --ring: 0 0 0 3px oklch(66% 0.18 var(--accent-h) / 0.32);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* couleurs -> utilitaires bg / text / border */
+  --color-bg: var(--bg);
+  --color-bg-sunken: var(--bg-sunken);
   --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
-  --color-surface-subtle: var(--surface-subtle);
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-  --color-text: var(--text);
-  --color-text-muted: var(--text-muted);
-  --color-text-subtle: var(--text-subtle);
-  --color-text-faint: var(--text-faint);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
-  --color-destructive: var(--destructive);
-  --color-destructive-soft: var(--destructive-soft);
-  --color-success: var(--success);
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-2xl: var(--radius-2xl);
+  --color-accent-line: var(--accent-line);
+
+  /* ---- alias couleurs (transitoires) ---- */
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-surface-muted: var(--bg-sunken);
+  --color-surface-subtle: var(--surface-2);
+  --color-text: var(--ink);
+  --color-text-muted: var(--muted);
+  --color-text-subtle: var(--muted);
+  --color-text-faint: var(--faint);
+  --color-border: var(--line);
+  --color-border-strong: var(--line-strong);
+
+  /* ---- fonts ---- */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* ---- échelle typo (override défauts + ajout mono/display) ---- */
+  --text-mono: var(--t-mono);          --text-mono--line-height: 1.2;
+  --text-xs: var(--t-xs);              --text-xs--line-height: 1.4;
+  --text-sm: var(--t-sm);             --text-sm--line-height: var(--lh-body);
+  --text-base: var(--t-base);         --text-base--line-height: var(--lh-body);
+  --text-lg: var(--t-lg);             --text-lg--line-height: var(--lh-snug);
+  --text-xl: var(--t-xl);             --text-xl--line-height: var(--lh-snug);
+  --text-2xl: var(--t-2xl);           --text-2xl--line-height: var(--lh-snug);
+  --text-3xl: var(--t-3xl);           --text-3xl--line-height: var(--lh-tight);
+  --text-display: var(--t-display);   --text-display--line-height: var(--lh-tight);
+
+  /* ---- radius ---- */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-full: var(--r-full);
+
+  /* ---- shadows ---- */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-pop: var(--shadow-pop);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
-    sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -94,7 +166,7 @@ html {
  */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.35) transparent; /* slate-500 @ 35% */
+  scrollbar-color: oklch(48% 0.01 262 / 0.35) transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
@@ -104,14 +176,21 @@ html {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 116, 139, 0.28);
+  background-color: oklch(48% 0.01 262 / 0.28);
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 9999px;
   transition: background-color 200ms ease;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.55);
+  background-color: oklch(48% 0.01 262 / 0.55);
+}
+
+/* Focus ring token — opt-in via .ring-token (les primitives Phase 3 l'appliqueront).
+   Volontairement pas global pour ne pas modifier le focus existant en Phase 1. */
+.ring-token:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
 }
 
 /* Scroll-snapping utility for horizontal carousels (markers list, etc.) */
