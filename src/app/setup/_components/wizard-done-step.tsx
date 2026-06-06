@@ -33,7 +33,7 @@ export default function WizardDoneStep({
       className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-8 space-y-4 sm:space-y-5"
     >
       <div className="flex items-start gap-4">
-        <span className="w-10 h-10 rounded-xl bg-emerald-600 text-white grid place-items-center flex-shrink-0">
+        <span className="w-10 h-10 rounded-xl bg-emerald-600 text-bg grid place-items-center flex-shrink-0">
           <Check className="w-5 h-5" strokeWidth={2.5} />
         </span>
         <div>
@@ -58,9 +58,9 @@ export default function WizardDoneStep({
 
       <div
         data-wm-id="setup.done.summary"
-        className="rounded-xl border border-emerald-200 bg-white p-4 space-y-2"
+        className="rounded-xl border border-emerald-200 bg-surface p-4 space-y-2"
       >
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
           Source active
         </p>
         {backend === "voicebox" ? (
@@ -83,7 +83,7 @@ export default function WizardDoneStep({
               />
             </>
           ) : (
-            <p className="text-xs text-slate-700 leading-relaxed">
+            <p className="text-xs text-ink-soft leading-relaxed">
               Voicebox sélectionné mais aucune voix renseignée — clique{" "}
               <strong>Modifier</strong>.
             </p>
@@ -94,9 +94,9 @@ export default function WizardDoneStep({
             <Row label="Voice ID" value={voiceId ?? "—"} source="config.json" />
           </>
         ) : (
-          <p className="text-xs text-slate-700 leading-relaxed">
+          <p className="text-xs text-ink-soft leading-relaxed">
             Configuré via{" "}
-            <code className="font-mono bg-slate-100 px-1 py-0.5 rounded">
+            <code className="font-mono bg-surface-2 px-1 py-0.5 rounded">
               .env.local
             </code>{" "}
             du repo (pas via le wizard). Ces valeurs marchent — si tu veux les
@@ -116,7 +116,7 @@ export default function WizardDoneStep({
         <button
           data-wm-id="setup.done.finish"
           onClick={onFinish}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors"
         >
           Aller au hub
           <ArrowRight className="w-4 h-4" />
@@ -137,11 +137,11 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 text-xs">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-mono text-slate-900 truncate flex-1 text-right">
+      <span className="text-muted">{label}</span>
+      <span className="font-mono text-ink truncate flex-1 text-right">
         {value}
       </span>
-      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">
+      <span className="font-mono text-[10px] uppercase tracking-wider text-faint">
         {source}
       </span>
     </div>

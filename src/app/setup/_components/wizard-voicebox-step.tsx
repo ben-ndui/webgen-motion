@@ -42,22 +42,22 @@ export default function WizardVoiceboxStep({
   return (
     <section
       data-wm-id="setup.step.voicebox"
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 space-y-5 sm:space-y-6"
+      className="rounded-2xl border border-line bg-surface p-5 sm:p-8 space-y-5 sm:space-y-6"
     >
       <div className="flex items-start gap-4">
-        <span className="w-10 h-10 rounded-xl bg-zinc-900 text-white grid place-items-center flex-shrink-0">
+        <span className="w-10 h-10 rounded-xl bg-ink text-bg grid place-items-center flex-shrink-0">
           <Mic className="w-5 h-5" />
         </span>
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
             Voicebox
           </p>
-          <h2 className="text-xl font-semibold text-slate-900 tracking-tight mb-1">
+          <h2 className="text-xl font-semibold text-ink tracking-tight mb-1">
             Voix locale
           </h2>
-          <p className="text-sm text-slate-600 leading-relaxed">
+          <p className="text-sm text-muted leading-relaxed">
             On détecte automatiquement Voicebox sur{" "}
-            <code className="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">
+            <code className="font-mono text-xs bg-surface-2 px-1 py-0.5 rounded">
               127.0.0.1:17493
             </code>{" "}
             et on liste tes voix existantes. Crée-en une dans l&apos;app desktop
@@ -66,7 +66,7 @@ export default function WizardVoiceboxStep({
               href="https://github.com/jamiepine/voicebox"
               target="_blank"
               rel="noreferrer"
-              className="text-zinc-900 font-medium underline underline-offset-2"
+              className="text-ink font-medium underline underline-offset-2"
             >
               github.com/jamiepine/voicebox
             </a>
@@ -79,10 +79,10 @@ export default function WizardVoiceboxStep({
       {status === "checking" && (
         <div
           data-wm-id="setup.voicebox.status-checking"
-          className="rounded-xl border border-slate-200 bg-slate-50 p-3 flex items-center gap-2"
+          className="rounded-xl border border-line bg-bg-sunken p-3 flex items-center gap-2"
         >
-          <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
-          <p className="text-xs text-slate-700">Détection de Voicebox…</p>
+          <Loader2 className="w-4 h-4 animate-spin text-muted" />
+          <p className="text-xs text-ink-soft">Détection de Voicebox…</p>
         </div>
       )}
       {status === "unreachable" && (
@@ -119,7 +119,7 @@ export default function WizardVoiceboxStep({
       <div className="space-y-4">
         {/* URL */}
         <div>
-          <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1.5 flex items-center gap-1.5">
+          <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1.5 flex items-center gap-1.5">
             URL Voicebox
           </label>
           <input
@@ -128,13 +128,13 @@ export default function WizardVoiceboxStep({
             value={url}
             onChange={(e) => onUrl(e.target.value)}
             placeholder="http://127.0.0.1:17493"
-            className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+            className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
           />
         </div>
 
         {/* Profile dropdown OR UUID fallback */}
         <div>
-          <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1.5 flex items-center gap-1.5">
+          <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1.5 flex items-center gap-1.5">
             <Mic className="w-3 h-3" />
             Voix
           </label>
@@ -143,7 +143,7 @@ export default function WizardVoiceboxStep({
               data-wm-id="setup.voicebox.profile-select"
               value={profileId}
               onChange={(e) => onProfileId(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             >
               <option value="">— Choisis ta voix —</option>
               {profiles.map((p) => (
@@ -161,7 +161,7 @@ export default function WizardVoiceboxStep({
               value={profileId}
               onChange={(e) => onProfileId(e.target.value)}
               placeholder="profile UUID (fallback si non détecté)"
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             />
           )}
         </div>
@@ -169,14 +169,14 @@ export default function WizardVoiceboxStep({
         {/* Engine + model size */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1.5 block">
+            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1.5 block">
               Engine
             </label>
             <select
               data-wm-id="setup.voicebox.engine"
               value={engine}
               onChange={(e) => onEngine(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             >
               <option value="qwen">qwen (qualité)</option>
               <option value="qwen_custom_voice">qwen_custom_voice</option>
@@ -188,14 +188,14 @@ export default function WizardVoiceboxStep({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1.5 block">
+            <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1.5 block">
               Size
             </label>
             <select
               data-wm-id="setup.voicebox.size"
               value={modelSize}
               onChange={(e) => onModelSize(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-1"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             >
               <option value="0.6B">0.6B</option>
               <option value="1B">1B</option>
@@ -220,7 +220,7 @@ export default function WizardVoiceboxStep({
           data-wm-id="setup.voicebox.prev"
           onClick={onPrev}
           disabled={saving}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted hover:text-ink hover:bg-surface-2 rounded-lg transition-colors disabled:opacity-50"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Retour
@@ -229,7 +229,7 @@ export default function WizardVoiceboxStep({
           data-wm-id="setup.voicebox.save"
           onClick={onSave}
           disabled={saving || !profileId.trim()}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving ? (
             <Loader2 className="w-4 h-4 animate-spin" />

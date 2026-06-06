@@ -10,7 +10,7 @@ export default function CGU() {
   const p = LEGAL.publisher;
   return (
     <>
-      <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-3">
+      <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-faint mb-3">
         Document légal · maj {LEGAL.lastUpdated}
       </p>
       <h1>Conditions Générales d&apos;Utilisation</h1>

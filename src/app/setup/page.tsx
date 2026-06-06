@@ -1,5 +1,6 @@
 "use client";
 
+import "../pages.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -177,41 +178,14 @@ export default function SetupPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" data-wm-id="setup.page">
-      {/* Top bar */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="max-w-3xl xl:max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link
-              href="/"
-              data-wm-id="setup.header.home"
-              className="flex items-center gap-2 group"
-            >
-              <span className="w-7 h-7 rounded-lg bg-zinc-900 text-white grid place-items-center group-hover:bg-zinc-800 transition-colors">
-                <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
-              </span>
-              <span className="font-semibold text-sm tracking-tight">
-                GEN MOTION
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-300 ml-1" />
-              <span className="text-sm text-slate-500 font-medium">Setup</span>
-            </Link>
-            <Link
-              href="/dashboard"
-              data-wm-id="setup.header.dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Retour au hub
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-3xl xl:max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6 sm:space-y-8">
-        {/* Progress dots — 4 slots since the user picks one of two
-         *  branches at the Backend step. */}
-        <ProgressDots step={step} />
+    <div className="gm-page" data-wm-id="setup.page">
+      <div className="wiz-stage">
+        <main className="wiz space-y-6">
+          <Link href="/" className="wiz-brand" data-wm-id="setup.header.home">
+            <span className="brand-mark" aria-hidden />
+            <span className="brand-name">GEN&nbsp;MOTION</span>
+          </Link>
+          <WizSteps step={step} />
 
         {/* Step content */}
         {step === "welcome" && (
@@ -279,49 +253,31 @@ export default function SetupPage() {
             }}
           />
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
 
-/** Progress dots — 4 slots, current = wider zinc, done = emerald,
- *  upcoming = slate. Reste inline parce que purement visuel et
- *  utilisé uniquement ici. */
-function ProgressDots({ step }: { step: WizardStep }) {
+/** Wizard stepper — 4 slots (Bienvenue · Backend · Voix · Terminé).
+ *  Handoff wiz-dot design : done = accent ✓, active = accent ring. */
+function WizSteps({ step }: { step: WizardStep }) {
+  const order: WizardStep[][] = [
+    ["welcome"],
+    ["backend"],
+    ["elevenlabs", "voicebox"],
+    ["done"],
+  ];
+  const cur = order.findIndex((arr) => arr.includes(step));
   return (
-    <div className="flex items-center justify-center gap-2" data-wm-id="setup.progress">
-      {(["welcome", "backend", "branch", "done"] as const).map((slot, i) => {
-        const slotMatches = (s: WizardStep) => {
-          if (slot === "welcome") return s === "welcome";
-          if (slot === "backend") return s === "backend";
-          if (slot === "branch") return s === "elevenlabs" || s === "voicebox";
-          return s === "done";
-        };
-        const order: WizardStep[][] = [
-          ["welcome"],
-          ["backend"],
-          ["elevenlabs", "voicebox"],
-          ["done"],
-        ];
-        const currentIdx = order.findIndex((arr) => arr.includes(step));
-        const state =
-          i < currentIdx
-            ? "done"
-            : slotMatches(step)
-              ? "current"
-              : "upcoming";
+    <div className="wiz-steps" data-wm-id="setup.progress">
+      {order.map((_, i) => {
+        const st = i < cur ? "done" : i === cur ? "active" : "";
         return (
-          <span
-            key={slot}
-            data-wm-id={`setup.progress.slot-${slot}`}
-            className={`h-1.5 rounded-full transition-all ${
-              state === "current"
-                ? "w-12 bg-zinc-900"
-                : state === "done"
-                  ? "w-6 bg-emerald-500"
-                  : "w-6 bg-slate-200"
-            }`}
-          />
+          <div key={i} className={"wiz-dot " + st} data-wm-id={`setup.progress.slot-${i}`}>
+            <span className="b">{i < cur ? "✓" : i + 1}</span>
+            <span className="line" />
+          </div>
         );
       })}
     </div>

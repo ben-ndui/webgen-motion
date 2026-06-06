@@ -28,23 +28,23 @@ export default function WizardWelcomeStep({
   return (
     <section
       data-wm-id="setup.step.welcome"
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-8 space-y-5 sm:space-y-6"
+      className="rounded-2xl border border-line bg-surface p-5 sm:p-8 space-y-5 sm:space-y-6"
     >
       <div className="flex items-start gap-4">
-        <span className="w-10 h-10 rounded-xl bg-zinc-900 text-white grid place-items-center flex-shrink-0">
+        <span className="w-10 h-10 rounded-xl bg-ink text-bg grid place-items-center flex-shrink-0">
           <Sparkles className="w-5 h-5" />
         </span>
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
             Bienvenue
           </p>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight mb-2">
+          <h1 className="text-2xl font-semibold text-ink tracking-tight mb-2">
             Setup GEN MOTION
           </h1>
-          <p className="text-sm text-slate-600 leading-relaxed">
+          <p className="text-sm text-muted leading-relaxed">
             En 2 minutes : on connecte ta voix ElevenLabs pour la voix off
             automatisée. Tout reste local — config dans{" "}
-            <code className="font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">
+            <code className="font-mono text-xs bg-surface-2 px-1 py-0.5 rounded">
               ~/.webgen-motion/config.json
             </code>
             , clés jamais commit, pas de cloud.
@@ -78,14 +78,14 @@ export default function WizardWelcomeStep({
         <button
           data-wm-id="setup.welcome.skip"
           onClick={onSkip}
-          className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
+          className="text-sm text-muted hover:text-ink transition-colors"
         >
           Passer le setup
         </button>
         <button
           data-wm-id="setup.welcome.continue"
           onClick={onContinue}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors"
         >
           Continuer
           <ArrowRight className="w-4 h-4" />
