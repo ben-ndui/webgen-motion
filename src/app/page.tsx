@@ -2,7 +2,7 @@ import Link from "next/link";
 import "./landing.css";
 import ThemeToggle from "./_components/theme-toggle";
 import LandingChrome, { type LandingSection } from "./_components/landing-chrome";
-import LandingDownloadCta from "./_components/landing-download-cta";
+import LandingPrimaryCta from "./_components/landing-primary-cta";
 
 /**
  * Landing — Phase 4 portage. Vertical scroll-snap sections (Direction A
@@ -21,16 +21,6 @@ const SECTIONS: LandingSection[] = [
 ];
 
 const DOWNLOAD = "/download";
-
-function DownloadIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 3v12" />
-      <path d="m7 11 5 5 5-5" />
-      <path d="M5 21h14" />
-    </svg>
-  );
-}
 
 function Check() {
   return (
@@ -59,10 +49,7 @@ export default function LandingPage() {
         </div>
         <div className="nav-tools">
           <ThemeToggle />
-          <Link className="btn btn-primary" href={DOWNLOAD} data-wm-id="landing.nav.cta-download">
-            <DownloadIcon />
-            Télécharger
-          </Link>
+          <LandingPrimaryCta className="btn btn-primary" label="short" data-wm-id="landing.nav.cta-download" />
         </div>
       </nav>
 
@@ -81,7 +68,7 @@ export default function LandingPage() {
                 compose en clip vidéo prêt à publier. <b>Sur votre machine.</b> Sans cloud, sans vendor&nbsp;lock-in.
               </p>
               <div className="hero-cta reveal d3">
-                <LandingDownloadCta className="btn btn-primary btn-lg" data-wm-id="landing.hero.cta-download" />
+                <LandingPrimaryCta className="btn btn-primary btn-lg" data-wm-id="landing.hero.cta-download" />
                 <a className="btn btn-ghost btn-lg" href="#demo">Voir la démo</a>
               </div>
               <div className="spec-strip reveal d4" data-wm-id="landing.hero.specs">
@@ -184,7 +171,7 @@ export default function LandingPage() {
                   <li><Check /> Agent IA (BYOK Claude)</li>
                   <li><Check /> Scaffold, recapture, trim, reorder</li>
                 </ul>
-                <Link className="btn btn-soft btn-lg btn-block" href={DOWNLOAD}>Télécharger</Link>
+                <LandingPrimaryCta className="btn btn-soft btn-lg btn-block" label="short" data-wm-id="landing.pricing.community-cta" />
               </article>
               <article className="tier featured reveal d2" data-wm-id="landing.pricing.studio">
                 <span className="tier-name">Studio</span>
@@ -213,7 +200,7 @@ export default function LandingPage() {
             <div className="kicker reveal">Ready to ship&nbsp;?</div>
             <h2 className="cta-title reveal d1">Votre prochain clip motion est à 5&nbsp;minutes.</h2>
             <div className="cta-row reveal d2">
-              <LandingDownloadCta className="btn btn-primary btn-lg" data-wm-id="landing.cta.download" />
+              <LandingPrimaryCta className="btn btn-primary btn-lg" data-wm-id="landing.cta.download" />
               <Link className="btn btn-ink btn-lg" href={DOWNLOAD}>Acheter Studio · $49</Link>
               <Link className="btn btn-ghost btn-lg" href="/help">Lire la documentation</Link>
             </div>
