@@ -126,7 +126,7 @@ export default function NewTourButton({
         <button
           data-wm-id="dashboard.new-tour-button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors"
         >
           <Sparkles className="w-3.5 h-3.5" />
           Nouveau tour
@@ -135,25 +135,25 @@ export default function NewTourButton({
 
       {open && (
         <div
-          className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-5"
+            className="bg-surface rounded-2xl shadow-2xl border border-line w-full max-w-md p-6 space-y-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
                   Nouveau
                 </p>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-ink">
                   Créer un tour
                 </h2>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-slate-700"
+                className="text-faint hover:text-ink-soft"
                 aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
@@ -167,7 +167,7 @@ export default function NewTourButton({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Mon projet · Landing"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSubmit();
                   }}
@@ -185,7 +185,7 @@ export default function NewTourButton({
                     setId(slugify(e.target.value));
                   }}
                   placeholder="mon-projet-landing"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSubmit();
                   }}
@@ -221,14 +221,14 @@ export default function NewTourButton({
               <button
                 onClick={() => setOpen(false)}
                 disabled={busy}
-                className="px-4 py-2 rounded-full text-sm text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-full text-sm text-ink-soft hover:bg-surface-2 transition-colors disabled:opacity-50"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={busy}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {busy ? (
                   <>
@@ -244,7 +244,7 @@ export default function NewTourButton({
               </button>
             </div>
 
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-[11px] text-muted leading-relaxed">
               Le fichier <code className="font-mono">tours/{id || "<id>"}.json</code>{" "}
               sera créé avec un squelette minimal. Tu pourras éditer les
               steps + la voix off depuis le tab Script.
@@ -268,10 +268,10 @@ function Field({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1">
-        <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+        <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
           {label}
         </label>
-        {hint && <span className="text-[10px] text-slate-400">{hint}</span>}
+        {hint && <span className="text-[10px] text-faint">{hint}</span>}
       </div>
       {children}
     </div>
@@ -294,8 +294,8 @@ function FormatPill({
       onClick={onClick}
       className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
         active
-          ? "bg-zinc-900 text-white"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          ? "bg-ink text-bg"
+          : "bg-surface-2 text-ink-soft hover:bg-surface-2"
       }`}
     >
       <Icon className="w-3.5 h-3.5" />

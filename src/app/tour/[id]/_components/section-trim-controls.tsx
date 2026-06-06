@@ -100,16 +100,16 @@ export default function SectionTrimControls({
   const endPct = (end / capturedDurationSec) * 100;
 
   return (
-    <div className="p-3 border-t border-slate-100 bg-slate-50 space-y-3">
+    <div className="p-3 border-t border-line bg-bg-sunken space-y-3">
       <div className="flex items-center gap-2">
-        <Scissors className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 flex-1">
+        <Scissors className="w-3.5 h-3.5 text-muted flex-shrink-0" />
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted flex-1">
           Trim
         </p>
-        <span className="text-[11px] font-mono text-slate-600">
+        <span className="text-[11px] font-mono text-muted">
           {trimmedSec.toFixed(1)}s
           {savedSec > 0.1 && (
-            <span className="text-slate-400 ml-1">
+            <span className="text-faint ml-1">
               (-{savedSec.toFixed(1)}s)
             </span>
           )}
@@ -127,9 +127,9 @@ export default function SectionTrimControls({
 
       {/* Dual-range slider */}
       <div className="relative h-7">
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-slate-300 rounded-full" />
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-line-strong rounded-full" />
         <div
-          className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-zinc-900 rounded-full"
+          className="absolute top-1/2 -translate-y-1/2 h-1.5 bg-ink rounded-full"
           style={{
             left: `${startPct}%`,
             right: `${100 - endPct}%`,
@@ -145,7 +145,7 @@ export default function SectionTrimControls({
             const v = parseFloat(e.target.value);
             if (v < end - 0.2) setStart(v);
           }}
-          className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-zinc-900 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing"
+          className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-line-strong [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing"
         />
         <input
           type="range"
@@ -160,11 +160,11 @@ export default function SectionTrimControls({
               seek(Math.max(0, v - 0.1));
             }
           }}
-          className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-zinc-900 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing"
+          className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-line-strong [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-grab [&::-webkit-slider-thumb]:active:cursor-grabbing"
         />
       </div>
 
-      <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-slate-600">
+      <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-muted">
         <span>{start.toFixed(1)}s</span>
         <span>{end.toFixed(1)}s</span>
       </div>
@@ -178,7 +178,7 @@ export default function SectionTrimControls({
           type="button"
           onClick={reset}
           disabled={saving}
-          className="text-[11px] font-medium text-slate-600 hover:text-slate-900 px-2 py-1 rounded-md hover:bg-slate-200 transition-colors disabled:opacity-50"
+          className="text-[11px] font-medium text-muted hover:text-ink px-2 py-1 rounded-md hover:bg-surface-2 transition-colors disabled:opacity-50"
         >
           Reset
         </button>
@@ -187,7 +187,7 @@ export default function SectionTrimControls({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="text-[11px] text-slate-600 hover:text-slate-900 px-2 py-1 rounded-md transition-colors disabled:opacity-50"
+            className="text-[11px] text-muted hover:text-ink px-2 py-1 rounded-md transition-colors disabled:opacity-50"
           >
             Annuler
           </button>
@@ -195,7 +195,7 @@ export default function SectionTrimControls({
             type="button"
             onClick={save}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white bg-zinc-900 hover:bg-zinc-800 px-3 py-1 rounded-md transition-colors disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium text-bg bg-ink hover:opacity-90 px-3 py-1 rounded-md transition-colors disabled:opacity-60"
           >
             {saving && <Loader2 className="w-3 h-3 animate-spin" />}
             {saving ? "Save…" : "Save"}

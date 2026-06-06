@@ -103,8 +103,8 @@ export default function RecaptureSectionButton({
 
   const cls =
     variant === "glass"
-      ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/15 disabled:opacity-60 disabled:cursor-wait"
-      : "inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait";
+      ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-bg/80 hover:text-bg transition-colors px-3 py-1.5 rounded-full hover:bg-surface/15 disabled:opacity-60 disabled:cursor-wait"
+      : "inline-flex items-center gap-1.5 text-[11px] font-medium text-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-2 disabled:opacity-60 disabled:cursor-wait";
   return (
     <>
       <button
@@ -122,7 +122,7 @@ export default function RecaptureSectionButton({
         {busy ? "Recapture…" : "Recapturer"}
       </button>
       {busy && phase && (
-        <p className="text-[10px] text-slate-400 mt-1 truncate" title={phase}>
+        <p className="text-[10px] text-faint mt-1 truncate" title={phase}>
           {phase}
         </p>
       )}

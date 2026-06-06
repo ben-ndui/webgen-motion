@@ -41,8 +41,8 @@ export default function BuyButton({
 
   const baseCls =
     variant === "primary"
-      ? "inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 disabled:bg-zinc-400 disabled:cursor-not-allowed transition-colors"
-      : "inline-flex items-center gap-2 px-5 py-3 border border-zinc-300 text-zinc-950 text-sm font-medium hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
+      ? "inline-flex items-center gap-2 px-6 py-3.5 bg-ink text-bg text-sm font-medium hover:opacity-90 disabled:bg-line-strong disabled:cursor-not-allowed transition-colors"
+      : "inline-flex items-center gap-2 px-5 py-3 border border-line-strong text-ink text-sm font-medium hover:bg-bg-sunken disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
 
   return (
     <div className="inline-flex flex-col items-start gap-1">

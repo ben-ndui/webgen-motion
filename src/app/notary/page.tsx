@@ -151,20 +151,20 @@ export default function NotaryPage() {
   }, [submissions]);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <header className="border-b border-slate-200">
+    <div className="min-h-screen bg-surface text-ink">
+      <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3 text-sm">
             <Link
               href="/dashboard"
-              className="text-slate-500 hover:text-slate-900 transition"
+              className="text-muted hover:text-ink transition"
             >
               ← Tours
             </Link>
-            <span className="text-slate-300">/</span>
+            <span className="text-faint">/</span>
             <span className="font-semibold">Notary</span>
           </div>
-          <div className="text-xs text-slate-500 flex items-center gap-3">
+          <div className="text-xs text-muted flex items-center gap-3">
             {lastFetched && (
               <span>
                 Mis à jour à {lastFetched.toLocaleTimeString("fr-FR")}
@@ -174,7 +174,7 @@ export default function NotaryPage() {
               data-wm-id="notary.refresh"
               onClick={fetchHistory}
               disabled={fetching}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-300 hover:bg-slate-50 transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-line-strong hover:bg-bg-sunken transition disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${fetching ? "animate-spin" : ""}`}
@@ -190,17 +190,17 @@ export default function NotaryPage() {
         {/* Editorial header — matches landing DA */}
         <div className="mb-12 grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-7">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-3">
+            <div className="text-xs uppercase tracking-[0.2em] text-faint mb-3">
               01 — Apple Notary Service
             </div>
             <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
               Soumissions
               <br />
-              <span className="text-slate-400">notarization.</span>
+              <span className="text-faint">notarization.</span>
             </h1>
           </div>
           <div className="col-span-12 md:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               Statut en temps réel des soumissions Apple. Auto-refresh 30 s
               tant qu'une soumission est <em>In Progress</em>. Click une ligne
               Invalid pour voir le log détaillé Apple (per-binary issues).
@@ -214,7 +214,7 @@ export default function NotaryPage() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-4 gap-px bg-slate-200 border border-slate-200 rounded-xl overflow-hidden mb-10"
+            className="grid grid-cols-4 gap-px bg-surface-2 border border-line rounded-xl overflow-hidden mb-10"
           >
             <StatCell label="Total" value={stats.total} />
             <StatCell
@@ -237,14 +237,14 @@ export default function NotaryPage() {
         {submissions === null && !error && <SkeletonTable />}
 
         {submissions !== null && submissions.length === 0 && (
-          <div className="text-center py-16 text-slate-500 text-sm">
+          <div className="text-center py-16 text-muted text-sm">
             Aucune soumission.
           </div>
         )}
 
         {submissions && submissions.length > 0 && (
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 grid grid-cols-12 gap-4">
+          <div className="border border-line rounded-xl overflow-hidden">
+            <div className="bg-bg-sunken px-5 py-3 border-b border-line text-xs uppercase tracking-wide text-muted grid grid-cols-12 gap-4">
               <div className="col-span-6 font-medium">Soumission</div>
               <div className="col-span-3 font-medium">Date</div>
               <div className="col-span-3 font-medium">Statut</div>
@@ -287,10 +287,10 @@ function StatCell({
         ? "text-emerald-600"
         : accent === "red"
           ? "text-red-600"
-          : "text-slate-900";
+          : "text-ink";
   return (
-    <div className="bg-white px-5 py-5">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500 mb-1">
+    <div className="bg-surface px-5 py-5">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted mb-1">
         {pulse && (
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
@@ -334,24 +334,24 @@ function SubmissionRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: idx * 0.04 }}
-      className={`border-b border-slate-100 last:border-b-0 ${
-        expanded ? "bg-slate-50/60" : ""
+      className={`border-b border-line last:border-b-0 ${
+        expanded ? "bg-bg-sunken/60" : ""
       }`}
     >
       <button
         type="button"
         onClick={onClick}
-        className="w-full text-left px-5 py-4 grid grid-cols-12 gap-4 items-center hover:bg-slate-50 transition group"
+        className="w-full text-left px-5 py-4 grid grid-cols-12 gap-4 items-center hover:bg-bg-sunken transition group"
       >
         <div className="col-span-6 min-w-0">
           <div className="font-medium truncate">{sub.name}</div>
-          <div className="text-xs text-slate-400 font-mono mt-0.5 truncate">
+          <div className="text-xs text-faint font-mono mt-0.5 truncate">
             {sub.id}
           </div>
         </div>
-        <div className="col-span-3 text-sm text-slate-600">
+        <div className="col-span-3 text-sm text-muted">
           <div>{created.toLocaleString("fr-FR")}</div>
-          <div className="text-xs text-slate-400 mt-0.5">{age}</div>
+          <div className="text-xs text-faint mt-0.5">{age}</div>
         </div>
         <div className="col-span-3">
           <StatusBadge status={sub.status} />
@@ -370,7 +370,7 @@ function SubmissionRow({
               {sub.status === "Accepted" && (
                 <p className="text-sm text-emerald-700">
                   ✓ Soumission validée. Tu peux maintenant{" "}
-                  <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 text-xs">
+                  <code className="bg-surface px-1.5 py-0.5 rounded border border-line text-xs">
                     xcrun stapler staple
                   </code>{" "}
                   ton .app pour embarquer le ticket de notarisation (l'app
@@ -411,7 +411,7 @@ function StatusBadge({ status }: { status: string }) {
     Invalid: "bg-red-50 text-red-800 border-red-200",
     Rejected: "bg-red-50 text-red-800 border-red-200",
   };
-  const cls = variants[status] ?? "bg-slate-50 text-slate-700 border-slate-200";
+  const cls = variants[status] ?? "bg-bg-sunken text-ink-soft border-line";
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${cls}`}
@@ -429,25 +429,25 @@ function InvalidDetails({
   loading: boolean;
 }) {
   if (loading)
-    return <p className="text-sm text-slate-500">Chargement du log…</p>;
-  if (!log) return <p className="text-sm text-slate-500">Click pour charger.</p>;
+    return <p className="text-sm text-muted">Chargement du log…</p>;
+  if (!log) return <p className="text-sm text-muted">Click pour charger.</p>;
   if ("error" in log)
     return <p className="text-sm text-red-700">Erreur : {log.error}</p>;
   const issues = log.issues ?? [];
   if (issues.length === 0)
-    return <p className="text-sm text-slate-500">Aucun détail d'erreur.</p>;
+    return <p className="text-sm text-muted">Aucun détail d'erreur.</p>;
   return (
     <div>
       <p className="text-sm text-red-700 mb-3">
         <strong>{log.statusSummary ?? "Soumission invalide"}</strong>
-        <span className="text-slate-500"> · {issues.length} issue(s)</span>
+        <span className="text-muted"> · {issues.length} issue(s)</span>
       </p>
-      <div className="max-h-96 overflow-y-auto bg-white border border-slate-200 rounded-md">
+      <div className="max-h-96 overflow-y-auto bg-surface border border-line rounded-md">
         <table className="w-full text-xs">
           <tbody>
             {issues.slice(0, 50).map((issue, i) => (
-              <tr key={i} className="border-t border-slate-100 first:border-0">
-                <td className="px-3 py-2 font-mono text-slate-600 break-all max-w-md">
+              <tr key={i} className="border-t border-line first:border-0">
+                <td className="px-3 py-2 font-mono text-muted break-all max-w-md">
                   {issue.path?.replace(/^.*\.zip\//, "")}
                 </td>
                 <td className="px-3 py-2 text-red-700">{issue.message}</td>
@@ -456,7 +456,7 @@ function InvalidDetails({
           </tbody>
         </table>
         {issues.length > 50 && (
-          <p className="px-3 py-2 text-xs text-slate-500 border-t border-slate-100">
+          <p className="px-3 py-2 text-xs text-muted border-t border-line">
             … {issues.length - 50} de plus (tronqué).
           </p>
         )}
@@ -467,27 +467,27 @@ function InvalidDetails({
 
 function SkeletonTable() {
   return (
-    <div className="border border-slate-200 rounded-xl overflow-hidden">
-      <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 grid grid-cols-12 gap-4">
-        <div className="col-span-6 h-3 bg-slate-200 rounded animate-pulse" />
-        <div className="col-span-3 h-3 bg-slate-200 rounded animate-pulse" />
-        <div className="col-span-3 h-3 bg-slate-200 rounded animate-pulse" />
+    <div className="border border-line rounded-xl overflow-hidden">
+      <div className="bg-bg-sunken px-5 py-3 border-b border-line grid grid-cols-12 gap-4">
+        <div className="col-span-6 h-3 bg-surface-2 rounded animate-pulse" />
+        <div className="col-span-3 h-3 bg-surface-2 rounded animate-pulse" />
+        <div className="col-span-3 h-3 bg-surface-2 rounded animate-pulse" />
       </div>
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="px-5 py-4 grid grid-cols-12 gap-4 border-b border-slate-100 last:border-b-0"
+          className="px-5 py-4 grid grid-cols-12 gap-4 border-b border-line last:border-b-0"
         >
           <div className="col-span-6 space-y-2">
-            <div className="h-4 w-3/5 bg-slate-200 rounded animate-pulse" />
-            <div className="h-3 w-2/3 bg-slate-100 rounded animate-pulse" />
+            <div className="h-4 w-3/5 bg-surface-2 rounded animate-pulse" />
+            <div className="h-3 w-2/3 bg-surface-2 rounded animate-pulse" />
           </div>
           <div className="col-span-3 space-y-2">
-            <div className="h-4 w-3/4 bg-slate-200 rounded animate-pulse" />
-            <div className="h-3 w-1/2 bg-slate-100 rounded animate-pulse" />
+            <div className="h-4 w-3/4 bg-surface-2 rounded animate-pulse" />
+            <div className="h-3 w-1/2 bg-surface-2 rounded animate-pulse" />
           </div>
           <div className="col-span-3">
-            <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
+            <div className="h-6 w-24 bg-surface-2 rounded animate-pulse" />
           </div>
         </div>
       ))}

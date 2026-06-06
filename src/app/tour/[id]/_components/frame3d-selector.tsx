@@ -81,7 +81,7 @@ export default function Frame3DSelector({
   return (
     <div className="space-y-2" data-wm-id="compose.frame3d-selector">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+        <label className="text-[10px] uppercase tracking-wider font-mono text-muted block">
           Device frame
         </label>
         <div className="flex items-center gap-1">
@@ -139,7 +139,7 @@ export default function Frame3DSelector({
 
       {activeFrame3d && (
         <div className="space-y-1 pt-1">
-          <label className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+          <label className="text-[10px] uppercase tracking-wider font-mono text-muted block">
             Camera preset
           </label>
           <select
@@ -151,7 +151,7 @@ export default function Frame3DSelector({
                 cameraPreset3d: e.target.value as CameraPresetId,
               })
             }
-            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+            className="w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent bg-surface"
           >
             {CAMERA_PRESETS.map((p) => (
               <option key={p.id} value={p.id} title={p.hint}>
@@ -159,7 +159,7 @@ export default function Frame3DSelector({
               </option>
             ))}
           </select>
-          <p className="text-[10px] text-slate-500 leading-relaxed">
+          <p className="text-[10px] text-muted leading-relaxed">
             {CAMERA_PRESETS.find((p) => p.id === activeCameraPreset)?.hint}
           </p>
         </div>
@@ -190,8 +190,8 @@ function FrameOption({
       title={hint}
       className={`relative inline-flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-lg border text-[10px] font-medium transition-colors ${
         active
-          ? "border-zinc-900 bg-zinc-900 text-white"
-          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          ? "border-line-strong bg-ink text-bg"
+          : "border-line bg-surface text-ink-soft hover:bg-bg-sunken"
       }`}
     >
       <span className="flex items-center gap-1">
@@ -200,7 +200,7 @@ function FrameOption({
       </span>
       {locked && (
         <span
-          className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-white grid place-items-center"
+          className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-bg grid place-items-center"
           title="Studio Edition"
         >
           <Lock className="w-2 h-2" strokeWidth={3} />

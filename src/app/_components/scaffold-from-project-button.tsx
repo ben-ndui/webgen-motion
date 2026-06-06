@@ -133,7 +133,7 @@ export default function ScaffoldFromProjectButton({
         <button
           data-wm-id="dashboard.scaffold-project-button"
           onClick={() => setOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-900 text-sm font-medium hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-line-strong bg-surface text-ink text-sm font-medium hover:bg-bg-sunken transition-colors"
         >
           <FolderSearch className="w-3.5 h-3.5" />
           Scaffold projet
@@ -142,30 +142,30 @@ export default function ScaffoldFromProjectButton({
 
       {open && (
         <div
-          className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => !busy && setOpen(false)}
         >
           <div
             data-wm-id="dashboard.scaffold-modal"
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 space-y-5"
+            className="bg-surface rounded-2xl shadow-2xl border border-line w-full max-w-lg p-6 space-y-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+                <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
                   Sprint 6
                 </p>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-ink">
                   Scaffold depuis un projet
                 </h2>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-muted mt-1">
                   Scanne un repo Next.js local et génère un tour par route détectée.
                 </p>
               </div>
               <button
                 onClick={() => !busy && setOpen(false)}
                 disabled={busy}
-                className="text-slate-400 hover:text-slate-700 disabled:opacity-50"
+                className="text-faint hover:text-ink-soft disabled:opacity-50"
                 aria-label="Fermer"
               >
                 <X className="w-5 h-5" />
@@ -183,7 +183,7 @@ export default function ScaffoldFromProjectButton({
                   value={projectPath}
                   onChange={(e) => setProjectPath(e.target.value)}
                   placeholder="/Users/toi/IdeaProjects/mon-saas"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 disabled:opacity-50"
+                  className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
                 />
               </Field>
 
@@ -197,7 +197,7 @@ export default function ScaffoldFromProjectButton({
                   onChange={(e) => setBaseUrl(e.target.value)}
                   placeholder="http://localhost:3000"
                   type="url"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 disabled:opacity-50"
+                  className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
                 />
               </Field>
 
@@ -220,15 +220,15 @@ export default function ScaffoldFromProjectButton({
             </fieldset>
 
             {busy && (
-              <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 max-h-40 overflow-y-auto space-y-1">
-                <div className="flex items-center gap-2 text-sm text-zinc-900 mb-2">
+              <div className="rounded-xl border border-line bg-bg-sunken p-3 max-h-40 overflow-y-auto space-y-1">
+                <div className="flex items-center gap-2 text-sm text-ink mb-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
                   <span className="font-medium">Scan en cours…</span>
                 </div>
                 {logs.map((l, i) => (
                   <p
                     key={i}
-                    className="text-[11px] text-zinc-600 font-mono break-words"
+                    className="text-[11px] text-muted font-mono break-words"
                   >
                     {l}
                   </p>
@@ -265,7 +265,7 @@ export default function ScaffoldFromProjectButton({
               <button
                 onClick={() => setOpen(false)}
                 disabled={busy}
-                className="px-4 py-2 rounded-full text-sm text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-full text-sm text-ink-soft hover:bg-surface-2 transition-colors disabled:opacity-50"
               >
                 {done ? "Fermer" : "Annuler"}
               </button>
@@ -274,7 +274,7 @@ export default function ScaffoldFromProjectButton({
                   data-wm-id="dashboard.scaffold.submit"
                   onClick={handleSubmit}
                   disabled={busy}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60"
                 >
                   {busy ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -290,7 +290,7 @@ export default function ScaffoldFromProjectButton({
                     setOpen(false);
                     router.refresh();
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors"
                 >
                   Voir les tours
                 </button>
@@ -315,10 +315,10 @@ function Field({
   return (
     <div>
       <div className="flex items-baseline justify-between mb-1">
-        <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+        <label className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
           {label}
         </label>
-        {hint && <span className="text-[10px] text-slate-400">{hint}</span>}
+        {hint && <span className="text-[10px] text-faint">{hint}</span>}
       </div>
       {children}
     </div>
@@ -341,8 +341,8 @@ function FormatPill({
       onClick={onClick}
       className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
         active
-          ? "bg-zinc-900 text-white"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          ? "bg-ink text-bg"
+          : "bg-surface-2 text-ink-soft hover:bg-surface-2"
       }`}
     >
       <Icon className="w-3.5 h-3.5" />

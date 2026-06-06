@@ -32,7 +32,7 @@ interface Props {
 export default function PhaseLoader({
   progress,
   variant,
-  accentClass = "bg-zinc-900",
+  accentClass = "bg-ink",
 }: Props) {
   const sectionPct =
     progress.sectionIdx && progress.totalSections
@@ -53,21 +53,21 @@ export default function PhaseLoader({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col gap-4"
+      className="rounded-2xl border border-line bg-surface p-5 flex flex-col gap-4"
     >
       <div className="flex items-center gap-3">
         <Loader2
-          className="w-5 h-5 text-zinc-900 animate-spin"
+          className="w-5 h-5 text-ink animate-spin"
           strokeWidth={2.5}
         />
         <div className="flex-1 min-w-0">
           <p
             key={progress.phase}
-            className="font-semibold text-sm text-slate-900 truncate"
+            className="font-semibold text-sm text-ink truncate"
           >
             {progress.phase}
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {formatDuration(progress.sinceSec)} écoulées
             {variant === "compose" && progress.frames !== undefined
               ? ` · ${progress.frames} frames capturées`
@@ -122,14 +122,14 @@ function ProgressBar({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-1.5 text-slate-500">
+      <div className="flex items-center justify-between mb-1.5 text-muted">
         <p className="text-[10px] uppercase tracking-[0.2em] font-mono">
           {label}
         </p>
         <p className="text-xs font-mono">{counter}</p>
       </div>
       <div
-        className={`${thin ? "h-1" : "h-1.5"} rounded-full overflow-hidden bg-slate-100`}
+        className={`${thin ? "h-1" : "h-1.5"} rounded-full overflow-hidden bg-surface-2`}
       >
         <motion.div
           animate={{ width: `${pct}%` }}

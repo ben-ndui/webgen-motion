@@ -92,8 +92,8 @@ export default function SmartDownloadButton({
 
   const baseCls =
     variant === "primary"
-      ? "inline-flex items-center gap-2 px-6 py-3.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 transition-colors"
-      : "inline-flex items-center gap-2 px-5 py-3 border border-zinc-300 text-zinc-950 text-sm font-medium hover:bg-zinc-50 transition-colors";
+      ? "inline-flex items-center gap-2 px-6 py-3.5 bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors"
+      : "inline-flex items-center gap-2 px-5 py-3 border border-line-strong text-ink text-sm font-medium hover:bg-bg-sunken transition-colors";
 
   if (!plat.available) {
     return (
@@ -107,7 +107,7 @@ export default function SmartDownloadButton({
           {plat.label}
         </button>
         {showHint && plat.hint && (
-          <span className="text-xs text-zinc-500">{plat.hint}</span>
+          <span className="text-xs text-muted">{plat.hint}</span>
         )}
       </div>
     );
@@ -124,7 +124,7 @@ export default function SmartDownloadButton({
         <ArrowUpRight className="w-4 h-4" />
       </a>
       {showHint && plat.hint && (
-        <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-zinc-500">
+        <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted">
           {plat.hint}
         </span>
       )}

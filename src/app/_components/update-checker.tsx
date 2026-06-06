@@ -104,7 +104,7 @@ export default function UpdateChecker() {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-white border border-zinc-300 shadow-xl"
+      className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] bg-surface border border-line-strong shadow-xl"
       role="dialog"
       aria-label="Mise à jour disponible"
       data-wm-id="update-checker.card"
@@ -113,29 +113,29 @@ export default function UpdateChecker() {
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
-            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500">
+            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted">
               Mise à jour disponible
             </span>
           </div>
           <button
             type="button"
             onClick={dismiss}
-            className="text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="text-faint hover:text-ink-soft transition-colors"
             aria-label="Fermer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-sm text-zinc-950 font-medium mb-1">
+        <p className="text-sm text-ink font-medium mb-1">
           GEN MOTION v{info.latest} est dispo
         </p>
-        <p className="text-xs text-zinc-500 mb-3 font-mono">
+        <p className="text-xs text-muted mb-3 font-mono">
           Tu as v{CURRENT} · publiée le {publishedDate}
         </p>
 
         {info.notes && (
-          <p className="text-xs text-zinc-600 leading-relaxed mb-4 line-clamp-3 whitespace-pre-line">
+          <p className="text-xs text-muted leading-relaxed mb-4 line-clamp-3 whitespace-pre-line">
             {info.notes.split("\n").slice(0, 4).join("\n").slice(0, 240)}
           </p>
         )}
@@ -145,7 +145,7 @@ export default function UpdateChecker() {
             href={info.releaseUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-zinc-950 text-white text-xs font-medium hover:bg-zinc-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-ink text-bg text-xs font-medium hover:opacity-90 transition-colors"
             onClick={dismiss}
           >
             Voir la release
@@ -154,7 +154,7 @@ export default function UpdateChecker() {
           <button
             type="button"
             onClick={dismiss}
-            className="px-3 py-2 text-xs text-zinc-600 hover:text-zinc-950 transition-colors"
+            className="px-3 py-2 text-xs text-muted hover:text-ink transition-colors"
           >
             Plus tard
           </button>

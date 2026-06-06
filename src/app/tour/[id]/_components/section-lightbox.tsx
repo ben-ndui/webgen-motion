@@ -68,7 +68,7 @@ export default function SectionLightbox({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-surface/10 hover:bg-surface/20 text-bg transition-colors"
           aria-label="Fermer"
         >
           <X className="w-5 h-5" />
@@ -82,14 +82,14 @@ export default function SectionLightbox({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="text-white mb-3">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/60">
+          <div className="text-bg mb-3">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-bg/60">
               Section {String(section.index).padStart(2, "0")} ·{" "}
               {section.categoryId}
             </p>
             <h3 className="text-lg font-semibold mt-0.5">{section.title}</h3>
             {section.subtitle && (
-              <p className="text-sm text-white/70 mt-0.5">{section.subtitle}</p>
+              <p className="text-sm text-bg/70 mt-0.5">{section.subtitle}</p>
             )}
           </div>
 
@@ -109,20 +109,20 @@ export default function SectionLightbox({
            *  n'y a rien à flouter — on simule le verre par les
            *  bordures + shadows). */}
           <div className="mt-3 mx-auto max-w-fit">
-            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-white/[0.07] border border-white/15 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]">
+            <div className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-surface/[0.07] border border-white/15 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.12)]">
               {/* Stats pill */}
               <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono">
-                <span className="text-white">
+                <span className="text-bg">
                   {section.durationSec.toFixed(1)}s
                 </span>
-                <span className="text-white/30">·</span>
-                <span className="text-white">
+                <span className="text-bg/30">·</span>
+                <span className="text-bg">
                   {(section.sizeBytes / 1024 / 1024).toFixed(1)} MB
                 </span>
-                <span className="text-white/30">·</span>
-                <span className="text-white">{section.frames}f</span>
+                <span className="text-bg/30">·</span>
+                <span className="text-bg">{section.frames}f</span>
               </div>
-              <span className="hidden sm:block w-px h-4 bg-white/15" />
+              <span className="hidden sm:block w-px h-4 bg-surface/15" />
               {/* Actions — liquid pill buttons */}
               <div className="flex items-center gap-1">
                 <RecaptureSectionButton
@@ -142,10 +142,10 @@ export default function SectionLightbox({
                   onClick={() => setTrimOpen((v) => !v)}
                   className={`inline-flex items-center gap-1.5 text-[11px] font-medium transition-colors px-3 py-1.5 rounded-full ${
                     trimOpen
-                      ? "bg-white text-zinc-900"
+                      ? "bg-surface text-ink"
                       : hasTrim
-                        ? "bg-white/20 text-white hover:bg-white/30"
-                        : "text-white/80 hover:text-white hover:bg-white/15"
+                        ? "bg-surface/20 text-bg hover:bg-surface/30"
+                        : "text-bg/80 hover:text-bg hover:bg-surface/15"
                   }`}
                   title={
                     hasTrim
@@ -159,7 +159,7 @@ export default function SectionLightbox({
                 <a
                   href={section.mp4Url}
                   download={`webgen-${tourId}-section-${String(section.index).padStart(2, "0")}.mp4`}
-                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white hover:bg-white/15 transition-colors px-3 py-1.5 rounded-full"
+                  className="inline-flex items-center gap-1.5 text-[11px] font-medium text-bg/80 hover:text-bg hover:bg-surface/15 transition-colors px-3 py-1.5 rounded-full"
                 >
                   <Download className="w-3 h-3" />
                   MP4
@@ -174,7 +174,7 @@ export default function SectionLightbox({
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="mt-3 bg-white rounded-2xl overflow-hidden shadow-2xl"
+              className="mt-3 bg-surface rounded-2xl overflow-hidden shadow-2xl"
             >
               <SectionTrimControls
                 tourId={tourId}

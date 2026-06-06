@@ -714,7 +714,7 @@ function SaveButton({
 }) {
   if (status === "saving") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-2 text-ink-soft text-xs font-medium">
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
         Sauvegarde…
       </span>
@@ -743,7 +743,7 @@ function SaveButton({
   return (
     <button
       onClick={onSave}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-medium transition-colors"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink text-bg hover:opacity-90 text-xs font-medium transition-colors"
       title="Sauvegarder les modifs du tour"
     >
       <Save className="w-3.5 h-3.5" />

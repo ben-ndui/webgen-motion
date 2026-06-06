@@ -17,9 +17,9 @@ export default async function TourPage({
   if (!tour) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted">
           Tour introuvable :{" "}
-          <code className="px-1.5 py-0.5 bg-slate-100 rounded">{id}</code>
+          <code className="px-1.5 py-0.5 bg-surface-2 rounded">{id}</code>
         </p>
       </div>
     );

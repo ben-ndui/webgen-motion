@@ -84,8 +84,8 @@ export default function SectionReplaceMp4Button({
         title="Remplacer le MP4 de cette section par un fichier perso"
         className={
           variant === "glass"
-            ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-white/80 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-white/15 disabled:opacity-60 disabled:cursor-wait"
-            : "inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors px-2 py-1 rounded-md hover:bg-slate-100 disabled:opacity-60 disabled:cursor-wait"
+            ? "inline-flex items-center gap-1.5 text-[11px] font-medium text-bg/80 hover:text-bg transition-colors px-3 py-1.5 rounded-full hover:bg-surface/15 disabled:opacity-60 disabled:cursor-wait"
+            : "inline-flex items-center gap-1.5 text-[11px] font-medium text-muted hover:text-ink transition-colors px-2 py-1 rounded-md hover:bg-surface-2 disabled:opacity-60 disabled:cursor-wait"
         }
       >
         {busy ? (
