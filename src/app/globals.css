@@ -191,6 +191,14 @@ html {
   background-color: oklch(48% 0.01 262 / 0.55);
 }
 
+/* Page transition — opacity-only fade on each route change (template.tsx).
+   No transform/filter so fixed navs keep their viewport anchoring. */
+.route-fade { animation: routeFade 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+@keyframes routeFade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .route-fade { animation: none; }
+}
+
 /* Focus ring token — opt-in via .ring-token (les primitives Phase 3 l'appliqueront).
    Volontairement pas global pour ne pas modifier le focus existant en Phase 1. */
 .ring-token:focus-visible {
