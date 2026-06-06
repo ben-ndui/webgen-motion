@@ -16,6 +16,7 @@ import NewTourButton from "../_components/new-tour-button";
 import GenerateWithAiButton from "../_components/generate-with-ai-button";
 import ScaffoldFromProjectButton from "../_components/scaffold-from-project-button";
 import SettingsMenu from "../_components/settings-menu";
+import ThemeToggle from "../_components/theme-toggle";
 import TourCard from "../_components/tour-card";
 
 /**
@@ -63,6 +64,7 @@ export default function DashboardPage() {
              *  Outils, External). */}
             <div className="flex items-center gap-2">
               <ConfigChip configured={config.configured} />
+              <ThemeToggle />
               <SettingsMenu />
             </div>
           </div>
