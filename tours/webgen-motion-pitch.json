@@ -1,7 +1,7 @@
 {
   "id": "webgen-motion-pitch",
   "name": "GEN MOTION · Pitch officiel",
-  "description": "Présentation 90s de GEN MOTION qui film l'outil lui-même à travers ses 9 surfaces clés — landing carrousel, hub, éditeur visuel, voix off IA, compose, frames 3D Beta, desktop notarisé. Mode narratif continu — édite le script depuis le tab Voix off, puis Générer → Calibrer → Capturer → Composer. Style 'Energetic' avec hotspots punch-in pour pointer les zones cliquables.",
+  "description": "Présentation 90s de GEN MOTION qui film l'outil lui-même à travers ses 9 surfaces clés — landing cinétique, hub, éditeur visuel, voix off IA, compose, frames 3D Beta, desktop notarisé. Mode narratif continu — édite le script depuis le tab Voix off, puis Générer → Calibrer → Capturer → Composer. Style 'Energetic' avec hotspots punch-in pour pointer les zones cliquables.",
   "estimatedSec": 95,
   "startPath": "/",
   "baseUrl": "http://localhost:3000",
@@ -14,7 +14,7 @@
   "format": "16:9",
   "composeStyle": "energetic",
   "voiceMode": "narrative",
-  "narrativeScript": "[step:0]GEN MOTION. Des vidéos motion design pour ton site web. Localement, sans cloud. [step:2]Avant, c'était des jours en After Effects. Aujourd'hui, c'est cinq minutes sur ta machine. [step:4]Cinq slides, une promesse : capturer, narrer, composer. [step:8]Le hub liste tous tes tours. Crée un nouveau projet en deux clics. [step:12]L'éditeur visuel. Cinq onglets. Save toujours visible. [step:15]Script. Capture. Audio. Voix off. Compose. [step:18]La voix off IA. [step:20]ElevenLabs cloud pour la qualité instantanée. Voicebox pour du cent pour cent local. [step:23]Compose. Quatre presets à un clic. Sober. Energetic. Cinematic. Glitch. [step:27]Studio Edition. Frames 3D iPhone et MacBook. Bêta. [step:31]L'app desktop. Notarisée Apple. Prête à installer. [step:35]GEN MOTION. Par Smooth and Design. Clone, configure, génère. [step:37]Ton premier clip motion design en moins de cinq minutes.",
+  "narrativeScript": "[step:0]GEN MOTION. Des vidéos motion design pour ton site web. Localement, sans cloud. [step:2]Avant, c'était des jours en After Effects. Aujourd'hui, c'est cinq minutes sur ta machine. [step:4]Une landing cinétique. Une promesse : capturer, narrer, composer. [step:8]Le hub liste tous tes tours. Crée un nouveau projet en deux clics. [step:12]L'éditeur visuel. Cinq onglets. Save toujours visible. [step:15]Script. Capture. Audio. Voix off. Compose. [step:18]La voix off IA. [step:20]ElevenLabs cloud pour la qualité instantanée. Voicebox pour du cent pour cent local. [step:23]Compose. Quatre presets à un clic. Sober. Energetic. Cinematic. Glitch. [step:27]Studio Edition. Frames 3D iPhone et MacBook. Bêta. [step:31]L'app desktop. Notarisée Apple. Prête à installer. [step:35]GEN MOTION. Par Smooth and Design. Clone, configure, génère. [step:37]Ton premier clip motion design en moins de cinq minutes.",
   "steps": [
     {
       "type": "section",
@@ -40,7 +40,7 @@
     {
       "type": "section",
       "categoryId": "motion",
-      "title": "5 slides",
+      "title": "Landing cinétique",
       "subtitle": "Une promesse · 3 étapes",
       "dwellMs": 2200,
       "hotspots": [
@@ -48,8 +48,8 @@
           "t": 3.3,
           "x": 0.5,
           "y": 0.5,
-          "label": "Carrousel horizontal",
-          "zoom": 2,
+          "label": "Landing cinétique",
+          "zoom": 2.3,
           "dwellSec": 1.4
         }
       ]
@@ -78,10 +78,10 @@
       "hotspots": [
         {
           "t": 3.3,
-          "x": 0.86,
-          "y": 0.06,
+          "x": 0.055,
+          "y": 0.099,
           "label": "Nouveau tour",
-          "zoom": 2,
+          "zoom": 2.3,
           "dwellSec": 1.4
         }
       ]
@@ -110,10 +110,10 @@
       "hotspots": [
         {
           "t": 3.5,
-          "x": 0.55,
-          "y": 0.1,
+          "x": 0.391,
+          "y": 0.104,
           "label": "Onglet Voix off",
-          "zoom": 2,
+          "zoom": 2.3,
           "dwellSec": 1.2
         }
       ]
@@ -151,10 +151,10 @@
       "hotspots": [
         {
           "t": 3.0,
-          "x": 0.72,
-          "y": 0.21,
-          "label": "Générer",
-          "zoom": 2,
+          "x": 0.719,
+          "y": 0.353,
+          "label": "Générer la voix off",
+          "zoom": 2.3,
           "dwellSec": 1.4
         }
       ]
@@ -187,10 +187,10 @@
       "hotspots": [
         {
           "t": 3.0,
-          "x": 0.72,
-          "y": 0.23,
-          "label": "Choisis ton style",
-          "zoom": 2,
+          "x": 0.349,
+          "y": 0.372,
+          "label": "4 presets · 1 clic",
+          "zoom": 2.3,
           "dwellSec": 1.5
         }
       ]
@@ -218,10 +218,10 @@
       "hotspots": [
         {
           "t": 3.0,
-          "x": 0.72,
-          "y": 0.31,
-          "label": "Frame iPhone 3D",
-          "zoom": 2,
+          "x": 0.403,
+          "y": 0.509,
+          "label": "Frame 3D · Beta",
+          "zoom": 2.3,
           "dwellSec": 1.4
         }
       ]
@@ -250,10 +250,10 @@
       "hotspots": [
         {
           "t": 3.0,
-          "x": 0.31,
-          "y": 0.52,
+          "x": 0.308,
+          "y": 0.525,
           "label": "Télécharger pour macOS",
-          "zoom": 2,
+          "zoom": 2.3,
           "dwellSec": 1.4
         }
       ]

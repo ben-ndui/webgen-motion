@@ -2,6 +2,7 @@
 
 import "../../../editor.css";
 import { motion, AnimatePresence } from "framer-motion";
+import NarrativePromptButton from "./narrative-prompt-button";
 import {
   AlertCircle,
   ArrowRight,
@@ -346,7 +347,10 @@ export default function VoiceTab({
                 Texte continu de la voix off
               </h2>
             </div>
-            <SaveBadge status={saveStatus} />
+            <div className="flex items-center gap-2">
+              <NarrativePromptButton tour={tour} />
+              <SaveBadge status={saveStatus} />
+            </div>
           </div>
           <textarea
             ref={narrativeRef}

@@ -79,6 +79,7 @@ export function Tabs<T extends string>({
             }}
             type="button"
             role="tab"
+            data-tab={String(t.value)}
             aria-selected={active}
             onClick={() => onValueChange(t.value)}
             className={cn(
