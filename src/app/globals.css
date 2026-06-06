@@ -52,13 +52,6 @@
 
   /* motion intensity 0..1 */
   --motion: 0.6;
-
-  /* ---- Alias transitoires (anciens noms encore référencés dans le code).
-         À SUPPRIMER en fin de migration (Phase 4). ---- */
-  --background: var(--bg); --foreground: var(--ink);
-  --surface-muted: var(--bg-sunken); --surface-subtle: var(--surface-2);
-  --text: var(--ink); --text-muted: var(--muted); --text-subtle: var(--muted); --text-faint: var(--faint);
-  --border: var(--line); --border-strong: var(--line-strong);
 }
 
 [data-theme="dark"] {
@@ -98,18 +91,6 @@
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-accent-line: var(--accent-line);
-
-  /* ---- alias couleurs (transitoires) ---- */
-  --color-background: var(--bg);
-  --color-foreground: var(--ink);
-  --color-surface-muted: var(--bg-sunken);
-  --color-surface-subtle: var(--surface-2);
-  --color-text: var(--ink);
-  --color-text-muted: var(--muted);
-  --color-text-subtle: var(--muted);
-  --color-text-faint: var(--faint);
-  --color-border: var(--line);
-  --color-border-strong: var(--line-strong);
 
   /* ---- fonts ---- */
   --font-sans: var(--font-sans);

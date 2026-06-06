@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GEN MOTION — Configuration</title>
+<link rel="stylesheet" href="assets/tokens.css?v=2" />
+<link rel="stylesheet" href="assets/pages.css?v=3" />
+<script src="assets/theme.js"></script>
+</head>
+<body>
+
+<div class="wiz-stage">
+  <div class="wiz" data-wm-id="setup.wizard">
+    <div class="wiz-brand">
+      <span class="brand-mark"></span><span class="brand-name">GEN&nbsp;MOTION</span>
+    </div>
+
+    <!-- stepper -->
+    <div class="wiz-steps" id="stepper" data-wm-id="setup.stepper">
+      <div class="wiz-dot" data-i="1"><span class="b">1</span><span class="line"></span></div>
+      <div class="wiz-dot" data-i="2"><span class="b">2</span><span class="line"></span></div>
+      <div class="wiz-dot" data-i="3"><span class="b">3</span><span class="line"></span></div>
+      <div class="wiz-dot" data-i="4"><span class="b">4</span><span class="line"></span></div>
+    </div>
+
+    <div class="wiz-card">
+      <!-- STEP 1 -->
+      <section class="wiz-step" data-step="1">
+        <span class="kicker">Étape 1 / 4</span>
+        <h2>Bienvenue.</h2>
+        <p class="lede">GEN MOTION tourne entièrement sur votre machine. Indiquez où ranger vos tours — tout le reste se configure en deux minutes.</p>
+        <div class="wiz-panel">
+          <div class="wiz-field">
+            <label>Dossier des projets</label>
+            <input type="text" value="~/GEN MOTION/tours" spellcheck="false" />
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section class="wiz-step" data-step="2" hidden>
+        <span class="kicker">Étape 2 / 4</span>
+        <h2>Backend voix off.</h2>
+        <p class="lede">Choisissez comment générer la narration. Vous pourrez en changer à tout moment.</p>
+        <div class="wiz-panel" data-group="backend">
+          <div class="wiz-opt sel" data-val="elevenlabs">
+            <span class="wiz-radio"></span>
+            <span><span class="wt">ElevenLabs</span><span class="wd">Clone votre voix · alignement char-level · qualité studio</span></span>
+            <span class="wtag">Cloud · BYOK</span>
+          </div>
+          <div class="wiz-opt" data-val="voicebox">
+            <span class="wiz-radio"></span>
+            <span><span class="wt">Voicebox · local</span><span class="wd">100% hors-ligne · aucune connexion · voix neutres</span></span>
+            <span class="wtag">Local</span>
+          </div>
+          <div class="wiz-field" data-show="elevenlabs">
+            <label>Clé API ElevenLabs</label>
+            <input type="password" value="el_••••••••••••••••••••" spellcheck="false" />
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section class="wiz-step" data-step="3" hidden>
+        <span class="kicker">Étape 3 / 4</span>
+        <h2>Licence.</h2>
+        <p class="lede">Community est gratuit, pour toujours. Studio débloque les frames 3D, presets Cinematic &amp; Glitch et l'export multi-format.</p>
+        <div class="wiz-panel" data-group="license">
+          <div class="wiz-opt sel" data-val="community">
+            <span class="wiz-radio"></span>
+            <span><span class="wt">Community</span><span class="wd">Pipeline complet · presets Sober &amp; Energetic · 16:9 &amp; 9:16</span></span>
+            <span class="wtag">Gratuit</span>
+          </div>
+          <div class="wiz-opt" data-val="studio">
+            <span class="wiz-radio"></span>
+            <span><span class="wt">Studio Edition</span><span class="wd">Tout Community + outils pro · paiement unique perpétuel</span></span>
+            <span class="wtag">$49</span>
+          </div>
+          <div class="wiz-field" data-show="studio">
+            <label>Clé de licence Studio</label>
+            <input type="text" value="GM-STUDIO-XXXX-XXXX-XXXX" spellcheck="false" />
+          </div>
+          <div class="wiz-field">
+            <label>Clé Claude (agent IA · optionnel)</label>
+            <input type="password" value="sk-ant-••••••••••••" spellcheck="false" />
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section class="wiz-step wiz-center" data-step="4" hidden>
+        <div class="wiz-done-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>
+        </div>
+        <h2>Tout est prêt.</h2>
+        <p class="lede" style="margin-left:auto;margin-right:auto;max-width:44ch">Votre Motion Studio est configuré. Lancez votre premier tour — il sera prêt en cinq minutes.</p>
+        <div style="margin-top:28px"><a class="btn btn-primary btn-lg" href="GEN MOTION Hub.html">Ouvrir GEN MOTION →</a></div>
+      </section>
+
+      <!-- FOOTER -->
+      <div class="wiz-foot" id="wizFoot">
+        <button class="wiz-skip" id="backBtn" style="visibility:hidden">← Retour</button>
+        <div style="display:flex;gap:12px;align-items:center">
+          <button class="wiz-skip" id="skipBtn">Passer</button>
+          <button class="btn btn-primary" id="nextBtn">Continuer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var step = 1, TOTAL = 4;
+  var selections = { backend: "elevenlabs", license: "community" };
+
+  function renderStepper(){
+    document.querySelectorAll(".wiz-dot").forEach(function(d){
+      var i = +d.dataset.i;
+      d.classList.toggle("done", i < step);
+      d.classList.toggle("active", i === step);
+    });
+  }
+  function renderFields(){
+    document.querySelectorAll(".wiz-panel").forEach(function(panel){
+      var group = panel.dataset.group;
+      panel.querySelectorAll(".wiz-field[data-show]").forEach(function(f){
+        f.style.display = (group && selections[group] === f.dataset.show) ? "" : "none";
+      });
+    });
+  }
+  function show(){
+    document.querySelectorAll(".wiz-step").forEach(function(s){ s.hidden = (+s.dataset.step !== step); });
+    document.getElementById("backBtn").style.visibility = step === 1 ? "hidden" : "visible";
+    document.getElementById("skipBtn").style.display = (step >= 3) ? "none" : "";
+    document.getElementById("wizFoot").style.display = (step === TOTAL) ? "none" : "flex";
+    document.getElementById("nextBtn").textContent = (step === TOTAL - 1) ? "Terminer" : "Continuer";
+    renderStepper(); renderFields();
+  }
+  // option selection
+  document.querySelectorAll(".wiz-panel[data-group]").forEach(function(panel){
+    var group = panel.dataset.group;
+    panel.querySelectorAll(".wiz-opt").forEach(function(opt){
+      opt.addEventListener("click", function(){
+        panel.querySelectorAll(".wiz-opt").forEach(function(o){ o.classList.remove("sel"); });
+        opt.classList.add("sel");
+        selections[group] = opt.dataset.val;
+        renderFields();
+      });
+    });
+  });
+  document.getElementById("nextBtn").addEventListener("click", function(){ if (step < TOTAL) { step++; show(); } });
+  document.getElementById("backBtn").addEventListener("click", function(){ if (step > 1) { step--; show(); } });
+  document.getElementById("skipBtn").addEventListener("click", function(){ if (step < TOTAL) { step++; show(); } });
+  show();
+})();
+</script>
+</body>
+</html>

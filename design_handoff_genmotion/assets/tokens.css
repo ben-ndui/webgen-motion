@@ -1,0 +1,105 @@
+/* ============================================================
+   GEN MOTION — Design Tokens
+   Strict black & white + one refined blue accent.
+   Light is canonical; [data-theme="dark"] re-themes coherently.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---- Type families ---- */
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "SF Mono", ui-monospace, "Cascadia Code", monospace;
+
+  /* ---- Type scale (fluid, desktop-first) ---- */
+  --t-mono:    0.75rem;   /* 12 — labels, specs */
+  --t-xs:      0.8125rem; /* 13 */
+  --t-sm:      0.9375rem; /* 15 */
+  --t-base:    1.0625rem; /* 17 — body */
+  --t-lg:      1.25rem;   /* 20 */
+  --t-xl:      1.625rem;  /* 26 */
+  --t-2xl:     2.25rem;   /* 36 */
+  --t-3xl:     clamp(2.75rem, 4.4vw, 3.75rem);
+  --t-display: clamp(3.25rem, 7vw, 6.5rem);   /* hero */
+
+  --lh-tight: 1.02;
+  --lh-snug:  1.12;
+  --lh-body:  1.55;
+  --tracking-tight: -0.03em;
+  --tracking-display: -0.045em;
+  --tracking-mono: 0.08em;
+
+  /* ---- Spacing (4px base) ---- */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+  --s-9: 96px; --s-10: 128px; --s-11: 160px;
+
+  /* ---- Radius ---- */
+  --r-sm: 7px; --r-md: 11px; --r-lg: 16px; --r-xl: 22px; --r-2xl: 30px; --r-full: 999px;
+
+  /* ---- Layout ---- */
+  --maxw: 1240px;
+  --nav-h: 68px;
+
+  /* ============ LIGHT THEME ============ */
+  --bg:        oklch(99% 0.002 255);
+  --bg-sunken: oklch(97.2% 0.003 255);
+  --surface:   oklch(100% 0 0);
+  --surface-2: oklch(98% 0.002 255);
+
+  --ink:       oklch(20% 0.012 262);  /* near-black headings */
+  --ink-soft:  oklch(34% 0.012 262);
+  --muted:     oklch(48% 0.01 262);   /* secondary text */
+  --faint:     oklch(63% 0.008 262);  /* tertiary / captions */
+
+  --line:      oklch(91.5% 0.004 262);
+  --line-soft: oklch(94.5% 0.003 262);
+  --line-strong: oklch(86% 0.006 262);
+
+  /* refined blue accent */
+  --accent-h: 257;
+  --accent:        oklch(55% 0.205 var(--accent-h));
+  --accent-hover:  oklch(48% 0.205 var(--accent-h));
+  --accent-press:  oklch(43% 0.2 var(--accent-h));
+  --accent-ink:    oklch(98% 0.01 var(--accent-h)); /* text on accent */
+  --accent-soft:   oklch(96.5% 0.028 var(--accent-h));
+  --accent-line:   oklch(89% 0.06 var(--accent-h));
+
+  --shadow-xs: 0 1px 2px oklch(20% 0.02 262 / 0.05);
+  --shadow-sm: 0 1px 2px oklch(20% 0.02 262 / 0.05), 0 2px 6px oklch(20% 0.02 262 / 0.05);
+  --shadow-md: 0 4px 14px oklch(20% 0.03 262 / 0.08), 0 1px 3px oklch(20% 0.02 262 / 0.06);
+  --shadow-pop: 0 18px 48px oklch(20% 0.04 262 / 0.14), 0 4px 12px oklch(20% 0.03 262 / 0.08);
+  --ring: 0 0 0 3px oklch(55% 0.205 var(--accent-h) / 0.18);
+
+  /* motion intensity 0..1 (driven by Tweaks) */
+  --motion: 0.6;
+}
+
+[data-theme="dark"] {
+  --bg:        oklch(15% 0.006 262);
+  --bg-sunken: oklch(12.5% 0.006 262);
+  --surface:   oklch(18.5% 0.007 262);
+  --surface-2: oklch(21% 0.008 262);
+
+  --ink:       oklch(96.5% 0.004 262);
+  --ink-soft:  oklch(86% 0.006 262);
+  --muted:     oklch(70% 0.008 262);
+  --faint:     oklch(56% 0.009 262);
+
+  --line:      oklch(27% 0.008 262);
+  --line-soft: oklch(23% 0.008 262);
+  --line-strong: oklch(34% 0.01 262);
+
+  --accent:        oklch(66% 0.18 var(--accent-h));
+  --accent-hover:  oklch(72% 0.17 var(--accent-h));
+  --accent-press:  oklch(60% 0.18 var(--accent-h));
+  --accent-ink:    oklch(16% 0.02 var(--accent-h));
+  --accent-soft:   oklch(28% 0.05 var(--accent-h));
+  --accent-line:   oklch(38% 0.08 var(--accent-h));
+
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.4);
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4), 0 2px 6px oklch(0% 0 0 / 0.35);
+  --shadow-md: 0 6px 18px oklch(0% 0 0 / 0.5), 0 1px 3px oklch(0% 0 0 / 0.4);
+  --shadow-pop: 0 24px 60px oklch(0% 0 0 / 0.6), 0 6px 16px oklch(0% 0 0 / 0.45);
+  --ring: 0 0 0 3px oklch(66% 0.18 var(--accent-h) / 0.32);
+}

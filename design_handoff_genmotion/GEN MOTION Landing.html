@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="fr" data-hero="a" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GEN MOTION — Landing</title>
+<link rel="stylesheet" href="assets/tokens.css?v=2" />
+<link rel="stylesheet" href="assets/landing.css?v=8" />
+</head>
+<body>
+
+<!-- ============================ NAV ============================ -->
+<nav class="nav" data-wm-id="landing.nav">
+  <a class="brand" href="#hero" data-jump="#hero" data-wm-id="landing.nav.brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">GEN&nbsp;MOTION</span>
+  </a>
+  <div class="nav-links" data-wm-id="landing.nav.links">
+    <a class="nav-link" href="#demo" data-jump="#demo">Démo</a>
+    <a class="nav-link" href="#pipeline" data-jump="#pipeline">Pipeline</a>
+    <a class="nav-link" href="#editions" data-jump="#editions">Éditions</a>
+    <a class="nav-link" href="https://genmotion.app/help">Documentation</a>
+  </div>
+  <div class="nav-tools">
+    <button class="theme-toggle" onclick="gmToggleTheme()" aria-label="Basculer le thème" data-wm-id="landing.nav.theme">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn-primary" href="https://genmotion.app/api/download/macos-arm64" data-wm-id="landing.nav.cta-download">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+      Télécharger
+    </a>
+  </div>
+</nav>
+
+<!-- ====================== SCROLL CONTAINER ====================== -->
+<main class="scroller">
+
+  <!-- ============================ HERO ============================ -->
+  <section class="section hero" id="hero" data-screen-label="Hero" data-wm-id="landing.hero">
+    <div class="wrap">
+
+      <!-- DIRECTION A — Statement -->
+      <div class="hero-a" data-wm-id="landing.hero.dir-a">
+        <div class="kicker hero-eyebrow reveal">Motion Studio · local-first · 2026</div>
+        <h1 class="hero-title reveal d1">
+          On capture votre&nbsp;site.<br />
+          <span class="l2">Vous obtenez un clip&nbsp;motion.</span>
+        </h1>
+        <p class="hero-sub reveal d2">
+          GEN&nbsp;MOTION film n'importe quelle interface web, mixe la voix off clonée,
+          compose en clip vidéo prêt à publier. <b>Sur votre machine.</b> Sans cloud, sans vendor&nbsp;lock-in.
+        </p>
+        <div class="hero-cta reveal d3">
+          <a class="btn btn-primary btn-lg" href="https://genmotion.app/api/download/macos-arm64" data-wm-id="landing.hero.cta-download">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Télécharger pour macOS
+          </a>
+          <a class="btn btn-ghost btn-lg" href="https://genmotion.app/help" data-jump="#demo">Voir la démo</a>
+        </div>
+        <div class="spec-strip reveal d4" data-wm-id="landing.hero.specs">
+          <div class="spec"><span class="spec-k">Open-core</span><span class="spec-v">MIT · GitHub</span></div>
+          <div class="spec"><span class="spec-k">Stack</span><span class="spec-v">Remotion · Puppeteer · FFmpeg</span></div>
+          <div class="spec"><span class="spec-k">Voix off</span><span class="spec-v">ElevenLabs ou Voicebox</span></div>
+          <div class="spec"><span class="spec-k">Sortie</span><span class="spec-v">MP4 frame-accurate · 16:9 / 9:16</span></div>
+          <div class="spec"><span class="spec-k">Made in</span><span class="spec-v">Nice · Smooth &amp; Design</span></div>
+        </div>
+      </div>
+
+      <!-- DIRECTION B — Product in motion -->
+      <div class="hero-b" data-wm-id="landing.hero.dir-b">
+        <div class="hero-b-copy">
+          <div class="kicker hero-eyebrow reveal">Motion Studio · local-first</div>
+          <h1 class="hero-title reveal d1">On capture votre site. Vous obtenez un clip&nbsp;motion.</h1>
+          <p class="hero-sub reveal d2">
+            Film, voix off clonée, compose — un <b>final.mp4</b> prêt à publier, généré sur votre machine.
+          </p>
+          <div class="hero-cta reveal d3">
+            <a class="btn btn-primary btn-lg" href="https://genmotion.app/api/download/macos-arm64">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+              Télécharger pour macOS
+            </a>
+            <a class="btn btn-ghost btn-lg" href="https://genmotion.app/help">Documentation</a>
+          </div>
+        </div>
+        <div class="frame-stage reveal d2" data-wm-id="landing.hero.demo">
+          <div class="frame-badge"><span class="pip"></span> Capture → Compose</div>
+          <div class="browser">
+            <div class="browser-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <div class="url">votre-site.com</div>
+              <span class="browser-tag">1920×1080 · 30fps</span>
+            </div>
+            <div class="viewport">
+              <div class="page">
+                <div class="bar lg"></div>
+                <div class="bar w1"></div><div class="bar w3"></div><div class="bar w2"></div>
+                <div class="page-row"><div class="page-card"></div><div class="page-card"></div><div class="page-card"></div></div>
+                <div class="bar w3"></div><div class="bar w1"></div><div class="bar w4"></div>
+              </div>
+              <div class="scan" data-pct="00%"></div>
+              <div class="compose-strip">
+                <div class="play-btn" aria-hidden="true"></div>
+                <div class="wave">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                </div>
+                <span class="compose-time">00:42 / 01:40</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================ DÉMO ============================ -->
+  <section class="section demo" id="demo" data-screen-label="Démo" data-wm-id="landing.demo">
+    <div class="wrap">
+      <div class="demo-head">
+        <div>
+          <div class="kicker reveal">Démo · 100 secondes</div>
+          <h2 class="demo-title reveal d1" style="margin-top:var(--s-4)">
+            GEN&nbsp;MOTION filme sa propre interface — voix off ElevenLabs, style Energetic, sortie&nbsp;1080p.
+          </h2>
+        </div>
+      </div>
+      <div class="video-frame reveal d2" data-wm-id="landing.demo.player">
+        <div class="video-ph">
+          <div class="video-play" role="button" aria-label="Lire la démo"></div>
+        </div>
+        <div class="video-meta">demo.mp4 · 100s · 1080p · 16:9</div>
+        <div class="video-note">slot · /demo.mp4</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================== PIPELINE ========================== -->
+  <section class="section pipe" id="pipeline" data-screen-label="Pipeline" data-wm-id="landing.pipeline">
+    <div class="wrap">
+      <div class="pipe-head reveal">
+        <div class="kicker">Comment ça marche</div>
+        <h2 class="pipe-title">Trois étapes.<br />Aucun cloud requis.</h2>
+      </div>
+      <div class="steps">
+        <article class="step reveal d1" data-wm-id="landing.pipeline.step-1">
+          <span class="step-num">01 — Capture</span>
+          <div class="step-viz viz-capture" aria-hidden="true">
+            <div class="bar lg"></div><div class="bar w1"></div><div class="bar w3"></div><div class="bar w2"></div>
+            <div class="scan-mini"></div>
+          </div>
+          <h3>Capture</h3>
+          <p>Puppeteer film votre site section par section. Vous décrivez ce que vous voulez voir, l'app navigue, scroll, hover, click. Chaque section devient un MP4 propre.</p>
+        </article>
+
+        <article class="step reveal d2" data-wm-id="landing.pipeline.step-2">
+          <span class="step-num">02 — Voix off</span>
+          <div class="step-viz viz-voice" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <div class="ticks"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          </div>
+          <h3>Voix off</h3>
+          <p>ElevenLabs clone votre voix (ou une voix stock) en mode narratif continu. Alignment char-level&nbsp;: vos overlays se calent au mot près sur la voix.</p>
+        </article>
+
+        <article class="step reveal d3" data-wm-id="landing.pipeline.step-3">
+          <span class="step-num">03 — Compose</span>
+          <div class="step-viz viz-compose" aria-hidden="true">
+            <div class="mini-device"><span class="mini-play"></span><span class="mini-time"></span></div>
+          </div>
+          <h3>Compose</h3>
+          <p>Remotion assemble dans un device frame (Mac chrome ou iPhone), applique un preset visuel parmi 4, mixe l'audio. Final.mp4 prêt à publier.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================== ÉDITIONS ========================== -->
+  <section class="section pricing" id="editions" data-screen-label="Éditions" data-wm-id="landing.pricing">
+    <div class="wrap">
+      <div class="pricing-head reveal">
+        <div class="kicker">Éditions</div>
+        <h2 class="pricing-title">Community gratuite.<br />Studio pour aller plus loin.</h2>
+      </div>
+      <div class="tiers">
+        <article class="tier reveal d1" data-wm-id="landing.pricing.community">
+          <span class="tier-name">Community</span>
+          <div class="tier-price"><span class="amt">Gratuit</span></div>
+          <p class="tier-note">Open-core · MIT · pour toujours</p>
+          <ul class="feat">
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Pipeline capture + voix off + compose</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Presets Sober + Energetic</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Formats 16:9 + 9:16</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Agent IA (BYOK Claude)</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Scaffold, recapture, trim, reorder</li>
+          </ul>
+          <a class="btn btn-soft btn-lg btn-block" href="https://genmotion.app/api/download/macos-arm64">Télécharger</a>
+        </article>
+
+        <article class="tier featured reveal d2" data-wm-id="landing.pricing.studio">
+          <span class="tier-name">Studio</span>
+          <div class="tier-price"><span class="amt">$49</span><span class="per">paiement unique</span></div>
+          <p class="tier-note">perpétuel · mises à jour à vie</p>
+          <ul class="feat">
+            <li class="plus"><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Tout Community, plus&nbsp;:</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Frames 3D iPhone &amp; MacBook</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Presets Cinematic &amp; Glitch</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Multi-format export simultané</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg></span> Music library managée · watermark removal</li>
+          </ul>
+          <a class="btn btn-primary btn-lg btn-block" href="https://genmotion.app/about">Acheter Studio · $49</a>
+        </article>
+      </div>
+
+      <div class="enterprise-line reveal d3" data-wm-id="landing.pricing.enterprise">
+        <p><b>Enterprise.</b> White-label, API headless ou SSO ? On construit avec vous.</p>
+        <a class="btn btn-ghost" href="https://genmotion.app/about">Voir Enterprise</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ CTA ============================ -->
+  <section class="section cta" id="ship" data-screen-label="Ship" data-wm-id="landing.cta">
+    <div class="wrap">
+      <div class="kicker reveal">Ready to ship&nbsp;?</div>
+      <h2 class="cta-title reveal d1">Votre prochain clip motion est à 5&nbsp;minutes.</h2>
+      <div class="cta-row reveal d2">
+        <a class="btn btn-primary btn-lg" href="https://genmotion.app/api/download/macos-arm64">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Télécharger pour macOS
+        </a>
+        <a class="btn btn-ink btn-lg" href="https://genmotion.app/about">Acheter Studio · $49</a>
+        <a class="btn btn-ghost btn-lg" href="https://genmotion.app/help">Lire la documentation</a>
+      </div>
+      <span class="cta-sub reveal d3">macOS Apple Silicon · .dmg notarisé · open-source MIT · made in Nice</span>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer class="footer" data-wm-id="landing.footer">
+    <div class="wrap">
+      <a class="brand" href="#hero" data-jump="#hero">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-name">GEN&nbsp;MOTION</span>
+      </a>
+      <div class="footer-links">
+        <a href="https://genmotion.app/about">À propos</a>
+        <a href="https://genmotion.app/help">Doc</a>
+        <a href="https://genmotion.app/mentions-legales">Mentions</a>
+        <a href="https://genmotion.app/confidentialite">Confidentialité</a>
+        <a href="https://genmotion.app/cgu">CGU</a>
+        <a href="https://genmotion.app/cgv">CGV</a>
+        <a href="https://github.com/ben-ndui/webgen-motion">GitHub</a>
+      </div>
+      <span class="footer-meta">genmotion.app · Smooth &amp; Design · Nice</span>
+    </div>
+  </footer>
+
+</main>
+
+<!-- ====================== SIDE PROGRESS ====================== -->
+<div class="progress" data-wm-id="landing.progress">
+  <button class="active" aria-label="Hero"><span class="lbl">Hero</span></button>
+  <button aria-label="Démo"><span class="lbl">Démo</span></button>
+  <button aria-label="Pipeline"><span class="lbl">Pipeline</span></button>
+  <button aria-label="Éditions"><span class="lbl">Éditions</span></button>
+  <button aria-label="Ship"><span class="lbl">Ship</span></button>
+</div>
+
+<!-- ====================== TWEAKS ====================== -->
+<div id="tweaks-root"></div>
+
+<script src="assets/landing.js?v=5"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="assets/tweaks-app.jsx?v=2"></script>
+
+</body>
+</html>

@@ -91,9 +91,10 @@ describe("globals.css — design token contract", () => {
     expect(code).toMatch(new RegExp(`\\${token}\\s*:`));
   });
 
-  it("keeps legacy aliases so un-migrated components don't break", () => {
-    for (const alias of ["--background", "--foreground", "--border", "--text-muted"]) {
-      expect(code).toMatch(new RegExp(`\\${alias}\\s*:`));
-    }
+  it("dropped the transitional legacy aliases (migration complete)", () => {
+    // The --background/--foreground/--border aliases were removed once all
+    // surfaces moved to the canonical tokens. Guard against re-introduction.
+    expect(code).not.toMatch(/--color-background\s*:/);
+    expect(code).not.toMatch(/--color-foreground\s*:/);
   });
 });

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GEN MOTION — Design System</title>
+<link rel="stylesheet" href="assets/tokens.css?v=2" />
+<link rel="stylesheet" href="assets/pages.css?v=3" />
+<script src="assets/theme.js"></script>
+<style>
+  .ds { max-width: 1080px; margin: 0 auto; padding: 0 var(--s-7) var(--s-10); }
+  .ds-sec { padding: var(--s-8) 0; border-top: 1px solid var(--line); }
+  .ds-sec:first-of-type { border-top: 0; }
+  .ds-head { margin-bottom: var(--s-6); }
+  .ds-head h2 { font-size: var(--t-2xl); margin-top: 10px; }
+  .ds-head p { color: var(--muted); margin-top: 6px; font-size: var(--t-sm); max-width: 56ch; }
+
+  /* color */
+  .sw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: var(--s-3); }
+  .sw { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; background: var(--surface); }
+  .sw .chip { height: 70px; border-bottom: 1px solid var(--line); }
+  .sw .meta { padding: 9px 11px; }
+  .sw .tk { font-family: var(--font-mono); font-size: 11px; color: var(--ink); font-weight: 500; }
+  .sw .vl { font-family: var(--font-mono); font-size: 10px; color: var(--faint); margin-top: 2px; display: block; word-break: break-all; }
+
+  /* type */
+  .ty-row { display: grid; grid-template-columns: 120px 1fr auto; gap: var(--s-5); align-items: baseline; padding: 14px 0; border-bottom: 1px solid var(--line-soft); }
+  .ty-row:last-child { border-bottom: 0; }
+  .ty-tk { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+  .ty-sample { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ty-size { font-family: var(--font-mono); font-size: 11px; color: var(--faint); white-space: nowrap; }
+
+  /* spacing */
+  .sp-row { display: flex; align-items: center; gap: var(--s-4); padding: 7px 0; }
+  .sp-row .bar { height: 16px; background: var(--accent); border-radius: 3px; }
+  .sp-row .tk { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 64px; }
+  .sp-row .px { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+
+  /* radius / shadow */
+  .box-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: var(--s-4); }
+  .box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .box .demo { width: 100%; height: 78px; background: var(--surface); border: 1px solid var(--line); }
+  .box.sh .demo { border: 0; }
+  .box .tk { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+
+  /* components */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); }
+  @media (max-width: 760px){ .comp-grid { grid-template-columns: 1fr; } }
+  .comp { border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); background: var(--surface); }
+  .comp h4 { font-size: var(--t-sm); font-family: var(--font-mono); color: var(--faint); text-transform: uppercase; letter-spacing: .06em; margin-bottom: var(--s-4); font-weight: 500; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; padding: 4px 9px; border-radius: var(--r-full); border: 1px solid var(--line); color: var(--muted); }
+  .badge.acc { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .badge.ink { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .stat { display: inline-flex; align-items: center; gap: 7px; font-size: var(--t-xs); font-weight: 500; }
+  .stat .d { width: 7px; height: 7px; border-radius: 50%; }
+  .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); padding: 3px; gap: 2px; }
+  .seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: var(--t-xs); padding: 6px 12px; border-radius: 7px; cursor: pointer; }
+  .seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-xs); }
+  .field { display: grid; gap: 6px; }
+  .field input { border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; font: inherit; font-size: var(--t-sm); background: var(--bg-sunken); color: var(--ink); }
+  .field input:focus { outline: 0; border-color: var(--accent); box-shadow: var(--ring); }
+</style>
+</head>
+<body>
+
+<nav class="pnav" data-wm-id="ds.nav">
+  <a class="brand" href="GEN MOTION Landing.html"><span class="brand-mark"></span><span class="brand-name">GEN&nbsp;MOTION</span></a>
+  <div class="nav-links"><span class="nav-link active">Design System</span></div>
+  <div class="nav-tools">
+    <button class="theme-toggle" onclick="gmToggleTheme()" aria-label="Thème">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </div>
+</nav>
+
+<header class="ds" style="padding-top:var(--s-8)">
+  <span class="kicker">Design System · v1</span>
+  <h1 style="font-size:clamp(2.25rem,4vw,3rem);letter-spacing:var(--tracking-display);margin-top:14px;max-width:18ch">Tokens &amp; composants GEN MOTION.</h1>
+  <p style="color:var(--muted);margin-top:14px;max-width:56ch">Noir &amp; blanc strict, un accent bleu raffiné, typographie Geist. Bascule le thème en haut à droite — chaque token se re-thème. Référence de handoff pour l'intégration TSX / Tailwind.</p>
+</header>
+
+<main class="ds">
+  <!-- COLOR -->
+  <section class="ds-sec" data-wm-id="ds.colors">
+    <div class="ds-head"><span class="kicker">Couleurs</span><h2>Palette</h2><p>Neutres très peu saturés + une famille d'accent (variation de teinte uniquement). Valeurs résolues en direct.</p></div>
+    <div class="sw-grid" id="swatches"></div>
+  </section>
+
+  <!-- TYPE -->
+  <section class="ds-sec" data-wm-id="ds.type">
+    <div class="ds-head"><span class="kicker">Typographie</span><h2>Échelle Geist</h2><p>Geist Sans pour tout ; Geist Mono pour les labels, specs et données techniques.</p></div>
+    <div id="typescale"></div>
+  </section>
+
+  <!-- SPACING -->
+  <section class="ds-sec" data-wm-id="ds.spacing">
+    <div class="ds-head"><span class="kicker">Espacement</span><h2>Échelle 4px</h2></div>
+    <div id="spacing"></div>
+  </section>
+
+  <!-- RADIUS -->
+  <section class="ds-sec" data-wm-id="ds.radius">
+    <div class="ds-head"><span class="kicker">Rayons</span><h2>Radius</h2></div>
+    <div class="box-grid" id="radii"></div>
+  </section>
+
+  <!-- SHADOWS -->
+  <section class="ds-sec" data-wm-id="ds.shadows">
+    <div class="ds-head"><span class="kicker">Ombres</span><h2>Élévation</h2><p>Discrètes : on privilégie les filets (hairlines) à l'ombre portée.</p></div>
+    <div class="box-grid" id="shadows"></div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section class="ds-sec" data-wm-id="ds.components">
+    <div class="ds-head"><span class="kicker">Composants</span><h2>Briques</h2></div>
+    <div class="comp-grid">
+      <div class="comp"><h4>Boutons</h4>
+        <div class="row">
+          <button class="btn btn-primary">Primary</button>
+          <button class="btn btn-ink">Ink</button>
+          <button class="btn btn-ghost">Ghost</button>
+          <button class="btn btn-soft">Soft</button>
+        </div>
+      </div>
+      <div class="comp"><h4>Badges &amp; statuts</h4>
+        <div class="row" style="margin-bottom:14px">
+          <span class="badge">Default</span><span class="badge acc">Accent</span><span class="badge ink">Ink</span>
+        </div>
+        <div class="row">
+          <span class="stat" style="color:var(--muted)"><span class="d" style="background:var(--line-strong)"></span>Brouillon</span>
+          <span class="stat" style="color:var(--accent)"><span class="d" style="background:var(--accent)"></span>Prêt</span>
+          <span class="stat" style="color:var(--ink)"><span class="d" style="background:var(--ink)"></span>Rendu</span>
+        </div>
+      </div>
+      <div class="comp"><h4>Segmented &amp; champ</h4>
+        <div class="row" style="margin-bottom:14px">
+          <span class="seg"><button class="on">Tous</button><button>16:9</button><button>9:16</button></span>
+        </div>
+        <div class="field"><input type="text" placeholder="Rechercher un tour…" /></div>
+      </div>
+      <div class="comp"><h4>Carte</h4>
+        <div style="border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden">
+          <div style="aspect-ratio:16/7;background:repeating-linear-gradient(135deg,transparent 0 11px,color-mix(in oklch,var(--ink) 4%,transparent) 11px 12px),var(--bg-sunken);border-bottom:1px solid var(--line)"></div>
+          <div style="padding:12px 14px"><div style="font-weight:600;color:var(--ink);font-size:var(--t-sm)">Titre de carte</div><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-top:4px">12 étapes · 1:40 · 16:9</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pfooter">
+  <div class="wrap">
+    <a class="brand" href="GEN MOTION Landing.html"><span class="brand-mark"></span><span class="brand-name">GEN&nbsp;MOTION</span></a>
+    <span class="foot-meta">Design System · Smooth &amp; Design · Nice</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var cs = getComputedStyle(document.documentElement);
+  function val(v){ return cs.getPropertyValue(v).trim(); }
+
+  // colors
+  var COLORS = [
+    ["--bg","Fond"],["--bg-sunken","Fond creux"],["--surface","Surface"],["--surface-2","Surface 2"],
+    ["--ink","Encre"],["--ink-soft","Encre douce"],["--muted","Atténué"],["--faint","Discret"],
+    ["--line","Filet"],["--line-strong","Filet fort"],
+    ["--accent","Accent"],["--accent-hover","Accent hover"],["--accent-soft","Accent doux"],["--accent-line","Accent filet"]
+  ];
+  document.getElementById("swatches").innerHTML = COLORS.map(function(c){
+    return '<div class="sw"><div class="chip" style="background:var('+c[0]+')"></div>'+
+      '<div class="meta"><span class="tk">'+c[0]+'</span><span class="vl">'+c[1]+'</span></div></div>';
+  }).join("");
+
+  // type
+  var TYPE = [
+    ["--t-display","Display","Capturez votre site."],
+    ["--t-3xl","3xl","Trois étapes."],
+    ["--t-2xl","2xl","Community gratuite."],
+    ["--t-xl","xl","Voix off"],
+    ["--t-lg","lg","Compose le clip final"],
+    ["--t-base","base","Texte courant de l'interface, lisible et confortable."],
+    ["--t-sm","sm","Texte secondaire et labels d'interface."],
+    ["--t-xs","xs","Méta-informations et légendes."],
+    ["--t-mono","mono","16:9 · 1:40 · MP4"]
+  ];
+  document.getElementById("typescale").innerHTML = TYPE.map(function(t){
+    var mono = t[0] === "--t-mono";
+    return '<div class="ty-row"><span class="ty-tk">'+t[0]+'</span>'+
+      '<span class="ty-sample" style="font-size:var('+t[0]+');'+(mono?'font-family:var(--font-mono);':'')+(t[1]==="Display"||t[1].match(/xl|3xl|2xl/)?'font-weight:600;letter-spacing:-0.02em;':'')+'">'+t[2]+'</span>'+
+      '<span class="ty-size">'+val(t[0])+'</span></div>';
+  }).join("");
+
+  // spacing
+  var SP = ["--s-1","--s-2","--s-3","--s-4","--s-5","--s-6","--s-7","--s-8","--s-9","--s-10","--s-11"];
+  document.getElementById("spacing").innerHTML = SP.map(function(s){
+    return '<div class="sp-row"><span class="tk">'+s+'</span><span class="bar" style="width:var('+s+')"></span><span class="px">'+val(s)+'</span></div>';
+  }).join("");
+
+  // radii
+  var R = ["--r-sm","--r-md","--r-lg","--r-xl","--r-2xl"];
+  document.getElementById("radii").innerHTML = R.map(function(r){
+    return '<div class="box"><div class="demo" style="border-radius:var('+r+')"></div><span class="tk">'+r+' · '+val(r)+'</span></div>';
+  }).join("");
+
+  // shadows
+  var SH = ["--shadow-xs","--shadow-sm","--shadow-md","--shadow-pop"];
+  document.getElementById("shadows").innerHTML = SH.map(function(s){
+    return '<div class="box sh"><div class="demo" style="border-radius:var(--r-md);box-shadow:var('+s+')"></div><span class="tk">'+s+'</span></div>';
+  }).join("");
+
+  // re-resolve values on theme change
+  new MutationObserver(function(){
+    cs = getComputedStyle(document.documentElement);
+    document.querySelectorAll(".ty-row .ty-size").forEach(function(el,i){ el.textContent = val(TYPE[i][0]); });
+  }).observe(document.documentElement, { attributes:true, attributeFilter:["data-theme"] });
+})();
+</script>
+</body>
+</html>

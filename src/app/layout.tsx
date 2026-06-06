@@ -37,7 +37,7 @@ export default function RootLayout({
         {/* Pre-paint theme set to avoid FOUC. Runs before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
         <UpdateChecker />
       </body>
