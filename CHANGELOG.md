@@ -11,6 +11,8 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+## [0.2.3] — 2026-06-06
+
 ### Fixed (CI — desktop-release matrix débloquée) · 2026-06-05
 
 Les runs des tags v0.2.1 et v0.2.2 échouaient (jamais de release auto). Diagnostic des jobs : 2 legs vertes (macOS arm64, Windows), 2 cassées.
