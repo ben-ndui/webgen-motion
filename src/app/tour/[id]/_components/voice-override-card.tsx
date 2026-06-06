@@ -81,12 +81,12 @@ export default function VoiceOverrideCard({
   }, [effectiveBackend, profilesState.kind]);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+    <div className="rounded-2xl border border-line bg-surface p-4 space-y-3">
       <div>
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
           Voix off — override par tour
         </p>
-        <p className="hidden sm:block text-[11px] text-slate-500 leading-relaxed">
+        <p className="hidden sm:block text-[11px] text-muted leading-relaxed">
           Backend cloud (ElevenLabs) ou local (Voicebox). Laisse vide les
           autres champs pour utiliser la config globale du wizard.
         </p>
@@ -94,7 +94,7 @@ export default function VoiceOverrideCard({
 
       {/* Backend toggle */}
       <div>
-        <p className="text-[10px] uppercase tracking-wider font-mono text-slate-500 mb-1.5">
+        <p className="text-[10px] uppercase tracking-wider font-mono text-muted mb-1.5">
           Backend
         </p>
         <div className="grid grid-cols-2 gap-1.5">
@@ -118,7 +118,7 @@ export default function VoiceOverrideCard({
       {effectiveBackend === "elevenlabs" ? (
         <div className="space-y-2">
           <label className="block">
-            <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
               Voice ID
             </span>
             <input
@@ -134,11 +134,11 @@ export default function VoiceOverrideCard({
                 })
               }
               placeholder="ELEVENLABS_VOICE_ID (global)"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="mt-1 w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </label>
           <label className="block">
-            <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
               Model
             </span>
             <input
@@ -154,7 +154,7 @@ export default function VoiceOverrideCard({
                 })
               }
               placeholder="eleven_multilingual_v2"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="mt-1 w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </label>
         </div>
@@ -162,20 +162,20 @@ export default function VoiceOverrideCard({
         <div className="space-y-2">
           <div>
             <div className="flex items-baseline justify-between mb-1">
-              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
                 Voix
               </span>
               <button
                 type="button"
                 onClick={fetchProfiles}
-                className="text-[10px] font-mono text-slate-500 hover:text-slate-900"
+                className="text-[10px] font-mono text-muted hover:text-ink"
                 title="Rafraîchir la liste depuis Voicebox"
               >
                 ↻ Refresh
               </button>
             </div>
             {profilesState.kind === "loading" && (
-              <p className="text-[10px] font-mono text-slate-500 px-2 py-1.5 bg-slate-50 rounded-md">
+              <p className="text-[10px] font-mono text-muted px-2 py-1.5 bg-bg-sunken rounded-md">
                 Chargement des profils Voicebox…
               </p>
             )}
@@ -197,7 +197,7 @@ export default function VoiceOverrideCard({
                     })
                   }
                   placeholder="profile UUID (fallback)"
-                  className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
                 />
               </div>
             )}
@@ -220,7 +220,7 @@ export default function VoiceOverrideCard({
                             : undefined,
                       })
                     }
-                    className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+                    className="w-full rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent bg-surface"
                   >
                     <option value="">
                       — Voix globale (config wizard) —
@@ -234,7 +234,7 @@ export default function VoiceOverrideCard({
                     ))}
                   </select>
                 )}
-                <p className="hidden sm:block text-[10px] text-slate-400 mt-0.5">
+                <p className="hidden sm:block text-[10px] text-faint mt-0.5">
                   {profilesState.profiles.length} voix · {profilesState.url}
                 </p>
               </>
@@ -242,7 +242,7 @@ export default function VoiceOverrideCard({
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             <label className="block">
-              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
                 Engine
               </span>
               <select
@@ -253,7 +253,7 @@ export default function VoiceOverrideCard({
                     voiceboxEngine: e.target.value || undefined,
                   })
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+                className="mt-1 w-full rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent bg-surface"
               >
                 <option value="">global</option>
                 <option value="qwen">qwen</option>
@@ -266,7 +266,7 @@ export default function VoiceOverrideCard({
               </select>
             </label>
             <label className="block">
-              <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+              <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
                 Size
               </span>
               <select
@@ -277,7 +277,7 @@ export default function VoiceOverrideCard({
                     voiceboxModelSize: e.target.value || undefined,
                   })
                 }
-                className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-white"
+                className="mt-1 w-full rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent bg-surface"
               >
                 <option value="">global</option>
                 <option value="0.6B">0.6B</option>
@@ -297,8 +297,8 @@ export default function VoiceOverrideCard({
       )}
 
       {/* Voice settings sliders */}
-      <div className="pt-2 border-t border-slate-100 space-y-2.5">
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+      <div className="pt-2 border-t border-line-soft space-y-2.5">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
           Réglages ElevenLabs
         </p>
         <VoiceSlider
@@ -323,10 +323,10 @@ export default function VoiceOverrideCard({
         />
         <label className="flex items-center justify-between gap-3 cursor-pointer">
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500 block">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-muted block">
               Speaker boost
             </span>
-            <span className="hidden sm:inline text-[10px] text-slate-400">
+            <span className="hidden sm:inline text-[10px] text-faint">
               Renforce le timbre du speaker
             </span>
           </div>
@@ -338,12 +338,12 @@ export default function VoiceOverrideCard({
                 useSpeakerBoost: e.target.checked,
               })
             }
-            className="h-4 w-4 accent-zinc-900"
+            className="h-4 w-4 accent-[var(--accent)]"
           />
         </label>
         <button
           onClick={() => onChange({ ...tour, voiceSettings: undefined })}
-          className="w-full text-[10px] font-mono uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors py-1"
+          className="w-full text-[10px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors py-1"
           title="Reset aux valeurs par défaut"
         >
           ↻ Reset
@@ -381,10 +381,10 @@ function VoiceSlider({
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500">
+        <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
           {label}
         </span>
-        <span className="text-[10px] font-mono text-slate-700">
+        <span className="text-[10px] font-mono text-ink-soft">
           {value.toFixed(2)}
         </span>
       </div>
@@ -395,9 +395,9 @@ function VoiceSlider({
         step={0.01}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1 mt-1 accent-zinc-900 cursor-pointer"
+        className="w-full h-1 mt-1 accent-[var(--accent)] cursor-pointer"
       />
-      <p className="hidden sm:block text-[10px] text-slate-400 mt-0.5">{hint}</p>
+      <p className="hidden sm:block text-[10px] text-faint mt-0.5">{hint}</p>
     </div>
   );
 }
@@ -419,13 +419,13 @@ function BackendPill({
       onClick={onClick}
       className={`flex flex-col items-start gap-0.5 px-2.5 py-2 rounded-lg border text-left transition-colors ${
         active
-          ? "border-zinc-900 bg-zinc-900 text-white"
-          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          ? "border-accent bg-ink text-bg"
+          : "border-line bg-surface text-ink-soft hover:bg-bg-sunken"
       }`}
     >
       <span className="text-xs font-semibold">{label}</span>
       <span
-        className={`text-[9px] font-mono uppercase tracking-wider ${active ? "text-white/70" : "text-slate-500"}`}
+        className={`text-[9px] font-mono uppercase tracking-wider ${active ? "text-bg/70" : "text-muted"}`}
       >
         {hint}
       </span>

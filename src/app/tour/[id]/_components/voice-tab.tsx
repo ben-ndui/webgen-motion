@@ -1,5 +1,6 @@
 "use client";
 
+import "../../../editor.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
@@ -207,13 +208,13 @@ export default function VoiceTab({
     : "Synthèse via ta voix clonée. Mode per-step : 1 fetch par ligne, assemblage timeline avec padding silencieux entre chaque chunk.";
 
   const actionCard = (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+    <div className="rounded-2xl border border-line bg-surface p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
             ElevenLabs TTS
           </p>
-          <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+          <h2 className="text-sm font-semibold text-ink leading-tight">
             Générer la voix off
           </h2>
         </div>
@@ -221,7 +222,7 @@ export default function VoiceTab({
           type="button"
           title={generateDescription}
           aria-label="À propos de la génération VO"
-          className="flex-shrink-0 text-slate-400 hover:text-slate-700 transition-colors cursor-help"
+          className="flex-shrink-0 text-faint hover:text-ink-soft transition-colors cursor-help"
         >
           <Info className="w-4 h-4" />
         </button>
@@ -229,7 +230,7 @@ export default function VoiceTab({
       <button
         onClick={onGenerateVo}
         disabled={generateDisabled}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         title={generateTitle}
       >
         {isRunning ? (
@@ -249,13 +250,13 @@ export default function VoiceTab({
 
   const calibrateCard =
     isNarrative && voState.kind === "ready" ? (
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+      <div className="rounded-2xl border border-line bg-surface p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
               Synchro
             </p>
-            <h2 className="text-sm font-semibold text-slate-900 leading-tight">
+            <h2 className="text-sm font-semibold text-ink leading-tight">
               Calibrer la timeline
             </h2>
           </div>
@@ -263,7 +264,7 @@ export default function VoiceTab({
             type="button"
             title="Lit voiceover-alignment.json et écrit les nouveaux dwellMs sur chaque step référencé par un marker. Ensuite, lance Capturer pour produire des sections au pacing exact de la voix."
             aria-label="À propos de la calibration"
-            className="flex-shrink-0 text-slate-400 hover:text-slate-700 transition-colors cursor-help"
+            className="flex-shrink-0 text-faint hover:text-ink-soft transition-colors cursor-help"
           >
             <Info className="w-4 h-4" />
           </button>
@@ -271,7 +272,7 @@ export default function VoiceTab({
         <button
           onClick={handleCalibrate}
           disabled={calibrate.kind === "loading"}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {calibrate.kind === "loading" ? (
             <>
@@ -289,7 +290,19 @@ export default function VoiceTab({
     ) : null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] 2xl:grid-cols-[1fr_360px] gap-6">
+    <div className="gm-editor" data-wm-id="editor.voice">
+      <div className="panel">
+        <div className="panel-head">
+          <div>
+            <span className="kicker">Onglet 04</span>
+            <h2 className="panel-title">Voix off</h2>
+            <p className="panel-sub">
+              Mode narratif continu ou voix off par étape. ElevenLabs clone votre voix,
+              ou Voicebox tourne 100% en local.
+            </p>
+          </div>
+        </div>
+        <div className="two-col">
       <div className="space-y-6 min-w-0">
       {/* Action + Calibrate inline at md- (sidebar takes them at lg+) */}
       <div className="lg:hidden space-y-4">
@@ -298,8 +311,8 @@ export default function VoiceTab({
       </div>
 
       {/* Mode toggle */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center gap-3 flex-wrap">
-        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mr-2">
+      <div className="rounded-2xl border border-line bg-surface p-4 flex items-center gap-3 flex-wrap">
+        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mr-2">
           Mode
         </p>
         <ModePill
@@ -314,7 +327,7 @@ export default function VoiceTab({
           label="Narrative"
           help="Un texte continu, markers [step:N] pour synchro"
         />
-        <span className="ml-auto text-xs text-slate-500 font-mono">
+        <span className="ml-auto text-xs text-muted font-mono">
           {isNarrative
             ? "ElevenLabs → 1 clip · timings calibrés depuis l'alignment"
             : "ElevenLabs → 1 clip / step · padding silencieux entre chaque"}
@@ -323,13 +336,13 @@ export default function VoiceTab({
 
       {/* Narrative editor (only in narrative mode) */}
       {isNarrative && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+        <div className="rounded-2xl border border-line bg-surface p-5 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+              <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
                 Script narratif
               </p>
-              <h2 className="text-base font-semibold text-slate-900">
+              <h2 className="text-base font-semibold text-ink">
                 Texte continu de la voix off
               </h2>
             </div>
@@ -340,19 +353,19 @@ export default function VoiceTab({
             value={tour.narrativeScript ?? ""}
             onChange={(e) => setNarrative(e.target.value)}
             rows={8}
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+            className="w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             placeholder="[step:0]Bienvenue sur GEN MOTION. [step:2]Génère des vidéos motion design [step:5]depuis n'importe quel site."
             spellCheck={false}
           />
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mr-1">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mr-1">
               Insérer marker
             </p>
             {tour.steps.map((s, i) => (
               <button
                 key={i}
                 onClick={() => insertMarkerAt(i)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-mono transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-surface-2 hover:bg-bg-sunken text-ink-soft text-[11px] font-mono transition-colors"
                 title={`Insère [step:${i}] (${stepLabel(s)})`}
               >
                 <Plus className="w-3 h-3" />
@@ -360,7 +373,7 @@ export default function VoiceTab({
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted">
             Les markers <code className="font-mono">[step:N]</code> indiquent à
             quel moment chaque overlay doit apparaître. Après génération, tu
             peux <strong>Calibrer</strong> pour aligner les{" "}
@@ -371,7 +384,7 @@ export default function VoiceTab({
       )}
 
       {/* Counters strip — narrative shows marker count, per-step shows VO actives */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-3 flex-wrap">
+      <div className="rounded-2xl border border-line bg-surface p-4 flex items-center justify-between gap-3 flex-wrap">
         {isNarrative ? (
           <div className="flex items-center gap-6 flex-wrap">
             <Counter
@@ -394,7 +407,7 @@ export default function VoiceTab({
         )}
         <button
           onClick={onJumpToScript}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-xs font-medium hover:bg-slate-200 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-2 text-ink-soft text-xs font-medium hover:bg-bg-sunken transition-colors"
         >
           {isNarrative ? "Voir les steps" : "Éditer dans Script"}
           <ArrowRight className="w-3 h-3" />
@@ -415,7 +428,7 @@ export default function VoiceTab({
           animate={{ opacity: 1, y: 0 }}
           className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex items-center gap-3 flex-wrap"
         >
-          <span className="w-9 h-9 rounded-xl bg-emerald-600 text-white grid place-items-center flex-shrink-0">
+          <span className="w-9 h-9 rounded-xl bg-emerald-600 text-bg grid place-items-center flex-shrink-0">
             <Play className="w-4 h-4" />
           </span>
           <div className="flex-1 min-w-0">
@@ -504,14 +517,14 @@ export default function VoiceTab({
 
       {/* Idle empty (per-step mode without any active VO) */}
       {!isNarrative && voState.kind === "idle" && counters.active === 0 && (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-8 py-12 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-zinc-900 text-white mb-4">
+        <div className="rounded-2xl border border-dashed border-line-strong bg-surface px-8 py-12 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-ink text-bg mb-4">
             <Mic className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mb-1">
+          <h3 className="text-base font-semibold text-ink mb-1">
             Aucune voix active
           </h3>
-          <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
             Va dans le tab <strong>Script</strong> et écris une voix off sur au
             moins une étape (sections, overlays, scrolls, waits, hovers).
           </p>
@@ -525,6 +538,8 @@ export default function VoiceTab({
         {calibrateCard}
         <VoiceOverrideCard tour={tour} onChange={onTourChange} />
       </aside>
+        </div>
+      </div>
     </div>
   );
 }
@@ -546,8 +561,8 @@ function ModePill({
       title={help}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
         active
-          ? "bg-zinc-900 text-white"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          ? "bg-ink text-bg"
+          : "bg-surface-2 text-ink-soft hover:bg-bg-sunken"
       }`}
     >
       {label}
@@ -559,7 +574,7 @@ function SaveBadge({ status }: { status: SaveStatus }) {
   if (status === "idle") return null;
   if (status === "saving") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-mono">
+      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-surface-2 text-ink-soft text-[11px] font-mono">
         <Sparkles className="w-3 h-3 animate-pulse" />
         Sauvegarde…
       </span>
@@ -595,12 +610,12 @@ function Counter({
   return (
     <div>
       <p
-        className={`text-[10px] uppercase tracking-[0.2em] ${mono ? "font-mono" : ""} ${warn ? "text-amber-700" : "text-slate-500"} mb-1`}
+        className={`text-[10px] uppercase tracking-[0.2em] ${mono ? "font-mono" : ""} ${warn ? "text-amber-700" : "text-muted"} mb-1`}
       >
         {label}
       </p>
       <p
-        className={`text-xl font-semibold ${warn ? "text-amber-900" : "text-slate-900"}`}
+        className={`text-xl font-semibold ${warn ? "text-amber-900" : "text-ink"}`}
       >
         {value}
       </p>
