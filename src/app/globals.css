@@ -21,6 +21,11 @@
   --lh-tight: 1.02; --lh-snug: 1.12; --lh-body: 1.55;
   --tracking-tight: -0.03em; --tracking-display: -0.045em; --tracking-mono: 0.08em;
 
+  /* ---- Spacing (4px base) — utilisé par les CSS portées (landing/hub) ---- */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+  --s-9: 96px; --s-10: 128px; --s-11: 160px;
+
   /* ---- Radius ---- */
   --r-sm: 7px; --r-md: 11px; --r-lg: 16px; --r-xl: 22px; --r-2xl: 30px; --r-full: 999px;
 

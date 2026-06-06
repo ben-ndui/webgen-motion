@@ -49,6 +49,18 @@ describe("globals.css — design token contract", () => {
     expect(code).toMatch(new RegExp(`\\${token}\\s*:`));
   });
 
+  it("defines the spacing scale --s-1..--s-11 (used by ported landing/hub CSS)", () => {
+    for (let i = 1; i <= 11; i++) {
+      expect(code).toMatch(new RegExp(`--s-${i}\\s*:`));
+    }
+  });
+
+  it("defines layout + radius tokens consumed by ported CSS", () => {
+    for (const t of ["--maxw", "--nav-h", "--r-md", "--r-lg", "--r-xl", "--motion"]) {
+      expect(code).toMatch(new RegExp(`\\${t}\\s*:`));
+    }
+  });
+
   it("uses OKLCH for the palette (not hex/slate)", () => {
     expect(code).toMatch(/--bg\s*:\s*oklch\(/);
     expect(code).toMatch(/--accent\s*:\s*oklch\(/);
