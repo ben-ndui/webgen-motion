@@ -74,6 +74,42 @@
 .gm-editor .type-legend { display: flex; flex-wrap: wrap; gap: 7px; margin-top: var(--s-3); }
 
 /* ============================================================
+   CAPTURE TAB
+   ============================================================ */
+.gm-editor .cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-4); }
+.gm-editor .phase-panel { background: var(--ink); color: var(--bg); border-radius: var(--r-lg); padding: var(--s-5); position: sticky; top: 0; }
+[data-theme="dark"] .gm-editor .phase-panel { background: oklch(22% 0.01 262); border: 1px solid var(--line); }
+.gm-editor .phase-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--s-4); }
+.gm-editor .phase-head .pt { font-size: var(--t-base); font-weight: 600; color: var(--bg); display: flex; align-items: center; gap: 10px; }
+[data-theme="dark"] .gm-editor .phase-head .pt { color: var(--ink); }
+.gm-editor .pt-done { color: oklch(68% 0.16 150); display: inline-grid; place-items: center; }
+.gm-editor .pt-done svg { width: 16px; height: 16px; }
+.gm-editor .live-dot { width: 8px; height: 8px; border-radius: 50%; background: oklch(70% 0.2 25); animation: gmBlink 1.4s ease-in-out infinite; }
+@keyframes gmBlink { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+.gm-editor .phase-list { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-mono); font-size: var(--t-xs); }
+.gm-editor .phase { display: grid; grid-template-columns: 18px 1fr auto; gap: 11px; align-items: center; padding: 7px 0; color: color-mix(in oklch, var(--bg) 55%, transparent); }
+[data-theme="dark"] .gm-editor .phase { color: var(--muted); }
+.gm-editor .phase.done { color: color-mix(in oklch, var(--bg) 80%, transparent); }
+[data-theme="dark"] .gm-editor .phase.done { color: var(--ink-soft); }
+.gm-editor .phase.active { color: var(--bg); }
+[data-theme="dark"] .gm-editor .phase.active { color: var(--ink); }
+.gm-editor .phase .pi { display: grid; place-items: center; }
+.gm-editor .phase .pi svg { width: 14px; height: 14px; }
+.gm-editor .spinner { width: 13px; height: 13px; border-radius: 50%; border: 2px solid color-mix(in oklch, var(--bg) 30%, transparent); border-top-color: oklch(72% 0.16 250); animation: gmSpin 0.8s linear infinite; }
+@keyframes gmSpin { to { transform: rotate(360deg); } }
+.gm-editor .phase-prog { height: 3px; border-radius: 2px; background: color-mix(in oklch, var(--bg) 18%, transparent); margin-top: 12px; overflow: hidden; }
+.gm-editor .phase-prog i { display: block; height: 100%; background: oklch(72% 0.16 250); border-radius: 2px; transition: width .25s ease; }
+.gm-editor .phase-log { margin-top: 12px; font-family: var(--font-mono); font-size: 11px; color: color-mix(in oklch, var(--bg) 45%, transparent); word-break: break-all; }
+[data-theme="dark"] .gm-editor .phase-log { color: var(--faint); }
+.gm-editor .cap-empty { border: 1px dashed var(--line-strong); border-radius: var(--r-lg); background: var(--surface); padding: var(--s-9) var(--s-5); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--s-3); }
+.gm-editor .cap-empty .ci { width: 48px; height: 48px; border-radius: var(--r-lg); background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.gm-editor .cap-empty h3 { font-size: var(--t-lg); color: var(--ink); }
+.gm-editor .cap-empty p { font-size: var(--t-sm); color: var(--muted); max-width: 42ch; }
+.gm-editor .cap-results-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--s-3); margin-bottom: var(--s-4); }
+.gm-editor .cap-results-head .ct { font-size: var(--t-sm); color: var(--ink); font-weight: 600; }
+.gm-editor .cap-results-head .cs { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--muted); display: flex; gap: 8px; }
+
+/* ============================================================
    COMPOSE TAB
    ============================================================ */
 .gm-editor .presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-4); }
