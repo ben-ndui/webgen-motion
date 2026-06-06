@@ -78,7 +78,7 @@ export default function SectionLightbox({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="w-full max-w-6xl flex flex-col my-auto"
+          className="flex flex-col my-auto mx-auto w-fit max-w-[95vw]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -99,7 +99,7 @@ export default function SectionLightbox({
             src={section.mp4Url}
             controls
             autoPlay
-            className="w-full bg-black rounded-2xl shadow-2xl"
+            className="w-auto h-[82vh] max-w-[95vw] object-contain bg-black rounded-2xl shadow-2xl"
           />
 
           {/* Liquid pill action bar — sous la vidéo, fond sombre
