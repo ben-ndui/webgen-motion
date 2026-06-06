@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Button } from "./button";
 import { Badge } from "./badge";
@@ -121,5 +122,33 @@ describe("Tabs", () => {
 
     await userEvent.click(screen.getByRole("tab", { name: /Compose/ }));
     expect(onChange).toHaveBeenCalledWith("compose");
+  });
+
+  it("does not loop when given inline (new-identity) tabs arrays", () => {
+    function Harness() {
+      const [, force] = useState(0);
+      return (
+        <>
+          <button onClick={() => force((n) => n + 1)}>rerender</button>
+          <Tabs
+            value="a"
+            onValueChange={() => {}}
+            tabs={[
+              { value: "a", label: "A" },
+              { value: "b", label: "B" },
+            ]}
+          />
+        </>
+      );
+    }
+    render(<Harness />);
+    // Re-renders pass a brand-new tabs array each time; must not blow the
+    // update depth (regression: effect dep was the array identity).
+    fireEvent.click(screen.getByText("rerender"));
+    fireEvent.click(screen.getByText("rerender"));
+    expect(screen.getByRole("tab", { name: "A" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
   });
 });

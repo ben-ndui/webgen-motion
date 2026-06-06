@@ -46,15 +46,23 @@ export function Tabs<T extends string>({
     width: 0,
   });
 
+  // Depend on `tabs.length` (a primitive), never the array identity —
+  // callers pass inline arrays, so depending on `tabs` would re-run every
+  // render and loop. The setInd guard skips redundant equal updates.
   useIsoLayoutEffect(() => {
     function measure() {
       const el = btnRefs.current[value];
-      if (el) setInd({ left: el.offsetLeft, width: el.offsetWidth });
+      if (!el) return;
+      const left = el.offsetLeft;
+      const width = el.offsetWidth;
+      setInd((prev) =>
+        prev.left === left && prev.width === width ? prev : { left, width },
+      );
     }
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [value, tabs]);
+  }, [value, tabs.length]);
 
   return (
     <div
