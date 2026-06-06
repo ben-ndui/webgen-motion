@@ -73,7 +73,7 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
       <div>
         <label
           htmlFor="license-content"
-          className="block text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-3"
+          className="block text-[11px] font-mono uppercase tracking-[0.25em] text-muted mb-3"
         >
           {hasLicense ? "Remplacer la license" : "Installer une license"}
         </label>
@@ -84,10 +84,10 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
           onChange={(e) => setContent(e.target.value)}
           placeholder={`-----BEGIN WEBGEN-MOTION LICENSE v1-----\n<contenu de ton fichier .license>\n-----END WEBGEN-MOTION LICENSE-----`}
           rows={8}
-          className="w-full font-mono text-xs bg-zinc-50 border border-zinc-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-zinc-900 placeholder-zinc-400 resize-y"
+          className="w-full font-mono text-xs bg-bg-sunken border border-line-strong px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent placeholder:text-faint resize-y"
           disabled={envOverride}
         />
-        <p className="mt-2 text-xs text-zinc-500">
+        <p className="mt-2 text-xs text-muted">
           Colle le contenu du fichier `.license` reçu (entre les lignes
           BEGIN et END comprises).
         </p>
@@ -111,7 +111,7 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
           type="button"
           onClick={install}
           disabled={!content.trim() || status.kind === "loading" || envOverride}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-950 text-white text-sm font-medium hover:bg-zinc-800 disabled:bg-zinc-300 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink text-bg text-sm font-medium hover:opacity-90 disabled:bg-line-strong disabled:cursor-not-allowed transition-colors"
           data-wm-id="setup.license-install"
         >
           {status.kind === "loading" ? "Installation…" : "Installer la license"}
@@ -130,26 +130,26 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
         )}
       </div>
 
-      <div className="pt-6 border-t border-zinc-200 space-y-5">
+      <div className="pt-6 border-t border-line space-y-5">
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-3">
+          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted mb-3">
             Pas encore de license ?
           </p>
-          <p className="text-sm text-zinc-700 leading-relaxed max-w-2xl mb-5">
-            GEN MOTION est <strong className="text-zinc-950 font-medium">open-core
+          <p className="text-sm text-ink-soft leading-relaxed max-w-2xl mb-5">
+            GEN MOTION est <strong className="text-ink font-medium">open-core
             MIT</strong> · Community Edition gratuite. La Studio Edition
             débloque les frames 3D, les presets Cinematic & Glitch, le
             multi-format export et la music library via un achat one-time
-            <strong className="text-zinc-950 font-medium"> $49 perpetual</strong>
+            <strong className="text-ink font-medium"> $49 perpetual</strong>
             (Davinci-style, valable à vie).
           </p>
           <BuyButton />
         </div>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-muted">
           Une question ? Écris-nous à{" "}
           <a
             href="mailto:contact@smoothandesign.fr"
-            className="text-zinc-950 underline underline-offset-4 decoration-zinc-300 hover:decoration-zinc-950"
+            className="text-ink underline underline-offset-4 decoration-line hover:decoration-ink"
           >
             contact@smoothandesign.fr
           </a>
@@ -157,7 +157,7 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
         </p>
       </div>
       {currentEdition === "studio" && hasLicense && (
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-faint">
           Studio Edition active. Toutes les features premium sont
           débloquées.
         </p>

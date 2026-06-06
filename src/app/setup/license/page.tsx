@@ -27,20 +27,20 @@ export default async function LicensePage() {
   }[resolution.source];
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-zinc-950">
+    <div className="min-h-screen flex flex-col bg-surface text-ink">
       {/* Top bar */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-zinc-200">
+      <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur border-b border-line">
         <div className="max-w-5xl mx-auto px-6 lg:px-10">
           <div className="flex items-center justify-between h-14">
             <Link href="/dashboard" className="font-semibold text-sm tracking-tight">
               GEN MOTION
-              <span className="hidden sm:inline ml-2 text-zinc-400 font-normal">
+              <span className="hidden sm:inline ml-2 text-faint font-normal">
                 — Settings · License
               </span>
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-sm text-zinc-600 hover:text-zinc-950 transition-colors"
+              className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Dashboard
@@ -50,13 +50,13 @@ export default async function LicensePage() {
       </header>
 
       {/* Hero */}
-      <section className="border-b border-zinc-200">
+      <section className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 lg:px-10 pt-16 sm:pt-20 pb-12">
-          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-zinc-500 mb-6">
+          <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted mb-6">
             License · {sourceLabel}
           </p>
           <h1 className="text-4xl sm:text-5xl font-medium tracking-[-0.02em] mb-3">
-            <span className="text-zinc-400">Edition active :</span>{" "}
+            <span className="text-faint">Edition active :</span>{" "}
             {editionLabel}
           </h1>
           {resolution.license ? (
@@ -92,14 +92,14 @@ export default async function LicensePage() {
               Réinstalle avec un fichier valide ou contacte le support.
             </p>
           ) : resolution.source === "env" ? (
-            <p className="mt-6 text-sm text-zinc-600 max-w-2xl">
+            <p className="mt-6 text-sm text-muted max-w-2xl">
               Edition forcée via la variable d&apos;environnement{" "}
-              <code className="font-mono text-zinc-950">WEBGEN_MOTION_EDITION</code>.
+              <code className="font-mono text-ink">WEBGEN_MOTION_EDITION</code>.
               Une license installée ici ne sera pas prise en compte tant
               que cette var est définie.
             </p>
           ) : (
-            <p className="mt-6 text-sm text-zinc-600 max-w-2xl">
+            <p className="mt-6 text-sm text-muted max-w-2xl">
               Aucune license installée. Tu utilises la Community Edition.{" "}
               Pour débloquer Studio (frames 3D, presets Cinematic/Glitch,
               multi-format export, music library…) installe une license
@@ -134,10 +134,10 @@ function Info({
 }) {
   return (
     <div className={colSpan === 2 ? "sm:col-span-2" : undefined}>
-      <dt className="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500 mb-1">
+      <dt className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted mb-1">
         {label}
       </dt>
-      <dd className="text-sm text-zinc-900">{value}</dd>
+      <dd className="text-sm text-ink">{value}</dd>
     </div>
   );
 }

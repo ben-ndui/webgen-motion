@@ -55,24 +55,24 @@ export default function ModelsSetupPage() {
   const macbookModel = models.find((m) => m.role === "macbook") ?? null;
 
   return (
-    <div className="min-h-screen bg-white text-slate-900" data-wm-id="setup.models.page">
-      <header className="border-b border-slate-200">
+    <div className="min-h-screen bg-surface text-ink" data-wm-id="setup.models.page">
+      <header className="border-b border-line">
         <div className="max-w-3xl mx-auto px-6 py-5 flex items-center gap-3 text-sm">
           <Link
             href="/dashboard"
-            className="text-slate-500 hover:text-slate-900 transition flex items-center gap-1.5"
+            className="text-muted hover:text-ink transition flex items-center gap-1.5"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Tours
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+          <ChevronRight className="w-3.5 h-3.5 text-faint" />
           <Link
             href="/setup"
-            className="text-slate-500 hover:text-slate-900 transition"
+            className="text-muted hover:text-ink transition"
           >
             Setup
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+          <ChevronRight className="w-3.5 h-3.5 text-faint" />
           <span className="font-semibold">Models 3D</span>
         </div>
       </header>
@@ -80,17 +80,17 @@ export default function ModelsSetupPage() {
       <main className="max-w-3xl mx-auto px-6 py-12">
         <div className="mb-10 grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-7">
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-400 mb-3">
+            <div className="text-xs uppercase tracking-[0.2em] text-faint mb-3">
               Sprint 7 — Frames 3D
             </div>
             <h1 className="text-4xl md:text-5xl font-semibold tracking-tight leading-[1.05]">
               Models 3D
               <br />
-              <span className="text-slate-400">premium.</span>
+              <span className="text-faint">premium.</span>
             </h1>
           </div>
           <div className="col-span-12 md:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               Drop tes GLB Sketchfab pour remplacer les devices procéduraux
               par des modèles iPhone 15 Pro / MacBook réels. Sans GLB, le
               fallback procédural reste actif — la feature 3D marche sans
@@ -119,23 +119,23 @@ export default function ModelsSetupPage() {
         </div>
 
         {loading && (
-          <p className="text-xs text-slate-500 mt-6">Chargement…</p>
+          <p className="text-xs text-muted mt-6">Chargement…</p>
         )}
 
-        <section className="mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-5 space-y-3">
+        <section className="mt-12 rounded-2xl border border-line bg-bg-sunken p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <Film className="w-4 h-4 text-slate-700" />
-            <h2 className="text-sm font-semibold text-slate-900">
+            <Film className="w-4 h-4 text-ink-soft" />
+            <h2 className="text-sm font-semibold text-ink">
               Workflow Sketchfab
             </h2>
           </div>
-          <ol className="text-xs text-slate-600 space-y-1.5 leading-relaxed list-decimal list-inside">
+          <ol className="text-xs text-muted space-y-1.5 leading-relaxed list-decimal list-inside">
             <li>
               <a
                 href="https://sketchfab.com/feed"
                 target="_blank"
                 rel="noreferrer"
-                className="text-zinc-900 underline underline-offset-2"
+                className="text-ink underline underline-offset-2"
               >
                 sketchfab.com
               </a>{" "}
@@ -150,7 +150,7 @@ export default function ModelsSetupPage() {
             </li>
             <li>Drop le fichier dans le slot ci-dessus → upload + override automatique</li>
           </ol>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-muted">
             Pour la commercialisation Studio (sans contrainte de licence), préférer
             TurboSquid / CGTrader (~$10-30 par modèle).
           </p>
@@ -222,20 +222,20 @@ function ModelSlot({
   return (
     <section
       data-wm-id={`setup.models.slot-${role}`}
-      className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 space-y-4"
+      className="rounded-2xl border border-line bg-surface p-5 sm:p-6 space-y-4"
     >
       <div className="flex items-start gap-4">
-        <span className="w-10 h-10 rounded-xl bg-zinc-900 text-white grid place-items-center flex-shrink-0">
+        <span className="w-10 h-10 rounded-xl bg-ink text-bg grid place-items-center flex-shrink-0">
           {icon}
         </span>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 mb-1">
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
             {role}.glb
           </p>
-          <h3 className="text-lg font-semibold text-slate-900 tracking-tight">
+          <h3 className="text-lg font-semibold text-ink tracking-tight">
             {label}
           </h3>
-          <p className="text-xs text-slate-600 leading-relaxed mt-1">
+          <p className="text-xs text-muted leading-relaxed mt-1">
             {description}
           </p>
         </div>
@@ -247,10 +247,10 @@ function ModelSlot({
       </div>
 
       {current ? (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="text-xs text-slate-700 min-w-0">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-bg-sunken p-3">
+          <div className="text-xs text-ink-soft min-w-0">
             <div className="font-mono truncate">{current.name}</div>
-            <div className="text-slate-500 mt-0.5">
+            <div className="text-muted mt-0.5">
               {current.sizeMB.toFixed(2)} MB · maj{" "}
               {new Date(current.mtime).toLocaleString("fr-FR")}
             </div>
@@ -271,7 +271,7 @@ function ModelSlot({
           </button>
         </div>
       ) : (
-        <p className="text-xs text-slate-500 italic">
+        <p className="text-xs text-muted italic">
           Aucun GLB pour le moment — fallback sur le device procédural.
         </p>
       )}
@@ -291,7 +291,7 @@ function ModelSlot({
         type="button"
         onClick={() => fileRef.current?.click()}
         disabled={busy !== null}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-ink text-bg text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         data-wm-id={`setup.models.${role}-upload`}
       >
         {busy === "upload" ? (
