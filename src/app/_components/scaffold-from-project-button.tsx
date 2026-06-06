@@ -23,7 +23,11 @@ import {
  * stream NDJSON, à la fin → invite l'utilisateur à copier les
  * tours dans `tours/` ou retourner au hub.
  */
-export default function ScaffoldFromProjectButton() {
+export default function ScaffoldFromProjectButton({
+  trigger,
+}: {
+  trigger?: (open: () => void) => React.ReactNode;
+} = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [projectPath, setProjectPath] = useState("");
@@ -123,14 +127,18 @@ export default function ScaffoldFromProjectButton() {
 
   return (
     <>
-      <button
-        data-wm-id="dashboard.scaffold-project-button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-900 text-sm font-medium hover:bg-slate-50 transition-colors"
-      >
-        <FolderSearch className="w-3.5 h-3.5" />
-        Scaffold projet
-      </button>
+      {trigger ? (
+        trigger(() => setOpen(true))
+      ) : (
+        <button
+          data-wm-id="dashboard.scaffold-project-button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-900 text-sm font-medium hover:bg-slate-50 transition-colors"
+        >
+          <FolderSearch className="w-3.5 h-3.5" />
+          Scaffold projet
+        </button>
+      )}
 
       {open && (
         <div

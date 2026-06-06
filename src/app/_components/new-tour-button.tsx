@@ -21,7 +21,13 @@ import type { TourEntry } from "@/lib/types/tour";
  *  - existence check (GET) before write to surface "id pris" cleanly
  *  - server-side : saveTour throws 400 on schema issues
  */
-export default function NewTourButton() {
+export default function NewTourButton({
+  trigger,
+}: {
+  /** Optional custom trigger; receives an `open` callback. Lets the Hub
+   *  compose its split-button while reusing this modal. */
+  trigger?: (open: () => void) => React.ReactNode;
+} = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -114,14 +120,18 @@ export default function NewTourButton() {
 
   return (
     <>
-      <button
-        data-wm-id="dashboard.new-tour-button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
-      >
-        <Sparkles className="w-3.5 h-3.5" />
-        Nouveau tour
-      </button>
+      {trigger ? (
+        trigger(() => setOpen(true))
+      ) : (
+        <button
+          data-wm-id="dashboard.new-tour-button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Nouveau tour
+        </button>
+      )}
 
       {open && (
         <div
