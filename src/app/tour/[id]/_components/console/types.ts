@@ -110,6 +110,19 @@ export interface TakeRequest {
   };
 }
 
+/** Job pipeline exécutable depuis un bloc run-log. */
+export type RunJob = "capture" | "vo" | "compose";
+
+/** Réglages du run, fournis par le contexte hôte (l'éditeur les tient
+ *  dans ses tabs : format de capture, musique et volumes du compose).
+ *  Absents (hub / fenêtre séparée) → defaults du tour JSON. */
+export interface RunParams {
+  formatOverride?: "16:9" | "9:16";
+  bgMusicId?: string;
+  bgMusicVolume?: number;
+  voiceoverVolume?: number;
+}
+
 /** Transport mockable — l'implémentation réelle vit derrière
  *  /api/motion/console et src/lib/llm-providers/. Le mock de phase 3
  *  rejoue des scénarios scriptés avec les mêmes événements. */
@@ -120,4 +133,12 @@ export interface ChatTransport {
   ): Promise<void>;
   /** État de configuration BYOK — pilote l'empty state 2.8. */
   probe(): Promise<{ configured: boolean; provider?: string; model?: string }>;
+  /** Exécute un run pipeline confirmé (« Lancer ») en streamant des
+   *  TakeEvent dans le run-log. Réel : routes capture / vo / compose ;
+   *  mock : simulateRun. Absent → la session retombe sur la simulation. */
+  run?(
+    job: RunJob,
+    req: { tour: TourEntry; params?: RunParams },
+    handlers: { onEvent: (evt: TakeEvent) => void; signal: AbortSignal },
+  ): Promise<void>;
 }

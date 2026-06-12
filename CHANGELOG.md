@@ -11,6 +11,54 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Director's Console — runs réels depuis la console) · 2026-06-12
+
+Le `[ Lancer ]` d'un run proposé déclenche désormais le **vrai
+pipeline** (avant : simulation pure, même en transport réel) :
+
+- **`ChatTransport.run()`** (optionnel) — RealTransport POST les
+  routes pipeline existantes (`/api/motion/tour/run`, `…/audio/voice/run`,
+  `…/compose/run`) et traduit leur NDJSON (phase / section / step /
+  warn / progress / done / error) en `TakeEvent` du bloc run-log ;
+  MockTransport délègue à `simulateRun` (escape hatch démo intact).
+- **Réglages réels au Lancer** : l'éditeur fournit `getRunParams`
+  (format de capture, musique + volumes du compose — les mêmes que
+  les tabs) ; hub / fenêtre séparée → defaults du tour JSON.
+- **Post-run** : `onRunDone` → `reloadStatus` de TourClient (les tabs
+  Capture/Voix/Compose se resynchronisent sans re-cliquer), et les `*`
+  dirty de la timeline tombent (`/capture` efface les dirty capture,
+  `/vo` les dirty vo).
+- **État `failed`** enfin rendu : estampille Échec + bouton Relancer
+  (relance autorisée depuis failed) ; erreur de route ou stream
+  interrompu → ligne `err` + bloc failed, jamais de spinner fantôme.
+- **Annulation propre** : Échap aborte le fetch, et les 3 routes
+  pipeline tuent désormais leur runner (`cancel()` du ReadableStream
+  → SIGTERM) au lieu de le laisser tourner orphelin.
+
+### Added (Director's Console — HubConsole, la console s'installe sur le dashboard) · 2026-06-12
+
+La console sort de l'éditeur : **3 modes de présentation** persistés
+sur le hub (`motion-hubconsole-mode`) :
+
+- **Drawer bas** style « Développeurs » Stripe : barre fine 40px fixée
+  en bas, panneau qui monte (resize 220px–80vh persisté), colonne
+  860px centrée.
+- **Fenêtre flottante** in-page draggable / resizable (520×640,
+  position persistée, coin bas-droit par défaut).
+- **Fenêtre séparée** `/console/window` (multi-écran) : autonome pour
+  les prises (mêmes routes API, même origin), synchronisée avec la
+  principale par BroadcastChannel `gm-console` (ping/pong 800ms,
+  open-tour, tour-created, takes-sync, fallback `window.opener`).
+- **Refactor partagé** : la logique de session extraite de ConsoleDock
+  dans `useConsoleSession` (738 lignes) + la surface UI (flux Z3 +
+  composer Z4) dans `ConsoleSurface` — le dock éditeur, le drawer, le
+  flottant et la fenêtre séparée consomment le même hook ; le dock
+  n'est plus que le chrome (−615 lignes).
+- **Mode hub** : l'agent propose des blocs `hub-action` (créer /
+  ouvrir un tour) — jamais exécutés sans confirmation ; création via
+  le `PUT /api/motion/tour/<id>` existant ; prises persistées
+  sessionStorage (cap 50, survit à la bascule drawer ↔ fenêtre).
+
 ### Added (Director's Console — transport réel Claude BYOK) · 2026-06-12
 
 La console parle désormais au **vrai Claude** (clé BYOK du wizard

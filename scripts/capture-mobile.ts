@@ -224,6 +224,21 @@ function buildSectionFlow(section: SectionPlan): string {
 
 // ── Recorders ─────────────────────────────────────────────────────
 
+// Annulation (console Échap → la route SIGTERM ce runner) : SIGINT
+// les recorders actifs pour finaliser leur container avant de sortir,
+// sinon simctl/screenrecord continuent d'enregistrer orphelins.
+const activeRecorders = new Set<ReturnType<typeof spawn>>();
+const onKill = (): void => {
+  for (const p of activeRecorders) {
+    try {
+      p.kill("SIGINT");
+    } catch {}
+  }
+  process.exit(143);
+};
+process.on("SIGTERM", onKill);
+process.on("SIGINT", onKill);
+
 interface Recorder {
   /** Epoch ms du VRAI début d'enregistrement. Pour simctl c'est le
    *  message "Recording started" sur stderr — vérifié : le premier
@@ -244,6 +259,8 @@ function startIosRecorder(workDir: string, sectionIdx: number): Recorder {
     ["simctl", "io", udid, "recordVideo", "--codec=h264", "--force", rawPath],
     { stdio: ["ignore", "ignore", "pipe"] },
   );
+  activeRecorders.add(proc);
+  proc.on("exit", () => activeRecorders.delete(proc));
   let stderrBuf = "";
   const started = new Promise<number>((resolve) => {
     let done = false;
@@ -290,6 +307,8 @@ function startAndroidRecorder(workDir: string, sectionIdx: number): Recorder {
     [...adbBase.slice(1), "shell", "screenrecord", "--bit-rate", "8000000", remote],
     { stdio: ["ignore", "ignore", "inherit"] },
   );
+  activeRecorders.add(proc);
+  proc.on("exit", () => activeRecorders.delete(proc));
   // screenrecord ne signale pas son démarrage — il s'amorce vite ;
   // 500ms de settle est une approximation correcte sur émulateur.
   const started = new Promise<number>((resolve) =>

@@ -83,7 +83,27 @@ export async function POST(req: NextRequest) {
   const spawnSpec = resolveRunnerSpawn("audio-tour", runnerArgs);
   const startedAt = Date.now();
 
+  // Visible depuis cancel() — le client (console Échap) a coupé le
+  // stream : on tue le PROCESS GROUP du runner (detached + kill(-pid)),
+  // pas juste l'enfant direct — en dev la chaîne npx → tsx → runner →
+  // ffmpeg ne forwarde pas SIGTERM et laisserait des orphelins.
+  let child: ReturnType<typeof spawn> | null = null;
+  const killRunner = () => {
+    if (!child?.pid) return;
+    try {
+      if (process.platform !== "win32") process.kill(-child.pid, "SIGTERM");
+      else child.kill("SIGTERM");
+    } catch {
+      try {
+        child.kill("SIGTERM");
+      } catch {}
+    }
+  };
+
   const stream = new ReadableStream({
+    cancel() {
+      killRunner();
+    },
     start(controller) {
       const encoder = new TextEncoder();
       const emit = (event: Record<string, unknown>) => {
@@ -107,7 +127,10 @@ export async function POST(req: NextRequest) {
       const proc = spawn(spawnSpec.command, spawnSpec.args, {
         cwd: spawnSpec.cwd,
         env,
+        // groupe de process dédié — cible du kill(-pid) de cancel()
+        detached: process.platform !== "win32",
       });
+      child = proc;
       let stdoutBuf = "";
       let stderrBuf = "";
 

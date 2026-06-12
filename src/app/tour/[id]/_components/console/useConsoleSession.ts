@@ -14,6 +14,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TourEntry } from "@/lib/types/tour";
 import type {
   ChatTransport,
+  RunJob,
+  RunParams,
   Take,
   TakeBlock,
   TakeEvent,
@@ -66,6 +68,12 @@ export interface ConsoleSessionOptions {
   /** Clé sessionStorage — persistance best-effort des prises hub
    *  (survit à la bascule drawer ↔ fenêtre séparée). */
   persistKey?: string;
+  /** Réglages du run réel, lus au moment du « Lancer » (l'éditeur les
+   *  tient dans ses tabs : format, musique, volumes). */
+  getRunParams?: (job: RunJob) => RunParams | undefined;
+  /** Notifié après un run réel réussi — l'hôte resynchronise ses
+   *  state machines (reloadStatus de TourClient). */
+  onRunDone?: (job: RunJob) => void;
 }
 
 export type ConsoleSession = ReturnType<typeof useConsoleSession>;
@@ -79,6 +87,8 @@ export function useConsoleSession({
   hubActions,
   onActivity,
   persistKey,
+  getRunParams,
+  onRunDone,
 }: ConsoleSessionOptions) {
   // ── session ──────────────────────────────────────────────────────
   const [takes, setTakes] = useState<Take[]>([]);
@@ -107,6 +117,8 @@ export function useConsoleSession({
   const takesRef = useRef(takes);
   const tourRef = useRef(tour);
   const onActivityRef = useRef(onActivity);
+  const getRunParamsRef = useRef(getRunParams);
+  const onRunDoneRef = useRef(onRunDone);
   useEffect(() => {
     takesRef.current = takes;
   }, [takes]);
@@ -116,6 +128,10 @@ export function useConsoleSession({
   useEffect(() => {
     onActivityRef.current = onActivity;
   }, [onActivity]);
+  useEffect(() => {
+    getRunParamsRef.current = getRunParams;
+    onRunDoneRef.current = onRunDone;
+  }, [getRunParams, onRunDone]);
 
   const sections = useMemo(() => (tour ? sectionsOf(tour) : []), [tour]);
   const sectionTitles = useMemo(() => sections.map((s) => s.title), [sections]);
@@ -233,11 +249,15 @@ export function useConsoleSession({
             return { ...t, blocks };
           }
           case "done": {
-            if (evt.status === "done") {
+            if (evt.status === "done" || evt.status === "error") {
               for (let i = blocks.length - 1; i >= 0; i--) {
                 const b = blocks[i];
                 if (b.kind === "run-log" && b.state === "running") {
-                  blocks[i] = { ...b, state: "done", progress: undefined };
+                  blocks[i] = {
+                    ...b,
+                    state: evt.status === "done" ? "done" : "failed",
+                    progress: undefined,
+                  };
                   break;
                 }
               }
@@ -465,13 +485,19 @@ export function useConsoleSession({
     if (redo) applyBlock(redo.takeId, redo.blockIdx, true);
   }, [applyBlock]);
 
-  // ── runs proposés (Lancer / Pas encore) — simulation pure ────────
+  // ── runs proposés (Lancer / Pas encore) — VRAI pipeline via le
+  // transport (transport.run : routes capture / vo / compose) ; un
+  // transport sans run() retombe sur la simulation (mock historique).
+  // Relançable depuis l'état failed.
   const launchRun = useCallback(
     async (takeId: string, blockIdx: number) => {
       const take = takesRef.current.find((t) => t.id === takeId);
       const block = take?.blocks[blockIdx];
-      if (!take || !block || block.kind !== "run-log" || block.state !== "proposed") return;
+      if (!take || !block || block.kind !== "run-log") return;
+      if (block.state !== "proposed" && block.state !== "failed") return;
       if (streamingId || !tourRef.current) return;
+      const job = block.job;
+      const tourNow = tourRef.current;
 
       mutateTake(takeId, (t) => ({
         ...t,
@@ -483,8 +509,26 @@ export function useConsoleSession({
       const ac = new AbortController();
       abortRef.current = ac;
       setStreamingId(takeId);
+
+      // observe la clôture du run sans dupliquer le reducer d'événements
+      let runStatus: "done" | "error" | null = null;
+      const baseEmit = onTakeEvent(takeId);
+      const emit = (evt: TakeEvent) => {
+        if (evt.type === "done") runStatus = evt.status === "done" ? "done" : "error";
+        baseEmit(evt);
+      };
+
       try {
-        await simulateRun(block.job, tourRef.current, onTakeEvent(takeId), ac.signal);
+        if (transport.run) {
+          await transport.run(
+            job,
+            { tour: tourNow, params: getRunParamsRef.current?.(job) },
+            { onEvent: emit, signal: ac.signal },
+          );
+        } else {
+          await simulateRun(job, tourNow, emit, ac.signal);
+          runStatus = ac.signal.aborted ? null : "done";
+        }
         if (ac.signal.aborted) {
           mutateTake(takeId, (t) =>
             appendNote(
@@ -500,6 +544,18 @@ export function useConsoleSession({
               "interrompu par le réalisateur",
             ),
           );
+        } else if (runStatus === "done") {
+          // les * de la timeline tombent : /capture rafraîchit les
+          // sections, /vo la voix — compose ne change pas le dirty
+          if (job === "capture" || job === "vo") {
+            const kind: DirtyKind = job === "capture" ? "capture" : "vo";
+            setDirty((prev) => {
+              const next = new Map(prev);
+              for (const [o, k] of prev) if (k === kind) next.delete(o);
+              return next;
+            });
+          }
+          onRunDoneRef.current?.(job);
         }
       } finally {
         setStreamingId(null);
@@ -507,7 +563,7 @@ export function useConsoleSession({
         focusComposer();
       }
     },
-    [streamingId, mutateTake, onTakeEvent, focusComposer],
+    [streamingId, transport, mutateTake, onTakeEvent, focusComposer],
   );
 
   const laterRun = useCallback(

@@ -11,7 +11,7 @@ import {
 } from "react";
 import { List, Minus, Terminal } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
-import type { ChatTransport } from "./types";
+import type { ChatTransport, RunJob, RunParams } from "./types";
 import { MockTransport } from "./mock-transport";
 import { RealTransport } from "./real-transport";
 import { useConsoleSession } from "./useConsoleSession";
@@ -40,6 +40,8 @@ export default function ConsoleDock({
   capturedDurations,
   onOpenCompose,
   transport: transportProp,
+  getRunParams,
+  onRunDone,
   children,
 }: {
   tour: TourEntry;
@@ -47,6 +49,10 @@ export default function ConsoleDock({
   capturedDurations: number[] | null;
   onOpenCompose: () => void;
   transport?: ChatTransport;
+  /** Réglages des runs réels lus au « Lancer » (format, musique, volumes). */
+  getRunParams?: (job: RunJob) => RunParams | undefined;
+  /** Post-run réussi — TourClient resynchronise capture/vo/compose. */
+  onRunDone?: (job: RunJob) => void;
   children: ReactNode;
 }) {
   // Transport réel par défaut (route locale → Claude BYOK). Escape
@@ -77,6 +83,8 @@ export default function ConsoleDock({
     onTourChange,
     capturedDurations,
     mode: "editor",
+    getRunParams,
+    onRunDone,
     onActivity: useCallback(() => {
       if (!openRef.current) setUnseen(true);
     }, []),

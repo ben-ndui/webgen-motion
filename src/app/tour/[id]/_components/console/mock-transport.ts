@@ -16,6 +16,8 @@
 import type { TourEntry, TourStep } from "@/lib/types/tour";
 import type {
   ChatTransport,
+  RunJob,
+  RunParams,
   StepDiffCard,
   TakeBlock,
   TakeEvent,
@@ -179,6 +181,15 @@ export class MockTransport implements ChatTransport {
       provider: this.opts.provider ?? "anthropic",
       model: this.opts.model ?? "claude-sonnet-4-5",
     };
+  }
+
+  /** Run « Lancer » en mode mock — toujours la simulation pure. */
+  async run(
+    job: RunJob,
+    req: { tour: TourEntry; params?: RunParams },
+    { onEvent, signal }: { onEvent: Emit; signal: AbortSignal },
+  ): Promise<void> {
+    await simulateRun(job, req.tour, onEvent, signal);
   }
 
   async send(

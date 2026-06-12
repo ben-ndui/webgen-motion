@@ -8,8 +8,8 @@ type RunLog = Extract<TakeBlock, { kind: "run-log" }>;
 
 /**
  * Bloc run pipeline — /capture · /vo · /compose. La console est un
- * second abonné du flux : ici le scénario est SIMULÉ (MockTransport),
- * jamais un vrai job. Barre 3px (anatomie .phase-prog), narration
+ * second abonné du flux : transport réel = vraies routes pipeline,
+ * mock = scénario simulé. Barre 3px (anatomie .phase-prog), narration
  * Edit Engine en préfixes trim/cut, `[ Lancer ] [ Pas encore ]` quand
  * le run est proposé — jamais d'exécution non confirmée.
  */
@@ -58,6 +58,15 @@ export default function RunLogBlock({
         <div className="take-actions">
           <button type="button" className="con-btn ghost" onClick={onCancel} data-wm-id="console.run.cancel">
             {block.job === "compose" ? "Annuler le rendu" : "Annuler"}
+          </button>
+        </div>
+      )}
+
+      {block.state === "failed" && (
+        <div className="take-actions">
+          <span className="take-stamp run-failed">Échec</span>
+          <button type="button" className="con-btn ghost" onClick={onLaunch} data-wm-id="console.run.relaunch">
+            Relancer
           </button>
         </div>
       )}

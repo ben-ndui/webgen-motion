@@ -141,6 +141,7 @@
 .gm-console .take-stamp { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: var(--tracking-mono); color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); padding: 3px 9px; border-radius: var(--r-full); white-space: nowrap; }
 .gm-console .take-stamp.run-done { color: oklch(52% .14 150); background: oklch(62% .15 150 / .15); border-color: oklch(62% .15 150 / .3); }
 .gm-console .take-stamp.undone { color: var(--muted); background: var(--surface-2); border-color: var(--line); }
+.gm-console .take-stamp.run-failed { color: oklch(55% .18 25); background: oklch(55% .18 25 / .12); border-color: oklch(55% .18 25 / .3); }
 
 /* lien mono (défaire · ouvrir le compose · copier le prompt) */
 .gm-console .con-link { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); background: none; border: 0; border-bottom: 1px dashed var(--line-strong); cursor: pointer; padding: 0 0 1px; }
@@ -292,6 +293,7 @@
 [data-theme="dark"] .gm-console .take-err { border-left-color: oklch(72% .17 25); background: oklch(60% .18 25 / .12); }
 [data-theme="dark"] .gm-console .take-err .err-p { color: oklch(72% .17 25); }
 [data-theme="dark"] .gm-console .take-stamp.run-done { color: oklch(75% .13 150); background: oklch(45% .1 150 / .2); border-color: oklch(50% .1 150 / .4); }
+[data-theme="dark"] .gm-console .take-stamp.run-failed { color: oklch(72% .17 25); background: oklch(45% .15 25 / .2); border-color: oklch(50% .15 25 / .4); }
 [data-theme="dark"] .gm-console .tci.done { color: oklch(75% .13 150); }
 [data-theme="dark"] .gm-console .tci.error { color: oklch(72% .17 25); }
 

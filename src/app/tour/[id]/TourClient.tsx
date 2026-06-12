@@ -635,6 +635,14 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
             : null
         }
         onOpenCompose={() => setActiveTab("compose")}
+        getRunParams={(job) =>
+          job === "capture"
+            ? { formatOverride: captureFormat }
+            : job === "compose"
+              ? { bgMusicId, bgMusicVolume, voiceoverVolume: voVolume }
+              : undefined
+        }
+        onRunDone={reloadStatus}
       >
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-6 space-y-5">
         <Tabs<TabKey>

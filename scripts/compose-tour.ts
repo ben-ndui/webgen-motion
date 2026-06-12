@@ -528,6 +528,19 @@ async function main(): Promise<void> {
     env: { ...process.env, NO_COLOR: "1" },
   });
 
+  // Annulation (console Échap → la route SIGTERM ce runner) : sans
+  // forward, le render Remotion survivrait orphelin (PPID 1) et
+  // continuerait à écrire final.mp4.
+  const forward = (sig: NodeJS.Signals) => {
+    try {
+      proc.kill(sig);
+    } catch {}
+    rmSync(stagingDir, { recursive: true, force: true });
+    process.exit(143);
+  };
+  process.on("SIGTERM", () => forward("SIGTERM"));
+  process.on("SIGINT", () => forward("SIGINT"));
+
   proc.on("error", (err) => {
     console.error(`Spawn failed: ${err.message}`);
     process.exit(1);
