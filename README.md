@@ -115,6 +115,47 @@ Une page `/tour/<id>` rassemble tout dans 5 tabs avec un bouton **Save persistan
 
 ---
 
+## ✂️ Edit Engine — un vrai monteur dans le pipeline
+
+Entre l'analyse audio et le render, l'**Edit Engine** prend des décisions
+de montage comme un monteur humain (tout est dans `edit-plan.json`,
+inspectable) :
+
+- **Trim des temps morts** — chaque section est coupée à sa dernière
+  activité voix off + respiration ; vidéo ET voix restent sync. Les
+  interactions visibles (clicks, swipes…) ne sont jamais coupées.
+- **Cuts snappés sur la musique** — les frontières de sections tombent
+  sur les beats détectés ; crossfades adaptatifs (punchy sur beat fort).
+- **J-cuts** — la voix d'une section entre 250ms avant son visuel.
+- **Extend-to-fit** — si la narration dépasse la vidéo, la section se
+  prolonge par un freeze (Ken Burns toujours actif) au lieu de couper
+  la voix en pleine phrase.
+- **Sous-titres karaoké word-synced** — depuis l'alignement
+  character-level ElevenLabs (`"subtitles": true` dans le tour).
+
+Débrayable : `--no-edit-plan` / `--no-edit-trim` sur le compose.
+
+---
+
+## 📱 Capture d'apps mobiles natives (iOS / Android)
+
+Un tour avec `"platform": "ios"` + `"appId": "com.example.app"` filme
+une **app native** : Maestro pilote (`tapOn` / `swipe` / `inputText` /
+`launchApp` / `back`), le simulateur iOS / émulateur Android est
+enregistré, et tout l'aval (voix off, Edit Engine, compose, frame 3D
+iPhone) marche pareil. Prérequis : `brew install mobile-dev-inc/tap/maestro`.
+
+---
+
+## 🎞 Export timeline .otio (Studio)
+
+Pas satisfait du montage auto ? Le bouton **Timeline .otio** du tab
+Compose exporte la timeline — sections déjà découpées, voix off et
+musique déjà posées, markers sur les beats — à ouvrir dans **DaVinci
+Resolve** (File → Import Timeline) ou **Premiere Pro** (File → Import).
+
+---
+
 ## 🎨 Style presets (Compose)
 
 | Preset | Use case | Effets |

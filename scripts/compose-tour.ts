@@ -364,6 +364,7 @@ async function main(): Promise<void> {
       if (!s) continue;
       s.durationSec = p.playDurationSec;
       s.crossfadeInSec = p.crossfadeInSec;
+      if (p.extendTailSec > 0) s.extendTailSec = p.extendTailSec;
     }
     writeFileSync(
       join(tourDir!, "edit-plan.json"),

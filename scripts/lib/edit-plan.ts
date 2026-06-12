@@ -119,6 +119,12 @@ export interface PlannedSection {
   playDurationSec: number;
   /** Seconds of trailing dead air removed from video + audio. */
   trimmedTailSec: number;
+  /** Sprint F — extend-to-fit : secondes de FREEZE (dernier frame
+   *  cloné par Remotion) ajoutées en fin de section quand la
+   *  narration dépasse la vidéo capturée. Incluses dans
+   *  playDurationSec ; le média ne couvre que
+   *  playDurationSec - extendTailSec. */
+  extendTailSec: number;
   /** Crossfade duration of the boundary ENTERING this section. */
   crossfadeInSec: number;
   /** Beat the section's END cut was snapped onto, if any. */
@@ -185,6 +191,9 @@ const J_CUT_SEC = 0.25;
 const XFADE_PUNCHY_SEC = 0.35;
 const XFADE_MEDIUM_SEC = 0.5;
 const XFADE_CALM_SEC = 0.8;
+/** Sprint F — extension max d'une section (freeze) pour loger une
+ *  narration qui dépasse la vidéo. Au-delà : plafonné + warning. */
+const MAX_EXTEND_SEC = 12;
 /** Max words per subtitle cue before splitting. */
 const SUBTITLE_MAX_WORDS = 6;
 
@@ -288,28 +297,83 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
   // ── Narrative fit gate ───────────────────────────────────────────
   // A narration that grossly overruns its sections' video can't be
   // re-synced by placement alone — segments would cut speech mid-
-  // sentence at every boundary. Re-timing the video to fit (freeze
-  // extensions) is a future chantier ; until then fall back to the
-  // continuous file and tell the user why.
-  let narrativeFits = true;
+  // Placement RELATIF d'un item dans sa section (temps vidéo) —
+  // partagé entre la passe d'extension et la passe segments pour que
+  // les deux raisonnent sur exactement les mêmes positions.
+  const placeRels = (
+    voItems: NormVoItem[],
+    sIn: EditPlanSectionInput,
+    w: { startSec: number },
+  ): Array<{ it: NormVoItem; rel: number; jCut: boolean }> => {
+    const out: Array<{ it: NormVoItem; rel: number; jCut: boolean }> = [];
+    let prevRel = 0;
+    let prevDur = 0;
+    for (const [k, it] of voItems.entries()) {
+      const timing =
+        it.linearStepIdx !== null
+          ? sIn.stepTimings?.find((t) => t.linearIdx === it.linearStepIdx)
+          : undefined;
+      let rel: number;
+      if (timing !== undefined) {
+        rel = timing.dwellStartSec; // ground truth from the capture
+      } else if (it.isSectionLevel) {
+        rel = 0;
+      } else if (it.narrative) {
+        // No capture timings — keep the narration continuous inside
+        // the section : first line when the content settles, then
+        // chain each line after the previous one.
+        rel = k === 0 ? (sIn.contentStartSec ?? 0) : prevRel + prevDur;
+      } else {
+        rel = it.audioStartSec - w.startSec; // dwell-based fallback
+      }
+      // UI head trim shifts the video origin.
+      rel = Math.max(0, rel - sIn.srcInSec);
+      // J-cut : the section's first line starts during the previous
+      // visual's tail / the splash fade-out.
+      const jCut = k === 0 && rel >= J_CUT_SEC;
+      if (jCut) rel -= J_CUT_SEC;
+      prevRel = rel;
+      prevDur = it.audioDurationSec;
+      out.push({ it, rel, jCut });
+    }
+    return out;
+  };
+
+  // ── Sprint F : extend-to-fit ─────────────────────────────────────
+  // Quand la narration d'une section dépasse sa vidéo (tours
+  // narrative mal calibrés, dwell trop courts), on ALLONGE la section
+  // par un freeze du dernier frame (rendu par Remotion, le Ken Burns
+  // continue de respirer dessus) plutôt que de couper la voix en
+  // pleine phrase. Plafonné à MAX_EXTEND_SEC par section.
+  const extendBySection = new Map<number, number>();
   for (const s of sections) {
+    extendBySection.set(s.index, 0);
     const voItems = voItemsBySection.get(s.index);
-    if (!voItems?.length || !voItems[0].narrative) continue;
-    const speech = voItems.reduce((acc, it) => acc + it.audioDurationSec, 0);
-    if (speech > s.playableSec + 1.5) {
-      narrativeFits = false;
-      summary.push(
-        `⚠ narration trop longue pour la section ${s.index} (${speech.toFixed(1)}s de voix vs ${s.playableSec.toFixed(1)}s de vidéo) — resync/trim désactivés. Raccourcis la narration ou allonge les dwell.`,
-      );
+    const w = audioWindows.get(s.index);
+    if (!voItems?.length || !w) continue;
+    const placed = placeRels(voItems, s, w);
+    const lastSpeechEnd = Math.max(
+      ...placed.map((p) => p.rel + p.it.audioDurationSec),
+    );
+    const required = lastSpeechEnd + TAIL_PAD_SEC;
+    if (required > s.playableSec + 0.1) {
+      const overflow = required - s.playableSec;
+      extendBySection.set(s.index, round3(Math.min(overflow, MAX_EXTEND_SEC)));
+      if (overflow > MAX_EXTEND_SEC) {
+        summary.push(
+          `⚠ section ${s.index} : la narration dépasse la vidéo de ${overflow.toFixed(1)}s — freeze plafonné à ${MAX_EXTEND_SEC}s, la fin sera coupée. Raccourcis le texte ou allonge les dwell.`,
+        );
+      }
     }
   }
-  if (!narrativeFits) voItemsBySection.clear();
 
   // ── Pass 1 : per-section tail trim (removable dead air) ─────────
   const removableBySection = new Map<number, number>();
   for (const s of sections) {
     removableBySection.set(s.index, 0);
     if (!enableTrim || !alignment) continue;
+    // Une section étendue n'a pas de traîne morte à couper.
+    if ((extendBySection.get(s.index) ?? 0) > 0) continue;
     const w = audioWindows.get(s.index);
     const voItems = voItemsBySection.get(s.index);
     // Silence-only sections are visual-on-purpose — leave them alone.
@@ -342,18 +406,26 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
   const planned: PlannedSection[] = [];
   let cursor = introSec;
   let totalSaved = 0;
+  let totalExtended = 0;
   for (const s of sections) {
     const removable = removableBySection.get(s.index) ?? 0;
-    const minDur = s.playableSec - removable;
+    const extend = extendBySection.get(s.index) ?? 0;
+    const minDur = s.playableSec - removable + extend;
 
-    // Hunt for a beat inside the silent removable window : cutting
-    // there costs nothing (it's dead air either way) and lands the
-    // transition on the music.
+    // Hunt for a beat past the minimal cut : dans la fenêtre morte
+    // (removable) quand on trime, ou en prolongeant légèrement le
+    // freeze quand on étend — dans les deux cas ça ne coûte rien.
+    const huntRoom =
+      removable > 0
+        ? Math.min(removable, BEAT_HUNT_SEC)
+        : extend > 0
+          ? BEAT_HUNT_SEC
+          : 0;
     let playDur = minDur;
     let snapped: EditAudioBeat | null = null;
-    if (removable > 0 && bgBeats.length > 0) {
+    if (huntRoom > 0 && bgBeats.length > 0) {
       const huntStart = cursor + minDur;
-      const huntEnd = huntStart + Math.min(removable, BEAT_HUNT_SEC);
+      const huntEnd = huntStart + huntRoom;
       let best: EditAudioBeat | null = null;
       for (const b of bgBeats) {
         if (b.sec < huntStart || b.sec > huntEnd) continue;
@@ -366,13 +438,19 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
       }
     }
 
-    const trimmedTail = s.playableSec - playDur;
+    // Le média couvre playableSec en entier (un cut snappé dans la
+    // fenêtre de trim reste DANS le média) ; seul ce qui dépasse
+    // playableSec est du freeze rendu par Remotion.
+    const extendTail = Math.max(0, playDur - s.playableSec);
+    const trimmedTail = Math.max(0, s.playableSec - playDur);
     totalSaved += trimmedTail;
+    totalExtended += extendTail;
 
     planned.push({
       index: s.index,
       playDurationSec: round3(playDur),
       trimmedTailSec: round3(trimmedTail),
+      extendTailSec: round3(extendTail),
       crossfadeInSec: defaultCrossfadeSec, // refined in pass 3
       snappedBeat: snapped,
       timelineStartSec: round3(cursor),
@@ -415,38 +493,7 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
       if (!sIn || !w || voItems.length === 0) continue;
 
       const segs: VoSegment[] = [];
-      let prevRel = 0;
-      let prevDur = 0;
-      for (const [k, it] of voItems.entries()) {
-        // Relative video time of the slot inside the section.
-        const timing =
-          it.linearStepIdx !== null
-            ? sIn.stepTimings?.find((t) => t.linearIdx === it.linearStepIdx)
-            : undefined;
-        let rel: number;
-        if (timing !== undefined) {
-          rel = timing.dwellStartSec; // ground truth from the capture
-        } else if (it.isSectionLevel) {
-          rel = 0;
-        } else if (it.narrative) {
-          // No capture timings — keep the narration continuous inside
-          // the section : first line when the content settles, then
-          // chain each line after the previous one.
-          rel = k === 0 ? (sIn.contentStartSec ?? 0) : prevRel + prevDur;
-        } else {
-          rel = it.audioStartSec - w.startSec; // dwell-based fallback
-        }
-        // UI head trim shifts the video origin.
-        rel = Math.max(0, rel - sIn.srcInSec);
-
-        // J-cut : the section's first line starts during the previous
-        // visual's tail / the splash fade-out.
-        const isFirst = k === 0;
-        const jCut = isFirst && rel >= J_CUT_SEC;
-        if (jCut) rel -= J_CUT_SEC;
-        prevRel = rel;
-        prevDur = it.audioDurationSec;
-
+      for (const { it, rel, jCut } of placeRels(voItems, sIn, w)) {
         // Slot extends past the cut ? Keep the crossfade tail worth of
         // audio at most — the trimmed region is trailing silence in
         // per-step mode, and the bleed reads as an L-cut in narrative.
@@ -496,6 +543,12 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
   const jCutCount = voSegments.filter((v) => v.jCut).length;
   if (totalSaved > 0.05) {
     summary.push(`trim : ${totalSaved.toFixed(1)}s de temps morts coupés (vidéo + voix sync)`);
+  }
+  if (totalExtended > 0.05) {
+    const extCount = planned.filter((p) => p.extendTailSec > 0.05).length;
+    summary.push(
+      `extend-to-fit : ${extCount} section(s) prolongée(s) de ${totalExtended.toFixed(1)}s (freeze) pour loger la narration`,
+    );
   }
   if (snappedCount > 0) {
     summary.push(`beats : ${snappedCount}/${planned.length} cuts snappés sur la musique`);

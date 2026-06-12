@@ -122,6 +122,9 @@ export interface OtioVideoClipInput {
   /** Splash rendue par Remotion AVANT le média (captures mobiles) —
    *  matérialisée en Gap + marker dans la timeline. */
   postSplashSec: number;
+  /** Sprint F — freeze du dernier frame APRÈS le média (la narration
+   *  dépasse la vidéo). Matérialisé en Gap + marker. */
+  extendTailSec: number;
   /** Durée totale du média (available_range). */
   mediaDurationSec: number | null;
   /** Beat sur lequel le cut sortant a été snappé (temps composition)
@@ -302,6 +305,22 @@ export function buildOtioTimeline(inputs: OtioExportInputs): OtioTimeline {
       ),
     );
     cursorSec += vc.durationSec;
+    if (vc.extendTailSec > 0) {
+      // Extend-to-fit : GEN MOTION gèle le dernier frame pendant ce
+      // temps — dans le NLE, un gap avec marker (le monteur peut le
+      // remplacer par un freeze frame ou du B-roll).
+      videoChildren.push(
+        gap(fps, vc.extendTailSec, `Freeze — ${vc.name}`, [
+          marker(
+            fps,
+            `Extension freeze "${vc.name}" — dernier frame gelé par GEN MOTION pour loger la narration`,
+            0,
+            "YELLOW",
+          ),
+        ]),
+      );
+      cursorSec += vc.extendTailSec;
+    }
   }
   const timelineEndSec = cursorSec + inputs.outroSec;
   videoChildren.push(

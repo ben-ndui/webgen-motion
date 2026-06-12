@@ -60,6 +60,12 @@ export interface ManifestSection {
    *  captures mobiles n'ont pas de DOM à injecter ; la vidéo de la
    *  section démarre après ce délai. `durationSec` l'INCLUT. */
   postSplashSec?: number;
+  /** Sprint F — extend-to-fit : freeze du dernier frame pendant ce
+   *  temps en FIN de section (la narration dépasse la vidéo
+   *  capturée). `durationSec` l'INCLUT ; le média ne couvre que
+   *  durationSec - postSplashSec - extendTailSec. Le Ken Burns
+   *  continue pendant le gel pour garder l'image vivante. */
+  extendTailSec?: number;
 }
 
 /** Edit Engine — segment de voiceover.mp3 placé à un temps précis de

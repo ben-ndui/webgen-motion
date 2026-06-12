@@ -196,7 +196,7 @@ L'architecture actuelle s'y prête bien : il suffit d'un **deuxième backend de 
 | C | Ken Burns dirigé + sous-titres karaoké word-synced (opt-in `subtitles: true`) | M | ⭐⭐ polish + feature sociale | ✅ **fait** (2026-06-12) — overlays Remotion-post restent à faire |
 | D | Capture mobile via Maestro (iOS Simulator + Android Emulator) | M-L | ⭐⭐⭐ nouveau marché | ✅ **fait** (2026-06-12) — iOS validé E2E sur simulateur ; Android écrit, non testé (pas d'adb sur la machine) |
 | E | Export OTIO vers Resolve/Premiere (Studio Edition) | M | ⭐⭐ interop pro, argument de vente Studio | ✅ **fait** (2026-06-12) — validé round-trip lib officielle ; FCPXML non couvert |
-| F | Extend-to-fit narrative : freeze/ralenti des sections quand la narration dépasse la vidéo | M | ⭐⭐ débloque les tours narrative mal calibrés | ⏳ identifié à l'implémentation |
+| F | Extend-to-fit narrative : freeze des sections quand la narration dépasse la vidéo | M | ⭐⭐ débloque les tours narrative mal calibrés | ✅ **fait** (2026-06-12) — freeze + Ken Burns vivant, cap 12s/section, gap jaune dans l'OTIO |
 
 > **Note d'implémentation (2026-06-12)** : Sprints A-B-C livrés via
 > `scripts/lib/edit-plan.ts` + `remotion/SubtitlesLayer.tsx` (détail dans

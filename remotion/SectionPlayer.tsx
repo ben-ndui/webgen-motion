@@ -1,4 +1,4 @@
-import { OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Freeze, OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import type { ManifestSection } from "./lib/types";
 import type { MotionCategory } from "@/lib/motion-categories";
 import { MacChrome } from "./MacChrome";
@@ -80,21 +80,22 @@ export function SectionPlayer({
   );
   // Sprint D — splash rendue à la compose (captures mobiles). La
   // vidéo de la section ne démarre qu'après le splash ; durationSec
-  // l'inclut, donc la fenêtre média = durationSec - postSplashSec.
+  // l'inclut. Sprint F — extend-to-fit : durationSec inclut aussi le
+  // freeze final, donc fenêtre média = durationSec - splash - freeze.
   const splashFrames = Math.round((section.postSplashSec ?? 0) * fps);
+  const freezeFrames = Math.round((section.extendTailSec ?? 0) * fps);
 
   // OffthreadVideo plays the MP4 from `startFrom` to `endAt`.
   //   - startFrom = section.startFromSec * fps (default 0)
-  //   - endAt    = startFrom + (section.durationSec - postSplash) * fps
+  //   - endAt    = startFrom + (durationSec - splash - freeze) * fps
   // section.durationSec is the EFFECTIVE playback window (already
   // takes the trim into account — compose-tour does the math). This
   // way SectionPlayer reasons in section-local frame land sans avoir
   // à connaître la longueur du MP4 source.
   const videoStartFrom = Math.round((section.startFromSec ?? 0) * fps);
-  const videoEndAt =
-    videoStartFrom +
-    Math.round(section.durationSec * fps) -
-    splashFrames;
+  const videoFrames =
+    Math.round(section.durationSec * fps) - splashFrames - freezeFrames;
+  const videoEndAt = videoStartFrom + videoFrames;
 
   // Entrance: rises 0→1 over the first `entranceFrames`.
   // Exit: falls 1→0 over the last `exitFrames`.
@@ -266,10 +267,25 @@ export function SectionPlayer({
           transformOrigin: "center",
         }}
       >
-        {splashFrames > 0 ? (
-          <Sequence from={splashFrames} layout="none">
-            {frame}
-          </Sequence>
+        {splashFrames > 0 || freezeFrames > 0 ? (
+          <>
+            <Sequence
+              from={splashFrames}
+              durationInFrames={Math.max(1, videoFrames)}
+              layout="none"
+            >
+              {frame}
+            </Sequence>
+            {/* Sprint F — extend-to-fit : le média est fini mais la
+             *  narration continue → on gèle le dernier frame. Le Ken
+             *  Burns (wrapper extérieur) continue de bouger, donc le
+             *  gel reste vivant à l'écran. */}
+            {freezeFrames > 0 && (
+              <Sequence from={splashFrames + videoFrames} layout="none">
+                <Freeze frame={Math.max(0, videoFrames - 1)}>{frame}</Freeze>
+              </Sequence>
+            )}
+          </>
         ) : (
           frame
         )}

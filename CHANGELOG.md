@@ -11,6 +11,34 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Sprint F — extend-to-fit : la vidéo s'allonge pour loger la narration) · 2026-06-12
+
+Quand la narration d'une section dépasse sa vidéo capturée (tours
+narrative mal calibrés, dwell trop courts), l'Edit Engine **prolonge la
+section par un freeze du dernier frame** au lieu de couper la voix en
+pleine phrase — le Ken Burns continue de bouger pendant le gel, donc
+l'image reste vivante. Remplace l'ancien garde-fou qui désactivait
+resync + trim sur tout le tour.
+
+- `edit-plan.ts` : passe d'extension AVANT le trim (mutuellement
+  exclusifs par section), plafond 12s/section avec warning explicite
+  quand la narration déborde encore. Le beat snapping peut prolonger
+  légèrement le freeze pour caler le cut sur la musique. Placement
+  des items factorisé (`placeRels`) entre la passe d'extension et la
+  passe segments.
+- `SectionPlayer.tsx` : `<Freeze>` Remotion sur le dernier frame
+  pendant `extendTailSec` ; la fenêtre média devient
+  `durationSec − postSplash − extendTail`.
+- Export OTIO : le freeze devient un **Gap jaune "Freeze — <section>"**
+  avec marker — le monteur le remplace par un vrai freeze frame ou du
+  B-roll dans son NLE.
+- Validé sur `smoothandesign-mp3vsoiz` (67.8s de narration pour 48.9s
+  de vidéo — le cas qui avait motivé le garde-fou) : 3 sections
+  étendues (+37.3s de freeze, caps 12s atteints avec warnings), 57s de
+  narration posée au lieu du fallback continu désynchronisé, timeline
+  OTIO 90.63s vérifiée à la lib officielle. Test unitaire edit-plan :
+  16 assertions.
+
 ### Added (Sprint E — export OTIO vers DaVinci Resolve / Premiere · Studio) · 2026-06-12
 
 « Pas satisfait du montage auto ? Ouvre ton tour dans Resolve — sections

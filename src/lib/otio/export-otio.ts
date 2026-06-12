@@ -54,6 +54,7 @@ interface EditPlanFile {
   sections?: Array<{
     index: number;
     playDurationSec: number;
+    extendTailSec?: number;
     snappedBeat: { sec: number } | null;
   }>;
   voSegments?: OtioVoSegmentInput[];
@@ -108,17 +109,20 @@ export function exportTourOtio(opts: {
     const postSplashSec = s.postSplashSec ?? 0;
     const srcInSec = Math.max(0, s.trimStartSec ?? 0);
     const p = plan?.sections?.find((x) => x.index === s.index);
-    // playDurationSec inclut le splash virtuel ; côté média on le
-    // retire. Fallback sans plan : durée UI-trimmée du manifest.
+    // playDurationSec inclut le splash virtuel ET l'éventuel freeze
+    // (extend-to-fit) ; côté média on retire les deux. Fallback sans
+    // plan : durée UI-trimmée du manifest.
     const uiTrimmed =
       (s.trimEndSec ?? s.durationSec) - srcInSec;
     const playSec = p?.playDurationSec ?? uiTrimmed;
+    const extendTailSec = p?.extendTailSec ?? 0;
     return {
       name: `S${s.index} — ${s.title}`,
       mediaPathAbs,
       srcInSec,
-      durationSec: Math.max(0.1, playSec - postSplashSec),
+      durationSec: Math.max(0.1, playSec - postSplashSec - extendTailSec),
       postSplashSec,
+      extendTailSec,
       mediaDurationSec,
       snappedBeatSec: p?.snappedBeat?.sec ?? null,
     };

@@ -88,3 +88,44 @@ assert(plan.subtitles.length >= 2, `subtitles générées (${plan.subtitles.leng
 const firstCue = plan.subtitles[0];
 assert(!!firstCue && Math.abs(firstCue.startSec - (seg1?.atCompSec ?? 0)) < 0.01, `1ère cue alignée sur seg1 (${firstCue?.startSec})`);
 console.log(plan.summary.join("\n"));
+
+// ── Scénario narrative : extend-to-fit (Sprint F) ─────────────────
+// Section 1 : 5s de vidéo, 9s de narration → freeze de ~4.3s pour
+// loger la voix au lieu de la couper en pleine phrase.
+const plan2 = buildEditPlan({
+  fps: 30,
+  introSec: 2.2,
+  defaultCrossfadeSec: 0.65,
+  sections: [
+    { index: 1, srcInSec: 0, playableSec: 5, contentStartSec: 0 },
+    { index: 2, srcInSec: 0, playableSec: 6, contentStartSec: 0 },
+  ],
+  alignment: {
+    totalDurationSec: 14,
+    items: [
+      { linearStepIdx: 0, sectionIdx: -1, kind: "narrative-step", text: null, audioStartSec: 0, audioDurationSec: 9.0 },
+      { linearStepIdx: 2, sectionIdx: -1, kind: "narrative-step", text: null, audioStartSec: 9.0, audioDurationSec: 5.0 },
+    ],
+    normalizedAlignment: chars("Une narration beaucoup trop longue pour la premiere section. Et une deuxieme phrase qui tient dedans.", 0),
+  },
+  stepSectionMap: {
+    0: { sectionIdx: 1, isSectionMarker: true },
+    1: { sectionIdx: 1, isSectionMarker: false },
+    2: { sectionIdx: 2, isSectionMarker: false },
+    3: { sectionIdx: 2, isSectionMarker: false },
+  },
+  voPauses: [],
+  bgBeats: [],
+  enableTrim: true,
+});
+
+const f1 = plan2.sections[0];
+const f2 = plan2.sections[1];
+assert(Math.abs(f1.extendTailSec - 4.3) < 0.01, `sec1 étendue de ~4.3s (got ${f1.extendTailSec})`);
+assert(Math.abs(f1.playDurationSec - 9.3) < 0.01, `sec1 playDur 9.3s (got ${f1.playDurationSec})`);
+assert(f1.trimmedTailSec === 0, "sec1 pas de trim (extend exclusif)");
+const fseg1 = plan2.voSegments.find((v) => v.sectionIdx === 1);
+assert(!!fseg1 && Math.abs(fseg1.durationSec - 9.0) < 0.01, `narration sec1 entière, non coupée (got ${fseg1?.durationSec})`);
+assert(f2.extendTailSec === 0, "sec2 tient → pas d'extension");
+assert(Math.abs(f2.timelineStartSec - 11.5) < 0.01, `sec2 démarre après l'extension (got ${f2.timelineStartSec})`);
+console.log(plan2.summary.join("\n"));
