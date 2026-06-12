@@ -20,6 +20,7 @@ import type {
 } from "./types";
 import { applyTourDiff, revertTourDiff } from "./diff";
 import { MockTransport, simulateRun } from "./mock-transport";
+import { RealTransport } from "./real-transport";
 import { sectionsOf } from "./sections";
 import ConsoleTimeline, { type DirtyKind } from "./ConsoleTimeline";
 import TakeView from "./TakeView";
@@ -74,7 +75,16 @@ export default function ConsoleDock({
   transport?: ChatTransport;
   children: ReactNode;
 }) {
-  const transport = useMemo(() => transportProp ?? new MockTransport(), [transportProp]);
+  // Transport réel par défaut (route locale → Claude BYOK). Escape
+  // hatch démo/dev sans clé : localStorage "motion-console-mock" = "1"
+  // rebranche le MockTransport (mêmes événements, scénarios scriptés).
+  const transport = useMemo(() => {
+    if (transportProp) return transportProp;
+    const wantMock =
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("motion-console-mock") === "1";
+    return wantMock ? new MockTransport() : new RealTransport();
+  }, [transportProp]);
 
   // ── dock chrome ──────────────────────────────────────────────────
   const [open, setOpen] = useState(false); // replié par défaut

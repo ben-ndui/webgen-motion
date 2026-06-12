@@ -11,6 +11,42 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Director's Console — transport réel Claude BYOK) · 2026-06-12
+
+La console parle désormais au **vrai Claude** (clé BYOK du wizard
+Agent IA, `~/.webgen-motion/config.json` — la clé ne quitte jamais le
+serveur local) :
+
+- **`POST /api/motion/console/take`** — stream NDJSON de `TakeEvent`
+  (même contrat que le mock : l'UI n'a pas bougé d'une ligne, toute la
+  valeur de l'interface `ChatTransport`). Annulation Échap propagée
+  jusqu'à l'appel Anthropic via `req.signal`. `GET …/probe` pilote
+  l'empty state BYOK.
+- **Tool-use forcé** (`respond_take`, `tool_choice`) : la réponse du
+  modèle est validée par JSON Schema côté API — zéro parsing de fences,
+  zéro JSON malformé. Réponse volontairement pauvre : narration +
+  ops + runProposal/reply.
+- **Sûreté des diffs** (`src/lib/console-agent/validate.ts`) : le LLM
+  ne fournit JAMAIS les données de rollback — `before`/`removed` sont
+  réécrits depuis le tour réel, deltaSec/touchedSections/cards
+  recalculés serveur. Op invalide (index hors bornes, step malformé,
+  plateforme incohérente, changement de type, sortie du scope `@Sn`)
+  → proposition rejetée avec message exploitable, jamais réparée en
+  silence.
+- **System prompt** : schéma complet des steps web + mobile, règles
+  d'édition (steps `after` complets, dwell raisonnables, voiceovers
+  prononçables, jamais de run auto), narration façon log.
+- Slash commands bypassent le LLM (réponse run-log immédiate) ;
+  logs serveur immédiats pendant la latence du modèle ; erreurs
+  Anthropic mappées (429 → countdown retry-after, 401/403 → provider).
+- Escape hatch démo sans clé : `localStorage motion-console-mock=1`
+  rebranche le MockTransport.
+- **Validé E2E avec le vrai Claude** (haiku-4.5 configuré) : prise
+  réelle → replace-step proposé avec `before` réel embarqué → Apply →
+  tour muté (visible tab Script) → timeline dirty avec le bon hint
+  (`re-générer la vo ▸` quand seule la VO change) + runProposal `vo`
+  spontané du modèle.
+
 ### Added (Director's Console — le chat IA de l'éditeur, UI + mock transport) · 2026-06-12
 
 Première brique du chat IA (v0.3.0) : la **« Director's Console »**,
