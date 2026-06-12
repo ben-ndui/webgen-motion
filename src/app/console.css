@@ -71,6 +71,9 @@
 .gm-console .tl-hint { display: block; width: 100%; text-align: right; font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: transparent; border: 0; cursor: pointer; padding: 0 12px 7px; }
 .gm-console .tl-hint:hover { text-decoration: underline; }
 
+/* ── surface partagée (Z3 + Z4) — extraite pour le hub ─────── */
+.gm-console .con-surface { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
 /* ── Z3 flux des prises ────────────────────────────────────── */
 .gm-console .con-flow-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .gm-console .con-flow { flex: 1; overflow-y: auto; padding: var(--s-4) var(--s-4) var(--s-5); display: flex; flex-direction: column; gap: var(--s-5); }
@@ -208,6 +211,72 @@
 .gm-console .con-nokey .ck-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-ink); font-size: var(--t-xs); font-weight: 500; padding: 9px 16px; border-radius: var(--r-md); text-decoration: none; }
 .gm-console .con-nokey .ck-cta:hover { background: var(--accent-hover); }
 .gm-console .con-nokey .ck-path { font-family: var(--font-mono); font-size: 10px; color: var(--faint); }
+
+/* ============================================================
+   EMBED — la console hors du dock éditeur (drawer hub, flottant,
+   fenêtre séparée). Neutralise le positionnement sticky/fixed du
+   dock : le chrome hôte décide de la géométrie.
+   ============================================================ */
+.gm-console.embed { position: relative; top: 0; height: 100%; min-height: 0; border-left: 0; animation: none; }
+@media (max-width: 1459.98px) {
+  .gm-console.embed { position: relative; right: auto; bottom: auto; width: auto; max-width: none; z-index: auto; box-shadow: none; border-left: 0; }
+}
+
+/* badge des cards hub-action (TOUR / OUVRIR) — cousin de .type-badge
+   sans dépendre d'editor.css (le hub ne le charge pas) */
+.gm-console .hub-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-sm); padding: 2px 7px; flex: none; }
+
+/* ============================================================
+   HUBCONSOLE — chrome du dashboard. 3 modes : drawer bas (style
+   « Développeurs » Stripe), flottant draggable, fenêtre séparée.
+   z-index 50 — sous les modals du hub (z 60).
+   ============================================================ */
+
+/* éléments partagés des trois chromes (barre / flottant / fenêtre) */
+.gm-hubconsole .hc-title, .gm-hubconsole-float .hc-title, .gm-console-window .hc-title { color: var(--ink); }
+.gm-hubconsole .hc-dot, .gm-hubconsole-float .hc-dot, .gm-console-window .hc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.gm-hubconsole .hc-dot.live, .gm-hubconsole-float .hc-dot.live, .gm-console-window .hc-dot.live { animation: gmConBlink 1.4s ease-in-out infinite; }
+.gm-hubconsole .hc-actions, .gm-hubconsole-float .hc-actions { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.gm-hubconsole .hc-btn, .gm-hubconsole-float .hc-btn { width: 26px; height: 26px; border-radius: 6px; border: 0; background: transparent; color: var(--faint); cursor: pointer; display: grid; place-items: center; flex: none; }
+.gm-hubconsole .hc-btn:hover, .gm-hubconsole-float .hc-btn:hover { background: var(--surface-2); color: var(--ink); }
+.gm-hubconsole .hc-btn.on, .gm-hubconsole-float .hc-btn.on { color: var(--accent); background: var(--accent-soft); }
+.gm-hubconsole .hc-btn svg, .gm-hubconsole-float .hc-btn svg { width: 14px; height: 14px; }
+.gm-hubconsole .hc-note, .gm-hubconsole-float .hc-note { font-family: var(--font-mono); font-size: 10px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-hubconsole .hc-link { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); background: none; border: 0; border-bottom: 1px dashed var(--line-strong); cursor: pointer; padding: 0 0 1px; }
+.gm-hubconsole .hc-link:hover { color: var(--ink); border-bottom-style: solid; }
+
+/* barre fine 40px fixée en bas — toujours visible (fermée/ouverte) */
+.gm-hubconsole { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; flex-direction: column; }
+.gm-hubconsole .hc-bar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--surface); border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); user-select: none; position: relative; }
+.gm-hubconsole .hc-bar-main { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; background: transparent; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
+.gm-hubconsole .hc-chev { color: var(--accent); flex: none; display: inline-block; transition: transform .2s ease; }
+.gm-hubconsole[data-mode="drawer"] .hc-chev { transform: rotate(90deg); }
+.gm-hubconsole .hc-dot.unseen { background: var(--accent); }
+.gm-hubconsole .hc-kbd { font-family: var(--font-mono); font-size: 10px; color: var(--faint); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 1px 6px; background: var(--surface-2); }
+.gm-hubconsole .hc-detached { color: var(--muted); }
+
+/* panneau drawer — monte du bas, hauteur persistée (220px–80vh) */
+.gm-hubconsole .hc-panel { overflow: hidden; background: var(--bg-sunken); }
+.gm-hubconsole .hc-panel-inner { height: 100%; display: flex; flex-direction: column; min-height: 0; }
+.gm-hubconsole .hc-resize-h { position: absolute; left: 0; right: 0; top: -3px; height: 7px; cursor: row-resize; z-index: 5; background: transparent; border: 0; padding: 0; }
+.gm-hubconsole .hc-resize-h:hover, .gm-hubconsole .hc-resize-h.dragging { background: color-mix(in oklch, var(--accent) 35%, transparent); }
+/* console hub plus large que le dock éditeur : colonne 860px centrée */
+.gm-hubconsole .hc-panel .con-surface { width: 100%; max-width: 860px; margin: 0 auto; }
+
+/* fenêtre flottante in-page — draggable, resizable coin bas-droit */
+.gm-hubconsole-float { position: fixed; z-index: 50; display: flex; flex-direction: column; min-width: 0; background: var(--bg-sunken); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-pop); overflow: hidden; }
+.gm-hubconsole-float .hc-float-head { height: 40px; flex: none; display: flex; align-items: center; gap: 9px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); cursor: grab; user-select: none; touch-action: none; }
+.gm-hubconsole-float .hc-float-head.dragging { cursor: grabbing; }
+.gm-hubconsole-float .hc-float-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.gm-hubconsole-float .hc-resize-corner { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; z-index: 6; background: transparent; border: 0; padding: 0; }
+.gm-hubconsole-float .hc-resize-corner::after { content: ""; position: absolute; right: 4px; bottom: 4px; width: 8px; height: 8px; border-right: 2px solid var(--line-strong); border-bottom: 2px solid var(--line-strong); border-radius: 0 0 3px 0; }
+.gm-hubconsole-float .hc-resize-corner:hover::after { border-color: var(--accent); }
+
+/* fenêtre séparée /console/window — page standalone minimaliste */
+.gm-console-window { height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+.gm-console-window .hc-win-head { height: 40px; flex: none; display: flex; align-items: center; gap: 9px; padding: 0 14px; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); }
+.gm-console-window .hc-win-head .hc-title { color: var(--ink); }
+.gm-console-window .hc-win-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* ============================================================
    DARK — phosphore léger (chevron + caret UNIQUEMENT) + hues

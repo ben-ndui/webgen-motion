@@ -9,6 +9,8 @@
  *       jamais le vrai pipeline
  *   (c) erreur rate-limit avec retryInSec (le retry du même prompt
  *       réussit)
+ *   (d) mode hub : create-tour scripté depuis une URL, open-tour,
+ *       liste — blocs hub-action proposés, jamais exécutés seuls
  * + fallback texte.
  */
 import type { TourEntry, TourStep } from "@/lib/types/tour";
@@ -190,6 +192,12 @@ export class MockTransport implements ChatTransport {
     const block = (b: TakeBlock) => ({ type: "block" as const, block: b });
     const { tour, prompt } = req;
     const p = prompt.trim().toLowerCase();
+
+    // ── (d) mode hub — pas de tour ouvert ───────────────────────────
+    if (req.mode === "hub" || !tour) {
+      await this.sendHub(p, prompt, emit, block);
+      return;
+    }
     const sections = sectionsOf(tour);
 
     // ── (b) run explicite via slash — simulation pure ───────────────
@@ -341,5 +349,103 @@ export class MockTransport implements ChatTransport {
       420,
     );
     await emit({ type: "done", status: "done" }, 120);
+  }
+
+  /** Scénarios hub — create-tour scripté, open-tour, liste, fallback.
+   *  Même langage d'événements que le serveur : l'UI ne fait pas la
+   *  différence, et rien ne s'exécute sans confirmation. */
+  private async sendHub(
+    p: string,
+    prompt: string,
+    emit: (evt: TakeEvent, ms?: number) => Promise<void>,
+    block: (b: TakeBlock) => Extract<TakeEvent, { type: "block" }>,
+  ): Promise<void> {
+    // « ouvre le tour <id> »
+    const open = p.match(/\bouvre\b(?:\s+le\s+tour)?\s+([\w-]+)/);
+    if (open) {
+      await emit({ type: "log", prefix: "plan", text: `tour « ${open[1]} » repéré au catalogue` }, 360);
+      await emit(
+        block({
+          kind: "hub-action",
+          action: { type: "open-tour", tourId: open[1], title: open[1] },
+          state: "proposed",
+        }),
+        340,
+      );
+      await emit({ type: "done", status: "proposed" }, 100);
+      return;
+    }
+
+    // « liste mes tours » / questions catalogue
+    if (/\bliste\b|\bfinal\.mp4\b|\bquels? tours?\b/.test(p)) {
+      await emit({ type: "log", prefix: "plan", text: "lecture du catalogue tours/…" }, 360);
+      await emit(
+        block({
+          kind: "text",
+          text: "(mock) En réel, je lis tours/ via l'agent : id, sections, durée, état du pipeline. Demande « crée une démo 60s de https://… » pour voir la création scriptée.",
+        }),
+        380,
+      );
+      await emit({ type: "done", status: "done" }, 100);
+      return;
+    }
+
+    // « crée une démo 60s de https://… » — create-tour scripté
+    if (/cr[ée]e|d[ée]mo|nouveau tour/.test(p)) {
+      const url = prompt.match(/https?:\/\/[^\s»"']+/)?.[0] ?? "https://exemple.app";
+      let host = "exemple.app";
+      try {
+        host = new URL(url).hostname;
+      } catch {}
+      const id = host.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() + "-demo";
+      const name = `${host} · Démo`;
+      const mkSection = (
+        title: string,
+        subtitle: string,
+        voiceover: string,
+        scrollTo?: number,
+      ): TourStep[] => [
+        { type: "section", categoryId: "branding", title, subtitle, dwellMs: 2400, voiceover },
+        ...(scrollTo !== undefined
+          ? [{ type: "scroll" as const, to: scrollTo, dwellMs: 2200 }]
+          : []),
+        { type: "wait", dwellMs: 2600 },
+      ];
+      const demoTour: TourEntry = {
+        id,
+        name,
+        description: `Démo 60s générée depuis ${url} (scénario mock).`,
+        estimatedSec: 60,
+        startPath: "/",
+        baseUrl: url,
+        format: "16:9",
+        brand: { displayName: host, domain: host },
+        steps: [
+          ...mkSection(host, "L'essentiel en 60 secondes", `Voici ${host} — la visite commence.`),
+          ...mkSection("Fonctionnalités", "Ce que le produit sait faire", "Les fonctionnalités clés, sans détour.", 900),
+          ...mkSection("En pratique", "Le parcours utilisateur", "Un parcours simple, de bout en bout.", 1800),
+          ...mkSection("Conclusion", "Essayez-le", "À vous de jouer.", 0),
+        ],
+      };
+
+      await emit({ type: "log", prefix: "plan", text: `cible ${url}` }, 380);
+      await emit({ type: "log", prefix: "plan", text: "scénario 60s — 4 sections, voix off incluse" });
+      await emit({ type: "log", prefix: "note", text: "rien ne s'écrit sans ta confirmation" });
+      await emit(
+        block({ kind: "hub-action", action: { type: "create-tour", tour: demoTour }, state: "proposed" }),
+        420,
+      );
+      await emit({ type: "done", status: "proposed" }, 120);
+      return;
+    }
+
+    await emit(
+      block({
+        kind: "text",
+        text: "Console du studio : « crée une démo 60s de https://… », « liste mes tours », « ouvre le tour uzme-landing ».",
+      }),
+      400,
+    );
+    await emit({ type: "done", status: "done" }, 100);
   }
 }

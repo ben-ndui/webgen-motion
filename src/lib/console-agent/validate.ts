@@ -208,3 +208,76 @@ export function validateModelOps(
   };
   return { ok: true, diff, cards: buildCards(ops) };
 }
+
+/** Slug sûr — minuscules, alphanumérique + tirets. */
+export function slugifyTourId(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+
+/**
+ * Mode hub — validation + normalisation d'un TourEntry CRÉÉ par le
+ * modèle. Mêmes règles de steps que les diffs (validateStep par
+ * plateforme), champs requis avec défauts raisonnables. L'unicité du
+ * slug (suffixe -2 en cas de collision) est gérée par l'appelant —
+ * elle demande le fs.
+ */
+export function validateCreatedTour(input: unknown): {
+  ok: boolean;
+  error?: string;
+  tour?: TourEntry;
+} {
+  if (typeof input !== "object" || input === null) {
+    return { ok: false, error: "createTour n'est pas un objet" };
+  }
+  const t = input as Partial<TourEntry> & Record<string, unknown>;
+  if (typeof t.name !== "string" || !t.name.trim()) {
+    return { ok: false, error: "createTour.name requis" };
+  }
+  if (!Array.isArray(t.steps) || t.steps.length === 0) {
+    return { ok: false, error: "createTour.steps doit être une liste non vide" };
+  }
+  const platform =
+    t.platform === "ios" || t.platform === "android" ? t.platform : "web";
+  for (let i = 0; i < t.steps.length; i++) {
+    const err = validateStep(t.steps[i], platform);
+    if (err) return { ok: false, error: `steps[${i}] — ${err}` };
+  }
+  if ((t.steps[0] as TourStep).type !== "section") {
+    return { ok: false, error: "le scénario doit démarrer par un step section" };
+  }
+  if (t.format !== undefined && t.format !== "16:9" && t.format !== "9:16") {
+    return { ok: false, error: `format "${String(t.format)}" invalide (16:9 ou 9:16)` };
+  }
+
+  const rawId = typeof t.id === "string" && t.id.trim() ? t.id : t.name;
+  const id = slugifyTourId(rawId);
+  if (!id) return { ok: false, error: "impossible de dériver un id slug" };
+
+  const estimated =
+    typeof t.estimatedSec === "number" && t.estimatedSec > 0
+      ? Math.round(t.estimatedSec)
+      : Math.round(
+          (t.steps as TourStep[]).reduce((ms, s) => ms + dwellOf(s), 0) / 1000,
+        );
+
+  const tour: TourEntry = {
+    ...(t as TourEntry),
+    id,
+    name: t.name.trim(),
+    description:
+      typeof t.description === "string" && t.description.trim()
+        ? t.description
+        : `Tour généré par la console — ${t.name.trim()}.`,
+    estimatedSec: estimated,
+    startPath: typeof t.startPath === "string" && t.startPath ? t.startPath : "/",
+    ...(platform !== "web" ? { platform } : {}),
+    steps: t.steps as TourStep[],
+  };
+  return { ok: true, tour };
+}

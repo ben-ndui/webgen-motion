@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "./theme-toggle";
+import HubConsole from "./hub-console";
 import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
@@ -280,6 +281,10 @@ export default function HubApp({
           </div>
         </div>
       </main>
+
+      {/* Director's Console du hub — drawer bas / flottant / fenêtre
+          séparée (chrome fixed, ne touche pas la grille du hub) */}
+      <HubConsole />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type { Take, TakeBlock } from "./types";
 import PlanBlock, { LogLines } from "./PlanBlock";
 import StepDiffBlock, { fmtHHMM, type AppliedMeta } from "./StepDiffBlock";
 import RunLogBlock from "./RunLogBlock";
+import HubActionBlock from "./HubActionBlock";
 import ErrorBlock from "./ErrorBlock";
 
 /** Issue affichée à droite d'une prise compactée. */
@@ -48,6 +49,9 @@ export default function TakeView({
   onOpenCompose,
   onCancelStreaming,
   onHoverSections,
+  onHubConfirm,
+  onHubDiscard,
+  onHubOpen,
 }: {
   take: Take;
   compact: boolean;
@@ -67,6 +71,10 @@ export default function TakeView({
   onOpenCompose: () => void;
   onCancelStreaming: () => void;
   onHoverSections: (ordinals: number[] | null) => void;
+  /** Mode hub — confirmation / écart / ouverture d'un hub-action. */
+  onHubConfirm?: (blockIdx: number) => void;
+  onHubDiscard?: (blockIdx: number) => void;
+  onHubOpen?: (tourId: string) => void;
 }) {
   const num = `#${String(take.n).padStart(2, "0")}`;
 
@@ -175,6 +183,18 @@ export default function TakeView({
                   onLater={() => onLater(bi)}
                   onCancel={onCancelRun}
                   onOpenCompose={onOpenCompose}
+                />
+              );
+            case "hub-action":
+              return (
+                <HubActionBlock
+                  key={bi}
+                  block={block}
+                  doneAt={metaFor(bi)?.at}
+                  disabled={streaming}
+                  onConfirm={() => onHubConfirm?.(bi)}
+                  onDiscard={() => onHubDiscard?.(bi)}
+                  onOpen={(tourId) => onHubOpen?.(tourId)}
                 />
               );
             case "error":

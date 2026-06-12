@@ -20,9 +20,16 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  if (!body?.tour?.steps || typeof body.prompt !== "string" || !body.prompt.trim()) {
+  // Mode hub : pas de tour ouvert — seul le prompt est requis. Mode
+  // editor (défaut) : tour.steps reste obligatoire.
+  const isHub = body?.mode === "hub";
+  if (typeof body?.prompt !== "string" || !body.prompt.trim() || (!isHub && !body?.tour?.steps)) {
     return NextResponse.json(
-      { error: "TakeRequest invalide (tour.steps et prompt requis)" },
+      {
+        error: isHub
+          ? "TakeRequest invalide (prompt requis)"
+          : "TakeRequest invalide (tour.steps et prompt requis)",
+      },
       { status: 400 },
     );
   }

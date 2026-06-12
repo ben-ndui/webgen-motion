@@ -17,15 +17,28 @@
  * passer en SSE + input_json_delta derrière la même interface.
  */
 
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { getConfig } from "@/lib/config";
+import { getAllTours, getTour } from "@/lib/tour-loader";
+import { getMotionTourDir } from "@/lib/motion-tour-store";
 import type {
   TakeBlock,
   TakeEvent,
   TakeRequest,
 } from "@/app/tour/[id]/_components/console/types";
-import { buildSystemPrompt, buildUserMessage } from "./build-prompt";
-import { RESPOND_TAKE_TOOL, type ModelTakeResponse } from "./take-schema";
-import { validateModelOps } from "./validate";
+import {
+  buildHubSystemPrompt,
+  buildHubUserMessage,
+  buildSystemPrompt,
+  buildUserMessage,
+} from "./build-prompt";
+import {
+  RESPOND_TAKE_TOOL,
+  RESPOND_TAKE_TOOL_HUB,
+  type ModelTakeResponse,
+} from "./take-schema";
+import { validateCreatedTour, validateModelOps } from "./validate";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
 const API_VERSION = "2023-06-01";
@@ -103,33 +116,16 @@ function slashTake(prompt: string, emit: Emit): boolean {
   return true;
 }
 
-export async function runTake(
-  req: TakeRequest,
+/** Appel Anthropic en tool-use forcé — les erreurs sont émises en
+ *  blocs (mêmes familles que la maquette) ; null = prise terminée. */
+async function callRespondTake(
+  agent: ConsoleAgentConfig,
+  system: string,
+  userMessage: string,
+  tool: typeof RESPOND_TAKE_TOOL | typeof RESPOND_TAKE_TOOL_HUB,
   emit: Emit,
   signal: AbortSignal,
-): Promise<void> {
-  const agent = resolveConsoleAgent();
-  if (!agent.configured) {
-    emit({
-      type: "block",
-      block: errorBlock("no-key", "Aucune clé Anthropic configurée — Réglages → Agent IA."),
-    });
-    emit({ type: "done", status: "error" });
-    return;
-  }
-
-  if (slashTake(req.prompt, emit)) return;
-
-  // Feedback immédiat pendant la latence du modèle.
-  emit({
-    type: "log",
-    prefix: "plan",
-    text: `lecture du scénario… ok (${req.tour.steps.length} steps)`,
-  });
-  if (req.scopeSection !== undefined) {
-    emit({ type: "log", prefix: "plan", text: `scope S${req.scopeSection + 1}` });
-  }
-
+): Promise<ModelTakeResponse | null> {
   let res: Response;
   try {
     res = await fetch(API_URL, {
@@ -143,21 +139,21 @@ export async function runTake(
       body: JSON.stringify({
         model: agent.model,
         max_tokens: 6000,
-        system: buildSystemPrompt(),
-        messages: [{ role: "user", content: buildUserMessage(req) }],
-        tools: [RESPOND_TAKE_TOOL],
+        system,
+        messages: [{ role: "user", content: userMessage }],
+        tools: [tool],
         tool_choice: { type: "tool", name: "respond_take" },
         temperature: 0.3,
       }),
     });
   } catch (e) {
-    if (signal.aborted) return;
+    if (signal.aborted) return null;
     emit({
       type: "block",
       block: errorBlock("network", `réseau injoignable : ${(e as Error).message}`),
     });
     emit({ type: "done", status: "error" });
-    return;
+    return null;
   }
 
   if (!res.ok) {
@@ -184,7 +180,7 @@ export async function runTake(
       });
     }
     emit({ type: "done", status: "error" });
-    return;
+    return null;
   }
 
   const json = (await res.json()) as {
@@ -192,7 +188,7 @@ export async function runTake(
     stop_reason?: string;
   };
   const toolUse = json.content.find(
-    (c) => c.type === "tool_use" && c.name === RESPOND_TAKE_TOOL.name,
+    (c) => c.type === "tool_use" && c.name === "respond_take",
   );
   if (!toolUse?.input) {
     emit({
@@ -200,9 +196,53 @@ export async function runTake(
       block: errorBlock("provider", "le modèle n'a pas répondu via le tool respond_take."),
     });
     emit({ type: "done", status: "error" });
+    return null;
+  }
+  return toolUse.input as ModelTakeResponse;
+}
+
+export async function runTake(
+  req: TakeRequest,
+  emit: Emit,
+  signal: AbortSignal,
+): Promise<void> {
+  const agent = resolveConsoleAgent();
+  if (!agent.configured) {
+    emit({
+      type: "block",
+      block: errorBlock("no-key", "Aucune clé Anthropic configurée — Réglages → Agent IA."),
+    });
+    emit({ type: "done", status: "error" });
     return;
   }
-  const out = toolUse.input as ModelTakeResponse;
+
+  // Mode hub — pas de tour ouvert : l'agent du studio.
+  if ((req.mode ?? "editor") === "hub" || !req.tour) {
+    await runHubTake(req, emit, signal, agent);
+    return;
+  }
+
+  if (slashTake(req.prompt, emit)) return;
+
+  // Feedback immédiat pendant la latence du modèle.
+  emit({
+    type: "log",
+    prefix: "plan",
+    text: `lecture du scénario… ok (${req.tour.steps.length} steps)`,
+  });
+  if (req.scopeSection !== undefined) {
+    emit({ type: "log", prefix: "plan", text: `scope S${req.scopeSection + 1}` });
+  }
+
+  const out = await callRespondTake(
+    agent,
+    buildSystemPrompt(),
+    buildUserMessage(req),
+    RESPOND_TAKE_TOOL,
+    emit,
+    signal,
+  );
+  if (!out) return;
 
   // Narration — pacing léger ligne par ligne (l'effet « prise »).
   for (const line of out.narration ?? []) {
@@ -258,6 +298,124 @@ export async function runTake(
       },
     });
     finalStatus = "proposed";
+  }
+
+  if (out.reply && finalStatus === "done") {
+    emit({ type: "block", block: { kind: "text", text: out.reply } });
+  }
+
+  if (!signal.aborted) emit({ type: "done", status: finalStatus });
+}
+
+/** Ligne de catalogue d'un tour — id, name, platform, sections,
+ *  durée estimée, état pipeline (manifest / final sur disque). */
+function catalogLine(t: {
+  id: string;
+  name: string;
+  platform?: string;
+  estimatedSec: number;
+  steps: Array<{ type: string }>;
+}): string {
+  const sections = t.steps.filter((s) => s.type === "section").length;
+  const dir = getMotionTourDir(t.id);
+  const hasCapture = existsSync(join(dir, "manifest.json"));
+  const hasFinal = existsSync(join(dir, "final.mp4"));
+  const pipeline = [
+    hasCapture ? "capture ✓" : "pas de capture",
+    hasFinal ? "final.mp4 ✓" : "pas de final",
+  ].join(" · ");
+  return `- id "${t.id}" · « ${t.name} » · ${t.platform ?? "web"} · ${sections} sections · ~${Math.round(t.estimatedSec)}s · ${pipeline}`;
+}
+
+/** Slug unique — suffixe -2, -3… si l'id existe déjà au catalogue. */
+function uniqueTourId(id: string): string {
+  if (!getTour(id)) return id;
+  for (let n = 2; n < 100; n++) {
+    const candidate = `${id}-${n}`;
+    if (!getTour(candidate)) return candidate;
+  }
+  return `${id}-${Date.now()}`;
+}
+
+/**
+ * Mode hub — l'assistant du studio. Le user message porte le
+ * CATALOGUE complet (getAllTours + état pipeline disque) ; la réponse
+ * peut proposer createTour (validé + slug dé-dupliqué ici) ou
+ * openTour (vérifié au catalogue). Tout reste une PROPOSITION : le
+ * bloc hub-action n'agit qu'au clic de confirmation côté UI.
+ */
+async function runHubTake(
+  req: TakeRequest,
+  emit: Emit,
+  signal: AbortSignal,
+  agent: ConsoleAgentConfig,
+): Promise<void> {
+  const tours = getAllTours();
+
+  // Feedback immédiat pendant la latence du modèle.
+  emit({
+    type: "log",
+    prefix: "plan",
+    text: `lecture du studio… ok (${tours.length} tour${tours.length > 1 ? "s" : ""} au catalogue)`,
+  });
+
+  const out = await callRespondTake(
+    agent,
+    buildHubSystemPrompt(),
+    buildHubUserMessage(req, tours.map(catalogLine)),
+    RESPOND_TAKE_TOOL_HUB,
+    emit,
+    signal,
+  );
+  if (!out) return;
+
+  for (const line of out.narration ?? []) {
+    if (signal.aborted) return;
+    emit({ type: "log", prefix: line.prefix, text: line.text });
+    await sleep(90, signal);
+  }
+
+  let finalStatus: "done" | "proposed" = "done";
+
+  if (out.createTour) {
+    const v = validateCreatedTour(out.createTour);
+    if (!v.ok || !v.tour) {
+      emit({
+        type: "log",
+        prefix: "note",
+        text: `proposition invalide — ${v.error}. Reformule ou précise la demande.`,
+      });
+    } else {
+      const tour = { ...v.tour, id: uniqueTourId(v.tour.id) };
+      if (tour.id !== v.tour.id) {
+        emit({ type: "log", prefix: "note", text: `id "${v.tour.id}" déjà pris — "${tour.id}"` });
+        await sleep(60, signal);
+      }
+      emit({
+        type: "block",
+        block: { kind: "hub-action", action: { type: "create-tour", tour }, state: "proposed" },
+      });
+      finalStatus = "proposed";
+    }
+  } else if (out.openTour) {
+    const target = getTour(out.openTour.trim());
+    if (!target) {
+      emit({
+        type: "log",
+        prefix: "note",
+        text: `tour "${out.openTour}" introuvable au catalogue`,
+      });
+    } else {
+      emit({
+        type: "block",
+        block: {
+          kind: "hub-action",
+          action: { type: "open-tour", tourId: target.id, title: target.name },
+          state: "proposed",
+        },
+      });
+      finalStatus = "proposed";
+    }
   }
 
   if (out.reply && finalStatus === "done") {

@@ -11,7 +11,7 @@
  * deltaSec/touchedSections/cards (recalculés serveur, déterministes).
  */
 
-import type { TourStep } from "@/lib/types/tour";
+import type { TourEntry, TourStep } from "@/lib/types/tour";
 
 /** Op telle que le MODÈLE la produit (sans les champs de rollback). */
 export type ModelDiffOp =
@@ -30,6 +30,11 @@ export interface ModelTakeResponse {
   runProposal?: { job: "capture" | "vo" | "compose"; reason: string };
   /** Réponse libre (question de l'utilisateur, pas de modification). */
   reply?: string;
+  /** Mode hub — TourEntry complet à créer (validé + slug unique côté
+   *  serveur, JAMAIS écrit sans confirmation de l'utilisateur). */
+  createTour?: TourEntry;
+  /** Mode hub — id d'un tour existant à ouvrir. */
+  openTour?: string;
 }
 
 /** JSON Schema du tool — le step est laissé en objet libre (validé
@@ -94,6 +99,43 @@ export const RESPOND_TAKE_TOOL = {
         },
         required: ["job", "reason"],
       },
+      reply: { type: "string", maxLength: 600 },
+    },
+    required: ["narration"],
+  },
+} as const;
+
+/** Variante MODE HUB du tool — pas d'ops sur un tour ouvert (il n'y en
+ *  a pas) ; à la place : createTour (TourEntry complet, validé côté
+ *  serveur) et openTour (id du catalogue). */
+export const RESPOND_TAKE_TOOL_HUB = {
+  name: "respond_take",
+  description:
+    "Réponds à la prise de l'utilisateur : narration courte + éventuellement UN tour complet à créer (createTour) OU un tour existant à ouvrir (openTour) OU une réponse libre (reply). Toujours répondre via ce tool. Rien n'est exécuté sans confirmation de l'utilisateur.",
+  input_schema: {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      narration: {
+        type: "array",
+        minItems: 1,
+        maxItems: 6,
+        items: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            prefix: { type: "string", enum: ["plan", "note", "vo~"] },
+            text: { type: "string", maxLength: 120 },
+          },
+          required: ["prefix", "text"],
+        },
+      },
+      createTour: {
+        type: "object",
+        description:
+          "TourEntry complet (id slug, name, description, estimatedSec, startPath, baseUrl, format, steps[]). Structure validée côté serveur.",
+      },
+      openTour: { type: "string", maxLength: 80 },
       reply: { type: "string", maxLength: 600 },
     },
     required: ["narration"],

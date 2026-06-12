@@ -5,22 +5,33 @@ import { motion, useReducedMotion } from "framer-motion";
 import type { TourEntry } from "@/lib/types/tour";
 import { sectionsOf } from "./sections";
 
+/** Suggestions du mode hub — pas de tour ouvert, l'agent du studio
+ *  crée / liste / ouvre des tours. */
+const HUB_SUGGESTIONS = [
+  "crée une démo 60s de https://…",
+  "liste mes tours",
+  "ouvre le tour uzme-landing",
+  "quel tour n'a pas encore de final.mp4 ?",
+];
+
 /**
  * État vide / première visite — accueil UNE ligne + 4 suggestions
- * calculées depuis le tour réel. Clic = injecte le texte dans le
- * composer (focus, caret en fin) — on n'envoie jamais à la place de
- * l'utilisateur.
+ * calculées depuis le tour réel (mode éditeur) ou fixes (mode hub).
+ * Clic = injecte le texte dans le composer (focus, caret en fin) —
+ * on n'envoie jamais à la place de l'utilisateur.
  */
 export default function ConsoleEmpty({
   tour,
   onPick,
 }: {
-  tour: TourEntry;
+  /** Absent = mode hub (console du dashboard). */
+  tour?: TourEntry;
   onPick: (text: string) => void;
 }) {
   const reduced = useReducedMotion();
 
   const suggestions = useMemo(() => {
+    if (!tour) return HUB_SUGGESTIONS;
     const sections = sectionsOf(tour);
     const hasVo = tour.steps.some((s) => "voiceover" in s && s.voiceover);
     const out: string[] = [];
@@ -46,7 +57,9 @@ export default function ConsoleEmpty({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.26 }}
       >
-        Décris ce que tu veux — j&apos;écris dans le scénario.
+        {tour
+          ? "Décris ce que tu veux — j'écris dans le scénario."
+          : "Décris un tour à créer, ou demande-moi d'ouvrir un tour existant."}
       </motion.p>
       <div>
         <motion.span

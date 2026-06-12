@@ -42,6 +42,12 @@ export interface StepDiffCard {
   lines: { sign: "+" | "-" | " "; text: string }[];
 }
 
+/** Action proposée par l'agent en mode hub — JAMAIS exécutée sans
+ *  clic de confirmation (« Créer le tour » / « Ouvrir »). */
+export type HubAction =
+  | { type: "open-tour"; tourId: string; title: string }
+  | { type: "create-tour"; tour: TourEntry };
+
 export type TakeBlock =
   | { kind: "text"; text: string }                          // une ligne, Sans
   | { kind: "plan"; lines: { prefix: LogPrefix; text: string }[] }
@@ -53,6 +59,8 @@ export type TakeBlock =
       lines: { prefix: LogPrefix; text: string }[];
       progress?: { pct: number; label: string };
       state: "proposed" | "running" | "done" | "failed" | "cancelled" }
+  | { kind: "hub-action"; action: HubAction;
+      state: "proposed" | "done" | "discarded" }
   | { kind: "error"; code: "network" | "rate-limit" | "provider" | "no-key";
       message: string; retryInSec?: number };
 
@@ -83,7 +91,12 @@ export type TakeEvent =
   | { type: "done"; status: Exclude<TakeStatus, "streaming"> };
 
 export interface TakeRequest {
-  tour: TourEntry;
+  /** "editor" (défaut) : la console pilote UN tour ouvert.
+   *  "hub" : la console du dashboard — pas de tour requis, l'agent
+   *  crée / liste / ouvre des tours (blocs hub-action). */
+  mode?: "editor" | "hub";
+  /** Requis en mode editor, absent en mode hub. */
+  tour?: TourEntry;
   /** Historique (prises anciennes possiblement pré-compactées). */
   takes: Take[];
   prompt: string;
