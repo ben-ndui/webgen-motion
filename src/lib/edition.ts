@@ -52,6 +52,7 @@ export type FeatureFlag =
   | "watermark-removal"
   | "cloud-rendering"
   | "auto-update-priority"
+  | "otio-export"
   // Enterprise (sur mesure)
   | "white-label"
   | "api-headless"
@@ -80,6 +81,7 @@ const STUDIO_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([
   "watermark-removal",
   "cloud-rendering",
   "auto-update-priority",
+  "otio-export",
 ]);
 
 const ENTERPRISE_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([

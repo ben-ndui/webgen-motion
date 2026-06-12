@@ -32,6 +32,7 @@ const RUNNER_FILES: Record<string, string> = {
   "capture-tour": "capture-tour.ts",
   "capture-mobile": "capture-mobile.ts",
   "compose-tour": "compose-tour.ts",
+  "export-otio": "export-otio.ts",
   "analyze-audio": "analyze-audio.ts",
   "agent-generate-tour": "agent-generate-tour.ts",
   "scaffold-tours-from-project": "scaffold-tours-from-project.ts",

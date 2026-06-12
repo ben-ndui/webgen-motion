@@ -367,7 +367,17 @@ async function main(): Promise<void> {
     }
     writeFileSync(
       join(tourDir!, "edit-plan.json"),
-      JSON.stringify({ ...plan, generatedAt: new Date().toISOString() }, null, 2),
+      JSON.stringify(
+        {
+          ...plan,
+          // Persisté pour l'export OTIO (Sprint E) : la timeline
+          // Resolve/Premiere reprend la musique du dernier compose.
+          bgMusicPath: resolvedBgMusicPath,
+          generatedAt: new Date().toISOString(),
+        },
+        null,
+        2,
+      ),
     );
     console.log(`▶ Edit plan :`);
     for (const line of plan.summary) console.log(`  ${line}`);

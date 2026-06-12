@@ -63,6 +63,7 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs / Voicebox)
 │   ├── compose-tour.ts          # Compose runner — edit plan + spawn `remotion render`
 │   ├── lib/edit-plan.ts         # Edit Engine — EDL : trims, beat snap, J-cuts, VO segments, subtitles
+│   ├── export-otio.ts           # Export timeline .otio → DaVinci Resolve / Premiere (Studio) — Sprint E
 │   ├── analyze-audio.ts         # ffmpeg silencedetect + beats RMS
 │   ├── agent-generate-tour.ts   # Agent IA Claude génère tour depuis URL
 │   ├── notarize-and-staple.mjs  # Pipeline Apple Notary end-to-end

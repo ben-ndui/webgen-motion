@@ -1,8 +1,9 @@
 "use client";
 
 import "../../../editor.css";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, Check, Download, ExternalLink, Film, Sparkles } from "lucide-react";
+import { AlertCircle, Check, Clapperboard, Download, ExternalLink, Film, Sparkles } from "lucide-react";
 import Link from "next/link";
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import Frame3DSelector from "./frame3d-selector";
@@ -68,6 +69,48 @@ export default function ComposeTab({
   const hasCapture = captureSections !== null && captureSections.length > 0;
   const isRunning = compose.kind === "running";
   const activeStyle = tour.composeStyle ?? "energetic";
+
+  // Sprint E — export OTIO (Studio). Télécharge <tourId>.otio prêt à
+  // importer dans DaVinci Resolve / Premiere Pro.
+  const [otioState, setOtioState] = useState<
+    { kind: "idle" } | { kind: "busy" } | { kind: "error"; message: string }
+  >({ kind: "idle" });
+  async function handleOtioExport(): Promise<void> {
+    setOtioState({ kind: "busy" });
+    try {
+      const res = await fetch("/api/motion/tour/export/otio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tourId,
+          ...(bgMusicId !== undefined ? { bgMusicId } : {}),
+        }),
+      });
+      if (res.status === 403) {
+        setOtioState({
+          kind: "error",
+          message:
+            "Export OTIO = Studio Edition. Finis ton montage dans DaVinci Resolve / Premiere — sections, voix off et musique déjà posées sur la timeline.",
+        });
+        return;
+      }
+      if (!res.ok) {
+        const j = (await res.json().catch(() => null)) as { error?: string } | null;
+        setOtioState({ kind: "error", message: j?.error ?? `Export échoué (${res.status})` });
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${tourId}.otio`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setOtioState({ kind: "idle" });
+    } catch (e) {
+      setOtioState({ kind: "error", message: (e as Error).message });
+    }
+  }
 
   const selectedTrack =
     bgMusicId && bgMusicId !== "" ? tracks.find((t) => t.id === bgMusicId) ?? null : null;
@@ -163,6 +206,16 @@ export default function ComposeTab({
                       <Download className="w-3.5 h-3.5" /> Télécharger
                     </a>
                     <button
+                      onClick={handleOtioExport}
+                      disabled={otioState.kind === "busy"}
+                      title="Exporter la timeline pour DaVinci Resolve / Premiere Pro (Studio Edition)"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-line bg-surface text-ink text-xs font-medium hover:bg-surface-2 disabled:opacity-60"
+                      data-wm-id="editor.compose.export-otio"
+                    >
+                      <Clapperboard className="w-3.5 h-3.5" />
+                      {otioState.kind === "busy" ? "Export…" : "Timeline .otio"}
+                    </button>
+                    <button
                       onClick={onCompose}
                       disabled={isRunning}
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-line bg-surface text-ink text-xs font-medium hover:bg-surface-2 disabled:opacity-60"
@@ -171,6 +224,12 @@ export default function ComposeTab({
                     </button>
                   </div>
                 </div>
+                {otioState.kind === "error" && (
+                  <div className="mt-2 text-xs text-muted flex items-start gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                    <span>{otioState.message}</span>
+                  </div>
+                )}
               </>
             )}
 

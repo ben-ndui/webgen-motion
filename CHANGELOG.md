@@ -11,6 +11,34 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Sprint E — export OTIO vers DaVinci Resolve / Premiere · Studio) · 2026-06-12
+
+« Pas satisfait du montage auto ? Ouvre ton tour dans Resolve — sections
+déjà découpées, voix off et musique déjà posées sur la timeline. »
+
+- **`src/lib/otio/build-otio.ts`** — builder OpenTimelineIO en pur
+  TypeScript (zéro dépendance Python) : Timeline / Stack / Track /
+  Clip.2 / Gap / ExternalReference / Marker.2. Piste vidéo = sections
+  découpées aux durées de l'Edit Engine (trims + beat snapping), piste
+  « Voix off » = segments placés (J-cuts résolus en décalant l'entrée,
+  une piste OTIO ne superpose pas), piste « Musique » bornée à la
+  timeline. Les éléments rendus par Remotion (intro/outro, splash
+  cards mobiles) deviennent des **Gaps avec markers violets**
+  explicatifs ; les cuts beat-snappés ont un **marker vert** en fin de
+  clip.
+- **`scripts/export-otio.ts`** (CLI) + **`POST
+  /api/motion/tour/export/otio`** (download direct) + bouton
+  « Timeline .otio » dans le tab Compose. La musique reprend celle du
+  dernier compose (`bgMusicPath` désormais persisté dans
+  `edit-plan.json`) ou le `bgMusicId` passé par l'UI.
+- **Gated Studio Edition** : nouveau flag `otio-export` ; 403 +
+  upsell côté Community. Dev : `WEBGEN_MOTION_EDITION=studio`.
+- **Validé** avec la lib officielle `opentimelineio` (parse +
+  round-trip write) sur le tour web (uzme-landing : 4 sections + 4
+  segments VO) et le tour mobile (splash gaps + markers beats +
+  musique). Import : Resolve File → Import Timeline ; Premiere File →
+  Import. FCPXML (Final Cut) : non couvert, chantier séparé si demandé.
+
 ### Added (Sprint D — capture d'applications mobiles natives) · 2026-06-12
 
 GEN MOTION filme désormais des **apps iOS / Android natives**, pas
