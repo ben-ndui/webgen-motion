@@ -1,0 +1,238 @@
+/* GEN MOTION — Director's Console (maquette DESIGN-CHAT-IA-MAQUETTE.md).
+   Scope .gm-console + shell .gm-console-shell (pattern editor.css).
+   Token-driven light/dark — aucune couleur hardcodée hors hues
+   sémantiques 150 (succès) · 70 (warning/délétion) · 25 (erreur). */
+
+/* ============================================================
+   SHELL — 3e colonne additive autour du main de TourClient
+   ============================================================ */
+.gm-console-shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: stretch; min-height: 0; }
+@media (min-width: 1460px) {
+  .gm-console-shell[data-console="open"] { grid-template-columns: minmax(0, 1fr) var(--console-w, 420px); }
+}
+.gm-console-col { position: relative; min-width: 0; }
+
+/* rail replié — 44px, sticky sous la topbar 64px */
+.gm-console-rail { position: sticky; top: 64px; height: calc(100vh - 64px); width: 44px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding-top: var(--s-4); background: var(--surface); border-left: 1px solid var(--line); cursor: pointer; border-right: 0; }
+.gm-console-rail:hover { background: var(--surface-2); }
+.gm-console-rail .rail-icon { width: 28px; height: 28px; border-radius: var(--r-sm); display: grid; place-items: center; color: var(--muted); border: 0; background: transparent; cursor: pointer; }
+.gm-console-rail:hover .rail-icon { color: var(--ink); }
+.gm-console-rail .rail-icon svg { width: 16px; height: 16px; }
+.gm-console-rail .rail-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.gm-console-rail .rail-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--faint); writing-mode: vertical-rl; margin-top: 2px; }
+@media (min-width: 1460px) {
+  .gm-console-shell[data-console="open"] .gm-console-rail { display: none; }
+}
+
+/* ============================================================
+   DOCK — panneau (inline ≥1460px / superposé en dessous)
+   ============================================================ */
+.gm-console { position: sticky; top: 64px; height: calc(100vh - 64px); display: flex; flex-direction: column; min-width: 0; background: var(--bg-sunken); border-left: 1px solid var(--line); }
+@media (max-width: 1459.98px) {
+  .gm-console { position: fixed; top: 64px; right: 0; bottom: 0; height: auto; width: var(--console-w, 420px); max-width: calc(100vw - 44px); z-index: 60; box-shadow: var(--shadow-pop); border-left: 1px solid var(--line-strong); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gm-console { animation: gmConIn .26s cubic-bezier(.2, .7, .2, 1) both; }
+}
+@keyframes gmConIn { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* poignée de resize sur le bord gauche */
+.gm-console .con-resize { position: absolute; left: -3px; top: 0; bottom: 0; width: 7px; cursor: col-resize; z-index: 5; background: transparent; border: 0; padding: 0; }
+.gm-console .con-resize:hover, .gm-console .con-resize.dragging { background: color-mix(in oklch, var(--accent) 35%, transparent); }
+
+/* ── Z1 header ─────────────────────────────────────────────── */
+.gm-console .con-head { flex: none; height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); }
+.gm-console .con-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.gm-console .con-dot.live { animation: gmConBlink 1.4s ease-in-out infinite; }
+@keyframes gmConBlink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+.gm-console .con-head .ch-id { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-console .con-head .ch-v { color: var(--muted); }
+.gm-console .con-head .ch-actions { margin-left: auto; display: flex; gap: 2px; }
+.gm-console .con-head .ch-btn { width: 26px; height: 26px; border-radius: 6px; border: 0; background: transparent; color: var(--faint); cursor: pointer; display: grid; place-items: center; }
+.gm-console .con-head .ch-btn:hover { background: var(--surface-2); color: var(--ink); }
+.gm-console .con-head .ch-btn.on { color: var(--accent); background: var(--accent-soft); }
+.gm-console .con-head .ch-btn svg { width: 14px; height: 14px; }
+
+/* ── Z2 timeline ASCII ─────────────────────────────────────── */
+.gm-console .con-tl { flex: none; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 11px; }
+.gm-console .con-tl .tl-row { display: flex; align-items: center; gap: 0; min-height: 28px; padding: 0 12px; overflow: hidden; white-space: nowrap; }
+.gm-console .tl-seg { color: var(--ink-soft); padding: 1px 2px; border-radius: var(--r-sm); flex: none; }
+.gm-console .tl-seg .dur { color: var(--muted); }
+.gm-console .tl-seg .dur.est { color: var(--faint); }
+.gm-console .tl-seg.dirty, .gm-console .tl-seg.scoped { color: var(--accent); background: var(--accent-soft); }
+.gm-console .tl-seg.dirty .dur, .gm-console .tl-seg.scoped .dur { color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .gm-console .tl-seg.dirty, .gm-console .tl-seg.scoped { animation: gmTlPulse .4s ease-out; }
+}
+@keyframes gmTlPulse { from { background: color-mix(in oklch, var(--accent) 25%, var(--accent-soft)); } }
+.gm-console .tl-join { color: var(--line-strong); flex: none; }
+.gm-console .tl-total { color: var(--ink); margin-left: auto; padding-left: 10px; flex: none; }
+.gm-console .tl-total.est { color: var(--faint); }
+.gm-console .tl-hint { display: block; width: 100%; text-align: right; font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: transparent; border: 0; cursor: pointer; padding: 0 12px 7px; }
+.gm-console .tl-hint:hover { text-decoration: underline; }
+
+/* ── Z3 flux des prises ────────────────────────────────────── */
+.gm-console .con-flow-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.gm-console .con-flow { flex: 1; overflow-y: auto; padding: var(--s-4) var(--s-4) var(--s-5); display: flex; flex-direction: column; gap: var(--s-5); }
+.gm-console .con-resume { position: absolute; left: 50%; transform: translateX(-50%); bottom: 10px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-md); font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding: 5px 13px; border-radius: var(--r-full); cursor: pointer; z-index: 4; }
+.gm-console .con-resume:hover { color: var(--ink); border-color: var(--line-strong); }
+
+/* prise */
+.gm-console .take { display: flex; flex-direction: column; gap: 9px; }
+.gm-console .take-head { display: flex; gap: 8px; align-items: baseline; font-family: var(--font-mono); font-size: var(--t-xs); line-height: 1.55; }
+.gm-console .take-n { font-size: var(--t-xs); color: var(--faint); flex: none; }
+.gm-console .take-chev { color: var(--accent); flex: none; }
+.gm-console .take-cmd { color: var(--ink); white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.gm-console .take-scope { font-family: var(--font-mono); font-size: 10px; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-sm); padding: 2px 6px; flex: none; }
+.gm-console .take-body { display: flex; flex-direction: column; gap: 9px; padding-left: 4px; }
+.gm-console .take-text { font-size: var(--t-sm); color: var(--ink-soft); line-height: 1.5; padding-left: calc(5ch + 10px); }
+
+/* lignes de log — gutter préfixe 5ch aligné à droite */
+.gm-console .take-log { display: grid; grid-template-columns: 5ch 1fr; gap: 10px; font-family: var(--font-mono); font-size: 11px; line-height: 1.75; color: var(--muted); align-items: baseline; }
+.gm-console .take-log .lt { min-width: 0; word-break: break-word; }
+.gm-console .lp { text-align: right; font-family: var(--font-mono); }
+.gm-console .lp[data-p="plan"], .gm-console .lp[data-p="note"] { color: var(--muted); }
+.gm-console .lp[data-p="step+"] { color: var(--accent); }
+.gm-console .lp[data-p="step-"] { color: oklch(55% .12 70); }
+.gm-console .lp[data-p="step~"], .gm-console .lp[data-p="vo~"] { color: var(--ink-soft); }
+.gm-console .lp[data-p="cut"], .gm-console .lp[data-p="trim"] { color: var(--accent); }
+.gm-console .lp[data-p="run"] { color: var(--ink-soft); }
+.gm-console .lp[data-p="err"] { color: oklch(55% .18 25); }
+.gm-console .lp.cont { color: var(--line-strong); }
+
+/* caret block — même technique que compile-caret */
+.gm-console .con-caret { display: inline-block; width: 7px; height: 13px; background: var(--accent); vertical-align: -2px; margin-left: 1px; animation: gmConCaret 1s steps(1) infinite; }
+@keyframes gmConCaret { 50% { opacity: 0; } }
+
+/* step-cards proposées / solidifiées */
+.gm-console .take-card-row { display: grid; grid-template-columns: 5ch 1fr; gap: 10px; align-items: start; position: relative; }
+.gm-console .take-card-row .lp { line-height: 1.75; font-size: 11px; padding-top: 4px; }
+.gm-console .take-card { border: 1px dashed var(--accent-line); background: color-mix(in oklch, var(--accent-soft) 60%, var(--surface)); border-radius: var(--r-md); padding: 9px 11px; display: flex; flex-direction: column; gap: 6px; min-width: 0; transition: border-color .35s ease-out, background-color .35s ease-out, box-shadow .35s ease-out; }
+.gm-console .take-card.applied { border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-xs); cursor: pointer; }
+.gm-console .take-card .tc-head { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.gm-console .take-card .tc-title { font-family: var(--font-mono); font-size: 11px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-console .tc-echo { position: absolute; inset: 0 0 0 calc(5ch + 10px); border: 1px solid var(--accent); border-radius: var(--r-md); pointer-events: none; }
+
+/* lignes de diff +/− */
+.gm-console .dl { display: flex; gap: 8px; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; padding: 1px 7px; border-radius: 4px; color: var(--ink-soft); min-width: 0; }
+.gm-console .dl .sign { width: 1ch; flex: none; }
+.gm-console .dl .dl-t { min-width: 0; word-break: break-word; }
+.gm-console .dl-add { color: var(--accent); background: color-mix(in oklch, var(--accent) 7%, transparent); }
+.gm-console .dl-del { color: oklch(55% .12 70); background: oklch(72% .13 70 / .12); }
+.gm-console .dl-del .dl-t { text-decoration: line-through; }
+
+/* récap Δ + actions */
+.gm-console .take-delta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding-left: calc(5ch + 10px); }
+.gm-console .take-delta b { color: var(--ink); font-weight: 500; }
+.gm-console .take-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding-left: calc(5ch + 10px); flex-wrap: wrap; }
+.gm-console .con-btn { font: inherit; font-size: var(--t-xs); font-weight: 500; padding: 7px 14px; border-radius: var(--r-md); cursor: pointer; border: 1px solid transparent; transition: background-color .15s, border-color .15s, color .15s; }
+.gm-console .con-btn.primary { background: var(--accent); color: var(--accent-ink); }
+.gm-console .con-btn.primary:hover { background: var(--accent-hover); }
+.gm-console .con-btn.primary:active { background: var(--accent-press); }
+.gm-console .con-btn.ghost { background: transparent; border-color: var(--line); color: var(--muted); }
+.gm-console .con-btn.ghost:hover { border-color: var(--line-strong); color: var(--ink); }
+.gm-console .con-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.gm-console .con-btn:disabled { opacity: .55; cursor: default; }
+
+/* estampille */
+.gm-console .take-stamp { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: var(--tracking-mono); color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); padding: 3px 9px; border-radius: var(--r-full); white-space: nowrap; }
+.gm-console .take-stamp.run-done { color: oklch(52% .14 150); background: oklch(62% .15 150 / .15); border-color: oklch(62% .15 150 / .3); }
+.gm-console .take-stamp.undone { color: var(--muted); background: var(--surface-2); border-color: var(--line); }
+
+/* lien mono (défaire · ouvrir le compose · copier le prompt) */
+.gm-console .con-link { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); background: none; border: 0; border-bottom: 1px dashed var(--line-strong); cursor: pointer; padding: 0 0 1px; }
+.gm-console .con-link:hover { color: var(--ink); border-bottom-style: solid; }
+
+/* barre de progression run */
+.gm-console .run-prog { height: 3px; border-radius: 2px; background: color-mix(in oklch, var(--ink) 10%, transparent); overflow: hidden; margin: 4px 0 2px; }
+.gm-console .run-prog i { display: block; height: 100%; background: var(--accent); border-radius: 2px; transform-origin: left; transition: width .25s ease; }
+.gm-console .run-prog-label { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+
+/* bloc erreur — ligne de log, pas bannière */
+.gm-console .take-err { margin-left: calc(5ch + 10px); border-left: 2px solid oklch(60% .18 25); background: oklch(60% .18 25 / .06); color: var(--ink-soft); padding: 8px 11px; border-radius: 0 var(--r-sm) var(--r-sm) 0; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; display: flex; flex-direction: column; gap: 4px; }
+.gm-console .take-err .err-line { display: flex; gap: 10px; }
+.gm-console .take-err .err-p { color: oklch(55% .18 25); flex: none; }
+
+/* prise compactée */
+.gm-console .take.compact { flex-direction: row; gap: 8px; align-items: baseline; cursor: pointer; font-family: var(--font-mono); font-size: var(--t-xs); border: 0; background: transparent; padding: 2px 0; text-align: left; width: 100%; }
+.gm-console .take.compact:hover .tcp { color: var(--ink); }
+.gm-console .take.compact .tcp { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.gm-console .take.compact .tci { font-size: 10px; flex: none; font-family: var(--font-mono); }
+.gm-console .tci.applied { color: var(--accent); }
+.gm-console .tci.done { color: oklch(52% .14 150); }
+.gm-console .tci.muted { color: var(--faint); }
+.gm-console .tci.error { color: oklch(55% .18 25); }
+.gm-console .con-compact-rule { border: 0; border-top: 1px solid var(--line-soft); margin: 0; }
+
+/* ── Z4 composer ───────────────────────────────────────────── */
+.gm-console .con-composer { flex: none; position: relative; background: var(--surface); border-top: 1px solid var(--line); padding: 11px 14px 8px; }
+.gm-console .con-composer:focus-within { box-shadow: var(--ring); }
+.gm-console .con-composer.disabled { opacity: .5; }
+.gm-console .composer-row { display: flex; align-items: flex-start; gap: 9px; position: relative; }
+.gm-console .composer-row .take-chev { font-family: var(--font-mono); font-size: var(--t-xs); line-height: 20px; }
+.gm-console .composer-row .take-scope { margin-top: 1px; cursor: pointer; }
+.gm-console .composer-ta-wrap { flex: 1; position: relative; min-width: 0; }
+.gm-console .composer-ta { display: block; width: 100%; resize: none; border: 0; outline: 0; background: transparent; font-family: var(--font-mono); font-size: var(--t-xs); line-height: 20px; color: var(--ink); caret-color: transparent; padding: 0; min-height: 20px; max-height: 100px; overflow-y: auto; }
+.gm-console .composer-ta::placeholder { color: var(--faint); }
+.gm-console .composer-ta:focus::placeholder { color: transparent; } /* le caret block suffit */
+.gm-console .composer-mirror { position: absolute; inset: 0; visibility: hidden; pointer-events: none; white-space: pre-wrap; word-break: break-word; overflow: hidden; font-family: var(--font-mono); font-size: var(--t-xs); line-height: 20px; }
+.gm-console .composer-caret { position: absolute; width: 7px; height: 13px; background: var(--accent); pointer-events: none; animation: gmConCaret 1s steps(1) infinite; }
+.gm-console .composer-hints { margin-top: 7px; font-family: var(--font-mono); font-size: 10px; color: var(--faint); display: flex; gap: 8px; }
+
+/* palette slash / scope picker */
+.gm-console .con-palette { position: absolute; left: 12px; right: 12px; bottom: calc(100% + 8px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-pop); padding: 6px; display: grid; gap: 2px; z-index: 12; transform-origin: bottom; }
+@media (prefers-reduced-motion: no-preference) {
+  .gm-console .con-palette { animation: gmPalIn .14s ease-out both; }
+}
+@keyframes gmPalIn { from { transform: scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+.gm-console .con-palette button { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border: 0; background: transparent; border-radius: var(--r-sm); cursor: pointer; text-align: left; font-family: inherit; }
+.gm-console .con-palette button.active { background: var(--surface-2); }
+.gm-console .con-palette .cp-cmd { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--ink); min-width: 9ch; flex: none; }
+.gm-console .con-palette .cp-desc { font-size: var(--t-xs); color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-console .con-palette .cp-dur { font-family: var(--font-mono); font-size: 10px; color: var(--muted); flex: none; }
+
+/* ── empty state (accueil) ─────────────────────────────────── */
+.gm-console .con-empty { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: var(--s-6); gap: var(--s-5); }
+.gm-console .con-empty .ce-msg { font-size: var(--t-sm); color: var(--ink-soft); line-height: 1.55; }
+.gm-console .con-empty .ce-try { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--faint); }
+.gm-console .con-empty .ce-sug { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.gm-console .con-empty .ce-sug button { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--muted); background: none; border: 0; cursor: pointer; padding: 5px 0; display: flex; gap: 9px; text-align: left; line-height: 1.5; }
+.gm-console .con-empty .ce-sug button:hover { color: var(--ink); }
+.gm-console .con-empty .ce-sug .sb { color: var(--accent); flex: none; }
+
+/* ── pas de clé (BYOK) ─────────────────────────────────────── */
+.gm-console .con-nokey { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--s-4); padding: var(--s-6); }
+.gm-console .con-nokey .ck-icon { width: 48px; height: 48px; border-radius: var(--r-lg); background: var(--surface-2); color: var(--ink); display: grid; place-items: center; font-family: var(--font-mono); font-size: var(--t-sm); border: 1px solid var(--line); }
+.gm-console .con-nokey h3 { font-size: var(--t-lg); color: var(--ink); font-weight: 600; }
+.gm-console .con-nokey p { font-size: var(--t-sm); color: var(--muted); max-width: 42ch; line-height: 1.55; }
+.gm-console .con-nokey .ck-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--accent-ink); font-size: var(--t-xs); font-weight: 500; padding: 9px 16px; border-radius: var(--r-md); text-decoration: none; }
+.gm-console .con-nokey .ck-cta:hover { background: var(--accent-hover); }
+.gm-console .con-nokey .ck-path { font-family: var(--font-mono); font-size: 10px; color: var(--faint); }
+
+/* ============================================================
+   DARK — phosphore léger (chevron + caret UNIQUEMENT) + hues
+   ============================================================ */
+[data-theme="dark"] .gm-console .take-chev,
+[data-theme="dark"] .gm-console .con-caret,
+[data-theme="dark"] .gm-console .composer-caret {
+  filter: drop-shadow(0 0 7px color-mix(in oklch, var(--accent) 40%, transparent));
+}
+[data-theme="dark"] .gm-console .lp[data-p="step-"] { color: oklch(78% .12 70); }
+[data-theme="dark"] .gm-console .dl-del { color: oklch(78% .12 70); background: oklch(45% .1 70 / .2); }
+[data-theme="dark"] .gm-console .lp[data-p="err"] { color: oklch(72% .17 25); }
+[data-theme="dark"] .gm-console .take-err { border-left-color: oklch(72% .17 25); background: oklch(60% .18 25 / .12); }
+[data-theme="dark"] .gm-console .take-err .err-p { color: oklch(72% .17 25); }
+[data-theme="dark"] .gm-console .take-stamp.run-done { color: oklch(75% .13 150); background: oklch(45% .1 150 / .2); border-color: oklch(50% .1 150 / .4); }
+[data-theme="dark"] .gm-console .tci.done { color: oklch(75% .13 150); }
+[data-theme="dark"] .gm-console .tci.error { color: oklch(72% .17 25); }
+
+/* ============================================================
+   REDUCED MOTION — bascules d'états sans clones ni ticks
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .gm-console, .gm-console .con-palette { animation: none; }
+  .gm-console .con-caret, .gm-console .composer-caret { animation: none; }
+  .gm-console .con-dot.live { animation: none; opacity: 1; }
+  .gm-console .take-card { transition: none; }
+  .gm-console .run-prog i { transition: none; }
+}

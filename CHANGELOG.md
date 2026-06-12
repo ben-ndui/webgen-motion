@@ -11,6 +11,46 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Director's Console — le chat IA de l'éditeur, UI + mock transport) · 2026-06-12
+
+Première brique du chat IA (v0.3.0) : la **« Director's Console »**,
+un REPL éditorial inspiré du terminal (direction « Prises » — process
+design en 3 phases documenté dans `PROMPT-DESIGN-CHAT-IA.md`,
+`DESIGN-CHAT-IA-DIRECTIONS.md` et `DESIGN-CHAT-IA-MAQUETTE.md`).
+
+- **Dock latéral** persistant à travers les 5 tabs de l'éditeur
+  (3e colonne additive du shell TourClient — patch de 16 lignes,
+  aucun tab touché) : 420px redimensionnable (360–560, persisté),
+  rail replié 44px avec pastille, toggle `⌘J`, superposé < 1460px.
+- **Les prises** : chaque échange est numéroté (`#04 ❯ …`), l'IA
+  répond en blocs typés — plan (préfixes mono gutter 5ch), step-cards
+  proposées **fantômes dashed** qui se **solidifient** à l'Apply
+  (+ écho vers l'éditeur, estampille `APPLIQUÉ · VN · HH:MM`, lien
+  `défaire`), run-log avec progression et narration Edit Engine,
+  erreurs en ligne de log avec countdown retry.
+- **Timeline ASCII** sticky : segments `[Sn durée]`, état **dirty**
+  `[S2* 4.9s]` + hint `re-capture requise ▸` (pré-remplit `/capture`,
+  n'exécute jamais), durées estimées `~` sans capture.
+- **Composer terminal** : chevron `❯`, caret block, palette slash
+  (`/capture /vo /compose /undo`), scope `@Sn` avec picker et chip
+  inline, historique `↑`, raccourcis complets (⌘↵ Appliquer, Échap
+  annule le streaming…).
+- **Mutations sûres** : `applyTourDiff`/`revertTourDiff` pures (chaque
+  op embarque son `before` → undo fiable), une seule source de vérité
+  via le `onChange(tour)` existant du tab Script.
+- **`MockTransport`** : 3 scénarios scriptés streamés (diff, run
+  simulé avec les vrais formats du `summary[]` Edit Engine, erreur
+  429) — l'UI est démontrable sans clé API. Le transport réel
+  (route + `src/lib/llm-providers/`) est le prochain chantier,
+  derrière l'interface `ChatTransport`.
+- `console.css` 100% tokens (un seul écart assumé : « phosphore »
+  drop-shadow accent sur chevron + caret en dark), accueil avec
+  suggestions calculées du tour réel, empty state BYOK → /setup/agent,
+  compaction des prises anciennes, `prefers-reduced-motion`.
+- Vérifié visuellement (Puppeteer, 3 itérations) : accueil, streaming,
+  diff proposé → solidification → timeline dirty → défaire, palette,
+  scope, run, light/dark, mode superposé.
+
 ### Changed (Landing v0.3 — positionnement « vidéos produit as code ») · 2026-06-12
 
 Refonte du message : on vend la MÉCANIQUE (tour JSON versionné → vidéo

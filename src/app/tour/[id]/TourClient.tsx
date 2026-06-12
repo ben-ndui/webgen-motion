@@ -23,6 +23,7 @@ import CaptureTab, {
 import AudioTab from "./_components/audio-tab";
 import VoiceTab, { type VoState } from "./_components/voice-tab";
 import ComposeTab, { type ComposeState } from "./_components/compose-tab";
+import ConsoleDock from "./_components/console/ConsoleDock";
 import type { AudioTrack } from "./_components/music-library";
 import type { RunningProgress } from "./_components/phase-loader";
 
@@ -621,6 +622,20 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
         </div>
       </header>
 
+      {/* Director's Console — shell additif : 3e colonne (rail 44px /
+          dock 360–560px) autour du main. Les mutations IA passent par
+          applyTourDiff (pure) puis le même handleTourChange que le tab
+          Script — une seule source de vérité. Toggle ⌘J. */}
+      <ConsoleDock
+        tour={localTour}
+        onTourChange={handleTourChange}
+        capturedDurations={
+          capture.kind === "ready"
+            ? capture.sections.map((s) => s.durationSec)
+            : null
+        }
+        onOpenCompose={() => setActiveTab("compose")}
+      >
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 lg:px-8 py-6 space-y-5">
         <Tabs<TabKey>
           tabs={TABS}
@@ -691,6 +706,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
           />
         )}
       </main>
+      </ConsoleDock>
     </div>
   );
 }
