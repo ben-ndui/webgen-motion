@@ -60,8 +60,9 @@ webgen-motion/                   # slug repo (rétro-compat)
 ├── scripts/
 │   ├── capture-tour.ts          # E2E filmé section par section
 │   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs / Voicebox)
-│   ├── compose-tour.ts          # Compose runner — spawn `remotion render`
-│   ├── analyze-audio.ts         # ffmpeg silencedetect + onset detection
+│   ├── compose-tour.ts          # Compose runner — edit plan + spawn `remotion render`
+│   ├── lib/edit-plan.ts         # Edit Engine — EDL : trims, beat snap, J-cuts, VO segments, subtitles
+│   ├── analyze-audio.ts         # ffmpeg silencedetect + beats RMS
 │   ├── agent-generate-tour.ts   # Agent IA Claude génère tour depuis URL
 │   ├── notarize-and-staple.mjs  # Pipeline Apple Notary end-to-end
 │   ├── generate-license-keypair.mjs  # Ed25519 keypair gen (Ben backoffice)
@@ -167,10 +168,11 @@ Survit aux reboots. Partagé entre tous les tours.
 
 3. **Compose** : `POST /api/motion/tour/compose/run` spawn `compose-tour.ts` qui :
    - Charge le manifest + le tour (composeStyle + brand)
-   - Spawn `analyze-audio.ts` (ffmpeg silencedetect sur VO + onset detection sur bg music → `audio-analysis.json`)
+   - Spawn `analyze-audio.ts` (ffmpeg silencedetect sur VO + beats RMS sur bg music → `audio-analysis.json`)
+   - **Edit Engine** (`scripts/lib/edit-plan.ts`) : transforme manifest + `voiceover-alignment.json` + analyse en **décisions de montage** → `edit-plan.json` : trim des temps morts (vidéo + voix sync), cuts snappés sur les beats, J-cuts (VO 250ms avant le visuel), crossfades adaptatifs par frontière, segments VO placés au timing vidéo réel (`stepTimings` du manifest), cues sous-titres karaoké (`tour.subtitles: true`). Flags : `--no-edit-plan` / `--no-edit-trim`.
    - Stage les MP4s + audios dans un `.remotion-public/` (Remotion sert via `staticFile()`)
    - Spawn `npx remotion render tour-{16x9|9x16} out/final.mp4 --props ...`
-   - Composition Remotion (`remotion/Tour.tsx`) joue chaque section dans son device frame (Mac chrome / iPhone), applique le style preset (Ken Burns + transitions + backdrop motion + beats layer), mixe VO + bg music via `<Audio>`
+   - Composition Remotion (`remotion/Tour.tsx`) joue chaque section dans son device frame (Mac chrome / iPhone), applique le style preset (Ken Burns dirigé vers les hotspots + transitions + backdrop motion + beats layer + SubtitlesLayer), mixe VO segmentée + bg music via `<Audio>`
 
 4. **Auto-load** : la page tour preview hit `/api/motion/tour/status?id=<id>` au mount → restaure capture/vo/compose `ready` si les fichiers existent.
 

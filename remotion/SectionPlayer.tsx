@@ -34,7 +34,8 @@ export function SectionPlayer({
   format,
   url,
   durationFrames,
-  crossfadeFrames,
+  entranceFrames,
+  exitFrames,
   sectionIndex,
   styleId,
   frame3d,
@@ -46,7 +47,12 @@ export function SectionPlayer({
   format: "16:9" | "9:16";
   url: string;
   durationFrames: number;
-  crossfadeFrames: number;
+  /** Edit Engine — per-boundary crossfade durations. The entrance
+   *  window belongs to THIS section's incoming boundary, the exit
+   *  window to the NEXT section's incoming boundary, so both sides
+   *  of a cut always breathe at the same beat-adapted pace. */
+  entranceFrames: number;
+  exitFrames: number;
   sectionIndex: number;
   styleId: string;
   /** Sprint 7 — quand set, on rend en 3D via SceneCanvas au lieu
@@ -82,15 +88,15 @@ export function SectionPlayer({
   const videoEndAt =
     videoStartFrom + Math.round(section.durationSec * fps);
 
-  // Entrance: rises 0→1 over the first `crossfadeFrames`.
-  // Exit: falls 1→0 over the last `crossfadeFrames`.
-  const entrance = interpolate(localFrame, [0, crossfadeFrames], [0, 1], {
+  // Entrance: rises 0→1 over the first `entranceFrames`.
+  // Exit: falls 1→0 over the last `exitFrames`.
+  const entrance = interpolate(localFrame, [0, entranceFrames], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
   const exit = interpolate(
     localFrame,
-    [durationFrames - crossfadeFrames, durationFrames],
+    [durationFrames - exitFrames, durationFrames],
     [1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
@@ -110,11 +116,15 @@ export function SectionPlayer({
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
+  // Edit Engine — when the section declares hotspots, the camera
+  // drifts toward the first one instead of alternating by parity.
+  const focusHotspot = section.hotspots?.[0];
   const kenBurnsTransform = kenBurns(
     local01,
     sectionIndex,
     style.kenBurnsScale,
     style.kenBurnsPan,
+    focusHotspot ? { x: focusHotspot.x, y: focusHotspot.y } : undefined,
   );
 
   // Video plays cleanly inside the frame — no Ken Burns here. The

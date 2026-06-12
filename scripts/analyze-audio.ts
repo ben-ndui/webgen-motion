@@ -166,7 +166,12 @@ const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
 const FFPROBE_BIN = process.env.WEBGEN_FFPROBE_BIN || "ffprobe";
 
 function runFfmpeg(args: string[]): { stdout: string; stderr: string } {
-  const r = spawnSync(FFMPEG_BIN, args, { encoding: "utf-8" });
+  // maxBuffer bumped — the per-frame ametadata dump of a few minutes
+  // of audio overflows the 1MB spawnSync default.
+  const r = spawnSync(FFMPEG_BIN, args, {
+    encoding: "utf-8",
+    maxBuffer: 64 * 1024 * 1024,
+  });
   return { stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
 
@@ -219,21 +224,23 @@ function runSilenceDetect(
  * the music's stronger hits.
  */
 function sampleBeatsFromRms(mp3Path: string): Beat[] {
-  // ffmpeg outputs one RMS value per audio frame ; with a 0.05s
-  // metric_period we get 20 samples/sec, plenty for cut snapping.
-  const { stderr } = runFfmpeg([
+  // ffmpeg outputs one RMS value per audio frame (~26ms at 44.1kHz),
+  // plenty of granularity for cut snapping.
+  const { stdout, stderr } = runFfmpeg([
     "-hide_banner",
     "-nostats",
     "-i", mp3Path,
     "-af",
-    "astats=metadata=1:reset=0.05,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-",
+    "astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-",
     "-f", "null",
     "-",
   ]);
-  // ametadata writes "frame:N pts:T pts_time:T.T\nlavfi.astats.Overall.RMS_level=-X.YZ"
-  // pairs to stderr. Parse them into [timeSec, rmsDb] tuples.
+  // ametadata `file=-` writes "frame:N pts:T pts_time:T.T\n
+  // lavfi.astats.Overall.RMS_level=-X.YZ" pairs to STDOUT (stderr
+  // kept as fallback for older ffmpeg builds that logged there).
+  // Parse them into [timeSec, rmsDb] tuples.
   const samples: Array<{ t: number; db: number }> = [];
-  const lines = stderr.split("\n");
+  const lines = (stdout + "\n" + stderr).split("\n");
   let pendingTime: number | null = null;
   for (const line of lines) {
     let m = line.match(/pts_time:([\d.]+)/);
@@ -254,19 +261,44 @@ function sampleBeatsFromRms(mp3Path: string): Beat[] {
   const maxLin = Math.max(...linear);
   if (maxLin === 0) return [];
 
+  // Strength is normalized against the LOCAL loudness (±2s sliding
+  // window), not the track's global max — a track with a quiet 30s
+  // intro before the drop would otherwise yield zero beats over the
+  // whole intro (where short tours actually live). The absolute dB
+  // floor keeps true silence from producing phantom beats.
+  const sampleDt =
+    samples.length > 1
+      ? (samples[samples.length - 1].t - samples[0].t) / (samples.length - 1)
+      : 0.026;
+  const halfWin = Math.max(1, Math.round(2 / sampleDt));
   const minGapSec = 0.25;
-  const minStrength = 0.25; // 25% of the loudest sample
+  const minLocalStrength = 0.55; // 55% of the local loudest
+  const minDb = -45; // absolute floor — below this it's silence
   const beats: Beat[] = [];
   for (let i = 1; i < samples.length - 1; i++) {
     const prev = linear[i - 1];
     const cur = linear[i];
     const next = linear[i + 1];
-    if (cur > prev && cur >= next && cur / maxLin >= minStrength) {
-      const candidate = samples[i].t;
-      const last = beats[beats.length - 1];
-      if (!last || candidate - last.sec >= minGapSec) {
-        beats.push({ sec: candidate, strength: cur / maxLin });
-      }
+    if (!(cur > prev && cur >= next)) continue;
+    if (samples[i].db < minDb) continue;
+    let localMax = 0;
+    for (
+      let j = Math.max(0, i - halfWin);
+      j <= Math.min(samples.length - 1, i + halfWin);
+      j++
+    ) {
+      if (linear[j] > localMax) localMax = linear[j];
+    }
+    if (localMax === 0) continue;
+    const strength = cur / localMax;
+    if (strength < minLocalStrength) continue;
+    const candidate = samples[i].t;
+    const last = beats[beats.length - 1];
+    if (!last || candidate - last.sec >= minGapSec) {
+      beats.push({
+        sec: candidate,
+        strength: Math.round(strength * 100) / 100,
+      });
     }
   }
   return beats;

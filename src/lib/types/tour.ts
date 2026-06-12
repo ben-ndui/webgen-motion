@@ -131,6 +131,10 @@ export interface TourEntry {
   /** Voicebox model size hint when the engine supports it
    *  (qwen accepts 0.6B / 1.7B / 1B / 3B). */
   voiceboxModelSize?: string;
+  /** Edit Engine — burn word-synced karaoke subtitles into the final
+   *  video, derived from the ElevenLabs character-level alignment.
+   *  Needs a generated voice-over. Particularly suited to 9:16. */
+  subtitles?: boolean;
   /** Compose style preset (sober / energetic / cinematic / glitch).
    *  Drives Ken Burns intensity, transition mapping, backdrop motion,
    *  and beats layer strength inside the Remotion composition.

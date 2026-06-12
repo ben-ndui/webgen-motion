@@ -50,6 +50,41 @@ export interface ManifestSection {
   /** Sprint 15.A — punch-in hotspots animés pendant cette section.
    *  Propagés depuis le TourStep "section" par compose-tour. */
   hotspots?: Hotspot[];
+  /** Edit Engine — durée du crossfade de la frontière ENTRANTE de
+   *  cette section. Adaptée à la force du beat le plus proche du cut
+   *  (punchy sur beat fort, longue sur passage calme). Fallback
+   *  TRANSITIONS.crossfadeSec quand absent. */
+  crossfadeInSec?: number;
+}
+
+/** Edit Engine — segment de voiceover.mp3 placé à un temps précis de
+ *  la composition. Remplace la lecture du fichier VO en continu :
+ *  chaque step parle exactement quand son visuel est à l'écran
+ *  (timing vidéo réel du manifest), et le J-cut décale la première
+ *  ligne d'une section dans la fin du splash précédent. */
+export interface VoSegment {
+  sectionIdx: number;
+  /** Offset dans voiceover.mp3. */
+  srcStartSec: number;
+  durationSec: number;
+  /** Placement en temps composition. */
+  atCompSec: number;
+  jCut: boolean;
+}
+
+/** Edit Engine — cue de sous-titre word-synced (karaoké), dérivée de
+ *  l'alignement character-level ElevenLabs. Temps composition. */
+export interface SubtitleWord {
+  w: string;
+  startSec: number;
+  endSec: number;
+}
+
+export interface SubtitleCue {
+  text: string;
+  startSec: number;
+  endSec: number;
+  words: SubtitleWord[];
 }
 
 export interface TourBrand {
@@ -110,6 +145,13 @@ export interface TourCompositionProps extends Record<string, unknown> {
   bgBeats: AudioBeat[];
   /** Pauses detected in the voice-over track. */
   voPauses: VoPause[];
+  /** Edit Engine — quand présent et non-vide, la VO est jouée par
+   *  segments placés (au lieu du fichier continu) : sync par
+   *  construction après trim + J-cuts possibles. */
+  voSegments?: VoSegment[];
+  /** Edit Engine — cues karaoké word-synced. Rendues par
+   *  SubtitlesLayer quand le tour opte pour `subtitles: true`. */
+  subtitles?: SubtitleCue[];
 }
 
 /** Transition durations in seconds, shared between calculate-duration

@@ -14,22 +14,34 @@
  *   --bg-music <path>         optional
  *   --bg-music-volume <0-2>   optional, default 0.18
  *   --vo-volume <0-2>         optional, default 1.0
- *   --enable-pacing-trim      opt-in ; chunk-4.5 will reintroduce
- *                             lossless trim once VO silenceremove
- *                             is plumbed
+ *   --no-edit-plan            disable the Edit Engine entirely
+ *                             (scripts/lib/edit-plan.ts : tail trim,
+ *                             beat snapping, J-cuts, VO segments,
+ *                             adaptive crossfades, subtitles)
+ *   --no-edit-trim            keep the edit plan but leave section
+ *                             durations untouched
  */
 
 import { spawn, spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   computeDurationInFrames,
+  TRANSITIONS,
   type AudioBeat,
   type ManifestSection,
   type TourCompositionProps,
   type VoPause,
 } from "../remotion/lib/types";
+import { buildEditPlan, type EditAlignmentFile, type EditStepTiming } from "./lib/edit-plan";
 import { getTour } from "../src/lib/tour-loader";
 import { isFeatureEnabled } from "../src/lib/edition";
 import type { Hotspot, TourStep } from "../src/lib/types/tour";
@@ -99,6 +111,10 @@ interface ManifestRaw {
      *  relative to the MP4 start. If absent, the full MP4 plays. */
     trimStartSec?: number;
     trimEndSec?: number;
+    /** Edit Engine — real video-time of the splash end + each body
+     *  step, recorded by capture-tour.ts. Absent on old manifests. */
+    contentStartSec?: number;
+    stepTimings?: EditStepTiming[];
   }>;
   totalDurationSec: number;
 }
@@ -252,72 +268,102 @@ async function main(): Promise<void> {
     console.warn("  ⚠ analyze-audio exited non-zero ; continuing without trim");
   }
 
-  // Pacing trim is currently disabled by default — trimming a section
-  // visually without also cutting the matching silence inside the VO
-  // mp3 leaves the VO desynchronized for every subsequent section
-  // (audio keeps playing past the visual cut → black frames with
-  // voice continuing).
-  //
-  // Chunk 4.5 will reintroduce the trim alongside an ffmpeg
-  // silenceremove pass on voiceover.mp3 so the audio shrinks by the
-  // same amount, keeping markers and visuals aligned.
-  //
-  // Opt-in via --enable-pacing-trim for experimentation ; the
-  // audio-analysis.json file is still produced for chunk 5 (beats /
-  // pauses driving visual sync).
-  const enablePacingTrim = process.argv.includes("--enable-pacing-trim");
-  let trimSummary = enablePacingTrim
-    ? "no trim (analysis empty)"
-    : "skipped (re-enable with --enable-pacing-trim once VO sync is plumbed)";
-  if (enablePacingTrim) {
-    const audioAnalysisPath = join(tourDir!, "audio-analysis.json");
-    if (existsSync(audioAnalysisPath)) {
-      try {
-        const analysis = JSON.parse(
-          readFileSync(audioAnalysisPath, "utf-8"),
-        ) as {
-          pacing?: Array<{
-            sectionIdx: number;
-            trimmedDurationSec: number;
-            trimRecommended: boolean;
-          }>;
-        };
-        let savedSec = 0;
-        let trimmed = 0;
-        for (const s of sections) {
-          const p = analysis.pacing?.find((x) => x.sectionIdx === s.index);
-          if (p?.trimRecommended) {
-            savedSec += s.durationSec - p.trimmedDurationSec;
-            trimmed++;
-            s.durationSec = p.trimmedDurationSec;
-          }
-        }
-        if (trimmed > 0) {
-          trimSummary = `${trimmed} section(s) trimmed, ${savedSec.toFixed(1)}s saved`;
-        }
-      } catch (e) {
-        console.warn(
-          `  ⚠ couldn't parse audio-analysis.json: ${(e as Error).message}`,
-        );
-      }
-    }
-  }
-  console.log(`  Pacing trim : ${trimSummary}`);
-
-  // Surface beats + pauses into the composition props so chunk-5
-  // visual sync (transitions + pulses) can read them at render time.
+  // Surface beats + pauses into the composition props so the visual
+  // sync (transitions + pulses) and the edit plan can read them.
   let bgBeats: AudioBeat[] = [];
   let voPauses: VoPause[] = [];
-  const audioAnalysisPath2 = join(tourDir!, "audio-analysis.json");
-  if (existsSync(audioAnalysisPath2)) {
+  const audioAnalysisPath = join(tourDir!, "audio-analysis.json");
+  if (existsSync(audioAnalysisPath)) {
     try {
-      const a = JSON.parse(readFileSync(audioAnalysisPath2, "utf-8")) as {
+      const a = JSON.parse(readFileSync(audioAnalysisPath, "utf-8")) as {
         bgBeats?: AudioBeat[];
         voPauses?: VoPause[];
       };
       bgBeats = a.bgBeats ?? [];
       voPauses = a.voPauses ?? [];
     } catch {}
+  }
+
+  // ── Edit Engine ───────────────────────────────────────────────
+  // Replaces the old opt-in `--enable-pacing-trim` (which trimmed the
+  // video without the audio and desynced the VO). The edit plan trims
+  // video AND audio at the same point (the trimmed region is trailing
+  // VO silence by construction), snaps cuts onto bg-music beats,
+  // derives per-boundary crossfade durations, re-syncs the VO as
+  // placed segments (J-cuts included) and emits word-synced subtitle
+  // cues. Disable entirely with --no-edit-plan ; keep durations
+  // untouched (but still adapt crossfades) with --no-edit-trim.
+  const editPlanEnabled = !process.argv.includes("--no-edit-plan");
+  const editTrimEnabled = editPlanEnabled && !process.argv.includes("--no-edit-trim");
+  if (process.argv.includes("--enable-pacing-trim")) {
+    console.log("  ℹ --enable-pacing-trim est obsolète — le trim Edit Engine est actif par défaut (--no-edit-trim pour le couper).");
+  }
+
+  let alignment: EditAlignmentFile | null = null;
+  const alignmentPath = join(tourDir!, "voiceover-alignment.json");
+  if (voiceoverFile && existsSync(alignmentPath)) {
+    try {
+      alignment = JSON.parse(readFileSync(alignmentPath, "utf-8")) as EditAlignmentFile;
+    } catch (e) {
+      console.warn(`  ⚠ couldn't parse voiceover-alignment.json: ${(e as Error).message}`);
+    }
+  }
+
+  // linearStepIdx → section owner, same walk as capture-tour's
+  // planSections. Needed to resolve narrative-mode alignment items
+  // (sectionIdx: -1) to their section.
+  const stepSectionMap: Record<number, { sectionIdx: number; isSectionMarker: boolean }> = {};
+  {
+    let secIdx = 0;
+    (hotspotTour?.steps ?? []).forEach((st, i) => {
+      if (st.type === "section") {
+        secIdx += 1;
+        stepSectionMap[i] = { sectionIdx: secIdx, isSectionMarker: true };
+      } else {
+        if (secIdx === 0) secIdx = 1; // synthetic section for marker-less tours
+        stepSectionMap[i] = { sectionIdx: secIdx, isSectionMarker: false };
+      }
+    });
+  }
+
+  const plan = editPlanEnabled
+    ? buildEditPlan({
+        fps,
+        introSec: TRANSITIONS.introHoldSec,
+        defaultCrossfadeSec: TRANSITIONS.crossfadeSec,
+        sections: sections.map((s) => {
+          const raw = manifest.sections.find((m) => m.index === s.index);
+          return {
+            index: s.index,
+            srcInSec: s.startFromSec ?? 0,
+            playableSec: s.durationSec,
+            contentStartSec: raw?.contentStartSec,
+            stepTimings: raw?.stepTimings,
+          };
+        }),
+        alignment,
+        stepSectionMap,
+        voPauses,
+        bgBeats,
+        enableTrim: editTrimEnabled,
+      })
+    : null;
+
+  if (plan) {
+    for (const p of plan.sections) {
+      const s = sections.find((x) => x.index === p.index);
+      if (!s) continue;
+      s.durationSec = p.playDurationSec;
+      s.crossfadeInSec = p.crossfadeInSec;
+    }
+    writeFileSync(
+      join(tourDir!, "edit-plan.json"),
+      JSON.stringify({ ...plan, generatedAt: new Date().toISOString() }, null, 2),
+    );
+    console.log(`▶ Edit plan :`);
+    for (const line of plan.summary) console.log(`  ${line}`);
+  } else {
+    console.log(`  Edit plan : désactivé (--no-edit-plan)`);
   }
 
   // Brand info comes from the tour catalogue with sensible fallbacks.
@@ -390,6 +436,14 @@ async function main(): Promise<void> {
     voVolume: voVolumeArg,
     bgBeats,
     voPauses,
+    // Edit Engine — VO segmentée (sync réelle + J-cuts) et sous-titres
+    // karaoké (opt-in tour.subtitles). Absents → fallback continu.
+    ...(plan && voiceoverFile && plan.voSegments.length > 0
+      ? { voSegments: plan.voSegments }
+      : {}),
+    ...(plan && tour?.subtitles && plan.subtitles.length > 0
+      ? { subtitles: plan.subtitles }
+      : {}),
     composeStyle:
       typeof tour?.composeStyle === "string" && tour.composeStyle.length > 0
         ? tour.composeStyle

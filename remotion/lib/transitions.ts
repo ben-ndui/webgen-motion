@@ -123,23 +123,39 @@ export function applyTransition(
 }
 
 /**
- * Ken Burns transform — slow zoom + subtle pan alternating per
- * section index. `local01` is 0..1 across the section's full
- * duration ; `idx` decides pan direction so adjacent sections feel
- * different even when the same category repeats.
+ * Ken Burns transform — slow zoom + subtle pan. `local01` is 0..1
+ * across the section's full duration ; `idx` decides pan direction
+ * so adjacent sections feel different even when the same category
+ * repeats.
  *
  * `scaleAmp` and `panAmp` come from the active style preset so a
  * "sober" tour gets a barely-perceptible zoom and a "glitch" one
  * gets a strong one.
+ *
+ * Edit Engine — when the section declares hotspots, `focus` (0..1
+ * frame coordinates of the first hotspot) makes the camera DRIFT
+ * TOWARD the point of interest instead of alternating mechanically :
+ * the pan starts centered and eases out toward the focus over the
+ * section, so by the time the punch-in fires the camera is already
+ * leaning into it.
  */
 export function kenBurns(
   local01: number,
   idx: number,
   scaleAmp = 0.06,
   panAmp = 1.4,
+  focus?: { x: number; y: number },
 ): string {
-  const scale = 1.0 + scaleAmp * local01;
-  const panX = (idx % 2 === 0 ? -1 : 1) * (1 - local01) * panAmp;
-  const panY = (idx % 3 === 0 ? -1 : 1) * (1 - local01) * panAmp * 0.57;
+  const e = easeInOut(local01);
+  const scale = 1.0 + scaleAmp * e;
+  if (focus) {
+    // Translate the frame so the focus region moves toward center —
+    // (0.5 - focus) points from the focus toward the middle.
+    const panX = (0.5 - focus.x) * 2 * panAmp * e;
+    const panY = (0.5 - focus.y) * 2 * panAmp * 0.57 * e;
+    return `scale(${scale}) translate(${panX}%, ${panY}%)`;
+  }
+  const panX = (idx % 2 === 0 ? -1 : 1) * (1 - e) * panAmp;
+  const panY = (idx % 3 === 0 ? -1 : 1) * (1 - e) * panAmp * 0.57;
   return `scale(${scale}) translate(${panX}%, ${panY}%)`;
 }

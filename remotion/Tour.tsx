@@ -11,6 +11,7 @@ import { getCategory, MOTION_CATEGORIES } from "@/lib/motion-categories";
 import { SectionPlayer } from "./SectionPlayer";
 import { IntroCard, OutroCard } from "./IntroOutro";
 import { BeatsLayer } from "./BeatsLayer";
+import { SubtitlesLayer } from "./SubtitlesLayer";
 import { resolveStyle } from "./lib/style-presets";
 import {
   computeSectionFrames,
@@ -39,6 +40,8 @@ export function Tour({
   voVolume,
   bgBeats,
   voPauses,
+  voSegments,
+  subtitles,
   composeStyle,
   frame3d,
   cameraPreset3d,
@@ -52,6 +55,19 @@ export function Tour({
   const outroFrames = TRANSITIONS.outroHoldSec * fps;
   const crossfadeFrames = TRANSITIONS.crossfadeSec * fps;
   const fadeFrames = Math.round(crossfadeFrames);
+
+  // Edit Engine — per-boundary crossfade durations. The boundary
+  // entering section i drives BOTH section i's entrance window and
+  // section i-1's exit window, so the two sides of a cut always
+  // move at the same beat-adapted pace. Intro / outro boundaries
+  // keep the default.
+  const entranceFramesFor = (i: number): number =>
+    Math.round((sections[i]?.crossfadeInSec ?? TRANSITIONS.crossfadeSec) * fps);
+
+  // Edit Engine — quand des segments VO sont fournis, la voix est
+  // jouée par tranches placées au timing vidéo réel (J-cuts inclus).
+  // Sinon fallback : le fichier continu, comme avant.
+  const voSegs = voSegments ?? [];
 
   // Active section / phase to pick the backdrop color.
   let activeCat = MOTION_CATEGORIES.branding;
@@ -130,11 +146,16 @@ export function Tour({
         const w = sectionWindows[i];
         const cat = getCategory(s.categoryId) ?? MOTION_CATEGORIES.branding;
         const durationFrames = w.endFrame - w.startFrame;
+        const entranceFrames = entranceFramesFor(i);
+        const exitFrames =
+          i < sections.length - 1
+            ? entranceFramesFor(i + 1)
+            : Math.round(crossfadeFrames);
         return (
           <Sequence
             key={s.index}
             from={w.startFrame}
-            durationInFrames={durationFrames + crossfadeFrames}
+            durationInFrames={durationFrames + exitFrames}
             layout="none"
           >
             <SectionPlayer
@@ -143,7 +164,8 @@ export function Tour({
               format={format}
               url={`${brand.domain}${pathHintFor(s)}`}
               durationFrames={durationFrames}
-              crossfadeFrames={crossfadeFrames}
+              entranceFrames={entranceFrames}
+              exitFrames={exitFrames}
               sectionIndex={i}
               styleId={composeStyle}
               frame3d={frame3d}
@@ -175,11 +197,36 @@ export function Tour({
         voPauseHaloStrength={style.voPauseHaloStrength}
       />
 
-      {/* Audio overlays at the root — Remotion mixes them automatically
-       *  with the OffthreadVideo's silent track. */}
-      {voiceoverFile && (
-        <Audio src={staticFile(voiceoverFile)} volume={voVolume} />
+      {/* Word-synced karaoke subtitles (Edit Engine, opt-in). */}
+      {subtitles && subtitles.length > 0 && (
+        <SubtitlesLayer cues={subtitles} format={format} activeCat={activeCat} />
       )}
+
+      {/* Audio overlays at the root — Remotion mixes them automatically
+       *  with the OffthreadVideo's silent track.
+       *
+       *  Edit Engine : quand voSegments est fourni, chaque tranche de
+       *  voiceover.mp3 est placée à son temps composition exact
+       *  (timing vidéo réel + J-cuts). Le fichier continu reste le
+       *  fallback pour les renders sans alignment. */}
+      {voiceoverFile && voSegs.length > 0
+        ? voSegs.map((seg, i) => (
+            <Sequence
+              key={`vo-${i}`}
+              from={Math.round(seg.atCompSec * fps)}
+              durationInFrames={Math.max(1, Math.round(seg.durationSec * fps))}
+              layout="none"
+            >
+              <Audio
+                src={staticFile(voiceoverFile)}
+                startFrom={Math.round(seg.srcStartSec * fps)}
+                volume={voVolume}
+              />
+            </Sequence>
+          ))
+        : voiceoverFile && (
+            <Audio src={staticFile(voiceoverFile)} volume={voVolume} />
+          )}
       {bgMusicFile && (
         <Audio src={staticFile(bgMusicFile)} volume={bgMusicVolume} />
       )}

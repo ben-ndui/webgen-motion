@@ -11,6 +11,59 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Edit Engine — le compose devient un vrai montage) · 2026-06-12
+
+Nouvelle couche de **décision de montage** entre l'analyse audio et le render
+Remotion : `scripts/lib/edit-plan.ts` lit les artefacts déjà produits
+(manifest, `voiceover-alignment.json`, `audio-analysis.json`) et écrit un
+`edit-plan.json` (EDL) que la composition exécute. Analyse complète et
+options étudiées dans `ANALYSE-MONTAGE.md`.
+
+- **Trim cohérent vidéo + voix** — chaque section est coupée à sa dernière
+  activité VO + 0.3s de respiration ; la voix étant désormais jouée en
+  **segments par section** (au lieu du fichier continu), le sync est
+  préservé par construction. Remplace l'ancien `--enable-pacing-trim`
+  (qui désynchronisait la VO et restait inutilisable). Sur le tour démo
+  `uzme-landing` : **16.3s de temps morts coupés sur 34s capturées**.
+- **Beat snapping** — le padding de fin de section est variable : dans la
+  fenêtre déjà silencieuse, le cut préfère tomber sur un beat de la musique.
+- **J-cuts** — la première ligne VO d'une section démarre 250ms avant son
+  visuel (pendant le fade du splash), comme un vrai monteur.
+- **Crossfades adaptatifs** — durée par frontière selon la force du beat le
+  plus proche (0.35s punchy / 0.5s / 0.65s défaut / 0.8s passage calme).
+- **VO re-syncée au timing vidéo réel** — `capture-tour.ts` enregistre
+  désormais `stepTimings` (temps vidéo réel de chaque step) +
+  `contentStartSec` dans le manifest ; les segments VO sont placés dessus,
+  tuant la dérive cumulative due aux splashes (+350ms +1 frame/section).
+- **Sous-titres karaoké word-synced** (`remotion/SubtitlesLayer.tsx`) —
+  dérivés de l'alignement character-level ElevenLabs (enfin exploité).
+  Opt-in par tour : `"subtitles": true`. Pensé pour le 9:16 social.
+- **Ken Burns dirigé** — quand une section a des hotspots, la caméra dérive
+  vers le premier point d'intérêt (easing inOut) au lieu d'alterner par
+  parité d'index.
+- **Mode narrative supporté** — les items `narrative-step` (sectionIdx -1)
+  sont résolus vers leur section via le tour ; garde-fou si la narration
+  déborde la vidéo (fallback continu + message explicite).
+- Flags : `--no-edit-plan` (tout couper), `--no-edit-trim` (garder les
+  durées). `--enable-pacing-trim` devient un no-op documenté.
+
+### Fixed · 2026-06-12
+
+- **🐛 La détection de beats n'a jamais marché** — `ametadata print:file=-`
+  écrit sur **stdout**, mais `sampleBeatsFromRms` (`analyze-audio.ts`)
+  parsait **stderr** → 0 beat détecté depuis l'écriture du feature (le
+  pulse du BeatsLayer n'a donc jamais été visible). Corrigé (stdout +
+  stderr) + `reset=0.05` invalide (s'exprime en frames) → `reset=1` +
+  `maxBuffer` 64MB (le dump per-frame de 3 min d'audio dépassait le 1MB
+  par défaut de spawnSync). Résultat : 250 beats détectés sur le track
+  de test contre 0 avant.
+- **🐛 L'alignment per-step n'était jamais écrit** — `audio-tour.ts:546`
+  référençait `voiceId` / `modelId` hors scope → `ReferenceError` après
+  l'écriture de `voiceover.mp3` (silencieux côté UI). C'est pour ça que
+  seuls les tours narrative avaient un `voiceover-alignment.json`.
+  Corrigé avec le même `backendInfo` que le writer narrative + champ
+  `voiceMode: "per-step"`.
+
 ## [0.2.3] — 2026-06-06
 
 ### Fixed (CI — desktop-release matrix débloquée) · 2026-06-05

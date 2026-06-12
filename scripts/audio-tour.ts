@@ -537,14 +537,30 @@ async function main(): Promise<void> {
   // original ElevenLabs character timings (per VO clip, RELATIVE to
   // the clip's start, not the global timeline). Future "narrative
   // continuous" mode will use this to derive overlay timings.
+  // Backend identity — same loose shape as the narrative-mode writer
+  // below. The previous code referenced bare `voiceId` / `modelId`
+  // that don't exist in this scope, so the per-step alignment write
+  // crashed with a ReferenceError AFTER voiceover.mp3 was produced —
+  // which is why per-step tours never had a voiceover-alignment.json.
+  const perStepBackendInfo =
+    backend?.kind === "elevenlabs"
+      ? { backend: "elevenlabs", voiceId: backend.voiceId, modelId: backend.model }
+      : backend?.kind === "voicebox"
+        ? {
+            backend: "voicebox",
+            profileId: backend.profileId,
+            engine: backend.engine,
+            modelSize: backend.modelSize,
+          }
+        : { backend: "unknown" };
   const alignPath = join(tourDir!, "voiceover-alignment.json");
   writeFileSync(
     alignPath,
     JSON.stringify(
       {
         tourId,
-        voiceId,
-        modelId,
+        ...perStepBackendInfo,
+        voiceMode: "per-step",
         totalDurationSec: timelineCursorSec,
         items: alignmentItems,
       },

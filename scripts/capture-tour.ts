@@ -111,8 +111,23 @@ interface SectionPlan {
   subtitle?: string;
   gotoDuringSplash?: string;
   splashDwellMs: number;
-  steps: TourStep[];
+  /** Body steps with their linear index in tour.steps — the same
+   *  index audio-tour.ts uses as `linearStepIdx` in the alignment
+   *  file, so downstream consumers can correlate the two. */
+  steps: Array<{ step: TourStep; linearIdx: number }>;
   outFile: string;
+}
+
+/** Per-step timing recorded during capture (video-time, seconds).
+ *  Written into manifest.json so the edit engine can place VO
+ *  segments / overlays at the step's REAL video time instead of
+ *  the dwell-derived approximation. */
+interface StepTiming {
+  linearIdx: number;
+  type: string;
+  /** Video time when the step's dwell window opens (action settled). */
+  dwellStartSec: number;
+  dwellSec: number;
 }
 
 const DEFAULT_CATEGORY: MotionCategory = MOTION_CATEGORIES.branding;
@@ -120,7 +135,7 @@ const DEFAULT_CATEGORY: MotionCategory = MOTION_CATEGORIES.branding;
 function planSections(t: TourEntry): SectionPlan[] {
   const plans: SectionPlan[] = [];
   let current: SectionPlan | null = null;
-  for (const step of t.steps) {
+  for (const [linearIdx, step] of t.steps.entries()) {
     if (step.type === "section") {
       const cat = getCategory(step.categoryId) ?? DEFAULT_CATEGORY;
       current = {
@@ -149,7 +164,7 @@ function planSections(t: TourEntry): SectionPlan[] {
         };
         plans.push(current);
       }
-      current.steps.push(step);
+      current.steps.push({ step, linearIdx });
     }
   }
   return plans;
@@ -251,6 +266,12 @@ async function main(): Promise<void> {
     durationSec: number;
     sizeBytes: number;
     frames: number;
+    /** Video time (sec) where the splash ends and content begins.
+     *  0 when the section has no splash. */
+    contentStartSec: number;
+    /** Real video-time of each body step — consumed by the edit
+     *  engine (scripts/lib/edit-plan.ts) to sync VO + subtitles. */
+    stepTimings: StepTiming[];
   }> = [];
 
   let totalFrames = 0;
@@ -290,9 +311,12 @@ async function main(): Promise<void> {
       await snap(ctx);
     }
 
+    const contentStartSec = ctx.frameIdx / fps;
+    const stepTimings: StepTiming[] = [];
+
     await ensureCursor(page);
 
-    for (const [i, step] of section.steps.entries()) {
+    for (const [i, { step, linearIdx }] of section.steps.entries()) {
       console.log(`  [${i + 1}/${section.steps.length}] ${step.type}`);
       try {
         await executeStep(page, step, section.category);
@@ -302,6 +326,12 @@ async function main(): Promise<void> {
       }
 
       const dwellMs = step.dwellMs ?? 1200;
+      stepTimings.push({
+        linearIdx,
+        type: step.type,
+        dwellStartSec: Math.round((ctx.frameIdx / fps) * 1000) / 1000,
+        dwellSec: dwellMs / 1000,
+      });
       await dwell(ctx, dwellMs);
 
       if (step.type === "overlay") {
@@ -337,6 +367,8 @@ async function main(): Promise<void> {
       durationSec: Math.round(durationSec * 100) / 100,
       sizeBytes: size,
       frames: ctx.frameIdx,
+      contentStartSec: Math.round(contentStartSec * 1000) / 1000,
+      stepTimings,
     });
     totalFrames += ctx.frameIdx;
   }
