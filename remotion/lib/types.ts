@@ -55,6 +55,11 @@ export interface ManifestSection {
    *  (punchy sur beat fort, longue sur passage calme). Fallback
    *  TRANSITIONS.crossfadeSec quand absent. */
   crossfadeInSec?: number;
+  /** Sprint D — splash card rendue par Remotion (SectionSplash) au
+   *  début de la section au lieu d'être filmée dans la page. Les
+   *  captures mobiles n'ont pas de DOM à injecter ; la vidéo de la
+   *  section démarre après ce délai. `durationSec` l'INCLUT. */
+  postSplashSec?: number;
 }
 
 /** Edit Engine — segment de voiceover.mp3 placé à un temps précis de

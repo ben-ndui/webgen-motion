@@ -1,0 +1,35 @@
+{
+  "id": "demo-ios-settings",
+  "name": "Démo iOS — Réglages",
+  "description": "Tour de validation Sprint D : capture d'une app native iOS (Réglages) via Maestro + simctl recordVideo.",
+  "estimatedSec": 25,
+  "startPath": "/",
+  "platform": "ios",
+  "appId": "com.apple.Preferences",
+  "format": "9:16",
+  "subtitles": true,
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Une app native",
+      "subtitle": "Filmée par GEN MOTION",
+      "dwellMs": 2000,
+      "voiceover": "Voici une application iOS native, filmée automatiquement par GEN MOTION."
+    },
+    { "type": "launchApp", "clearState": false, "dwellMs": 2200 },
+    { "type": "swipe", "direction": "up", "dwellMs": 1600 },
+    { "type": "swipe", "direction": "down", "dwellMs": 1400 },
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Navigation réelle",
+      "subtitle": "Tap, swipe, back",
+      "dwellMs": 2000,
+      "voiceover": "Chaque interaction est scriptée : tap, swipe, navigation."
+    },
+    { "type": "tapOn", "text": "Général", "dwellMs": 2000 },
+    { "type": "tapOn", "text": "Informations", "dwellMs": 2200 },
+    { "type": "back", "dwellMs": 1400 }
+  ]
+}

@@ -893,6 +893,18 @@ async function executeStep(
     case "keypress":
       await p.keyboard.press(step.key as Parameters<Page["keyboard"]["press"]>[0]);
       break;
+    case "launchApp":
+    case "tapOn":
+    case "inputText":
+    case "swipe":
+    case "back":
+      // Sprint D — steps mobiles : la capture web les ignore. Un tour
+      // qui les utilise doit déclarer platform: "ios" | "android"
+      // pour être routé vers capture-mobile.ts.
+      console.warn(
+        `    ⚠ step mobile "${step.type}" ignoré par la capture web — mets platform: "ios" | "android" dans le tour`,
+      );
+      break;
   }
 }
 

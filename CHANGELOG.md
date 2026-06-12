@@ -11,6 +11,43 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Added (Sprint D — capture d'applications mobiles natives) · 2026-06-12
+
+GEN MOTION filme désormais des **apps iOS / Android natives**, pas
+seulement des sites web. Nouveau backend `scripts/capture-mobile.ts` :
+Maestro pilote l'app (flows YAML générés depuis le tour JSON),
+`xcrun simctl io recordVideo` (iOS Simulator) / `adb screenrecord`
+(Android) filment, ffmpeg normalise en CFR 30fps h264 yuv420p. Sortie :
+le MÊME `manifest.json` + `stepTimings` que le web → tout l'aval
+(audio, Edit Engine, compose Remotion, frames 3D iPhone) inchangé.
+
+- **Schéma tour** : `platform: "ios" | "android"`, `appId`, `deviceId`
+  + steps mobiles `launchApp` / `tapOn` (text|id) / `inputText` /
+  `swipe` / `back` (sur iOS, `back` = swipe depuis le bord gauche).
+  Tour d'exemple : `tours/demo-ios-settings.json`.
+- **Splash cards composées** — pas de DOM à injecter dans une app
+  native : le manifest porte `postSplashSec` et Remotion rend la carte
+  (`remotion/SectionSplash.tsx`, miroir visuel du splash web) en
+  décalant la vidéo de la section d'autant.
+- **stepTimings exacts** — parse du `maestro.log` (le dwell assert
+  `__webgen_dwell_*` qui suit chaque action ouvre la fenêtre de dwell,
+  1:1 avec les steps). Fallback estimation si log illisible.
+- **VFR dompté** — `simctl recordVideo` n'émet des frames QUE quand
+  l'écran change : t0 réel = timestamp du message "Recording started"
+  (vérifié : PTS 0 à cet instant), trous comblés par `fps=30`, tête
+  JVM coupée par `trim` en filtre (PAS `-ss` input : un seek dans un
+  trou VFR rebase et mange le gap), traîne statique clonée par `tpad`
+  bornée par `-t`. Validé : écart timings/durées **0.01s** sur les 2
+  sections du tour de démo (iPhone 16 Pro, iOS 18.3).
+- **Routage API** : `/api/motion/tour/run` spawn capture-mobile quand
+  `tour.platform` est mobile ; UI Script tab : labels des steps
+  mobiles. Dwell Maestro = `extendedWaitUntil optional` (Maestro n'a
+  pas de sleep).
+- Prérequis : `brew install mobile-dev-inc/tap/maestro` (⚠ PAS le cask
+  `maestro` qui est un autre logiciel). Android écrit mais non testé
+  sur cette machine (pas d'adb) — chemin gardé derrière les mêmes
+  abstractions.
+
 ### Added (Edit Engine — le compose devient un vrai montage) · 2026-06-12
 
 Nouvelle couche de **décision de montage** entre l'analyse audio et le render

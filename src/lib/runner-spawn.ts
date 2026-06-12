@@ -30,6 +30,7 @@ export interface RunnerSpawn {
 const RUNNER_FILES: Record<string, string> = {
   "audio-tour": "audio-tour.ts",
   "capture-tour": "capture-tour.ts",
+  "capture-mobile": "capture-mobile.ts",
   "compose-tour": "compose-tour.ts",
   "analyze-audio": "analyze-audio.ts",
   "agent-generate-tour": "agent-generate-tour.ts",

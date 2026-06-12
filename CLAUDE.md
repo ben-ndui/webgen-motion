@@ -58,7 +58,8 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   ├── webgen-motion-pitch.json # Meta-démo : GEN MOTION filme GEN MOTION
 │   └── notary-3d-test.json      # Test Sprint 7 frames 3D
 ├── scripts/
-│   ├── capture-tour.ts          # E2E filmé section par section
+│   ├── capture-tour.ts          # E2E web filmé section par section (Puppeteer)
+│   ├── capture-mobile.ts        # E2E mobile iOS/Android (Maestro + simctl/adb) — Sprint D
 │   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs / Voicebox)
 │   ├── compose-tour.ts          # Compose runner — edit plan + spawn `remotion render`
 │   ├── lib/edit-plan.ts         # Edit Engine — EDL : trims, beat snap, J-cuts, VO segments, subtitles
@@ -134,9 +135,14 @@ Un tour est défini dans `tours/<id>.json` qui valide comme `TourEntry` (voir `s
   estimatedSec: number;
   startPath: string;       // "/" (origin = baseUrl)
   baseUrl?: string;        // default "http://localhost:3000"
-  format?: "16:9" | "9:16"; // default 16:9
+  platform?: "web" | "ios" | "android"; // Sprint D — route la capture (web = Puppeteer, mobile = Maestro)
+  appId?: string;          // mobile only — bundle id iOS / package Android
+  deviceId?: string;       // mobile only — UDID simulateur / serial adb (default: booted)
+  format?: "16:9" | "9:16"; // default 16:9 (mobile: 9:16)
   bgMusic?: string;        // optional path to default MP3
-  steps: TourStep[];       // section / overlay / scroll / wait / click / type / select / hover / goto / keypress
+  subtitles?: boolean;     // sous-titres karaoké word-synced (Edit Engine)
+  steps: TourStep[];       // web : section / overlay / scroll / wait / click / type / select / hover / goto / keypress
+                           // mobile : section / overlay / wait / launchApp / tapOn / inputText / swipe / back
 }
 ```
 

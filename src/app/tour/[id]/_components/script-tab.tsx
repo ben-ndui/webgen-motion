@@ -28,6 +28,12 @@ const TYPE_LABEL: Record<TourStep["type"], string> = {
   select: "Select",
   hover: "Hover",
   keypress: "Key",
+  // Sprint D — steps mobiles (capture Maestro)
+  launchApp: "Launch app",
+  tapOn: "Tap",
+  inputText: "Input",
+  swipe: "Swipe",
+  back: "Back",
 };
 const ADD_TYPES: TourStep["type"][] = ["section", "overlay", "click", "wait", "scroll"];
 
@@ -427,6 +433,12 @@ function makeFreshStep(type: TourStep["type"]): TourStep {
     case "select": return { type: "select", selector: "[data-tour='']", value: "", dwellMs: 1500 };
     case "hover": return { type: "hover", selector: "[data-tour='']", dwellMs: 1500 };
     case "keypress": return { type: "keypress", key: "Escape", dwellMs: 800 };
+    // Sprint D — steps mobiles
+    case "launchApp": return { type: "launchApp", dwellMs: 2000 };
+    case "tapOn": return { type: "tapOn", text: "", dwellMs: 1500 };
+    case "inputText": return { type: "inputText", text: "", dwellMs: 1500 };
+    case "swipe": return { type: "swipe", direction: "up", dwellMs: 1500 };
+    case "back": return { type: "back", dwellMs: 1200 };
   }
 }
 function describeStep(step: TourStep): { kind: string; summary: string } {
@@ -441,5 +453,11 @@ function describeStep(step: TourStep): { kind: string; summary: string } {
     case "wait": return { kind: "WAIT", summary: `${step.dwellMs}ms` };
     case "overlay": return { kind: "OVERLAY", summary: `"${step.text}" (${step.position || "center"})` };
     case "keypress": return { kind: "KEY", summary: step.key };
+    // Sprint D — steps mobiles
+    case "launchApp": return { kind: "LAUNCH", summary: step.clearState ? "clearState" : "app" };
+    case "tapOn": return { kind: "TAP", summary: step.text ?? step.id ?? "—" };
+    case "inputText": return { kind: "INPUT", summary: `"${step.text}"` };
+    case "swipe": return { kind: "SWIPE", summary: step.direction };
+    case "back": return { kind: "BACK", summary: "retour" };
   }
 }

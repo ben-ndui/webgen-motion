@@ -1,8 +1,9 @@
-import { OffthreadVideo, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { OffthreadVideo, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import type { ManifestSection } from "./lib/types";
 import type { MotionCategory } from "@/lib/motion-categories";
 import { MacChrome } from "./MacChrome";
 import { IPhoneFrame } from "./IPhoneFrame";
+import { SectionSplash } from "./SectionSplash";
 import { applyTransition, kenBurns, pickTransition } from "./lib/transitions";
 import { resolveStyle } from "./lib/style-presets";
 import {
@@ -77,16 +78,23 @@ export function SectionPlayer({
     section.categoryId,
     style.transitionOverride,
   );
+  // Sprint D — splash rendue à la compose (captures mobiles). La
+  // vidéo de la section ne démarre qu'après le splash ; durationSec
+  // l'inclut, donc la fenêtre média = durationSec - postSplashSec.
+  const splashFrames = Math.round((section.postSplashSec ?? 0) * fps);
+
   // OffthreadVideo plays the MP4 from `startFrom` to `endAt`.
   //   - startFrom = section.startFromSec * fps (default 0)
-  //   - endAt    = startFrom + section.durationSec * fps
+  //   - endAt    = startFrom + (section.durationSec - postSplash) * fps
   // section.durationSec is the EFFECTIVE playback window (already
   // takes the trim into account — compose-tour does the math). This
   // way SectionPlayer reasons in section-local frame land sans avoir
   // à connaître la longueur du MP4 source.
   const videoStartFrom = Math.round((section.startFromSec ?? 0) * fps);
   const videoEndAt =
-    videoStartFrom + Math.round(section.durationSec * fps);
+    videoStartFrom +
+    Math.round(section.durationSec * fps) -
+    splashFrames;
 
   // Entrance: rises 0→1 over the first `entranceFrames`.
   // Exit: falls 1→0 over the last `exitFrames`.
@@ -258,8 +266,28 @@ export function SectionPlayer({
           transformOrigin: "center",
         }}
       >
-        {frame}
+        {splashFrames > 0 ? (
+          <Sequence from={splashFrames} layout="none">
+            {frame}
+          </Sequence>
+        ) : (
+          frame
+        )}
       </div>
+
+      {/* Sprint D — splash card composée (captures mobiles). Au-dessus
+       *  du device frame, full-bleed, pendant les premiers
+       *  postSplashSec de la section. */}
+      {splashFrames > 0 && localFrame <= splashFrames && (
+        <SectionSplash
+          cat={cat}
+          title={section.title}
+          subtitle={section.subtitle}
+          localFrame={localFrame}
+          splashFrames={splashFrames}
+          fps={fps}
+        />
+      )}
     </div>
   );
 }

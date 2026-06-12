@@ -60,20 +60,29 @@ export async function POST(req: NextRequest) {
   // web build, Storybook, etc.). Falls back to localhost:3000.
   const tour = getTour(tourId);
   const baseUrl = tour?.baseUrl ?? "http://localhost:3000";
-  const runnerArgs = [
-    "--tour-id",
-    tourId,
-    "--base-url",
-    baseUrl,
-    "--fps",
-    "30",
-    "--out",
-    outDir,
-  ];
-  if (formatOverride) {
+  // Sprint D — routage par platform : les tours "ios" / "android"
+  // sont filmés par capture-mobile.ts (Maestro + simctl/adb), le web
+  // garde capture-tour.ts (Puppeteer). Même manifest en sortie.
+  const isMobile = tour?.platform === "ios" || tour?.platform === "android";
+  const runnerArgs = isMobile
+    ? ["--tour-id", tourId, "--fps", "30", "--out", outDir]
+    : [
+        "--tour-id",
+        tourId,
+        "--base-url",
+        baseUrl,
+        "--fps",
+        "30",
+        "--out",
+        outDir,
+      ];
+  if (!isMobile && formatOverride) {
     runnerArgs.push("--format", formatOverride);
   }
-  const spawnSpec = resolveRunnerSpawn("capture-tour", runnerArgs);
+  const spawnSpec = resolveRunnerSpawn(
+    isMobile ? "capture-mobile" : "capture-tour",
+    runnerArgs,
+  );
   const startedAt = Date.now();
 
   const stream = new ReadableStream({
@@ -89,7 +98,12 @@ export async function POST(req: NextRequest) {
         }
       };
 
-      emit({ type: "phase", label: "Lancement du runner Puppeteer…" });
+      emit({
+        type: "phase",
+        label: isMobile
+          ? "Lancement du runner Maestro (capture mobile)…"
+          : "Lancement du runner Puppeteer…",
+      });
 
       const proc = spawn(spawnSpec.command, spawnSpec.args, {
         cwd: spawnSpec.cwd,

@@ -160,6 +160,15 @@ export interface EditPlan {
   summary: string[];
 }
 
+/** Steps dont le résultat DOIT rester visible — le trim ne coupe
+ *  jamais avant la fin (≥1s) du dernier d'entre eux. Les steps
+ *  passifs (wait / overlay) sont du remplissage que la voix gouverne
+ *  et restent trimables. */
+const INTERACTION_STEPS = new Set([
+  "click", "type", "select", "hover", "scroll", "goto", "keypress",
+  "launchApp", "tapOn", "inputText", "swipe", "back",
+]);
+
 /** Breathing room kept after the last VO activity in a section. */
 const TAIL_PAD_SEC = 0.3;
 /** Don't bother trimming less than this — not worth the cut. */
@@ -312,6 +321,19 @@ export function buildEditPlan(inputs: EditPlanInputs): EditPlan {
     // never shorter, but clamp defensively anyway.
     let removable = Math.max(0, trailingSilence - TAIL_PAD_SEC);
     removable = Math.min(removable, s.playableSec * MAX_TRIM_RATIO);
+    // Jamais couper une INTERACTION visible : plancher à la fin
+    // (≥1s de dwell) du dernier step d'action de la section. Un
+    // monteur coupe le remplissage, pas le geste.
+    const lastInteraction = [...(s.stepTimings ?? [])]
+      .reverse()
+      .find((t) => INTERACTION_STEPS.has(t.type));
+    if (lastInteraction) {
+      const floorSec =
+        lastInteraction.dwellStartSec -
+        s.srcInSec +
+        Math.min(lastInteraction.dwellSec, 1.0);
+      removable = Math.min(removable, Math.max(0, s.playableSec - floorSec));
+    }
     if (removable < MIN_TRIM_SEC) continue;
     removableBySection.set(s.index, removable);
   }

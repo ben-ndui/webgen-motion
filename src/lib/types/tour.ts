@@ -41,7 +41,49 @@ export interface Hotspot {
   dwellSec?: number;
 }
 
+/** Sprint D — steps mobiles (capture-mobile.ts via Maestro). Les
+ *  steps web (click/type/scroll par sélecteur CSS) n'ont pas de sens
+ *  sur une app native ; ceux-ci mappent 1:1 sur les commandes
+ *  Maestro (`tapOn`, `inputText`, `swipe`, `launchApp`). Un tour
+ *  `platform: "ios" | "android"` n'utilise QUE ces steps + section /
+ *  wait / overlay. */
+export type MobileTourStep =
+  | {
+      type: "launchApp";
+      /** Relance l'app même si déjà ouverte (clearState Maestro). */
+      clearState?: boolean;
+      dwellMs?: number;
+      voiceover?: string;
+    }
+  | {
+      type: "tapOn";
+      /** Cible par texte visible OU par accessibility id — au moins
+       *  l'un des deux. Texte accepte les regex Maestro. */
+      text?: string;
+      id?: string;
+      dwellMs?: number;
+      voiceover?: string;
+    }
+  | {
+      type: "inputText";
+      text: string;
+      dwellMs?: number;
+      voiceover?: string;
+    }
+  | {
+      type: "swipe";
+      direction: "up" | "down" | "left" | "right";
+      dwellMs?: number;
+      voiceover?: string;
+    }
+  | {
+      type: "back"; // Android back / iOS swipe-back
+      dwellMs?: number;
+      voiceover?: string;
+    };
+
 export type TourStep =
+  | MobileTourStep
   | {
       type: "section";
       categoryId: string;
@@ -98,6 +140,17 @@ export interface TourEntry {
   description: string;
   /** Estimated runtime in seconds — UI hint, runner doesn't enforce. */
   estimatedSec: number;
+  /** Sprint D — capture target. "web" (défaut) filme un site via
+   *  Puppeteer (capture-tour.ts) ; "ios" / "android" filment une app
+   *  native pilotée par Maestro (capture-mobile.ts : simctl
+   *  recordVideo / adb screenrecord). */
+  platform?: "web" | "ios" | "android";
+  /** Mobile only — bundle id iOS (com.example.app) ou package
+   *  Android. Requis quand platform ≠ web. */
+  appId?: string;
+  /** Mobile only — UDID du simulateur / device. Défaut : le
+   *  simulateur booté ("booted") ou le premier device adb. */
+  deviceId?: string;
   /** Path to start at, relative to baseUrl. */
   startPath: string;
   /** Optional alternate origin (default: http://localhost:3000).

@@ -115,6 +115,9 @@ interface ManifestRaw {
      *  step, recorded by capture-tour.ts. Absent on old manifests. */
     contentStartSec?: number;
     stepTimings?: EditStepTiming[];
+    /** Sprint D — splash rendue par Remotion (captures mobiles). Le
+     *  MP4 ne la contient PAS ; durationSec l'inclut. */
+    postSplashSec?: number;
   }>;
   totalDurationSec: number;
 }
@@ -173,9 +176,14 @@ async function main(): Promise<void> {
     const absPath = resolve(tourDir!, s.file);
     linkInto(absPath, s.file);
     const probedSec = probeMediaDurationSec(absPath);
+    // Sprint D — les captures mobiles portent un splash VIRTUEL
+    // (rendu par Remotion) : durationSec l'inclut mais pas le MP4.
+    const postSplashSec = s.postSplashSec ?? 0;
     const captured =
-      probedSec > 0 ? Math.min(s.durationSec, probedSec) : s.durationSec;
-    if (probedSec > 0 && Math.abs(probedSec - s.durationSec) > 0.05) {
+      probedSec > 0
+        ? Math.min(s.durationSec, probedSec + postSplashSec)
+        : s.durationSec;
+    if (probedSec > 0 && Math.abs(probedSec + postSplashSec - s.durationSec) > 0.05) {
       console.log(
         `  ⚠ section ${s.index} : manifest ${s.durationSec.toFixed(2)}s vs media ${probedSec.toFixed(2)}s — using ${captured.toFixed(2)}s`,
       );
@@ -204,6 +212,7 @@ async function main(): Promise<void> {
       capturedDurationSec: captured,
       startFromSec: trimStart > 0 ? trimStart : undefined,
       hotspots: hotspotsFor(s.index),
+      ...(postSplashSec > 0 ? { postSplashSec } : {}),
     };
   });
 
