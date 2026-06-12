@@ -7,14 +7,14 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://genmotion.app"),
-  title: "GEN MOTION · Smooth & Design",
+  title: "GEN MOTION — Vidéos produit as code, régénérées à chaque release",
   description:
-    "Capture n'importe quel site web, mixe la voix off clonée, compose un clip motion design final.mp4. Local-first. Source-available (FSL) · Community gratuit · Studio Edition $49.",
+    "GEN MOTION rejoue ton produit (web ou app native), pose la voix off, monte sur la musique — et le refait à l'identique après chaque release. Local-first · Fair-code FSL · Studio Edition $49 one-time.",
   // Quand SEO prêt à pousser, retirer noindex et set canonical/og :
   robots: "noindex, nofollow",
   openGraph: {
-    title: "GEN MOTION — Motion Studio local-first",
-    description: "On capture votre site. Vous obtenez un clip motion. Sur votre machine, sans cloud.",
+    title: "GEN MOTION — Vidéos produit as code",
+    description: "Tes vidéos produit, écrites comme du code. Régénérées à chaque release. En local, sans abonnement.",
     url: "https://genmotion.app",
     siteName: "GEN MOTION",
     locale: "fr_FR",

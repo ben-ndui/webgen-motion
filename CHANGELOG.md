@@ -11,6 +11,32 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Changed (Landing v0.3 — positionnement « vidéos produit as code ») · 2026-06-12
+
+Refonte du message : on vend la MÉCANIQUE (tour JSON versionné → vidéo
+régénérée à chaque release), pas la catégorie "video maker". Spec
+complète : `LANDING-V3-WIREFRAME.md`.
+
+- **Hero** : « Tes vidéos produit, écrites comme du code. » + carte
+  terminal animée `tour.json → gen capture && gen compose → ✓
+  final.mp4 régénéré` (`hero-compile-loop.tsx`, framer-motion,
+  cohérente avec la DA terminal du futur chat IA). Spec-strip réarmé,
+  CTA secondaire → La Boucle. Badge nav `fair-code · FSL`.
+- **4 nouvelles sections** : **La Boucle** (frise v1.0 → commit → v1.1
+  re-render — la section signature), **Pour qui** (3 personas : agences
+  / founders / équipes mobile, tags mono), **Comparaison honnête**
+  (screen recorders / démos SaaS / nous, avec la ligne « si vous ne
+  ferez qu'une vidéo, prenez un screen recorder — sincèrement »),
+  **Manifeste** (local-first / fair-code / client zéro).
+- **Pipeline** : 3 → 4 étapes, l'Edit Engine en vedette (« un monteur
+  dans le pipeline ») avec preuve chiffrée réelle (38.4s → 22.1s,
+  4/4 cuts sur le beat). **Pricing** : « un outil qu'on possède, pas
+  un abonnement qu'on subit » + comparatif chiffré ; .otio en tête des
+  features Studio. **Démo** : « cette vidéo a été générée par l'outil
+  qu'elle présente » + lien vers le tour source GitHub.
+- Meta SEO réalignées. ~120 lignes de CSS tokens-only (light/dark
+  gratuits), aucune dépendance ajoutée, data-wm-id sur chaque bloc.
+
 ### Changed (Licence — passage à FSL-1.1-MIT + hardening edition) · 2026-06-12
 
 Le projet quitte la mention MIT pour la **Functional Source License

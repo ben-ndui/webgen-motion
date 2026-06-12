@@ -212,3 +212,100 @@
   .gm-landing .section { padding: calc(var(--nav-h) + var(--s-5)) var(--s-5) var(--s-6); }
   .gm-landing .nav, .gm-landing .footer { padding-left: var(--s-5); padding-right: var(--s-5); }
 }
+
+/* ================= LANDING v0.3 — positionnement "as code" ================= */
+
+/* nav badge fair-code */
+.gm-landing .nav-badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: var(--r-full); padding: 6px 11px; text-decoration: none; transition: color .2s, border-color .2s; }
+.gm-landing .nav-badge:hover { color: var(--accent); border-color: var(--accent-line); }
+@media (max-width: 880px) { .gm-landing .nav-badge { display: none; } }
+
+/* hero — compile loop (tour.json → final.mp4) */
+.gm-landing .compile-card { margin: var(--s-6) auto 0; max-width: 560px; text-align: left; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--bg-sunken); overflow: hidden; box-shadow: var(--shadow-sm); }
+.gm-landing .compile-tab { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); padding: 9px 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.gm-landing .compile-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: .8; }
+.gm-landing .compile-body { padding: 14px 16px 16px; font-family: var(--font-mono); font-size: var(--t-mono); line-height: 1.7; color: var(--ink-soft); min-height: 168px; }
+.gm-landing .compile-line { white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.gm-landing .compile-caret { display: inline-block; width: 7px; height: 13px; background: var(--accent); vertical-align: -2px; animation: caretBlink 1s steps(1) infinite; }
+@keyframes caretBlink { 50% { opacity: 0; } }
+.gm-landing .compile-cmd { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); color: var(--ink); position: relative; }
+.gm-landing .compile-chevron { color: var(--accent); margin-right: 6px; }
+.gm-landing .compile-progress { display: block; height: 3px; margin-top: 9px; border-radius: 2px; background: var(--accent); transform-origin: left; }
+.gm-landing .compile-done { display: block; margin-top: 7px; color: var(--accent); font-weight: 500; }
+
+/* liens mono inline */
+.gm-landing .mono-link { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent-line); white-space: nowrap; }
+.gm-landing .mono-link:hover { border-bottom-style: solid; }
+.gm-landing .demo-sub { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; max-width: 64ch; margin-top: var(--s-4); }
+
+/* ---------------- LA BOUCLE ---------------- */
+.gm-landing .loop .wrap { display: grid; gap: var(--s-6); }
+.gm-landing .loop-title { font-size: var(--t-3xl); margin-top: var(--s-4); max-width: 24ch; text-wrap: balance; line-height: var(--lh-tight); }
+.gm-landing .loop-sub { font-size: var(--t-base); color: var(--muted); line-height: 1.55; max-width: 62ch; margin-top: var(--s-4); }
+.gm-landing .loop-strip { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s-5); align-items: center; }
+@media (max-width: 880px) { .gm-landing .loop-strip { grid-template-columns: 1fr; } }
+.gm-landing .loop-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); }
+.gm-landing .loop-card.fresh { border-color: var(--accent-line); box-shadow: 0 0 0 1px var(--accent-line), var(--shadow-md); }
+.gm-landing .loop-tag { font-family: var(--font-mono); font-size: var(--t-mono); letter-spacing: var(--tracking-mono); color: var(--faint); text-transform: uppercase; }
+.gm-landing .loop-card.fresh .loop-tag { color: var(--accent); }
+.gm-landing .loop-thumb { position: relative; aspect-ratio: 16/9; border-radius: var(--r-md); border: 1px solid var(--line); background: repeating-linear-gradient(135deg, transparent 0 14px, color-mix(in oklch, var(--ink) 4%, transparent) 14px 15px), var(--bg-sunken); overflow: hidden; }
+.gm-landing .loop-thumb.fresh { background: repeating-linear-gradient(135deg, transparent 0 14px, color-mix(in oklch, var(--accent) 7%, transparent) 14px 15px), var(--bg-sunken); }
+.gm-landing .loop-play { position: absolute; inset: 0; margin: auto; width: 0; height: 0; border-left: 16px solid var(--accent); border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
+.gm-landing .loop-bar { position: absolute; left: 10px; right: 10px; bottom: 9px; height: 3px; border-radius: 2px; background: var(--line-strong); }
+.gm-landing .loop-thumb.fresh .loop-bar::after { content: ""; position: absolute; inset: 0; width: 62%; background: var(--accent); border-radius: 2px; }
+.gm-landing .loop-file { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); }
+.gm-landing .loop-file.accent { color: var(--accent); }
+.gm-landing .loop-commit { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.gm-landing .loop-commit code { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--ink-soft); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--r-full); padding: 7px 14px; white-space: nowrap; }
+.gm-landing .loop-arrow { width: 1px; height: 22px; background: var(--line-strong); position: relative; }
+@media (max-width: 880px) { .gm-landing .loop-commit { flex-direction: row; } .gm-landing .loop-arrow { width: 22px; height: 1px; } }
+.gm-landing .loop-benefits { display: flex; gap: var(--s-6); flex-wrap: wrap; }
+.gm-landing .loop-benefits div { display: flex; gap: 9px; align-items: center; font-size: var(--t-sm); color: var(--ink-soft); }
+
+/* ---------------- PIPELINE v0.3 (4 steps) ---------------- */
+.gm-landing .steps.four { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1080px) { .gm-landing .steps.four { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .gm-landing .steps.four { grid-template-columns: 1fr; } }
+.gm-landing .step.featured-step { border-color: var(--accent-line); box-shadow: 0 0 0 1px var(--accent-line); }
+.gm-landing .step-proof { font-family: var(--font-mono); font-size: 11px; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-sm); padding: 7px 10px; line-height: 1.45; }
+.gm-landing .pipe-more { font-size: var(--t-sm); color: var(--muted); }
+.gm-landing .pipe-more code { font-family: var(--font-mono); font-size: 0.85em; color: var(--ink-soft); }
+
+/* ---------------- PERSONAS ---------------- */
+.gm-landing .personas .wrap { display: grid; gap: var(--s-7); }
+.gm-landing .personas-title { font-size: var(--t-3xl); margin-top: var(--s-4); line-height: var(--lh-tight); }
+.gm-landing .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-5); }
+@media (max-width: 880px) { .gm-landing .persona-grid { grid-template-columns: 1fr; } }
+.gm-landing .persona { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); transition: border-color .3s, transform .3s, box-shadow .3s; }
+.gm-landing .persona:hover { border-color: var(--line-strong); box-shadow: var(--shadow-md); transform: translateY(-3px); }
+.gm-landing .persona-kicker { font-family: var(--font-mono); font-size: var(--t-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--accent); }
+.gm-landing .persona h3 { font-size: var(--t-xl); line-height: var(--lh-snug); text-wrap: balance; }
+.gm-landing .persona p { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; }
+.gm-landing .persona-tag { margin-top: auto; font-family: var(--font-mono); font-size: var(--t-mono); color: var(--ink-soft); background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 10px; width: fit-content; }
+
+/* ---------------- COMPARE ---------------- */
+.gm-landing .compare .wrap { display: grid; gap: var(--s-6); }
+.gm-landing .compare-title { font-size: var(--t-3xl); margin-top: var(--s-4); line-height: var(--lh-tight); }
+.gm-landing .compare-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); }
+.gm-landing .compare-table { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.gm-landing .compare-table th, .gm-landing .compare-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.gm-landing .compare-table tr:last-child td { border-bottom: 0; }
+.gm-landing .compare-table thead th { font-family: var(--font-mono); font-size: var(--t-mono); letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--line); }
+.gm-landing .compare-table td:first-child { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--faint); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.gm-landing .compare-table td { color: var(--muted); }
+.gm-landing .compare-table .us { background: var(--accent-soft); color: var(--ink-soft); }
+.gm-landing .compare-table thead .us { color: var(--accent); }
+.gm-landing .compare-table .us b { color: var(--ink); }
+.gm-landing .compare-note { font-size: var(--t-base); color: var(--muted); max-width: 60ch; }
+.gm-landing .compare-note b { color: var(--ink); }
+
+/* ---------------- PRICING v0.3 ---------------- */
+.gm-landing .pricing-sub { font-size: var(--t-sm); color: var(--muted); margin-top: var(--s-4); max-width: 58ch; }
+
+/* ---------------- MANIFESTO ---------------- */
+.gm-landing .manifesto .wrap { display: grid; gap: var(--s-7); }
+.gm-landing .manifesto-title { font-size: var(--t-3xl); margin-top: var(--s-4); line-height: var(--lh-tight); }
+.gm-landing .manifesto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-7); }
+@media (max-width: 880px) { .gm-landing .manifesto-grid { grid-template-columns: 1fr; gap: var(--s-6); } }
+.gm-landing .manifesto-col h3 { font-size: var(--t-lg); margin-bottom: var(--s-3); }
+.gm-landing .manifesto-col p { font-size: var(--t-sm); color: var(--muted); line-height: 1.6; }
