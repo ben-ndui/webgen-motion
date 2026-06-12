@@ -9,7 +9,7 @@
 > Pricing → CTA → Footer, 235 lignes). On garde le squelette et la DA
 > (tokens OKLCH, Geist, reveals) ; on réarme le message et on ajoute
 > 4 sections. Les touches "terminal" introduites ici doivent rester
-> cohérentes avec la DA du chat IA (cf. PROMPT-DESIGN-CHAT-IA.md).
+> cohérentes avec la DA du chat IA (cf. docs/design/PROMPT-DESIGN-CHAT-IA.md).
 
 ---
 

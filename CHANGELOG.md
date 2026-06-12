@@ -99,8 +99,8 @@ serveur local) :
 
 Première brique du chat IA (v0.3.0) : la **« Director's Console »**,
 un REPL éditorial inspiré du terminal (direction « Prises » — process
-design en 3 phases documenté dans `PROMPT-DESIGN-CHAT-IA.md`,
-`DESIGN-CHAT-IA-DIRECTIONS.md` et `DESIGN-CHAT-IA-MAQUETTE.md`).
+design en 3 phases documenté dans `docs/design/PROMPT-DESIGN-CHAT-IA.md`,
+`docs/design/DESIGN-CHAT-IA-DIRECTIONS.md` et `docs/design/DESIGN-CHAT-IA-MAQUETTE.md`).
 
 - **Dock latéral** persistant à travers les 5 tabs de l'éditeur
   (3e colonne additive du shell TourClient — patch de 16 lignes,
@@ -139,7 +139,7 @@ design en 3 phases documenté dans `PROMPT-DESIGN-CHAT-IA.md`,
 
 Refonte du message : on vend la MÉCANIQUE (tour JSON versionné → vidéo
 régénérée à chaque release), pas la catégorie "video maker". Spec
-complète : `LANDING-V3-WIREFRAME.md`.
+complète : `docs/design/LANDING-V3-WIREFRAME.md`.
 
 - **Hero** : « Tes vidéos produit, écrites comme du code. » + carte
   terminal animée `tour.json → gen capture && gen compose → ✓
@@ -285,7 +285,7 @@ Nouvelle couche de **décision de montage** entre l'analyse audio et le render
 Remotion : `scripts/lib/edit-plan.ts` lit les artefacts déjà produits
 (manifest, `voiceover-alignment.json`, `audio-analysis.json`) et écrit un
 `edit-plan.json` (EDL) que la composition exécute. Analyse complète et
-options étudiées dans `ANALYSE-MONTAGE.md`.
+options étudiées dans `docs/design/ANALYSE-MONTAGE.md`.
 
 - **Trim cohérent vidéo + voix** — chaque section est coupée à sa dernière
   activité VO + 0.3s de respiration ; la voix étant désormais jouée en

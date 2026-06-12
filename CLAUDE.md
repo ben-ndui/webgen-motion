@@ -75,6 +75,8 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   │   ├── page.tsx                  # Landing slides carrousel 5 slides (Sprint 13)
 │   │   ├── dashboard/page.tsx        # Hub tours (route app, ex-/)
 │   │   ├── tour/[id]/                # Éditeur (5 tabs Script/Capture/Audio/Voice/Compose)
+│   │   │   └── _components/console/  # Director's Console — chat IA BYOK (dock ⌘J, prises, diffs, runs réels)
+│   │   ├── console/window/           # Console en fenêtre séparée multi-écran (sync BroadcastChannel)
 │   │   ├── compose/[id]/             # Live preview (audio playback synchro)
 │   │   ├── about/page.tsx            # Présentation Smooth & Design (Sprint 11)
 │   │   ├── download/page.tsx         # Page download macOS .dmg + buy Studio
@@ -85,7 +87,7 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   │   ├── icon.tsx + apple-icon.tsx # Favicons next/og
 │   │   ├── opengraph-image.tsx       # OG share card 1200×630
 │   │   ├── wordmark-studio.png/      # PNG route pour upload Stripe product image
-│   │   ├── _components/              # BuyButton, SlidesCarousel, UpdateChecker
+│   │   ├── _components/              # BuyButton, SlidesCarousel, UpdateChecker, HubConsole
 │   │   └── api/
 │   │       ├── motion/               # Routes pipeline (capture/audio/compose/license/notary/models/...)
 │   │       ├── stripe/{checkout,webhook}/  # Sprint 10
@@ -117,6 +119,9 @@ webgen-motion/                   # slug repo (rétro-compat)
 ├── .github/workflows/desktop-release.yml  # CI matrix 4 OS (Phase B fixed)
 ├── public/                            # Static assets (demo.mp4, wordmark.svg, ...)
 ├── webgen-motion.config.ts            # Edition + defaults (Sprint 6)
+├── docs/
+│   ├── design/                        # Specs design (console chat IA, landing v3, analyse montage)
+│   └── releases/                      # Notes de release archivées
 ├── CHANGELOG.md                       # Détail commit + breaking changes
 ├── ROADMAP.md                         # Sprints + chantiers + décisions
 └── README.md                          # Quickstart user + editions + features
@@ -211,7 +216,7 @@ Sans ces clés :
 - Voice off échoue avec un message clair en UI
 - Compose marche (mais sans voix off, juste avec la musique)
 
-> **Sprint 3 en cours** : un Setup wizard remplace bientôt `.env.local` par une UI de config (config.json en `~/.webgen-motion/`).
+> Le Setup wizard (`/setup`) écrit la config dans `~/.webgen-motion/config.json` — `.env.local` reste supporté en fallback dev.
 
 ## Commands
 
@@ -274,5 +279,6 @@ Tous les chemins persistent passent par `src/lib/motion-tour-store.ts` (`getMoti
 ## Pour aller plus loin
 
 - `ROADMAP.md` — sprints, futures, décisions
-- `README.md` — quickstart user-facing (Sprint 3 en cours d'enrichissement)
+- `README.md` — quickstart user-facing
+- `docs/design/` — specs design (Director's Console, landing v3, analyse montage)
 - `node_modules/next/dist/docs/01-app/` — Next 16 docs locales (cf. AGENTS.md)

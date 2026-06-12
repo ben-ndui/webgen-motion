@@ -1,6 +1,6 @@
 # Director's Console — 3 directions créatives
 
-> Phase 1 du brief `PROMPT-DESIGN-CHAT-IA.md`. Session design autonome,
+> Phase 1 du brief `docs/design/PROMPT-DESIGN-CHAT-IA.md`. Session design autonome,
 > validation Ben attendue avant la maquette détaillée (Phase 2).
 >
 > Cadre commun aux trois directions : panneau docké à droite de

@@ -1,6 +1,6 @@
 # Director's Console — Maquette détaillée (direction B « Prises » fusionnée)
 
-> Phase 2 du brief `PROMPT-DESIGN-CHAT-IA.md`. Direction validée :
+> Phase 2 du brief `docs/design/PROMPT-DESIGN-CHAT-IA.md`. Direction validée :
 > **B « Prises »** (REPL éditorial) + emprunts actés :
 > préfixes mono & timeline ASCII de A, scope `@S2` & solidification
 > dashed→solid de C.

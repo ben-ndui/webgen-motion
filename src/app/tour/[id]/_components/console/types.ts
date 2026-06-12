@@ -1,6 +1,6 @@
 /**
  * Director's Console — contrat de données UI (§5 de la maquette
- * DESIGN-CHAT-IA-MAQUETTE.md). Transport réel (route Next →
+ * docs/design/DESIGN-CHAT-IA-MAQUETTE.md). Transport réel (route Next →
  * src/lib/llm-providers/) en phase 3 derrière un mock.
  *
  * Conventions arbitrées :

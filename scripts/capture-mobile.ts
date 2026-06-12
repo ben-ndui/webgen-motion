@@ -17,7 +17,7 @@
  *     Remotion SectionPlayer renders the splash card at compose time.
  *   - Steps are the mobile subset : launchApp / tapOn / inputText /
  *     swipe / back / wait / overlay (overlay = dwell only for now,
- *     post-compositing chantier listed in ANALYSE-MONTAGE.md).
+ *     post-compositing chantier listed in docs/design/ANALYSE-MONTAGE.md).
  *
  * Usage:
  *   npx tsx scripts/capture-mobile.ts \

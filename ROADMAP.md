@@ -1,6 +1,6 @@
 # GEN MOTION — Roadmap
 
-État au **2026-05-17**. Compile les sprints livrés, les chantiers
+État au **2026-06-12**. Compile les sprints livrés, les chantiers
 en cours et les prochaines priorités. Slug repo `webgen-motion`
 préservé pour la rétro-compat ; brand UI + domain = `genmotion.app`.
 
@@ -122,6 +122,49 @@ préservé pour la rétro-compat ; brand UI + domain = `genmotion.app`.
 - ✅ Indications IA pour Agent scraping : `data-wm-id` + `data-tour-section` partout
 - ✅ Fix `cb813d0` formula translateX (`% relatif au track 500%, pas au viewport`)
 
+### Sprint 14 — Direct download API (v0.2.1)
+
+- ✅ Route download direct + smart OS detection sur `/download`
+
+### Sprint 15 — Hotspots punch-in + refonte pitch (v0.2.2 / v0.2.3)
+
+- ✅ 15.A : hotspots punch-in zoom + label flottant, Ken Burns dirigé vers les hotspots ; refonte full pitch v0.2.x
+- ✅ 15.B : hotspots validés visuellement + fix off-by-one mapping
+- ✅ CI desktop-release matrix **débloquée** (macOS arm64+Intel & Windows verts, Linux `.deb` seul) — le quick win « re-tag » est validé
+
+### Edit Engine — le compose devient un vrai montage
+
+- ✅ `scripts/lib/edit-plan.ts` : EDL — trim des temps morts (vidéo + voix sync), cuts snappés sur les beats, J-cuts (VO 250ms avant le visuel), crossfades adaptatifs, segments VO au timing vidéo réel, sous-titres karaoké word-synced (`tour.subtitles`)
+- ✅ Flags opt-out : `--no-edit-plan` / `--no-edit-trim`
+
+### Sprint D — capture mobile native iOS / Android
+
+- ✅ `scripts/capture-mobile.ts` : Maestro YAML + `simctl recordVideo` (iOS) / `adb screenrecord` (Android), routé par `tour.platform`
+- ✅ Steps mobiles : launchApp / tapOn / inputText / swipe / back + section / overlay / wait
+
+### Sprint E — export OTIO (Studio)
+
+- ✅ `scripts/export-otio.ts` : timeline `.otio` → DaVinci Resolve / Premiere depuis l'edit-plan
+
+### Sprint F — extend-to-fit
+
+- ✅ La vidéo s'allonge pour loger la narration (freeze-frame extension par section quand la VO dépasse)
+
+### Licence FSL-1.1-MIT
+
+- ✅ Passage MIT → **FSL-1.1-MIT** (source-available, usage concurrent interdit, chaque version devient MIT 2 ans après publication ; versions ≤ 0.2.3 restent MIT) + hardening edition
+
+### Landing v0.3 — « vidéos produit as code »
+
+- ✅ Hero compile-loop + sections La Boucle / Pour qui / Comparaison honnête / Manifeste — spec `docs/design/LANDING-V3-WIREFRAME.md`
+
+### Director's Console — le chat IA de l'éditeur (v0.3.0)
+
+- ✅ Chunk 1 : UI + MockTransport — dock latéral persistant (⌘J), prises numérotées, step-cards fantômes → solidification Apply/défaire, timeline ASCII dirty, composer terminal slash + `@Sn` (design : `docs/design/PROMPT-DESIGN-CHAT-IA.md` → 3 phases)
+- ✅ Chunk 2 : transport réel Claude BYOK — `POST /api/motion/console/take` NDJSON, tool-use forcé (`respond_take`), validation serveur des diffs (`before` réécrit depuis le tour réel, jamais fourni par le LLM)
+- ✅ Chunk 3 : HubConsole — la console sur le dashboard, 3 modes persistés (drawer bas Stripe-style / fenêtre flottante / fenêtre séparée `/console/window` multi-écran sync BroadcastChannel) ; refactor `useConsoleSession` + `ConsoleSurface` partagés
+- ✅ Chunk 4 : runs réels — « Lancer » déclenche le vrai pipeline (capture / vo / compose) via `ChatTransport.run()`, resync des tabs post-run, état failed + Relancer, annulation Échap qui tue le process group du runner (0 orphelin)
+
 ### Plus
 
 - ✅ Brand-aware compose stage (intro / outro / URL bar tirent de `tour.brand`, fallback computé depuis `name` + `baseUrl`)
@@ -137,11 +180,11 @@ préservé pour la rétro-compat ; brand UI + domain = `genmotion.app`.
 
 ## 🛠 Prochains chantiers
 
-### Tester re-tag v0.2.1 (validation CI matrix Phase B fix)
+### Console — suite du chantier
 
-Le tag v0.2.0 a fait échouer 3/4 jobs CI (macOS keychain import, Windows EXDEV, Ubuntu linuxdeploy). Phase B fixes pushés commit `968ed46`. **Reste à valider** que les fixes débloquent vraiment les 4 plateformes au prochain tag — quick win 30-60 min.
-
-Critère succès : `desktop-release.yml` matrix complète OK → draft GitHub release pré-rempli auto avec `.dmg` macOS arm64+intel signed + `.msi` Windows + `.AppImage` / `.deb` Linux.
+- **Runs depuis le hub** : la console hub ne lance pas de runs (pas de tour ouvert) — brancher `launchRun` sur un tour ciblé par la conversation.
+- **Contexte pipeline réel dans les prises** : `handleSend` envoie `hasVoiceover: false / hasFinal: false` hardcodés — brancher `/api/motion/tour/status` pour que le modèle sache où en est le pipeline.
+- **Fenêtre détachée en natif Tauri** : `TODO(Tauri)` dans `hub-console.tsx` — WebviewWindow + event system à la place de `window.open` / `window.opener`.
 
 ### Auto-fulfillment license (Sprint 11+ candidate)
 
@@ -150,9 +193,6 @@ Aujourd'hui fulfillment **manuel** : webhook Stripe → Discord notif → Ben ru
 ### Frames 3D polish (deferred Sprint 8 diagnostic)
 
 Diagnostic Sprint 8 exhaustif (15+ renders) n'a pas isolé la root cause des rotations parasites iPhone/MacBook. Tous les paths obvious éliminés (preset, transition, composeStyle, section count, MP4 metadata). Hypothèse résiduelle : interaction Remotion + @remotion/three + R3F internals. À reprendre quand budget temps dédié OU repro minimal hors Remotion disponible.
-
-### Mobile app capture (Maestro + iOS sim, 2-3 jours)
-**Décidé en `/btw` (2026-05-10)** : Path Maestro YAML + `xcrun simctl io booted recordVideo`. Stack séparée du runner Puppeteer actuel. Output natif iPhone, fit dans iPhone frame du compose.
 
 ### ElevenLabs alignment plumb-down (raffinement Sprint 4)
 - Heuristique de matching avec normalization (digits → words shift les indices entre `alignment` et `normalized_alignment`)
@@ -178,7 +218,7 @@ v0.2.0 ship à 454 MB vs cible 300 MB. Probablement Next standalone non-pruné o
 
 ## 💰 Modèle de distribution
 
-GEN MOTION est un **outil desktop installable** distribué sous licence MIT pour le code, avec une **Studio Edition** payante ($49 paiement unique perpétuel, Davinci-style) qui débloque les fonctionnalités premium (frames 3D, presets Cinematic & Glitch, multi-format export, music library, watermark removal).
+GEN MOTION est un **outil desktop installable** distribué sous licence **FSL-1.1-MIT** (source-available, chaque version devient MIT 2 ans après publication), avec une **Studio Edition** payante ($49 paiement unique perpétuel, Davinci-style) qui débloque les fonctionnalités premium (frames 3D, presets Cinematic & Glitch, multi-format export, music library, watermark removal).
 
 | Audience | Edition | Distribution |
 |---|---|---|
@@ -224,7 +264,7 @@ Le compose stage avait des "UZME" / "uzme.app" hardcodés. Plutôt que de tout d
 
 ## ⏰ Cadence
 
-- **Sprints 1-13 ✅ done** (extraction → editor → Compose v2 → Voicebox → 3D → notarization → license → Stripe → domain → icons → legal → update popup → landing slides)
-- **v0.2.0 LIVE** (2026-05-17) : `.dmg` Apple notarisé + vitrine genmotion.app + Stripe checkout validé end-to-end + license Ed25519 fonctionnel
-- **Prochain quick win** : tester re-tag v0.2.1 pour valider CI matrix 4 OS (Phase B fixes commit `968ed46`)
+- **Sprints 1-15 + D/E/F + Edit Engine + Director's Console ✅ done** (extraction → editor → Compose v2 → Voicebox → 3D → notarization → license → Stripe → domain → legal → landing slides → hotspots → montage → mobile → OTIO → extend-to-fit → console IA)
+- **v0.2.3 LIVE** (2026-06-06) : CI matrix débloquée + hotspots ; **v0.3.0** = Director's Console (chat IA BYOK, éditeur + hub) + Edit Engine + capture mobile + OTIO + FSL
+- **Prochain chantier console** : runs hub + contexte pipeline réel + fenêtre Tauri native
 - **Prochain feature majeure** : auto-fulfillment license via Stripe webhook + Resend (Sprint 11+ candidate, débloque scaling au-delà de Ben fulfill manuel)

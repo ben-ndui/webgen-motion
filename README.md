@@ -115,6 +115,31 @@ Une page `/tour/<id>` rassemble tout dans 5 tabs avec un bouton **Save persistan
 
 ---
 
+## 🎙 Director's Console — le chat IA de l'éditeur
+
+`⌘J` dans l'éditeur (ou la barre console en bas du dashboard) ouvre la
+**Director's Console** : un REPL éditorial branché sur **ton** Claude
+(clé BYOK du wizard `/setup/agent` — la clé ne quitte jamais ta machine).
+Chaque échange est une **prise** numérotée :
+
+- *« raccourcis la section 2 et rends la VO plus punchy »* → l'IA
+  propose des step-cards **fantômes** que tu solidifies avec **Apply**
+  (undo fiable : chaque op embarque son état d'avant) ;
+- la **timeline ASCII** marque les sections dirty (`[S2* 4.9s]`) avec
+  le bon hint — `re-capture requise` ou `re-générer la vo` ;
+- slash commands `/capture` `/vo` `/compose` → run proposé, **Lancer**
+  déclenche le **vrai pipeline** avec progression live dans la console
+  (annulable Échap, proprement) ;
+- scope une section avec `@S2`, historique `↑`, palette `/`.
+
+Sur le dashboard, la console vit en **3 modes** : drawer bas, fenêtre
+flottante, ou **fenêtre séparée** multi-écran (`/console/window`). Les
+diffs proposés par le modèle sont validés côté serveur — index hors
+bornes, step malformé ou sortie du scope `@Sn` → proposition rejetée,
+jamais réparée en silence.
+
+---
+
 ## ✂️ Edit Engine — un vrai monteur dans le pipeline
 
 Entre l'analyse audio et le render, l'**Edit Engine** prend des décisions

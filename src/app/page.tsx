@@ -7,7 +7,7 @@ import HeroCompileLoop from "./_components/hero-compile-loop";
 
 /**
  * Landing v0.3 — positionnement « vidéos produit as code, régénérées à
- * chaque release » (spec : LANDING-V3-WIREFRAME.md). On vend la
+ * chaque release » (spec : docs/design/LANDING-V3-WIREFRAME.md). On vend la
  * MÉCANIQUE, pas la catégorie : hero-promesse → preuve (méta-démo) →
  * La Boucle (ship → re-render) → pipeline (Edit Engine en vedette) →
  * personas → comparaison honnête → pricing anti-abonnement →
