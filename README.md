@@ -4,7 +4,7 @@
 
 **Motion Studio local-first** — capture, mixe et compose des vidéos motion design depuis n'importe quel site web. Aucun cloud, ta voix clonée, frame-accurate.
 
-[![License](https://img.shields.io/badge/license-Open--core_MIT-blue.svg)](#-license--open-core)
+[![License](https://img.shields.io/badge/license-FSL--1.1--MIT-blue.svg)](#license)
 [![Studio Edition](https://img.shields.io/badge/Studio_Edition-%2449_one--time-0A0A0A?logo=stripe&logoColor=white)](https://genmotion.app/download)
 [![Apple Notarized](https://img.shields.io/badge/macOS-Apple%20Notarized-007AFF?logo=apple)](https://github.com/ben-ndui/webgen-motion/releases/latest)
 [![Node](https://img.shields.io/badge/Node-%E2%89%A520-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -286,7 +286,7 @@ npm run remotion:render  # one-shot hello-world sanity check
 
 ## 💎 Editions
 
-**Open-source · MIT · made in Nice.** GEN MOTION est sur [GitHub](https://github.com/ben-ndui/webgen-motion). La Studio Edition débloque les outils pro.
+**Source-available · FSL · made in Nice.** GEN MOTION est sur [GitHub](https://github.com/ben-ndui/webgen-motion) — code lisible, auditable, forkable pour tout usage non-concurrent, et **chaque version devient MIT 2 ans après sa publication**. La Studio Edition débloque les outils pro.
 
 | Edition | Prix | Cible | Inclus |
 |---|---|---|---|
@@ -308,7 +308,13 @@ Pour une contribution significative, ping [contact@smoothandesign.fr](mailto:con
 
 ## License
 
-MIT — voir [`LICENSE`](LICENSE). "GEN MOTION" et "Smooth & Design" sont des marques de NDUI Amadou Be-Ngally. Conditions de vente : [CGV](https://genmotion.app/cgv).
+**[FSL-1.1-MIT](LICENSE.md)** (Functional Source License) : libre d'utiliser,
+modifier, redistribuer et auditer GEN MOTION pour tout usage **sauf produit ou
+service concurrent**. Chaque version est automatiquement re-licenciée **MIT
+deux ans** après sa publication. Les versions ≤ 0.2.3 publiées sous mention
+MIT restent MIT.
+
+"GEN MOTION" et "Smooth & Design" sont des marques de NDUI Amadou Be-Ngally. Conditions de vente : [CGV](https://genmotion.app/cgv).
 
 ---
 
@@ -316,6 +322,6 @@ MIT — voir [`LICENSE`](LICENSE). "GEN MOTION" et "Smooth & Design" sont des ma
 
 **[genmotion.app](https://genmotion.app)** &nbsp;·&nbsp; **[Acheter Studio $49](https://genmotion.app/download)** &nbsp;·&nbsp; [Contact](mailto:contact@smoothandesign.fr)
 
-Made in Nice by **[Smooth & Design](https://www.smoothandesign.fr)** · Open-core MIT · Davinci-style perpetual
+Made in Nice by **[Smooth & Design](https://www.smoothandesign.fr)** · Fair-code FSL · Davinci-style perpetual
 
 </div>

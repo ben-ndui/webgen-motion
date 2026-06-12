@@ -73,7 +73,7 @@ export default function LandingPage() {
               </div>
               <div className="spec-strip reveal d4" data-wm-id="landing.hero.specs">
                 {[
-                  ["Open-core", "MIT · GitHub"],
+                  ["Fair-code", "FSL · GitHub"],
                   ["Stack", "Remotion · Puppeteer · FFmpeg"],
                   ["Voix off", "ElevenLabs ou Voicebox"],
                   ["Sortie", "MP4 frame-accurate · 16:9 / 9:16"],
@@ -163,7 +163,7 @@ export default function LandingPage() {
               <article className="tier reveal d1" data-wm-id="landing.pricing.community">
                 <span className="tier-name">Community</span>
                 <div className="tier-price"><span className="amt">Gratuit</span></div>
-                <p className="tier-note">Open-core · MIT · pour toujours</p>
+                <p className="tier-note">Fair-code · FSL · MIT après 2 ans</p>
                 <ul className="feat">
                   <li><Check /> Pipeline capture + voix off + compose</li>
                   <li><Check /> Presets Sober + Energetic</li>
@@ -204,7 +204,7 @@ export default function LandingPage() {
               <Link className="btn btn-ink btn-lg" href={DOWNLOAD}>Acheter Studio · $49</Link>
               <Link className="btn btn-ghost btn-lg" href="/help">Lire la documentation</Link>
             </div>
-            <span className="cta-sub reveal d3">macOS Apple Silicon · .dmg notarisé · open-source MIT · made in Nice</span>
+            <span className="cta-sub reveal d3">macOS Apple Silicon · .dmg notarisé · source-available FSL · made in Nice</span>
           </div>
         </section>
 

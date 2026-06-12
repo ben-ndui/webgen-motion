@@ -1,6 +1,7 @@
 {
   "name": "webgen-motion",
   "version": "0.2.3",
+  "license": "FSL-1.1-MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

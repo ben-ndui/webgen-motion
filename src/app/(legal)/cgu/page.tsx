@@ -85,7 +85,7 @@ export default function CGU() {
       <h2>Article 5 — Responsabilité</h2>
       <p>
         GEN MOTION est fourni <strong>« en l&apos;état »</strong> (warranty
-        disclaimer standard MIT). L&apos;éditeur ne garantit ni la conformité
+        disclaimer de la licence FSL-1.1-MIT). L&apos;éditeur ne garantit ni la conformité
         à un usage particulier, ni l&apos;absence de bugs, ni la
         compatibilité avec toutes les versions de macOS/Windows/Linux.
         L&apos;utilisateur est seul responsable de l&apos;usage qu&apos;il

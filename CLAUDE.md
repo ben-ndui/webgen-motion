@@ -29,7 +29,7 @@ Pas de cloud requis pour le pipeline core. Outputs dans `~/.webgen-motion/`.
 4. **Compose final** : Remotion assemble dans Mac browser chrome (16:9) ou iPhone frame (9:16), avec 4 style presets (Sober / Energetic / Cinematic / Glitch) + 5 transitions par catégorie + Ken Burns + BeatsLayer audio-réactif + (Studio Edition) frames 3D iPhone/MacBook
 5. **Tout en local** : aucun cloud requis pour le pipeline. Vitrine `genmotion.app` (Next.js sur Vercel) sert juste de marketing + checkout Stripe.
 
-C'est un produit **Smooth & Design** sous modèle open-core MIT :
+C'est un produit **Smooth & Design** sous licence **FSL-1.1-MIT** (Functional Source License — source-available, usage concurrent interdit, chaque version devient MIT 2 ans après publication ; les versions ≤ 0.2.3 publiées sous mention MIT restent MIT) :
 - **Community Edition** gratuite (pipeline complet, presets Sober + Energetic, formats 16:9 + 9:16, Agent IA BYOK)
 - **Studio Edition** $49 paiement unique perpétuel (frames 3D, presets Cinematic & Glitch, multi-format export, music library, watermark removal) — license `.license` Ed25519 signée, vérifiée offline
 - **Enterprise** sur devis (white-label, API headless, SSO)

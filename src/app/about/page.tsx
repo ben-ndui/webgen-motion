@@ -5,7 +5,7 @@ import PageShell from "../_components/page-shell";
 export const metadata: Metadata = {
   title: "À propos — GEN MOTION",
   description:
-    "GEN MOTION — Motion Studio local-first par Smooth & Design. Local-first, open-core MIT, frame-accurate.",
+    "GEN MOTION — Motion Studio local-first par Smooth & Design. Local-first, fair-code FSL, frame-accurate.",
 };
 
 const PRINCIPLES = [
@@ -16,8 +16,8 @@ const PRINCIPLES = [
   },
   {
     num: "02",
-    title: "Open-core · MIT",
-    body: "Le cœur du pipeline est open-source sous licence MIT. Vous pouvez l'auditer, le forker et le builder vous-même. Studio finance le développement à long terme.",
+    title: "Fair-code · FSL",
+    body: "Tout le code est lisible et auditable sous licence FSL — libre pour tout usage non-concurrent, et chaque version devient MIT deux ans après sa publication. Studio finance le développement à long terme.",
   },
   {
     num: "03",

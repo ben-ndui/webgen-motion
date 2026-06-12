@@ -32,7 +32,7 @@ const SPECS = [
     h: "Sécurité",
     items: [
       ["✓", ".dmg notarisé Apple"],
-      ["✓", "Open-source · MIT"],
+      ["✓", "Source-available · FSL"],
       ["✓", "100% local · aucun cloud"],
       ["✓", "Zéro télémétrie"],
     ],

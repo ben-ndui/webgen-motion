@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://genmotion.app"),
   title: "GEN MOTION · Smooth & Design",
   description:
-    "Capture n'importe quel site web, mixe la voix off clonée, compose un clip motion design final.mp4. Local-first. Open-core MIT · Community gratuit · Studio Edition $49.",
+    "Capture n'importe quel site web, mixe la voix off clonée, compose un clip motion design final.mp4. Local-first. Source-available (FSL) · Community gratuit · Studio Edition $49.",
   // Quand SEO prêt à pousser, retirer noindex et set canonical/og :
   robots: "noindex, nofollow",
   openGraph: {

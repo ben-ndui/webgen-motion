@@ -11,6 +11,31 @@ dans cette tag dès qu'Apple aura validé la notarization.
 
 ## [Unreleased]
 
+### Changed (Licence — passage à FSL-1.1-MIT + hardening edition) · 2026-06-12
+
+Le projet quitte la mention MIT pour la **Functional Source License
+1.1 avec future licence MIT** (`LICENSE.md`, texte officiel Sentry,
+copyright NDUI Amadou Be-Ngally / Smooth & Design) :
+
+- **Libre pour tout usage non-concurrent** : utiliser, modifier,
+  auditer, redistribuer. Interdit : proposer un produit/service
+  concurrent ou contourner commercialement la Studio Edition.
+- **Chaque version devient MIT 2 ans après sa publication** (fair-code).
+- Les versions ≤ 0.2.3 publiées sous mention MIT restent MIT. Le repo
+  n'avait en réalité **aucun fichier LICENSE** (le README pointait vers
+  un fichier inexistant) — ambiguïté levée. Relicenciement possible
+  car copyright 100% détenu (auteur unique, aucun contributeur externe).
+- Surfaces mises à jour : README (badge + section License), landing
+  (hero specs, pricing, CTA), /about, /download, hub, CGU (disclaimer),
+  setup/license, meta description, CLAUDE.md, `package.json:license`.
+- **🔒 Hardening** : l'override `WEBGEN_MOTION_EDITION` est désormais
+  **ignoré dans l'app desktop packagée** (détection via
+  `WEBGEN_RUNNERS_DIR` posé par le shell Rust) — n'importe qui pouvait
+  lancer l'app avec `WEBGEN_MOTION_EDITION=studio` et débloquer Studio
+  sans license. Reste actif en dev / self-host depuis les sources.
+  Chantier restant (noté) : extraire les modules Studio du bundle
+  public pour une protection structurelle.
+
 ### Added (Sprint F — extend-to-fit : la vidéo s'allonge pour loger la narration) · 2026-06-12
 
 Quand la narration d'une section dépasse sa vidéo capturée (tours

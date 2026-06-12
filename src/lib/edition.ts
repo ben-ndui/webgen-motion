@@ -138,14 +138,21 @@ export interface EditionResolution {
 export function resolveEdition(): EditionResolution {
   if (cachedResolution) return cachedResolution;
 
-  // 1. env override
+  // 1. env override — DEV UNIQUEMENT. Dans l'app desktop packagée
+  // (le shell Rust Tauri set WEBGEN_RUNNERS_DIR pour le sidecar),
+  // l'override est ignoré : sinon n'importe qui lance l'app avec
+  // WEBGEN_MOTION_EDITION=studio et débloque Studio sans license.
+  // En dev / self-host depuis les sources, l'override reste utile
+  // (tests CI, développement des features gated).
+  const isPackagedDesktop = !!process.env.WEBGEN_RUNNERS_DIR;
   const envEdition = process.env.WEBGEN_MOTION_EDITION as
     | WebgenMotionEdition
     | undefined;
   if (
-    envEdition === "community" ||
-    envEdition === "studio" ||
-    envEdition === "enterprise"
+    !isPackagedDesktop &&
+    (envEdition === "community" ||
+      envEdition === "studio" ||
+      envEdition === "enterprise")
   ) {
     cachedResolution = { edition: envEdition, source: "env" };
     return cachedResolution;

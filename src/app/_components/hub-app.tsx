@@ -198,7 +198,7 @@ export default function HubApp({
             <span className="license-badge">{isStudio ? "S" : "C"}</span>
             <span className="license-meta">
               <b>{isStudio ? "Studio Edition" : "Community"}</b>
-              <span>{isStudio ? "Licence perpétuelle · à jour" : "Open-core · MIT"}</span>
+              <span>{isStudio ? "Licence perpétuelle · à jour" : "Fair-code · FSL"}</span>
             </span>
           </div>
         </div>
