@@ -5,11 +5,14 @@ Toutes les évolutions notables de **webgen-motion** sont consignées ici.
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) ·
 Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-La cible `v0.2.0` est la première version distribuable publiquement (`.dmg`
-macOS signé + notarized). Tout ce qui est sous _Unreleased_ atterrira
-dans cette tag dès qu'Apple aura validé la notarization.
-
 ## [Unreleased]
+
+## [0.3.0] — 2026-06-12
+
+**La release Director's Console** : le chat IA BYOK de l'éditeur et du
+hub (propositions de diffs sûres, runs pipeline réels), plus l'Edit
+Engine, la capture mobile native, l'export OTIO, l'extend-to-fit, la
+licence FSL-1.1-MIT et la landing « vidéos produit as code ».
 
 ### Added (Director's Console — runs réels depuis la console) · 2026-06-12
 
