@@ -9,6 +9,7 @@ import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
 import TourCardMenu from "./tour-card-menu";
 import SettingsMenu from "./settings-menu";
+import DeviceIndicator from "./device-indicator";
 
 export interface HubTour {
   id: string;
@@ -234,6 +235,7 @@ export default function HubApp({
               Setup
             </Link>
           )}
+          <DeviceIndicator />
           <SettingsMenu />
           <ThemeToggle />
         </header>

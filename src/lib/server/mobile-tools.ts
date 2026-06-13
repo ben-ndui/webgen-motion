@@ -85,3 +85,70 @@ export function detectMobileTools(): MobileToolsStatus {
     },
   };
 }
+
+/** Un device/simulateur connecté et prêt à être filmé. */
+export interface ConnectedDevice {
+  platform: "ios" | "android";
+  id: string;
+  name: string;
+  kind: "device" | "simulator" | "emulator";
+}
+
+/**
+ * Liste les devices actuellement connectés/bootés (poll côté dashboard) :
+ *  - Android via `adb devices -l` (devices physiques + émulateurs)
+ *  - iOS via `xcrun simctl list devices booted -j` (simulateurs bootés)
+ * Best-effort : un outil absent → rien pour cette plateforme.
+ */
+export function detectDevices(): ConnectedDevice[] {
+  const out: ConnectedDevice[] = [];
+
+  // Android
+  const adbBin = process.env.WEBGEN_ADB_BIN?.trim() || "adb";
+  try {
+    const txt = execFileSync(adbBin, ["devices", "-l"], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 4000,
+    });
+    for (const line of txt.split("\n").slice(1)) {
+      const m = line.match(/^(\S+)\s+device\b(.*)$/);
+      if (!m) continue;
+      const id = m[1];
+      const model = m[2].match(/model:(\S+)/)?.[1]?.replace(/_/g, " ");
+      out.push({
+        platform: "android",
+        id,
+        name: model || id,
+        kind: id.startsWith("emulator-") ? "emulator" : "device",
+      });
+    }
+  } catch {
+    /* adb absent / pas de device */
+  }
+
+  // iOS (simulateurs bootés, macOS only)
+  if (osPlatform() === "darwin") {
+    try {
+      const json = execFileSync(
+        "xcrun",
+        ["simctl", "list", "devices", "booted", "-j"],
+        { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"], timeout: 4000 },
+      );
+      const data = JSON.parse(json) as {
+        devices?: Record<string, Array<{ udid: string; name: string; state: string }>>;
+      };
+      for (const list of Object.values(data.devices ?? {})) {
+        for (const d of list) {
+          if (d.state === "Booted") {
+            out.push({ platform: "ios", id: d.udid, name: d.name, kind: "simulator" });
+          }
+        }
+      }
+    } catch {
+      /* xcrun absent / pas de simulateur booté */
+    }
+  }
+
+  return out;
+}
