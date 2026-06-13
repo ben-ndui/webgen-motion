@@ -15,6 +15,7 @@ import {
   Mouse,
   Music,
   Settings,
+  Smartphone,
   Sparkles,
   Target,
   Video,
@@ -151,6 +152,76 @@ export default function HelpPage() {
               <Code>~/.webgen-motion/tours/&lt;id&gt;/final.mp4</Code>.
             </Step>
           </ol>
+        </Section>
+
+        {/* Mobile natif */}
+        <Section
+          icon={Smartphone}
+          eyebrow="Mobile natif"
+          title="Filmer une app iOS / Android"
+          id="mobile"
+        >
+          <p className="text-sm text-muted leading-relaxed mb-4">
+            Pour une app <strong>native</strong> (pas une web app), GEN MOTION
+            pilote ton app avec <strong>Maestro</strong> et enregistre l&apos;écran :
+            simulateur iOS (via <Code>simctl</Code>) ou device/émulateur Android
+            (via <Code>adb</Code>). L&apos;app détecte ces outils — bannière dans
+            l&apos;onglet Capture + pastille « device connecté » dans le hub.
+          </p>
+
+          <h3 className="text-sm font-semibold text-ink mb-2">Prérequis</h3>
+          <ul className="text-sm text-muted leading-relaxed space-y-1.5 mb-4 list-disc pl-5">
+            <li>
+              <strong>Maestro</strong> + un <strong>JDK</strong> (Maestro tourne
+              sur la JVM) :{" "}
+              <Code>brew install mobile-dev-inc/tap/maestro</Code>
+            </li>
+            <li>
+              <strong>iOS</strong> : Xcode + un <strong>Simulateur booté</strong>{" "}
+              (macOS uniquement)
+            </li>
+            <li>
+              <strong>Android</strong> : <Code>adb</Code> (Android platform-tools)
+              + un <strong>device USB</strong> (le plus simple) ou un émulateur
+            </li>
+          </ul>
+
+          <h3 className="text-sm font-semibold text-ink mb-2">
+            Créer un tour mobile
+          </h3>
+          <p className="text-sm text-muted leading-relaxed mb-4">
+            <strong>Nouveau tour</strong> → Plateforme <strong>iOS</strong> ou{" "}
+            <strong>Android</strong> → renseigne le <strong>bundle id</strong>{" "}
+            (iOS, ex <Code>com.entreprise.app</Code>) ou le{" "}
+            <strong>package</strong> (Android). Le tour utilise alors les step
+            types mobiles : <Code>launchApp</Code>, <Code>tapOn</Code>,{" "}
+            <Code>inputText</Code>, <Code>swipe</Code>, <Code>back</Code> (+{" "}
+            <Code>section</Code> / <Code>overlay</Code> / <Code>wait</Code>).
+          </p>
+
+          <pre className="rounded-xl bg-ink text-bg p-4 text-xs font-mono overflow-x-auto leading-relaxed">
+{`{
+  "id": "mon-app-ios",
+  "name": "Mon App · Onboarding",
+  "platform": "ios",                       // ← "ios" ou "android"
+  "appId": "com.entreprise.app",           // bundle id / package
+  "format": "9:16",
+  "steps": [
+    { "type": "launchApp", "appId": "com.entreprise.app" },
+    { "type": "section", "title": "Accueil", "dwellMs": 2500 },
+    { "type": "tapOn", "text": "Se connecter" },   // texte OU accessibility id
+    { "type": "inputText", "text": "demo@app.com" },
+    { "type": "swipe", "direction": "up", "dwellMs": 1200 },
+    { "type": "overlay", "text": "Tout en un geste", "dwellMs": 3000 },
+    { "type": "back" }
+  ]
+}`}
+          </pre>
+          <p className="text-xs text-muted leading-relaxed mt-2">
+            ⚠️ Les cibles de <Code>tapOn</Code> (<Code>text</Code> ou{" "}
+            <Code>id</Code>) doivent matcher ce qui est réellement visible /
+            accessible dans ton app. Lance la capture une fois pour ajuster.
+          </p>
         </Section>
 
         {/* Tour schema */}
@@ -406,15 +477,17 @@ function Section({
   icon: Icon,
   eyebrow,
   title,
+  id,
   children,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   eyebrow: string;
   title: string;
+  id?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3">
+    <section id={id} className="space-y-3 scroll-mt-24">
       <div className="flex items-center gap-2">
         <span className="w-7 h-7 rounded-lg bg-ink text-bg grid place-items-center">
           <Icon className="w-3.5 h-3.5" />
