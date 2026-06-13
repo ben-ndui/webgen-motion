@@ -3,9 +3,10 @@ import Link from "next/link";
 import PageShell from "../_components/page-shell";
 
 export const metadata: Metadata = {
-  title: "À propos — GEN MOTION",
+  title: "À propos",
   description:
     "GEN MOTION — Motion Studio local-first par Smooth & Design. Local-first, fair-code FSL, frame-accurate.",
+  alternates: { canonical: "/about" },
 };
 
 const PRINCIPLES = [

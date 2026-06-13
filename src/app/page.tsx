@@ -43,9 +43,35 @@ function Check() {
   );
 }
 
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "GEN MOTION",
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "macOS",
+  url: "https://genmotion.app",
+  description:
+    "Outil desktop local-first pour générer des vidéos produit (web ou app native) : capture E2E, voix off IA, montage beat-synced. Régénérées à l'identique à chaque release.",
+  offers: [
+    { "@type": "Offer", name: "Community", price: "0", priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio — à vie", price: "199", priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio — annuel", price: "120", priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio — mensuel", price: "15", priceCurrency: "EUR" },
+  ],
+  publisher: {
+    "@type": "Organization",
+    name: "Smooth & Design",
+    url: "https://genmotion.app",
+  },
+};
+
 export default function LandingPage() {
   return (
     <div className="gm-landing" data-hero="a">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
       {/* NAV */}
       <nav className="nav" data-wm-id="landing.nav">
         <a className="brand" href="#hero" data-wm-id="landing.nav.brand">

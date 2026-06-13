@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LEGAL } from "@/lib/legal/config";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales de Vente — GEN MOTION",
+  title: "Conditions Générales de Vente",
   description: "CGV de la Studio Edition GEN MOTION (paiement unique perpétuel).",
 };
 

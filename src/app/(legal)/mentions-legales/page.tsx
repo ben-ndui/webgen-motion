@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LEGAL } from "@/lib/legal/config";
 
 export const metadata: Metadata = {
-  title: "Mentions légales — GEN MOTION",
+  title: "Mentions légales",
   description: "Informations légales relatives au site genmotion.app et à l'éditeur Smooth & Design.",
 };
 

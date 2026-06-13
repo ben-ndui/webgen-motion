@@ -11,18 +11,55 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://genmotion.app"),
-  title: "GEN MOTION — Vidéos produit as code, régénérées à chaque release",
+  title: {
+    default: "GEN MOTION — Vidéos produit as code, régénérées à chaque release",
+    template: "%s · GEN MOTION",
+  },
   description:
     "GEN MOTION rejoue ton produit (web ou app native), pose la voix off, monte sur la musique — et le refait à l'identique après chaque release. Local-first · Fair-code FSL · Studio à vie ou en abonnement.",
-  // Quand SEO prêt à pousser, retirer noindex et set canonical/og :
-  robots: "noindex, nofollow",
+  applicationName: "GEN MOTION",
+  keywords: [
+    "vidéo produit",
+    "motion design",
+    "screencast",
+    "démo produit",
+    "voix off IA",
+    "local-first",
+    "Remotion",
+    "alternative Screen Studio",
+    "alternative Tella",
+    "video as code",
+  ],
+  authors: [{ name: "Smooth & Design", url: "https://genmotion.app" }],
+  creator: "Smooth & Design",
+  publisher: "Smooth & Design",
+  category: "technology",
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     title: "GEN MOTION — Vidéos produit as code",
-    description: "Tes vidéos produit, écrites comme du code. Régénérées à chaque release. En local, sans abonnement.",
+    description:
+      "Tes vidéos produit, écrites comme du code. Régénérées à chaque release. En local.",
     url: "https://genmotion.app",
     siteName: "GEN MOTION",
     locale: "fr_FR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GEN MOTION — Vidéos produit as code",
+    description:
+      "Tes vidéos produit, écrites comme du code. Régénérées à chaque release. En local.",
   },
 };
 

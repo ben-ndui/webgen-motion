@@ -4,9 +4,10 @@ import SmartDownloadButton from "../_components/smart-download-button";
 import PageShell from "../_components/page-shell";
 
 export const metadata: Metadata = {
-  title: "Télécharger — GEN MOTION",
+  title: "Télécharger",
   description:
     "Installez GEN MOTION sur votre Mac. Motion Studio 100% local, Community gratuit, Studio à vie ou en abonnement.",
+  alternates: { canonical: "/download" },
 };
 
 const SPECS = [

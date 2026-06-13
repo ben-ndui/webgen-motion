@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LEGAL } from "@/lib/legal/config";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — GEN MOTION",
+  title: "Politique de confidentialité",
   description: "Comment GEN MOTION traite vos données personnelles (RGPD).",
 };
 
@@ -163,11 +163,18 @@ export default function Confidentialite() {
 
       <h2>Cookies</h2>
       <p>
-        Le site genmotion.app n&apos;utilise <strong>aucun cookie de
-        tracking</strong> (pas d&apos;analytics tiers, pas de pixels
-        publicitaires). Seuls des cookies techniques strictement nécessaires
-        au fonctionnement (session Stripe checkout par exemple) peuvent être
-        déposés temporairement par nos sous-traitants directs.
+        <strong>Cookies strictement nécessaires</strong> (session Stripe
+        checkout, préférences d&apos;affichage) : déposés sans consentement
+        car indispensables au fonctionnement. <strong>Aucun pixel
+        publicitaire.</strong>
+      </p>
+      <p>
+        <strong>Mesure d&apos;audience (PostHog, hébergée en UE)</strong> :
+        déposée <strong>uniquement après votre consentement explicite</strong>
+        via la bannière affichée à votre première visite. Vous pouvez refuser
+        sans dégrader l&apos;usage du site — aucun traceur de mesure n&apos;est
+        posé tant que vous n&apos;avez pas accepté, et vous pouvez revenir sur
+        votre choix à tout moment.
       </p>
     </>
   );

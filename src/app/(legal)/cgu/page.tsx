@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LEGAL } from "@/lib/legal/config";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation — GEN MOTION",
+  title: "Conditions Générales d'Utilisation",
   description: "CGU du site genmotion.app et du logiciel GEN MOTION.",
 };
 
