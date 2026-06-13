@@ -6,6 +6,8 @@ import { getTour } from "@/lib/tour-loader";
 import { getTrackPath } from "@/lib/motion-audio-store";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveRunnerSpawn } from "@/lib/runner-spawn";
+import { getEdition } from "@/lib/edition";
+import { maybeSendActivation } from "@/lib/telemetry";
 
 /**
  * spawns `scripts/compose-tour.ts` (Remotion runner) and streams
@@ -211,6 +213,9 @@ export async function POST(req: NextRequest) {
           sizeBytes: statSync(finalPath).size,
           captureWallTimeSec: wallSec,
         });
+        // Activation (North Star) : 1ère compose réussie → 1 event anonyme,
+        // opt-out, app packagée uniquement. Fire-and-forget, ne bloque rien.
+        void maybeSendActivation(getEdition());
         try {
           controller.close();
         } catch {}

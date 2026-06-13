@@ -62,6 +62,17 @@ export interface MotionConfig {
     /** Modèle utilisé. Default Anthropic : claude-sonnet-4-6. */
     model?: string;
   };
+  /** Télémétrie anonyme d'activation (opt-out). Un seul event anonyme
+   *  'activated' à la 1ère compose réussie — jamais de contenu ni d'email.
+   *  cf. src/lib/telemetry.ts. */
+  telemetry?: {
+    /** Absent/true = activé (opt-out), false = désactivé par l'user. */
+    enabled?: boolean;
+    /** Id anonyme aléatoire, généré au 1er envoi seulement. */
+    installId?: string;
+    /** True une fois l'event 'activated' envoyé (envoyé une seule fois). */
+    activationSent?: boolean;
+  };
 }
 
 const DEFAULT_VOICEBOX_URL = "http://127.0.0.1:17493";
@@ -106,6 +117,10 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
       ...current.agent,
       ...partial.agent,
     },
+    telemetry: {
+      ...current.telemetry,
+      ...partial.telemetry,
+    },
   };
   // Drop empty sub-objects so the JSON file stays clean.
   if (
@@ -126,6 +141,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
   }
   if (!next.agent?.apiKey && !next.agent?.provider && !next.agent?.model) {
     delete next.agent;
+  }
+  if (next.telemetry && Object.keys(next.telemetry).length === 0) {
+    delete next.telemetry;
   }
   writeConfigSecure(getConfigPath(), JSON.stringify(next, null, 2));
   return next;
