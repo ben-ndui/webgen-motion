@@ -65,6 +65,9 @@ export async function PUT(req: NextRequest) {
       sanitized.agent.model = body.agent.model.trim() || undefined;
     }
   }
+  if (body.telemetry && typeof body.telemetry.enabled === "boolean") {
+    sanitized.telemetry = { enabled: body.telemetry.enabled };
+  }
   saveConfig(sanitized);
   return NextResponse.json(getPublicConfig());
 }

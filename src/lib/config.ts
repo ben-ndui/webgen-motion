@@ -332,6 +332,8 @@ export interface PublicConfig {
    *  pour que le client puisse grayed-out les features Studio quand
    *  pas débloquées. */
   edition: "community" | "studio" | "enterprise";
+  /** Télémétrie d'activation anonyme (opt-out). Default true. */
+  telemetryEnabled: boolean;
 }
 export function getPublicConfig(): PublicConfig {
   const cfg = getConfig();
@@ -372,6 +374,7 @@ export function getPublicConfig(): PublicConfig {
     },
     configured: !!resolveVoiceBackend(),
     edition: getEdition(),
+    telemetryEnabled: cfg.telemetry?.enabled ?? true,
   };
 }
 

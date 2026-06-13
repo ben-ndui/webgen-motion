@@ -82,6 +82,13 @@ export const LEGAL = {
       transfer: "Hors UE — bring-your-own-key, l'utilisateur est responsable du traitement",
       url: "https://elevenlabs.io/privacy",
     },
+    {
+      name: "PostHog, Inc.",
+      purpose: "Mesure d'audience du site vitrine (parcours, pages vues, clics) et signal d'activation anonyme de l'app desktop (identifiant aléatoire, jamais de contenu ni d'email)",
+      address: "2261 Market Street #4008, San Francisco, CA 94114, États-Unis",
+      transfer: "Hébergement Union européenne (région EU Cloud)",
+      url: "https://posthog.com/privacy",
+    },
   ],
 
   data: {

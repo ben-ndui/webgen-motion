@@ -54,16 +54,31 @@ export default function Confidentialite() {
           archives de license émises pour assurer le support et la
           réémission en cas de perte du fichier <code>.license</code>.
         </li>
+        <li>
+          <strong>Mesure d&apos;audience</strong> : nous utilisons PostHog
+          (hébergement Union européenne) pour comprendre le parcours sur le
+          site vitrine (pages vues, clics téléchargement / achat). Voir la
+          section <em>Cookies</em>.
+        </li>
       </ul>
 
       <h2>Données collectées via l&apos;app desktop GEN MOTION</h2>
       <p>
-        L&apos;app desktop ne nous transmet <strong>aucune donnée</strong>{" "}
-        d&apos;usage par défaut (pas de télémétrie, pas d&apos;analytics, pas
-        de crash reports). Les seules connexions réseau initiées par l&apos;app
-        sont :
+        L&apos;app desktop est <strong>local-first</strong> : elle ne nous
+        transmet <strong>aucun contenu</strong> (captures, scripts, vidéos,
+        clés API). La seule donnée d&apos;usage est un signal d&apos;activation
+        anonyme — et uniquement si vous ne l&apos;avez pas désactivé. Les
+        connexions réseau initiées par l&apos;app sont :
       </p>
       <ul>
+        <li>
+          <strong>Activation anonyme (désactivable)</strong> : à votre
+          première vidéo composée, l&apos;app envoie <em>une seule fois</em> un
+          signal anonyme — identifiant aléatoire, édition, système
+          d&apos;exploitation, <strong>jamais</strong> de contenu, d&apos;email
+          ou d&apos;URL — pour mesurer le taux d&apos;activation. Activé par
+          défaut, désactivable à tout moment dans <code>/setup</code>.
+        </li>
         <li>
           <strong>Vérification de license</strong> : aucune (signature Ed25519
           vérifiée localement, offline-first).

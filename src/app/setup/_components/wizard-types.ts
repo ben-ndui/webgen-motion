@@ -26,6 +26,8 @@ export interface PublicConfig {
     hasVoiceId: boolean;
   };
   configured: boolean;
+  /** Télémétrie d'activation anonyme (opt-out). Default true. */
+  telemetryEnabled: boolean;
 }
 
 export interface VoiceboxProfile {

@@ -2,6 +2,7 @@
 
 import { ArrowRight, Check } from "lucide-react";
 import type { PublicConfig } from "./wizard-types";
+import WizardTelemetryToggle from "./wizard-telemetry-toggle";
 
 /**
  * Done step — recap des valeurs sauvegardées + CTA hub / edit.
@@ -104,6 +105,8 @@ export default function WizardDoneStep({
           </p>
         )}
       </div>
+
+      <WizardTelemetryToggle initialEnabled={config?.telemetryEnabled ?? true} />
 
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <button
