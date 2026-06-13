@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ExternalLink,
   HelpCircle,
+  KeyRound,
   Mic,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -93,6 +94,13 @@ export default function SettingsMenu() {
             label="Models 3D"
             hint="Drop GLB Sketchfab"
             badge="Studio"
+            onClick={() => setOpen(false)}
+          />
+          <MenuLink
+            href="/setup/license"
+            icon={<KeyRound className="w-3.5 h-3.5" />}
+            label="Licence Studio"
+            hint="Activer · coller ta licence"
             onClick={() => setOpen(false)}
           />
 
