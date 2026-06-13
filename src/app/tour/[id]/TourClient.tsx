@@ -666,6 +666,7 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
             capture={capture}
             captureFormat={captureFormat}
             tourId={tour.id}
+            platform={localTour.platform}
             onCapture={handleCapture}
             onSectionRecaptured={reloadStatus}
           />

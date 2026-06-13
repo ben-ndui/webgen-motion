@@ -2,7 +2,7 @@
 
 import "../../../editor.css";
 import { AlertCircle, Check, Monitor, Smartphone, Video } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type RunningProgress } from "./phase-loader";
 import SectionCard from "./section-card";
 import SectionLightbox from "./section-lightbox";
@@ -36,6 +36,7 @@ interface Props {
   capture: CaptureState;
   captureFormat: "16:9" | "9:16";
   tourId: string;
+  platform?: "web" | "ios" | "android";
   onCapture: () => void;
   onSectionRecaptured: () => void;
 }
@@ -50,15 +51,18 @@ export default function CaptureTab({
   capture,
   captureFormat,
   tourId,
+  platform,
   onCapture,
   onSectionRecaptured,
 }: Props) {
   const isRunning = capture.kind === "running";
   const Fmt = captureFormat === "9:16" ? Smartphone : Monitor;
+  const isMobile = platform === "ios" || platform === "android";
 
   return (
     <div className="gm-editor" data-wm-id="editor.capture">
       <div className="panel">
+        {isMobile && <MobileReadiness platform={platform as "ios" | "android"} />}
         <div className="panel-head">
           <div>
             <span className="kicker">Onglet 02</span>
@@ -289,6 +293,53 @@ function CaptureResults({
         onClose={() => setZoom(null)}
         onSectionUpdated={onSectionRecaptured}
       />
+    </div>
+  );
+}
+
+/**
+ * Bannière de préparation mobile — affichée uniquement pour un tour
+ * iOS/Android quand des outils manquent (sinon rien, pas de bruit). Évite
+ * un échec cryptique au clic « Capturer ».
+ */
+function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
+  const [status, setStatus] = useState<null | {
+    platforms: { ios: boolean; android: boolean };
+    maestro: { present: boolean };
+    adb: { present: boolean };
+    simctl: { present: boolean };
+  }>(null);
+
+  useEffect(() => {
+    fetch("/api/motion/mobile/status")
+      .then((r) => (r.ok ? r.json() : null))
+      .then(setStatus)
+      .catch(() => {});
+  }, []);
+
+  if (!status) return null;
+  const ready =
+    platform === "ios" ? status.platforms.ios : status.platforms.android;
+  if (ready) return null; // tout est prêt → on ne pollue pas
+
+  const missing: string[] = [];
+  if (!status.maestro.present) missing.push("Maestro");
+  if (platform === "ios" && !status.simctl.present) missing.push("Xcode / Simulateur");
+  if (platform === "android" && !status.adb.present) missing.push("adb");
+
+  return (
+    <div
+      data-wm-id="editor.capture.mobile-readiness"
+      className="mb-4 flex items-start gap-2 rounded-[var(--r-lg)] border border-amber-200 bg-amber-50 px-4 py-3"
+    >
+      <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+      <p className="text-xs text-amber-900">
+        Outils {platform} manquants : <strong>{missing.join(" · ")}</strong>. La
+        capture mobile échouera tant qu&apos;ils ne sont pas installés.{" "}
+        <a href="/help#mobile" className="underline font-medium">
+          Comment installer
+        </a>
+      </p>
     </div>
   );
 }
