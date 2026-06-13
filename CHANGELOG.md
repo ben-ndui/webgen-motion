@@ -7,6 +7,57 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-06-13
+
+**La release « prêt à vendre »** : revenu récurrent de bout en bout
+(abonnement + Lifetime, licence livrée par email automatiquement),
+tracking & acquisition (PostHog + Google Ads, consentement RGPD), SEO
+complet, durcissement sécurité avant lancement, le chantier mobile
+guidé + auto-installant, et la fenêtre Node parasite enfin éliminée.
+
+### Added
+
+- **Revenu récurrent** : checkout multi-plan Stripe (mensuel / annuel /
+  Lifetime), licences **time-boxées auto-refresh** (Ed25519 offline +
+  Stripe source de vérité, sans DB), webhooks renouvellement
+  (`invoice.paid`) + annulation, endpoint `/api/license/refresh`,
+  auto-refresh côté app, offre Studio 3 paliers sur `/download`.
+- **Fulfillment automatique** : à l'achat, licence signée émise + envoyée
+  par email (Resend) sans intervention.
+- **Tracking** : PostHog web-only (gardes strictes, jamais dans l'app),
+  bannière de consentement opt-in (ePrivacy), funnel client + serveur,
+  **activation anonyme opt-out** (North Star).
+- **SEA** : Google Ads en **Consent Mode v2**, conversion d'achat sur
+  `/thanks`.
+- **SEO** : `robots.ts` + `sitemap.ts`, canonical, OpenGraph + Twitter
+  card, **JSON-LD SoftwareApplication**, `noindex` levé.
+- **Mobile** : détection des outils (Maestro/Java/adb/simctl) **et des
+  devices connectés** (iPhone physique inclus) + indicateur dans le hub,
+  « Nouveau tour » multi-plateforme (web/iOS/Android), section
+  `/help#mobile`, **adb embarqué** (sidecar) et **Maestro + JRE installés
+  à la demande** (pas dans le .dmg), UX de capture honnête
+  (iOS = simulateur, Android = device réel).
+- **CI** : workflow qualité (lint + typecheck + tests) sur `main`.
+
+### Changed
+
+- **Sécurité (durcissement lancement)** : garde desktop-only +
+  anti-path-traversal sur `/api/motion/**`, `config.json` en `0600`.
+- **Chromium unifié** : un seul binaire auto-téléchargé partagé par la
+  capture (Puppeteer) et le compose (Remotion).
+- Positionnement landing/legal aligné sur le nouveau modèle (Lifetime +
+  abonnement), politique de confidentialité RGPD à jour (PostHog UE).
+
+### Fixed
+
+- **Plus de fenêtre Node parasite** : le sidecar Node tourne dans un
+  Helper.app `LSUIElement` → aucune tuile Dock / Cmd-Tab séparée.
+- CI verte (lint réparé) ; tests `chromium` isolés de l'environnement.
+- Cache d'édition invalidé sur changement du `.license` (l'install de
+  licence se reflète immédiatement).
+- Build : nettoyage automatique des DMG temporaires fantômes (`rw.*.dmg`)
+  qui remplissaient le disque et faisaient échouer `bundle_dmg.sh`.
+
 ## [0.3.0] — 2026-06-12
 
 **La release Director's Console** : le chat IA BYOK de l'éditeur et du

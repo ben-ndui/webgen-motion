@@ -3992,13 +3992,14 @@ dependencies = [
 
 [[package]]
 name = "webgen-motion"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-shell",
+ "uuid",
 ]
 
 [[package]]
