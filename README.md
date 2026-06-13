@@ -60,7 +60,7 @@ Pour contribuer, customiser, ou si tu veux runner depuis le source.
 git clone https://github.com/ben-ndui/webgen-motion.git
 cd webgen-motion
 brew install ffmpeg      # macOS — pour l'encode des frames
-npm install              # Next.js + Puppeteer + Chromium + Remotion
+npm install              # Next.js + Puppeteer (+ Chromium en cache dev) + Remotion
 npm run dev              # http://localhost:3000
 ```
 
@@ -302,10 +302,23 @@ npm run remotion:render  # one-shot hello-world sanity check
 
 ## 📦 Pré-requis
 
-- **Node ≥ 20**
-- **FFmpeg** sur le PATH (`brew install ffmpeg` sur macOS, `apt install ffmpeg` Linux)
-- **Chromium** : fourni automatiquement par Puppeteer au premier `npm install`
+**App desktop (utilisateur)** — rien à installer pour le cœur : FFmpeg/ffprobe
+et Node sont **embarqués**, et **Chromium est téléchargé au premier lancement**
+(ou un Google Chrome système est réutilisé). macOS 13+ requis. Réseau requis une
+fois (download Chromium ~150 Mo) et pour la voix off ElevenLabs.
+
+**Depuis le source (dev)** :
+- **Node ≥ 20** (le desktop bundle Node **22.20.0**)
+- **FFmpeg** sur le PATH (`brew install ffmpeg` macOS, `apt install ffmpeg` Linux)
+- **Chromium** : téléchargé par Puppeteer au premier `npm install` (cache dev)
+- **Build desktop** : **Rust ≥ 1.77** + Xcode CLT (signature macOS)
 - **Backend voix off** : ElevenLabs (Starter ≥ $5/mois pour le voice cloning) **OU** [Voicebox desktop](https://github.com/jamiepine/voicebox) (gratuit, 100% local)
+
+> Guide complet (versions, OS, build, troubleshooting, licences) :
+> [`docs/INSTALLATION.md`](docs/INSTALLATION.md) ·
+> [`docs/DEPENDANCES-ET-INSTALL.md`](docs/DEPENDANCES-ET-INSTALL.md).
+> ⚠ FFmpeg embarqué est sous licence **GPL** (libx264) — conformité à traiter
+> avant distribution commerciale (voir le guide).
 
 ---
 

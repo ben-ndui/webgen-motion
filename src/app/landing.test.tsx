@@ -3,33 +3,41 @@ import { render, screen } from "@testing-library/react";
 import LandingPage from "./page";
 
 /**
- * Landing smoke test — the portaged scroll-snap landing renders all five
- * sections with their content + tour-ability hooks. Guards against a
- * regression that drops a section, CTA, or data-wm-id during further
- * migration. (Reveals/observers are stubbed in vitest.setup.)
+ * Landing smoke test — la landing v3 « vidéos produit as code » rend
+ * son hero, ses 4 étapes pipeline, ses tiers de pricing et les hooks
+ * data-wm-id de chaque surface. Garde contre une régression qui
+ * larguerait une section / CTA pendant les itérations design.
+ * (Reveals/observers sont stubbés dans vitest.setup.)
  */
 describe("Landing", () => {
-  it("renders the statement hero + primary CTAs", () => {
+  it("rend le hero « écrites comme du code » + le CTA download", () => {
     render(<LandingPage />);
-    expect(screen.getByText(/On capture votre/i)).toBeInTheDocument();
-    expect(screen.getByText(/Vous obtenez un clip/i)).toBeInTheDocument();
-    // download CTA appears in nav + hero + pricing + cta
+    expect(screen.getByText(/écrites comme du/i)).toBeInTheDocument();
+    expect(screen.getByText(/rejoue ton produit/i)).toBeInTheDocument();
+    // CTA download court ("Télécharger") en nav + pricing community.
     expect(
       screen.getAllByRole("link", { name: /Télécharger/i }).length,
     ).toBeGreaterThanOrEqual(2);
   });
 
-  it("renders the 3 pipeline steps and both pricing tiers", () => {
-    render(<LandingPage />);
-    expect(screen.getByText("01 — Capture")).toBeInTheDocument();
-    expect(screen.getByText("02 — Voix off")).toBeInTheDocument();
-    expect(screen.getByText("03 — Compose")).toBeInTheDocument();
-    expect(screen.getByText("Community")).toBeInTheDocument();
-    expect(screen.getByText("Studio")).toBeInTheDocument();
+  it("rend les 4 étapes du pipeline + les tiers de pricing", () => {
+    const { container } = render(<LandingPage />);
+    expect(screen.getByText("01 — Script")).toBeInTheDocument();
+    expect(screen.getByText("02 — Capture")).toBeInTheDocument();
+    expect(screen.getByText("03 — Voix off")).toBeInTheDocument();
+    expect(screen.getByText("04 — Edit Engine + Compose")).toBeInTheDocument();
+    // Trois tiers + le prix one-time Studio.
     expect(screen.getByText("$49")).toBeInTheDocument();
+    for (const tier of [
+      "landing.pricing.community",
+      "landing.pricing.studio",
+      "landing.pricing.enterprise",
+    ]) {
+      expect(container.querySelector(`[data-wm-id="${tier}"]`)).not.toBeNull();
+    }
   });
 
-  it("keeps the surface data-wm-id hooks", () => {
+  it("conserve les hooks data-wm-id de chaque surface", () => {
     const { container } = render(<LandingPage />);
     for (const id of [
       "landing.nav",
