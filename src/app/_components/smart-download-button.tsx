@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 /**
  * <SmartDownloadButton /> — Sprint 14 smart OS detection.
@@ -117,6 +118,12 @@ export default function SmartDownloadButton({
     <div className="inline-flex flex-col items-start gap-1">
       <a
         href={plat.href}
+        onClick={() =>
+          track("download_click", {
+            platform: plat.label,
+            href: plat.href,
+          })
+        }
         className={`${baseCls} ${className ?? ""}`}
         data-wm-id="download.smart-button"
       >

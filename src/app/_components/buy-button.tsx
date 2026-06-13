@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 /**
  * Bouton qui kick le Stripe Checkout flow.
@@ -24,6 +25,7 @@ export default function BuyButton({
   async function go() {
     setLoading(true);
     setErr(null);
+    track("checkout_start", { source: "buy-button", label });
     try {
       const res = await fetch("/api/stripe/checkout", { method: "POST" });
       const data = (await res.json()) as { url?: string; error?: string };

@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import UpdateChecker from "./_components/update-checker";
 import DesktopTokenBridge from "./_components/desktop-token-bridge";
+import PostHogProvider from "./_components/posthog-provider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -48,6 +49,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
+        <PostHogProvider />
         <UpdateChecker />
         <DesktopTokenBridge />
       </body>
