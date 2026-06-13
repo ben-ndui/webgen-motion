@@ -28,14 +28,17 @@ export function BeatsLayer({
   beatPulseStrength?: number;
   voPauseHaloStrength?: number;
 }) {
+  // Hooks must run unconditionally (rules-of-hooks) — read the clock
+  // before any early return.
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const timeSec = frame / fps;
+
   // Style preset can dim or hide these entirely. Skip the work
   // when both are zero so we don't render hidden DOM nodes.
   if (beatPulseStrength <= 0 && voPauseHaloStrength <= 0) {
     return null;
   }
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const timeSec = frame / fps;
 
   // ── Beat pulse ──────────────────────────────────────────────
   // Find the most recent beat that started in the last 400ms.
