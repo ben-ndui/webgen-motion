@@ -160,6 +160,41 @@ export function detectDevices(): ConnectedDevice[] {
     } catch {
       /* xcrun absent / pas de simulateur booté */
     }
+
+    // iPhone/iPad PHYSIQUE branché (devicectl) — différent des simulateurs.
+    try {
+      const json = execFileSync(
+        "xcrun",
+        ["devicectl", "list", "devices", "--json-output", "-"],
+        { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"], timeout: 6000 },
+      );
+      const data = JSON.parse(json) as {
+        result?: {
+          devices?: Array<{
+            identifier?: string;
+            deviceProperties?: { name?: string };
+            hardwareProperties?: { platform?: string; udid?: string };
+            connectionProperties?: { transportType?: string; tunnelState?: string };
+          }>;
+        };
+      };
+      for (const d of data.result?.devices ?? []) {
+        const plat = d.hardwareProperties?.platform;
+        const conn = d.connectionProperties ?? {};
+        const plugged =
+          conn.transportType === "wired" || conn.tunnelState === "connected";
+        if (plat === "iOS" && plugged) {
+          out.push({
+            platform: "ios",
+            id: d.identifier ?? d.hardwareProperties?.udid ?? "",
+            name: d.deviceProperties?.name ?? "iPhone",
+            kind: "device",
+          });
+        }
+      }
+    } catch {
+      /* devicectl absent (Xcode < 15) ou aucun device physique */
+    }
   }
 
   return out;

@@ -82,6 +82,14 @@ export async function ensureMobileTools(
   const dir = getMobileToolsDir();
   mkdirSync(dir, { recursive: true });
 
+  // Maestro déjà présent via le système → il apporte son propre java, on ne
+  // télécharge RIEN (évite un JRE inutile de 150 Mo).
+  const sys = resolveMaestro();
+  if (sys && sys.source === "system") {
+    log("Maestro déjà présent (système).");
+    return { maestro: sys.bin, javaHome: resolveJavaHome() };
+  }
+
   // ── JRE (requis par Maestro) ──
   let javaHome = resolveJavaHome();
   if (!javaHome) {
