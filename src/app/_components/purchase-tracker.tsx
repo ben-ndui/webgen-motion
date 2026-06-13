@@ -16,7 +16,7 @@ import { GOOGLE_ADS_ID } from "./google-ads";
 // Libellé de conversion Google Ads (Objectifs → Conversions → [action] →
 // balise d'événement : `send_to: "AW-…/XXXX"` → coller le XXXX ici).
 // Vide tant que non fourni → la conversion ne se déclenche pas.
-const ADS_CONVERSION_LABEL: string = "";
+const ADS_CONVERSION_LABEL: string = "Od9VCPPTpb4cENuvjvhD";
 export default function PurchaseTracker({
   sessionId,
 }: {
