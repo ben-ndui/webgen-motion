@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
 import { getStripe } from "@/lib/stripe";
+import PurchaseTracker from "../_components/purchase-tracker";
 
 /**
  * Page /thanks — landing after Stripe Checkout success.
@@ -8,10 +9,11 @@ import { getStripe } from "@/lib/stripe";
  *
  * Server component : fetch la session Stripe pour récupérer l'email
  * destinataire et l'afficher (UX : le client sait à quelle adresse
- * sa license va arriver).
+ * sa licence vient d'arriver).
  *
- * MVP-1 fulfillment manuel : on annonce "license sous 24h", Ben
- * voit le webhook Discord, gen + envoie la license à la main.
+ * Fulfillment AUTOMATIQUE : la licence signée est émise + envoyée par
+ * email dès réception du webhook checkout.session.completed (cf.
+ * src/lib/license/fulfillment.ts). Livraison en quelques secondes.
  */
 export const dynamic = "force-dynamic";
 
@@ -38,6 +40,7 @@ export default async function ThanksPage({
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-ink">
+      <PurchaseTracker sessionId={session_id} />
       {/* Top bar */}
       <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur border-b border-line">
         <div className="max-w-5xl mx-auto px-6 lg:px-10">
@@ -69,25 +72,25 @@ export default async function ThanksPage({
             Merci pour ton achat.
             <br />
             <span className="text-faint">
-              On t&apos;envoie ta license.
+              Ta licence arrive.
             </span>
           </h1>
 
           <div className="space-y-6 text-ink-soft">
             {email && (
               <p>
-                Une license <strong className="text-ink font-medium">Studio Edition</strong>{" "}
-                te sera envoyée à{" "}
+                Ta licence <strong className="text-ink font-medium">Studio</strong>{" "}
+                vient de t&apos;être envoyée à{" "}
                 <strong className="text-ink font-medium">{email}</strong>{" "}
-                sous 24h (souvent en quelques minutes pendant les heures
-                ouvrées européennes).
+                — automatiquement, en quelques secondes. Vérifie ta boîte (et
+                tes spams au cas où).
               </p>
             )}
             {!email && (
               <p>
-                Une license <strong className="text-ink font-medium">Studio Edition</strong>{" "}
-                te sera envoyée à l&apos;adresse email indiquée lors du
-                paiement, sous 24h.
+                Ta licence <strong className="text-ink font-medium">Studio</strong>{" "}
+                vient d&apos;être envoyée automatiquement à l&apos;adresse
+                indiquée lors du paiement. Vérifie ta boîte (et tes spams).
               </p>
             )}
             {amount && (
@@ -105,11 +108,11 @@ export default async function ThanksPage({
               <Step
                 n="01"
                 title="Tu reçois l'email avec le fichier `.license`"
-                detail="Souvent dans les 30 min, max 24h. Vérifie ton dossier spam si rien après 1h — ouvre un ticket si rien après 24h."
+                detail="Automatique, en quelques secondes. Vérifie ton dossier spam si rien après quelques minutes — écris-nous si besoin."
               />
               <Step
                 n="02"
-                title="Tu ouvres GEN MOTION et va dans Settings → License"
+                title="Tu ouvres GEN MOTION et vas dans Settings → Licence Studio"
                 detail="Si tu n'as pas encore l'app : télécharge-la d'abord depuis /download (notarisée Apple, aucun pop-up bloquant)."
               />
               <Step
