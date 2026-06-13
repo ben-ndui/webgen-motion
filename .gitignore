@@ -59,3 +59,7 @@ next-env.d.ts
 /src-tauri/binaries/
 issued/
 claude-code-audit-prompt.md
+
+# Node Helper.app (LSUIElement) — rebuilt every `tauri build` by
+# scripts/desktop-prepare-node-helper.mjs
+/src-tauri/node-helper/

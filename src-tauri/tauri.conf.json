@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "PORT=3030 npm run dev",
     "devUrl": "http://localhost:3030",
-    "beforeBuildCommand": "npm run build && node scripts/desktop-prepare-standalone.mjs",
+    "beforeBuildCommand": "npm run build && node scripts/desktop-prepare-standalone.mjs && node scripts/desktop-prepare-node-helper.mjs",
     "frontendDist": "../src-tauri/dist"
   },
   "app": {
@@ -37,10 +37,10 @@
     "resources": [
       "dist/**/*",
       "standalone/**/*",
-      "runners/**/*"
+      "runners/**/*",
+      "node-helper/**/*"
     ],
     "externalBin": [
-      "binaries/node",
       "binaries/ffmpeg",
       "binaries/ffprobe"
     ],

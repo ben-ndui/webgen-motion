@@ -19,8 +19,6 @@ use std::net::TcpStream;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use tauri::Manager;
-use tauri_plugin_shell::process::CommandChild;
-use tauri_plugin_shell::ShellExt;
 
 /// Port where the embedded Next.js server listens. Has to match
 /// the URL passed in `tauri.conf.json` window config.
@@ -32,7 +30,7 @@ const SERVER_BOOT_TIMEOUT_SECS: u64 = 30;
 
 /// Holds the child handle so we can `kill()` it on app exit and
 /// avoid orphan Node processes after the user quits.
-struct SidecarState(Mutex<Option<CommandChild>>);
+struct SidecarState(Mutex<Option<std::process::Child>>);
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -62,7 +60,7 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
                 let state = window.state::<SidecarState>();
                 let mut guard = state.0.lock().unwrap();
-                if let Some(child) = guard.take() {
+                if let Some(mut child) = guard.take() {
                     let _ = child.kill();
                 }
             }
@@ -78,6 +76,8 @@ pub fn run() {
 /// while Node is still booting).
 #[cfg(not(debug_assertions))]
 fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    use std::io::{BufRead, BufReader};
+    use std::process::{Command, Stdio};
     use tauri::path::BaseDirectory;
 
     // Resolve `<bundle>/Resources/standalone/server.js` cross-platform.
@@ -118,46 +118,56 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     eprintln!("[webgen-motion] ffmpeg path : {ffmpeg_path:?}");
     eprintln!("[webgen-motion] ffprobe path : {ffprobe_path:?}");
 
-    // `tauri-plugin-shell.sidecar("node")` picks the platform-triple
-    // binary (e.g. `node-aarch64-apple-darwin`) that Tauri bundled
-    // from `src-tauri/binaries/`. Falls back to system Node only in
-    // dev (and dev doesn't run this branch anyway).
-    let (mut rx, child) = app
-        .shell()
-        .sidecar("node")
-        .map_err(|e| format!("resolve node sidecar : {e}"))?
-        .args([server_js.to_string_lossy().to_string()])
+    // Node tourne dans un bundle « agent » (LSUIElement) embarqué en
+    // resource — cf. scripts/desktop-prepare-node-helper.mjs. On le
+    // lance par son chemin pour que macOS l'associe à CE bundle (et non
+    // à l'app GUI principale) → pas de tuile Dock / d'entrée Cmd-Tab
+    // « node » parasite. On passe par std::process plutôt que le plugin
+    // shell : aucun scope/capability à gérer, et on tue proprement le
+    // child à la fermeture de la fenêtre.
+    let node_exe = app
+        .path()
+        .resolve(
+            "node-helper/WebgenMotionNode.app/Contents/MacOS/node",
+            BaseDirectory::Resource,
+        )
+        .map_err(|e| format!("resolve node helper : {e}"))?;
+
+    let mut child = Command::new(&node_exe)
+        .arg(&server_js)
         .env("PORT", SERVER_PORT.to_string())
         .env("HOSTNAME", "127.0.0.1")
         .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
         .env("WEBGEN_FFMPEG_BIN", ffmpeg_path.to_string_lossy().to_string())
         .env("WEBGEN_FFPROBE_BIN", ffprobe_path.to_string_lossy().to_string())
-        .env("WEBGEN_DESKTOP_TOKEN", desktop_token.clone())
-        .current_dir(standalone_dir)
+        .env("WEBGEN_DESKTOP_TOKEN", desktop_token)
+        .current_dir(&standalone_dir)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .map_err(|e| format!("spawn node : {e}"))?;
+
+    // Forward Node's stdout/stderr so a crash leaves a trace when
+    // launched from the .app. Each pipe on its own thread (std pipes
+    // block on read).
+    if let Some(out) = child.stdout.take() {
+        std::thread::spawn(move || {
+            for line in BufReader::new(out).lines().map_while(Result::ok) {
+                eprintln!("[next] {line}");
+            }
+        });
+    }
+    if let Some(err) = child.stderr.take() {
+        std::thread::spawn(move || {
+            for line in BufReader::new(err).lines().map_while(Result::ok) {
+                eprintln!("[next] {line}");
+            }
+        });
+    }
 
     // Stash the child handle so the close handler can kill it.
     let state = app.state::<SidecarState>();
     *state.0.lock().unwrap() = Some(child);
-
-    // Forward Node's stdout/stderr to the Tauri shell stderr so
-    // we have a chance to read crashes when launched from .app.
-    tauri::async_runtime::spawn(async move {
-        use tauri_plugin_shell::process::CommandEvent;
-        while let Some(event) = rx.recv().await {
-            match event {
-                CommandEvent::Stdout(line) | CommandEvent::Stderr(line) => {
-                    let s = String::from_utf8_lossy(&line);
-                    eprintln!("[next] {s}");
-                }
-                CommandEvent::Terminated(payload) => {
-                    eprintln!("[next] terminated : code={:?}", payload.code);
-                }
-                _ => {}
-            }
-        }
-    });
 
     // Block (with timeout) until the server actually listens.
     wait_for_port(SERVER_PORT, SERVER_BOOT_TIMEOUT_SECS);
