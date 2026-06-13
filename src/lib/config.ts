@@ -1,4 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { getEdition } from "./edition";
@@ -121,8 +127,25 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
   if (!next.agent?.apiKey && !next.agent?.provider && !next.agent?.model) {
     delete next.agent;
   }
-  writeFileSync(getConfigPath(), JSON.stringify(next, null, 2));
+  writeConfigSecure(getConfigPath(), JSON.stringify(next, null, 2));
   return next;
+}
+
+/**
+ * Écrit le config.json en permissions restreintes (0600 : lecture/écriture
+ * propriétaire uniquement). Il contient des secrets (clés API ElevenLabs /
+ * agent). `mode` couvre la création ; le `chmodSync` couvre le cas d'un
+ * fichier préexistant créé avant ce durcissement. Sur Windows, le bit POSIX
+ * n'a pas de sens : le chmod est best-effort et son échec est ignoré
+ * silencieusement (no-op gracieux), sans casser la sauvegarde.
+ */
+export function writeConfigSecure(path: string, data: string): void {
+  writeFileSync(path, data, { mode: 0o600 });
+  try {
+    chmodSync(path, 0o600);
+  } catch {
+    // Windows / FS sans permissions POSIX : best-effort, on n'échoue pas.
+  }
 }
 
 /**
