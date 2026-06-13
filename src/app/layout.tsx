@@ -7,6 +7,7 @@ import DesktopTokenBridge from "./_components/desktop-token-bridge";
 import LicenseRefreshChecker from "./_components/license-refresh-checker";
 import PostHogProvider from "./_components/posthog-provider";
 import CookieConsent from "./_components/cookie-consent";
+import GoogleAds from "./_components/google-ads";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -89,6 +90,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
         <PostHogProvider />
+        <GoogleAds />
         <CookieConsent />
         <LicenseRefreshChecker />
         <UpdateChecker />
