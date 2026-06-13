@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { fulfillCheckout, type FulfillmentResult } from "@/lib/license/fulfillment";
+import { captureServer } from "@/lib/server/analytics-server";
 
 export const runtime = "nodejs";
 
@@ -106,6 +107,25 @@ export async function POST(req: NextRequest) {
 
   // Critique fait (ou impossible de façon non-transitoire) → on acquitte.
   processedEventIds.add(event.id);
+
+  // PostHog serveur (best-effort) : conversion payante = source de vérité
+  // Stripe + PostHog. distinctId = email → relie au funnel web (identify).
+  try {
+    await captureServer(email, "checkout_completed", {
+      edition: "studio",
+      amount: (session.amount_total ?? 0) / 100,
+      currency: (session.currency ?? "usd").toUpperCase(),
+      livemode: event.livemode,
+      licensed: result.licensed,
+      emailed: result.emailed,
+      reason: result.reason,
+      stripe_session: session.id,
+    });
+    if (result.licensed) await captureServer(email, "license_issued", { edition: "studio" });
+    if (result.emailed) await captureServer(email, "license_email_sent", { edition: "studio" });
+  } catch (e) {
+    console.error("[stripe/webhook] capture PostHog échouée (ignoré):", e);
+  }
 
   // Discord best-effort : ne doit jamais faire échouer le webhook.
   try {
