@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { fulfillCheckout, type FulfillmentResult } from "@/lib/license/fulfillment";
 import { captureServer } from "@/lib/server/analytics-server";
+import { SUBSCRIPTION_GRACE_MS } from "@/lib/stripe-plans";
 
 export const runtime = "nodejs";
 
@@ -87,10 +88,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, fulfilled: false, reason: "no-email" });
   }
 
+  // Plan + expiration : abo → licence time-boxée (current_period_end +
+  // grâce) ; lifetime (mode payment) → perpétuelle (null).
+  const plan =
+    typeof session.metadata?.plan === "string"
+      ? session.metadata.plan
+      : undefined;
+  let expiresAt: number | null = null;
+  if (session.mode === "subscription" && session.subscription) {
+    try {
+      const subId =
+        typeof session.subscription === "string"
+          ? session.subscription
+          : session.subscription.id;
+      const sub = await getStripe().subscriptions.retrieve(subId);
+      // `current_period_end` : sur l'abo (anciennes versions) OU sur les
+      // items (Stripe 2025+). On lit défensivement les deux.
+      const s = sub as unknown as {
+        current_period_end?: number;
+        items?: { data?: Array<{ current_period_end?: number }> };
+      };
+      const periodEnd =
+        s.current_period_end ?? s.items?.data?.[0]?.current_period_end;
+      if (!periodEnd) throw new Error("current_period_end introuvable");
+      expiresAt = periodEnd * 1000 + SUBSCRIPTION_GRACE_MS;
+    } catch (e) {
+      // Sans période fiable, on n'émet PAS (éviterait d'offrir un perpétuel
+      // par erreur). Transitoire → Stripe retentera.
+      console.error("[stripe/webhook] retrieve subscription échoué:", e);
+      return new NextResponse("Subscription retrieve error", { status: 500 });
+    }
+  }
+
   let result: FulfillmentResult;
   try {
     result = await fulfillCheckout(
-      { email, edition: "studio", reference: session.id },
+      { email, edition: "studio", reference: session.id, expiresAt, plan },
       process.env,
     );
   } catch (e) {
@@ -113,6 +146,8 @@ export async function POST(req: NextRequest) {
   try {
     await captureServer(email, "checkout_completed", {
       edition: "studio",
+      plan: plan ?? "lifetime",
+      mode: session.mode,
       amount: (session.amount_total ?? 0) / 100,
       currency: (session.currency ?? "usd").toUpperCase(),
       livemode: event.livemode,

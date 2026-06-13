@@ -31,6 +31,11 @@ export interface FulfillmentInput {
   edition: IssuableEdition;
   /** Référence libre (id session Stripe) inscrite dans la note licence. */
   reference?: string;
+  /** Expiration unix ms (abo : fin de période + grâce) ou null = perpétuel
+   *  (Lifetime). Défaut null. */
+  expiresAt?: number | null;
+  /** Plan acheté (monthly/annual/lifetime) — tracé dans la note. */
+  plan?: string;
 }
 
 export interface FulfillmentResult {
@@ -145,12 +150,16 @@ export async function fulfillCheckout(
 
   let licenseContent: string;
   try {
+    const noteParts = [
+      input.plan ? `plan ${input.plan}` : null,
+      input.reference ? `Stripe ${input.reference}` : null,
+    ].filter(Boolean);
     const { content } = issueLicense(
       {
         email: input.email,
         edition: input.edition,
-        expiresAt: null,
-        note: input.reference ? `Stripe ${input.reference}` : undefined,
+        expiresAt: input.expiresAt ?? null,
+        note: noteParts.length ? noteParts.join(" · ") : undefined,
       },
       key,
     );
