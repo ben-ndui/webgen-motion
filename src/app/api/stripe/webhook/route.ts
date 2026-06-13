@@ -70,6 +70,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, duplicate: true });
   }
 
+  // Renouvellement d'abonnement (B.4) : re-émet + email une licence pour
+  // le nouveau cycle. Le 1er paiement (subscription_create) est déjà géré
+  // par checkout.session.completed → handleRenewal ne traite QUE les cycles.
+  if (event.type === "invoice.paid") {
+    const renewal = await handleRenewal(event);
+    if (renewal.retryable) {
+      return new NextResponse("Renewal retryable error", { status: 500 });
+    }
+    processedEventIds.add(event.id);
+    return NextResponse.json({ received: true, ...renewal.body });
+  }
+
+  // Annulation (B.4) : la licence expire naturellement (period_end + grâce).
+  // Rien à émettre — on acquitte.
+  if (event.type === "customer.subscription.deleted") {
+    processedEventIds.add(event.id);
+    return NextResponse.json({ received: true, subscription: "canceled" });
+  }
+
   // On ne gère que l'achat. Les autres events sont acquittés (200) sans
   // action — et marqués traités pour ne pas reboucler.
   if (event.type !== "checkout.session.completed") {
@@ -183,6 +202,95 @@ export async function POST(req: NextRequest) {
     emailed: result.emailed,
     reason: result.reason,
   });
+}
+
+/**
+ * Renouvellement de cycle d'abonnement (B.4). Re-émet + email une licence
+ * time-boxée pour le nouveau `current_period_end`. Lecture défensive des
+ * champs Stripe (déplacés au niveau items / `invoice.parent` en 2025+).
+ */
+async function handleRenewal(
+  event: Stripe.Event,
+): Promise<{ retryable: boolean; body: Record<string, unknown> }> {
+  const inv = event.data.object as unknown as {
+    id?: string;
+    billing_reason?: string;
+    customer_email?: string | null;
+    subscription?: string | { id: string };
+    parent?: {
+      subscription_details?: { subscription?: string | { id: string } };
+    };
+  };
+
+  // Seuls les renouvellements de cycle — la création initiale est gérée
+  // par checkout.session.completed (sinon double émission).
+  if (inv.billing_reason !== "subscription_cycle") {
+    return {
+      retryable: false,
+      body: { renewal: "skipped", reason: inv.billing_reason ?? "unknown" },
+    };
+  }
+
+  const subRef =
+    inv.subscription ?? inv.parent?.subscription_details?.subscription;
+  const subId = typeof subRef === "string" ? subRef : subRef?.id;
+  if (!subId) {
+    return { retryable: false, body: { renewal: "skipped", reason: "no-sub" } };
+  }
+
+  let email: string | null = inv.customer_email ?? null;
+  let plan: string | undefined;
+  let expiresAt: number;
+  try {
+    const sub = (await getStripe().subscriptions.retrieve(subId)) as unknown as {
+      current_period_end?: number;
+      items?: { data?: Array<{ current_period_end?: number }> };
+      metadata?: Record<string, string>;
+      customer?: string | { id: string };
+    };
+    const periodEnd =
+      sub.current_period_end ?? sub.items?.data?.[0]?.current_period_end;
+    if (!periodEnd) throw new Error("current_period_end introuvable");
+    expiresAt = periodEnd * 1000 + SUBSCRIPTION_GRACE_MS;
+    plan = typeof sub.metadata?.plan === "string" ? sub.metadata.plan : undefined;
+    if (!email) {
+      const custId =
+        typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+      if (custId) {
+        const cust = await getStripe().customers.retrieve(custId);
+        if (!("deleted" in cust)) email = cust.email ?? null;
+      }
+    }
+  } catch (e) {
+    console.error("[stripe/webhook] renewal retrieve échoué:", e);
+    return { retryable: true, body: {} };
+  }
+  if (!email) return { retryable: false, body: { renewal: "no-email" } };
+
+  let result: FulfillmentResult;
+  try {
+    result = await fulfillCheckout(
+      { email, edition: "studio", reference: inv.id, expiresAt, plan },
+      process.env,
+    );
+  } catch (e) {
+    console.error("[stripe/webhook] renewal fulfillment inattendu:", e);
+    return { retryable: true, body: {} };
+  }
+  if (result.retryable) return { retryable: true, body: {} };
+
+  try {
+    await captureServer(email, "subscription_renewed", {
+      edition: "studio",
+      plan: plan ?? "unknown",
+    });
+  } catch {
+    /* best-effort */
+  }
+  return {
+    retryable: false,
+    body: { renewed: result.licensed, emailed: result.emailed },
+  };
 }
 
 async function notifyDiscord(p: {

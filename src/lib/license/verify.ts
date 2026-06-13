@@ -52,15 +52,39 @@ export function resetLicenseCache(): void {
 /** Vérifie un contenu .license. Retourne payload si valid + non expired. */
 export function verifyLicense(content: string): LicenseVerifyResult {
   const cacheKey = createHash("sha256").update(content).digest("hex");
-  const cached = cache.get(cacheKey);
-  if (cached) return cached;
-
-  const result = doVerify(content);
-  cache.set(cacheKey, result);
+  let result = cache.get(cacheKey);
+  if (!result) {
+    result = doVerify(content);
+    cache.set(cacheKey, result);
+  }
+  // Le cache porte sur le parse + la signature (coûteux), PAS sur le verdict
+  // d'expiration : pour une licence time-boxée (abonnement), on ré-évalue
+  // l'expiration à CHAQUE appel, sinon un abo expiré resterait "valid" tant
+  // que l'app tourne sans relance.
+  if (
+    result.valid &&
+    result.payload.expiresAt !== null &&
+    result.payload.expiresAt < Date.now()
+  ) {
+    return { valid: false, error: "expired" };
+  }
   return result;
 }
 
-function doVerify(content: string): LicenseVerifyResult {
+/**
+ * Vérifie format + version + SIGNATURE, mais **ignore l'expiration**.
+ * Utilisé par le refresh d'abonnement (B.5) : on doit pouvoir lire le
+ * payload (email) d'une licence même expirée pour la renouveler si l'abo
+ * Stripe est encore actif. Non caché (rare).
+ */
+export function verifyLicenseSignature(content: string): LicenseVerifyResult {
+  return doVerify(content, true);
+}
+
+function doVerify(
+  content: string,
+  ignoreExpiry = false,
+): LicenseVerifyResult {
   // 1. Parse format
   let parsed;
   try {
@@ -92,8 +116,12 @@ function doVerify(content: string): LicenseVerifyResult {
     return { valid: false, error: "bad-signature" };
   }
 
-  // 4. Expiration check
-  if (payload.expiresAt !== null && payload.expiresAt < Date.now()) {
+  // 4. Expiration check (sauté pour le refresh, cf. verifyLicenseSignature)
+  if (
+    !ignoreExpiry &&
+    payload.expiresAt !== null &&
+    payload.expiresAt < Date.now()
+  ) {
     return { valid: false, error: "expired" };
   }
 
