@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://genmotion.app"),
   title: "GEN MOTION — Vidéos produit as code, régénérées à chaque release",
   description:
-    "GEN MOTION rejoue ton produit (web ou app native), pose la voix off, monte sur la musique — et le refait à l'identique après chaque release. Local-first · Fair-code FSL · Studio Edition $49 one-time.",
+    "GEN MOTION rejoue ton produit (web ou app native), pose la voix off, monte sur la musique — et le refait à l'identique après chaque release. Local-first · Fair-code FSL · Studio à vie ou en abonnement.",
   // Quand SEO prêt à pousser, retirer noindex et set canonical/og :
   robots: "noindex, nofollow",
   openGraph: {

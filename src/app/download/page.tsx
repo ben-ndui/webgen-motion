@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import BuyButton from "../_components/buy-button";
+import StudioOffer from "../_components/studio-offer";
 import SmartDownloadButton from "../_components/smart-download-button";
 import PageShell from "../_components/page-shell";
 
 export const metadata: Metadata = {
   title: "Télécharger — GEN MOTION",
   description:
-    "Installez GEN MOTION sur votre Mac. Motion Studio 100% local, Community gratuit, Studio $49.",
+    "Installez GEN MOTION sur votre Mac. Motion Studio 100% local, Community gratuit, Studio à vie ou en abonnement.",
 };
 
 const SPECS = [
@@ -34,7 +34,7 @@ const SPECS = [
       ["✓", ".dmg notarisé Apple"],
       ["✓", "Source-available · FSL"],
       ["✓", "100% local · aucun cloud"],
-      ["✓", "Zéro télémétrie"],
+      ["✓", "Aucun contenu envoyé · télémétrie anonyme opt-out"],
     ],
   },
 ] as const;
@@ -90,18 +90,17 @@ export default function Download() {
           ))}
         </section>
 
-        <section className="studio-band" data-wm-id="download.studio">
-          <div>
+        <section className="studio-band" data-wm-id="download.studio" style={{ display: "block" }}>
+          <div style={{ maxWidth: 640 }}>
             <span className="kicker nr">Studio Edition</span>
             <h3 style={{ marginTop: 10 }}>Débloquez les outils pro.</h3>
             <p>
               Frames 3D iPhone &amp; MacBook, presets Cinematic &amp; Glitch, export multi-format,
-              music library managée, watermark removal. Paiement unique, mises à jour à vie.
+              music library managée, watermark removal. Possède-le à vie, ou prends-le au mois.
             </p>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, alignItems: "flex-end" }}>
-            <div className="studio-price">$49 <small>une fois</small></div>
-            <BuyButton variant="secondary" />
+          <div style={{ marginTop: 20 }}>
+            <StudioOffer />
           </div>
         </section>
       </main>

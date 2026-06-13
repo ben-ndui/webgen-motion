@@ -327,7 +327,7 @@ export default function LandingPage() {
                     <td>Prix</td>
                     <td>one-time</td>
                     <td>~38&nbsp;$/mois/siège</td>
-                    <td className="us"><b>49&nbsp;$ one-time</b></td>
+                    <td className="us"><b>199&nbsp;€ à vie ou dès 15&nbsp;€/mois</b></td>
                   </tr>
                 </tbody>
               </table>
@@ -344,10 +344,10 @@ export default function LandingPage() {
           <div className="wrap">
             <div className="pricing-head reveal">
               <div className="kicker">Éditions</div>
-              <h2 className="pricing-title">Un outil qu&apos;on possède,<br />pas un abonnement qu&apos;on subit.</h2>
+              <h2 className="pricing-title">Un outil qu&apos;on possède.<br />Ou qu&apos;on prend au mois.</h2>
               <p className="pricing-sub" data-wm-id="landing.pricing.sub">
-                Une démo interactive SaaS&nbsp;: ~456&nbsp;$/an/siège. GEN&nbsp;MOTION Studio&nbsp;:
-                49&nbsp;$ une fois, mises à jour à vie.
+                Le SaaS d&apos;en face&nbsp;: ~456&nbsp;$/an/siège. GEN&nbsp;MOTION Studio&nbsp;:
+                199&nbsp;€ à vie (tu le possèdes), ou dès 15&nbsp;€/mois si tu préfères étaler.
               </p>
             </div>
             <div className="tiers">
@@ -366,8 +366,8 @@ export default function LandingPage() {
               </article>
               <article className="tier featured reveal d2" data-wm-id="landing.pricing.studio">
                 <span className="tier-name">Studio</span>
-                <div className="tier-price"><span className="amt">$49</span><span className="per">paiement unique</span></div>
-                <p className="tier-note">perpétuel · mises à jour à vie</p>
+                <div className="tier-price"><span className="amt">199&nbsp;€</span><span className="per">à vie</span></div>
+                <p className="tier-note">perpétuel · ou dès 15&nbsp;€/mois</p>
                 <ul className="feat">
                   <li className="plus"><Check /> Tout Community, plus&nbsp;:</li>
                   <li><Check /> Export timeline <b>.otio</b> — Resolve / Premiere</li>
@@ -375,7 +375,7 @@ export default function LandingPage() {
                   <li><Check /> Presets Cinematic &amp; Glitch</li>
                   <li><Check /> Music library · multi-format · sans watermark</li>
                 </ul>
-                <Link className="btn btn-primary btn-lg btn-block" href={DOWNLOAD}>Acheter Studio · $49</Link>
+                <Link className="btn btn-primary btn-lg btn-block" href={DOWNLOAD}>Voir les offres Studio</Link>
               </article>
             </div>
             <div className="enterprise-line reveal d3" data-wm-id="landing.pricing.enterprise">
@@ -427,7 +427,7 @@ export default function LandingPage() {
             <h2 className="cta-title reveal d1">Ta prochaine release mérite sa&nbsp;vidéo.</h2>
             <div className="cta-row reveal d2">
               <LandingPrimaryCta className="btn btn-primary btn-lg" data-wm-id="landing.cta.download" />
-              <Link className="btn btn-ink btn-lg" href={DOWNLOAD}>Acheter Studio · $49</Link>
+              <Link className="btn btn-ink btn-lg" href={DOWNLOAD}>Voir les offres Studio</Link>
               <Link className="btn btn-ghost btn-lg" href="/help">Lire la documentation</Link>
             </div>
             <span className="cta-sub reveal d3">macOS Apple Silicon · .dmg notarisé · source-available FSL · made in Nice</span>

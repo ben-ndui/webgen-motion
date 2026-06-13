@@ -26,8 +26,8 @@ describe("Landing", () => {
     expect(screen.getByText("02 — Capture")).toBeInTheDocument();
     expect(screen.getByText("03 — Voix off")).toBeInTheDocument();
     expect(screen.getByText("04 — Edit Engine + Compose")).toBeInTheDocument();
-    // Trois tiers + le prix one-time Studio.
-    expect(screen.getByText("$49")).toBeInTheDocument();
+    // Trois tiers + le prix Lifetime Studio (héros, présent à plusieurs endroits).
+    expect(screen.getAllByText(/199/).length).toBeGreaterThan(0);
     for (const tier of [
       "landing.pricing.community",
       "landing.pricing.studio",
