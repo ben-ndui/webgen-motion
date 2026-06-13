@@ -106,6 +106,9 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     // install that doesn't exist on a vanilla user's machine.
     let ffmpeg_path = sidecar_binary_path(app, "ffmpeg")?;
     let ffprobe_path = sidecar_binary_path(app, "ffprobe")?;
+    // adb bundlé (Android) — exposé aux runners via WEBGEN_ADB_BIN pour
+    // que la capture Android marche sans Android platform-tools installé.
+    let adb_path = sidecar_binary_path(app, "adb")?;
 
     // Token de session aléatoire (par lancement) partagé avec le
     // serveur Next via env. La garde server-side `/api/motion/**`
@@ -140,6 +143,7 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
         .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
         .env("WEBGEN_FFMPEG_BIN", ffmpeg_path.to_string_lossy().to_string())
         .env("WEBGEN_FFPROBE_BIN", ffprobe_path.to_string_lossy().to_string())
+        .env("WEBGEN_ADB_BIN", adb_path.to_string_lossy().to_string())
         .env("WEBGEN_DESKTOP_TOKEN", desktop_token)
         .current_dir(&standalone_dir)
         .stdout(Stdio::piped())

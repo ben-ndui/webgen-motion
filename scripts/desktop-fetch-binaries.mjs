@@ -162,6 +162,37 @@ function ffprobeUrlFor(triple) {
   }
 }
 
+// ─── adb URLs per triple ───────────────────────────────────────────
+// Embarqué pour que la capture Android (adb screenrecord + pull) marche
+// sans que l'utilisateur installe les Android platform-tools. adb est
+// un binaire autonome (sur macOS/Linux ; sur Windows il lui faut aussi
+// AdbWinApi.dll — non géré ici, Windows = best-effort).
+function adbUrlFor(triple) {
+  switch (triple) {
+    case "aarch64-apple-darwin":
+    case "x86_64-apple-darwin":
+      return {
+        url: "https://dl.google.com/android/repository/platform-tools-latest-darwin.zip",
+        archive: "zip",
+        extractPath: "platform-tools/adb",
+      };
+    case "x86_64-unknown-linux-gnu":
+      return {
+        url: "https://dl.google.com/android/repository/platform-tools-latest-linux.zip",
+        archive: "zip",
+        extractPath: "platform-tools/adb",
+      };
+    case "x86_64-pc-windows-msvc":
+      return {
+        url: "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
+        archive: "zip",
+        extractPath: "platform-tools/adb.exe",
+      };
+    default:
+      throw new Error(`No adb URL for ${triple}`);
+  }
+}
+
 async function download(url, dst) {
   if (existsSync(dst) && statSync(dst).size > 0) {
     console.log(`  cached : ${dst.split("/").slice(-2).join("/")}`);
@@ -247,6 +278,7 @@ for (const triple of triples) {
   await fetchOne(triple, "node", nodeUrlFor);
   await fetchOne(triple, "ffmpeg", ffmpegUrlFor);
   await fetchOne(triple, "ffprobe", ffprobeUrlFor);
+  await fetchOne(triple, "adb", adbUrlFor);
 }
 
 console.log("\n✓ done");
