@@ -102,6 +102,7 @@ describe("ensureChromium", () => {
     const r = await ensureChromium({
       env: {},
       cacheDir: tmp,
+      systemCandidates: [], // pas de Chrome système (CI en a un installé)
     });
     expect(mocks.install).toHaveBeenCalledTimes(1);
     expect(mocks.install.mock.calls[0][0]).toMatchObject({
@@ -115,14 +116,14 @@ describe("ensureChromium", () => {
   it("lève ChromiumError actionnable si le download échoue", async () => {
     mocks.install.mockRejectedValue(new Error("ECONNREFUSED"));
     await expect(
-      ensureChromium({ env: {}, cacheDir: tmp }),
+      ensureChromium({ env: {}, cacheDir: tmp, systemCandidates: [] }),
     ).rejects.toBeInstanceOf(ChromiumError);
   });
 
   it("lève ChromiumError si la plateforme n'est pas supportée", async () => {
     mocks.detectBrowserPlatform.mockReturnValue(undefined);
     await expect(
-      ensureChromium({ env: {}, cacheDir: tmp }),
+      ensureChromium({ env: {}, cacheDir: tmp, systemCandidates: [] }),
     ).rejects.toThrow(/Plateforme non supportée/);
   });
 });

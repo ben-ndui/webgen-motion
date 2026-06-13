@@ -107,12 +107,13 @@ async function findCachedChromium(): Promise<string | null> {
  */
 export async function resolveChromiumExecutable(
   env: Record<string, string | undefined> = process.env,
+  systemCandidates?: string[],
 ): Promise<ChromiumResolution | null> {
   const override = env.WEBGEN_CHROMIUM_BIN?.trim();
   if (override && existsSync(override)) {
     return { path: override, source: "env" };
   }
-  const system = detectSystemChrome();
+  const system = detectSystemChrome(systemCandidates);
   if (system) return { path: system, source: "system" };
   const cached = await findCachedChromium();
   if (cached) return { path: cached, source: "cache" };
@@ -131,10 +132,12 @@ export async function ensureChromium(
     env?: Record<string, string | undefined>;
     onProgress?: (downloaded: number, total: number) => void;
     cacheDir?: string;
+    /** Candidats Chrome système (injectable pour tests déterministes). */
+    systemCandidates?: string[];
   } = {},
 ): Promise<ChromiumResolution> {
   const env = opts.env ?? process.env;
-  const existing = await resolveChromiumExecutable(env);
+  const existing = await resolveChromiumExecutable(env, opts.systemCandidates);
   if (existing) return existing;
 
   const cacheDir = opts.cacheDir ?? getChromiumCacheDir();
