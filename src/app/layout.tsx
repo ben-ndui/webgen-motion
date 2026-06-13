@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import UpdateChecker from "./_components/update-checker";
+import DesktopTokenBridge from "./_components/desktop-token-bridge";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -34,12 +35,21 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Token de session desktop (injecté par le shell Tauri via
+            WEBGEN_DESKTOP_TOKEN). Vide sur le web/dev → couche token
+            désactivée. Lu par DesktopTokenBridge pour signer les
+            requêtes /api/motion. */}
+        <meta
+          name="webgen-desktop-token"
+          content={process.env.WEBGEN_DESKTOP_TOKEN ?? ""}
+        />
         {/* Pre-paint theme set to avoid FOUC. Runs before first paint. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
         <UpdateChecker />
+        <DesktopTokenBridge />
       </body>
     </html>
   );

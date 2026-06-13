@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "node:child_process";
-import { existsSync } from "node:fs";
 import { resolveRunnerSpawn } from "@/lib/runner-spawn";
+import {
+  assertExistingDirectory,
+  assertOutputDirectory,
+  SafePathError,
+} from "@/lib/server/safe-path";
 
 /**
  * Scaffold des tours en bulk depuis un repo Next.js cible.
@@ -33,18 +37,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
   const { projectPath, baseUrl, format, maxTours, outDir } = body;
-  if (!projectPath || typeof projectPath !== "string") {
-    return NextResponse.json(
-      { error: "projectPath manquant" },
-      { status: 400 },
-    );
+
+  // Validation anti-traversal des chemins bruts fournis par le client.
+  // projectPath doit être un dossier existant ; outDir (optionnel) doit
+  // rester contenu sous projectPath (le default runner = <projectPath>/
+  // tours-scaffold). La garde desktop-only (middleware) restreint déjà
+  // l'accès à la machine locale, mais on durcit la forme de l'entrée.
+  let safeProjectPath: string;
+  let safeOutDir: string | undefined;
+  try {
+    safeProjectPath = assertExistingDirectory(projectPath, "projectPath");
+    if (outDir !== undefined) {
+      safeOutDir = assertOutputDirectory(outDir, "outDir", safeProjectPath);
+    }
+  } catch (e) {
+    if (e instanceof SafePathError) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+    throw e;
   }
-  if (!existsSync(projectPath)) {
-    return NextResponse.json(
-      { error: `Chemin introuvable : ${projectPath}` },
-      { status: 400 },
-    );
-  }
+
   if (!baseUrl || !/^https?:\/\//.test(baseUrl)) {
     return NextResponse.json(
       { error: "baseUrl invalide (http(s)://…)" },
@@ -52,15 +64,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const runnerArgs = ["--project-path", projectPath, "--base-url", baseUrl];
+  const runnerArgs = ["--project-path", safeProjectPath, "--base-url", baseUrl];
   if (format === "9:16" || format === "16:9") {
     runnerArgs.push("--format", format);
   }
   if (typeof maxTours === "number" && maxTours > 0) {
     runnerArgs.push("--max-tours", String(maxTours));
   }
-  if (outDir && typeof outDir === "string") {
-    runnerArgs.push("--out-dir", outDir);
+  if (safeOutDir) {
+    runnerArgs.push("--out-dir", safeOutDir);
   }
   const spawnSpec = resolveRunnerSpawn(
     "scaffold-tours-from-project",

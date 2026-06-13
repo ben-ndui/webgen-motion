@@ -107,6 +107,12 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     let ffmpeg_path = sidecar_binary_path(app, "ffmpeg")?;
     let ffprobe_path = sidecar_binary_path(app, "ffprobe")?;
 
+    // Token de session aléatoire (par lancement) partagé avec le
+    // serveur Next via env. La garde server-side `/api/motion/**`
+    // l'exige (cf. src/lib/server/desktop-guard.ts) ; le webview le
+    // renvoie via le header x-webgen-desktop-token (desktop-token-bridge).
+    let desktop_token = uuid::Uuid::new_v4().to_string();
+
     eprintln!("[webgen-motion] spawning Node sidecar : {server_js:?}");
     eprintln!("[webgen-motion] runners dir : {runners_dir:?}");
     eprintln!("[webgen-motion] ffmpeg path : {ffmpeg_path:?}");
@@ -126,6 +132,7 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
         .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
         .env("WEBGEN_FFMPEG_BIN", ffmpeg_path.to_string_lossy().to_string())
         .env("WEBGEN_FFPROBE_BIN", ffprobe_path.to_string_lossy().to_string())
+        .env("WEBGEN_DESKTOP_TOKEN", desktop_token.clone())
         .current_dir(standalone_dir)
         .spawn()
         .map_err(|e| format!("spawn node : {e}"))?;
