@@ -1,0 +1,50 @@
+# Qualité continue — lint + typecheck + tests sur chaque push et PR.
+#
+# Indépendant de `desktop-release.yml` (qui ne tourne, lui, que sur les
+# tags `v*`). Ici on protège `main` : aucune régression lint / type /
+# test ne doit passer en silence.
+#
+# Volontairement léger : pas de build Next complet ni de Rust/Tauri —
+# le pipeline (Puppeteer / ffmpeg / Remotion) n'est pas exercé en CI,
+# seulement le code applicatif et la logique testée par Vitest.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Annule les runs obsolètes quand on pousse vite plusieurs commits.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    # Puppeteer télécharge Chromium au `npm ci` — inutile en CI, on
+    # gagne du temps et de la bande passante en le sautant.
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm run test:run
