@@ -43,6 +43,11 @@ import {
 } from "../remotion/lib/types";
 import { buildEditPlan, type EditAlignmentFile, type EditStepTiming } from "./lib/edit-plan";
 import { getTour } from "../src/lib/tour-loader";
+import {
+  resolveChromiumExecutable,
+  ensureChromium,
+  remotionBrowserArgs,
+} from "../src/lib/chromium";
 import { isFeatureEnabled } from "../src/lib/edition";
 import type { Hotspot, TourStep } from "../src/lib/types/tour";
 
@@ -492,6 +497,19 @@ async function main(): Promise<void> {
   // does `require('./dist/index')` relative to its own location and
   // fails when the symlink-resolved path isn't `@remotion/cli/`.
   // Going through the canonical CLI script bypasses that.
+  // Même Chromium que Puppeteer (capture) : env > système > cache app.
+  // En dev (rien résolu), on laisse Remotion utiliser son navigateur par
+  // défaut. En app packagée sans rien, on télécharge une fois (partagé).
+  let remotionBrowser: string | undefined;
+  const resolvedBrowser = await resolveChromiumExecutable();
+  if (resolvedBrowser) {
+    remotionBrowser = resolvedBrowser.path;
+    console.log(`  Chromium (Remotion): ${resolvedBrowser.source} → ${remotionBrowser}`);
+  } else if (process.env.WEBGEN_RUNNERS_DIR) {
+    console.log("  Chromium (Remotion): aucun trouvé — téléchargement (1ère fois)…");
+    remotionBrowser = (await ensureChromium()).path;
+  }
+
   const remotionCli = resolve(
     process.cwd(),
     "node_modules",
@@ -520,6 +538,7 @@ async function main(): Promise<void> {
     frame3d ? "angle" : "swangle",
     "--log",
     "info",
+    ...remotionBrowserArgs(remotionBrowser),
   ];
 
   const proc = spawn(process.execPath, remotionArgs, {

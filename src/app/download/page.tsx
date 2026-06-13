@@ -16,7 +16,7 @@ const SPECS = [
       ["·", "macOS 13 Ventura ou supérieur"],
       ["·", "Apple Silicon ou Intel 64-bit"],
       ["·", "8 Go de RAM (16 recommandé)"],
-      ["·", "FFmpeg & Chromium embarqués"],
+      ["·", "FFmpeg embarqué · Chromium installé au 1er lancement"],
     ],
   },
   {

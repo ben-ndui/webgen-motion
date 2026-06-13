@@ -31,6 +31,7 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import puppeteer, { type Cookie, type Page } from "puppeteer";
 import { getTour } from "../src/lib/tour-loader";
+import { resolveChromiumExecutable, ensureChromium } from "../src/lib/chromium";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import type { MotionCategory } from "../src/lib/motion-categories";
 import {
@@ -206,7 +207,27 @@ async function main(): Promise<void> {
   console.log(`  Splashes: ${showSplashes ? "on (sectioned tour)" : "off (legacy single-MP4)"}`);
   console.log("");
 
+  // Chromium unifié : env > système > cache app. En dev (rien résolu)
+  // on laisse Puppeteer utiliser son cache npm install (executablePath
+  // undefined). En app packagée sans rien, on télécharge une fois.
+  let chromiumPath: string | undefined;
+  const resolvedChromium = await resolveChromiumExecutable();
+  if (resolvedChromium) {
+    chromiumPath = resolvedChromium.path;
+    console.log(`  Chromium: ${resolvedChromium.source} → ${chromiumPath}`);
+  } else if (process.env.WEBGEN_RUNNERS_DIR) {
+    console.log("  Chromium: aucun trouvé — téléchargement (1ère fois)…");
+    const dl = await ensureChromium({
+      onProgress: (d, t) => {
+        if (t > 0) process.stdout.write(`\r  Chromium download: ${Math.round((d / t) * 100)}%   `);
+      },
+    });
+    chromiumPath = dl.path;
+    console.log(`\n  Chromium: téléchargé → ${chromiumPath}`);
+  }
+
   const browser = await puppeteer.launch({
+    ...(chromiumPath ? { executablePath: chromiumPath } : {}),
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
