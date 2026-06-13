@@ -302,20 +302,61 @@ function CaptureResults({
  * iOS/Android quand des outils manquent (sinon rien, pas de bruit). Évite
  * un échec cryptique au clic « Capturer ».
  */
-function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
-  const [status, setStatus] = useState<null | {
-    platforms: { ios: boolean; android: boolean };
-    maestro: { present: boolean };
-    adb: { present: boolean };
-    simctl: { present: boolean };
-  }>(null);
+interface MobileStatus {
+  platforms: { ios: boolean; android: boolean };
+  maestro: { present: boolean };
+  adb: { present: boolean };
+  simctl: { present: boolean };
+  installable: boolean;
+}
 
-  useEffect(() => {
+function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
+  const [status, setStatus] = useState<MobileStatus | null>(null);
+  const [installing, setInstalling] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [installErr, setInstallErr] = useState<string | null>(null);
+
+  const refresh = () =>
     fetch("/api/motion/mobile/status")
       .then((r) => (r.ok ? r.json() : null))
       .then(setStatus)
       .catch(() => {});
+
+  useEffect(() => {
+    refresh();
   }, []);
+
+  async function install() {
+    setInstalling(true);
+    setInstallErr(null);
+    setProgress("Démarrage…");
+    try {
+      const res = await fetch("/api/motion/mobile/ensure", { method: "POST" });
+      if (!res.body) throw new Error("pas de flux de progression");
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const ev = JSON.parse(line) as { type: string; message?: string };
+          if (ev.type === "log") setProgress(ev.message ?? null);
+          else if (ev.type === "error") setInstallErr(ev.message ?? "erreur");
+          else if (ev.type === "done") setProgress("✓ Outils installés.");
+        }
+      }
+      await refresh();
+    } catch (e) {
+      setInstallErr((e as Error).message);
+    } finally {
+      setInstalling(false);
+    }
+  }
 
   if (!status) return null;
   const ready =
@@ -327,19 +368,45 @@ function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
   if (platform === "ios" && !status.simctl.present) missing.push("Xcode / Simulateur");
   if (platform === "android" && !status.adb.present) missing.push("adb");
 
+  // Maestro + JRE = auto-installables ; Xcode/adb relèvent du système.
+  const canInstall = status.installable && !status.maestro.present;
+
   return (
     <div
       data-wm-id="editor.capture.mobile-readiness"
-      className="mb-4 flex items-start gap-2 rounded-[var(--r-lg)] border border-amber-200 bg-amber-50 px-4 py-3"
+      className="mb-4 rounded-[var(--r-lg)] border border-amber-200 bg-amber-50 px-4 py-3"
     >
-      <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
-      <p className="text-xs text-amber-900">
-        Outils {platform} manquants : <strong>{missing.join(" · ")}</strong>. La
-        capture mobile échouera tant qu&apos;ils ne sont pas installés.{" "}
-        <a href="/help#mobile" className="underline font-medium">
-          Comment installer
-        </a>
-      </p>
+      <div className="flex items-start gap-2">
+        <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-amber-900">
+            Outils {platform} manquants :{" "}
+            <strong>{missing.join(" · ")}</strong>.{" "}
+            <a href="/help#mobile" className="underline font-medium">
+              Comment installer
+            </a>
+          </p>
+          {(installing || progress || installErr) && (
+            <p className="text-[11px] font-mono text-amber-800 mt-1.5 break-words">
+              {installErr ? `✗ ${installErr}` : progress}
+            </p>
+          )}
+          {canInstall && !installing && (
+            <button
+              onClick={install}
+              data-wm-id="editor.capture.install-mobile-tools"
+              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ink text-bg text-xs font-medium hover:opacity-90"
+            >
+              Installer Maestro + JRE — ~400 Mo, une fois
+            </button>
+          )}
+          {installing && (
+            <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-800">
+              <span className="spinner" /> Installation en cours… (plusieurs minutes)
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

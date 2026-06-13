@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { platform as osPlatform } from "node:os";
+import { join } from "node:path";
+import { resolveMaestro, resolveJavaHome } from "./mobile-tools-install";
 
 /**
  * Détection des outils de capture mobile native (B mobile onboarding).
@@ -19,8 +21,8 @@ export interface ToolStatus {
   bin?: string;
   /** 1ʳᵉ ligne de version si disponible (UX). */
   version?: string;
-  /** Source : bundlé (env) ou système (PATH). */
-  source?: "bundled" | "system";
+  /** Source : env (bundlé), cache app (installé à la demande), système (PATH). */
+  source?: "env" | "cache" | "system";
 }
 
 export interface MobileToolsStatus {
@@ -35,6 +37,8 @@ export interface MobileToolsStatus {
   simctl: ToolStatus;
   /** Plateformes prêtes (outils minimaux présents). */
   platforms: { ios: boolean; android: boolean };
+  /** Maestro + JRE peuvent être installés automatiquement (macOS/Linux). */
+  installable: boolean;
 }
 
 function probe(
@@ -54,7 +58,7 @@ function probe(
       present: true,
       bin,
       version: (out || "").split("\n")[0]?.trim() || undefined,
-      source: fromEnv ? "bundled" : "system",
+      source: fromEnv ? "env" : "system",
     };
   } catch {
     return { present: false };
@@ -63,8 +67,15 @@ function probe(
 
 export function detectMobileTools(): MobileToolsStatus {
   const os = osPlatform();
-  const maestro = probe("WEBGEN_MAESTRO_BIN", "maestro", ["--version"]);
-  const java = probe("WEBGEN_JAVA_BIN", "java", ["-version"]);
+  // Maestro + Java : résolus env > cache app (installé à la demande) > système.
+  const mr = resolveMaestro();
+  const maestro: ToolStatus = mr
+    ? { present: true, bin: mr.bin, source: mr.source }
+    : { present: false };
+  const javaHome = resolveJavaHome();
+  const java: ToolStatus = javaHome
+    ? { present: true, bin: join(javaHome, "bin", "java"), source: "cache" }
+    : probe("WEBGEN_JAVA_BIN", "java", ["-version"]);
   const adb = probe("WEBGEN_ADB_BIN", "adb", ["version"]);
   // simctl n'existe que sur macOS, via xcrun.
   const simctl =
@@ -83,6 +94,7 @@ export function detectMobileTools(): MobileToolsStatus {
       ios: maestro.present && simctl.present,
       android: maestro.present && adb.present,
     },
+    installable: os === "darwin" || os === "linux",
   };
 }
 

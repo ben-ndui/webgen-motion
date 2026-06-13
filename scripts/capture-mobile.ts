@@ -38,6 +38,10 @@ import {
 import { spawn, spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import {
+  resolveMaestro,
+  resolveJavaHome,
+} from "../src/lib/server/mobile-tools-install";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import type { MotionCategory } from "../src/lib/motion-categories";
@@ -84,7 +88,18 @@ if (!appId) {
 const device = deviceArg ?? tour.deviceId;
 
 const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
-const MAESTRO_BIN = process.env.WEBGEN_MAESTRO_BIN || "maestro";
+// Maestro : env > cache app (installé à la demande) > système. + JRE bundlé
+// si dispo → on l'injecte via JAVA_HOME pour que Maestro tourne sans JDK système.
+const _maestro = resolveMaestro();
+const MAESTRO_BIN = _maestro?.bin ?? "maestro";
+const _javaHome = resolveJavaHome();
+const MAESTRO_ENV: NodeJS.ProcessEnv = {
+  ...process.env,
+  MAESTRO_CLI_NO_ANALYTICS: "1",
+  ...(_javaHome
+    ? { JAVA_HOME: _javaHome, PATH: `${_javaHome}/bin:${process.env.PATH ?? ""}` }
+    : {}),
+};
 const ADB_BIN = process.env.WEBGEN_ADB_BIN || "adb";
 
 // ── Section planning (mirror of capture-tour's planSections) ──────
@@ -367,7 +382,7 @@ function runMaestroFlow(flowPath: string, debugDir: string): FlowRunResult {
   const r = spawnSync(MAESTRO_BIN, args, {
     stdio: ["ignore", "pipe", "pipe"],
     encoding: "utf-8",
-    env: { ...process.env, MAESTRO_CLI_NO_ANALYTICS: "1" },
+    env: MAESTRO_ENV,
     timeout: 10 * 60 * 1000,
   });
   if (r.stdout) process.stdout.write(indent(r.stdout));
@@ -555,10 +570,13 @@ main().catch((err) => {
 
 async function main(): Promise<void> {
   // Préflight : outils présents ?
-  const maestroOk = spawnSync(MAESTRO_BIN, ["--version"], { encoding: "utf-8" });
+  const maestroOk = spawnSync(MAESTRO_BIN, ["--version"], {
+    encoding: "utf-8",
+    env: MAESTRO_ENV,
+  });
   if (maestroOk.status !== 0) {
     console.error(
-      `Maestro introuvable. Installe-le : brew install mobile-dev-inc/tap/maestro (ou curl -fsSL https://get.maestro.mobile.dev | bash)`,
+      `Maestro introuvable. Installe-le depuis l'app (onglet Capture → « Installer les outils mobiles »), ou manuellement : brew install mobile-dev-inc/tap/maestro`,
     );
     process.exit(1);
   }
