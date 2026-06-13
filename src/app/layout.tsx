@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import UpdateChecker from "./_components/update-checker";
 import DesktopTokenBridge from "./_components/desktop-token-bridge";
+import LicenseRefreshChecker from "./_components/license-refresh-checker";
 import PostHogProvider from "./_components/posthog-provider";
 import CookieConsent from "./_components/cookie-consent";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -52,6 +53,7 @@ export default function RootLayout({
         {children}
         <PostHogProvider />
         <CookieConsent />
+        <LicenseRefreshChecker />
         <UpdateChecker />
         <DesktopTokenBridge />
       </body>
