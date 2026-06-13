@@ -186,6 +186,15 @@ export default function HelpPage() {
             </li>
           </ul>
 
+          <p className="text-xs text-muted leading-relaxed mb-4 rounded-lg border border-line bg-bg-sunken px-3 py-2">
+            💡 <strong>Enregistrement</strong> — <strong>iOS</strong> : via un{" "}
+            <strong>simulateur</strong> (booté avec ton app). Un iPhone physique
+            est détecté et pilotable, mais son écran ne s&apos;enregistre pas de
+            façon fiable sur macOS. <strong>Android</strong> : un vrai téléphone
+            (USB, débogage activé) <em>ou</em> un émulateur — les deux
+            s&apos;enregistrent.
+          </p>
+
           <h3 className="text-sm font-semibold text-ink mb-2">
             Créer un tour mobile
           </h3>

@@ -310,17 +310,29 @@ interface MobileStatus {
   installable: boolean;
 }
 
+interface MobileDevice {
+  platform: "ios" | "android";
+  kind: "device" | "simulator" | "emulator";
+  name: string;
+}
+
 function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
   const [status, setStatus] = useState<MobileStatus | null>(null);
+  const [devices, setDevices] = useState<MobileDevice[]>([]);
   const [installing, setInstalling] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [installErr, setInstallErr] = useState<string | null>(null);
 
-  const refresh = () =>
+  const refresh = () => {
     fetch("/api/motion/mobile/status")
       .then((r) => (r.ok ? r.json() : null))
       .then(setStatus)
       .catch(() => {});
+    fetch("/api/motion/mobile/devices")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setDevices(d.devices ?? []))
+      .catch(() => {});
+  };
 
   useEffect(() => {
     refresh();
@@ -359,53 +371,100 @@ function MobileReadiness({ platform }: { platform: "ios" | "android" }) {
   }
 
   if (!status) return null;
-  const ready =
-    platform === "ios" ? status.platforms.ios : status.platforms.android;
-  if (ready) return null; // tout est prêt → on ne pollue pas
 
-  const missing: string[] = [];
-  if (!status.maestro.present) missing.push("Maestro");
-  if (platform === "ios" && !status.simctl.present) missing.push("Xcode / Simulateur");
-  if (platform === "android" && !status.adb.present) missing.push("adb");
+  const toolsReady =
+    platform === "ios"
+      ? status.maestro.present && status.simctl.present
+      : status.maestro.present && status.adb.present;
 
-  // Maestro + JRE = auto-installables ; Xcode/adb relèvent du système.
-  const canInstall = status.installable && !status.maestro.present;
+  // ── 1. Outils manquants → installer / guider ──
+  if (!toolsReady) {
+    const missing: string[] = [];
+    if (!status.maestro.present) missing.push("Maestro");
+    if (platform === "ios" && !status.simctl.present) missing.push("Xcode / Simulateur");
+    if (platform === "android" && !status.adb.present) missing.push("adb");
+    const canInstall = status.installable && !status.maestro.present;
+    return (
+      <Banner>
+        <p className="text-xs text-amber-900">
+          Outils {platform} manquants : <strong>{missing.join(" · ")}</strong>.{" "}
+          <a href="/help#mobile" className="underline font-medium">
+            Comment installer
+          </a>
+        </p>
+        {(installing || progress || installErr) && (
+          <p className="text-[11px] font-mono text-amber-800 mt-1.5 break-words">
+            {installErr ? `✗ ${installErr}` : progress}
+          </p>
+        )}
+        {canInstall && !installing && (
+          <button
+            onClick={install}
+            data-wm-id="editor.capture.install-mobile-tools"
+            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ink text-bg text-xs font-medium hover:opacity-90"
+          >
+            Installer Maestro + JRE — ~400 Mo, une fois
+          </button>
+        )}
+        {installing && (
+          <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-800">
+            <span className="spinner" /> Installation en cours… (plusieurs minutes)
+          </span>
+        )}
+      </Banner>
+    );
+  }
 
+  // ── 2. Outils prêts → y a-t-il une cible ENREGISTRABLE ? ──
+  if (platform === "ios") {
+    const sim = devices.some((d) => d.platform === "ios" && d.kind === "simulator");
+    if (sim) return null; // simulateur booté → prêt à filmer
+    const phys = devices.some((d) => d.platform === "ios" && d.kind === "device");
+    return (
+      <Banner>
+        <p className="text-xs text-amber-900">
+          iOS s&apos;enregistre via un <strong>simulateur</strong> — boote-en un
+          (Xcode → Simulator) avec ton app.
+          {phys
+            ? " Ton iPhone branché est bien détecté et pilotable, mais l'enregistrement d'écran iOS passe par le simulateur."
+            : ""}{" "}
+          <a href="/help#mobile" className="underline font-medium">
+            Aide
+          </a>
+        </p>
+      </Banner>
+    );
+  }
+
+  // Android : un device physique OU un émulateur suffit (adb screenrecord).
+  if (!devices.some((d) => d.platform === "android")) {
+    return (
+      <Banner>
+        <p className="text-xs text-amber-900">
+          Branche un <strong>téléphone Android</strong> (USB, débogage activé) ou
+          boote un émulateur — les deux s&apos;enregistrent.{" "}
+          <a href="/help#mobile" className="underline font-medium">
+            Aide
+          </a>
+        </p>
+      </Banner>
+    );
+  }
+  return null;
+}
+
+function Banner({ children }: { children: React.ReactNode }) {
   return (
     <div
       data-wm-id="editor.capture.mobile-readiness"
       className="mb-4 rounded-[var(--r-lg)] border border-amber-200 bg-amber-50 px-4 py-3"
     >
       <div className="flex items-start gap-2">
-        <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs text-amber-900">
-            Outils {platform} manquants :{" "}
-            <strong>{missing.join(" · ")}</strong>.{" "}
-            <a href="/help#mobile" className="underline font-medium">
-              Comment installer
-            </a>
-          </p>
-          {(installing || progress || installErr) && (
-            <p className="text-[11px] font-mono text-amber-800 mt-1.5 break-words">
-              {installErr ? `✗ ${installErr}` : progress}
-            </p>
-          )}
-          {canInstall && !installing && (
-            <button
-              onClick={install}
-              data-wm-id="editor.capture.install-mobile-tools"
-              className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ink text-bg text-xs font-medium hover:opacity-90"
-            >
-              Installer Maestro + JRE — ~400 Mo, une fois
-            </button>
-          )}
-          {installing && (
-            <span className="mt-2 inline-flex items-center gap-1.5 text-xs text-amber-800">
-              <span className="spinner" /> Installation en cours… (plusieurs minutes)
-            </span>
-          )}
-        </div>
+        <AlertCircle
+          className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0"
+          strokeWidth={2.5}
+        />
+        <div className="flex-1 min-w-0">{children}</div>
       </div>
     </div>
   );

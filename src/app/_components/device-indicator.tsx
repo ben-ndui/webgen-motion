@@ -41,7 +41,12 @@ export default function DeviceIndicator() {
   const label =
     devices.length === 1 ? devices[0].name : `${devices.length} devices`;
   const title = devices
-    .map((d) => `${d.name} · ${d.platform} ${d.kind}`)
+    .map((d) => {
+      const base = `${d.name} · ${d.platform} ${d.kind}`;
+      return d.platform === "ios" && d.kind === "device"
+        ? `${base} — pilotable (enregistrement iOS via simulateur)`
+        : base;
+    })
     .join("\n");
 
   return (
