@@ -3,15 +3,16 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import posthog from "posthog-js";
+import { isWebPublic, getConsent, CONSENT_EVENT } from "@/lib/consent";
 
 /**
- * Initialise PostHog **uniquement sur le web public** (genmotion.app).
+ * Initialise PostHog **uniquement sur le web public** (genmotion.app) ET
+ * **uniquement après consentement explicite** (opt-in, cf. CookieConsent).
  *
  * GARDES (le local-first est une promesse — on ne track jamais dans l'app) :
- *  - pas de clé `NEXT_PUBLIC_POSTHOG_KEY` → off (dev, builds sans analytics)
- *  - contexte Tauri (`window.__TAURI__`) → off (app desktop)
- *  - host localhost / 127.0.0.1 / tauri.localhost → off (app + dev local)
- *  - meta `webgen-desktop-token` présent → off (double sécurité shell desktop)
+ *  - pas de clé `NEXT_PUBLIC_POSTHOG_KEY` → off
+ *  - contexte non web-public (Tauri / localhost / meta desktop-token) → off
+ *  - consentement non accordé → off (rien tant que l'user n'a pas accepté)
  *
  * Rendu : rien (null). Monté une fois dans le layout, capture les
  * pageviews à chaque changement de route (App Router = SPA).
@@ -19,23 +20,12 @@ import posthog from "posthog-js";
  * Note : `NEXT_PUBLIC_*` est inliné au build → après avoir posé la clé
  * sur Vercel, il faut un redeploy pour qu'elle prenne.
  */
-function shouldEnable(): boolean {
-  if (typeof window === "undefined") return false;
-  if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return false;
-  const w = window as unknown as {
-    __TAURI__?: unknown;
-    __TAURI_INTERNALS__?: unknown;
-  };
-  if (w.__TAURI__ || w.__TAURI_INTERNALS__) return false;
-  const host = window.location.hostname;
-  if (["localhost", "127.0.0.1", "0.0.0.0", "tauri.localhost"].includes(host)) {
-    return false;
-  }
-  const meta = document.querySelector(
-    'meta[name="webgen-desktop-token"]',
-  ) as HTMLMetaElement | null;
-  if (meta?.content) return false;
-  return true;
+function canInit(): boolean {
+  return (
+    isWebPublic() &&
+    Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY) &&
+    getConsent() === "granted"
+  );
 }
 
 let initialized = false;
@@ -44,19 +34,28 @@ export default function PostHogProvider() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (initialized || !shouldEnable()) return;
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
-      api_host:
-        process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
-      person_profiles: "identified_only",
-      capture_pageview: false, // capturé manuellement ci-dessous
-      capture_pageleave: true,
-    });
-    initialized = true;
+    const tryInit = (fromConsentClick: boolean) => {
+      if (initialized || !canInit()) return;
+      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY as string, {
+        api_host:
+          process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://eu.i.posthog.com",
+        person_profiles: "identified_only",
+        capture_pageview: false, // capturé manuellement ci-dessous
+        capture_pageleave: true,
+      });
+      initialized = true;
+      // Consentement donné en cours de session (clic bannière) : le pathname
+      // n'a pas changé → on capture le pageview ici. Au mount d'un user déjà
+      // consentant, on laisse l'effet pathname le faire (évite le doublon).
+      if (fromConsentClick) posthog.capture("$pageview");
+    };
+    tryInit(false);
+    const onConsent = () => tryInit(true);
+    window.addEventListener(CONSENT_EVENT, onConsent);
+    return () => window.removeEventListener(CONSENT_EVENT, onConsent);
   }, []);
 
-  // Pageview au 1er load (l'effet d'init ci-dessus a déjà posé `initialized`
-  // avant que cet effet ne tourne) ET à chaque changement de route.
+  // Pageview à chaque changement de route (une fois initialisé).
   // pathname seul (évite la dépendance useSearchParams qui imposerait un
   // <Suspense>) — suffisant pour le funnel.
   useEffect(() => {
