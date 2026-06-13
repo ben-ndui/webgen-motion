@@ -112,6 +112,24 @@ describe("getEdition — résolution", () => {
     expect(resolveEdition().license?.email).toBe("client@example.com");
   });
 
+  it("recharge l'édition quand le .license apparaît, SANS resetEditionCache", async () => {
+    // Reproduit le bug : page rendue en community (cache), puis licence
+    // installée par une autre route/instance → le cache doit s'invalider
+    // tout seul via le changement du fichier (mtime/présence).
+    const { getEdition } = await freshEdition();
+    expect(getEdition()).toBe("community");
+    installLicense({ edition: "studio" }); // écrit ~/.webgen-motion/.license
+    expect(getEdition()).toBe("studio"); // pas de resetEditionCache appelé
+  });
+
+  it("retombe en community quand le .license est supprimé (sans reset)", async () => {
+    installLicense({ edition: "studio" });
+    const { getEdition } = await freshEdition();
+    expect(getEdition()).toBe("studio");
+    rmSync(join(fakeHome, ".webgen-motion", ".license"));
+    expect(getEdition()).toBe("community");
+  });
+
   it("retombe en community si la licence payée est expirée", async () => {
     installLicense({ edition: "studio", expiresAt: Date.now() - 1000 });
     const { getEdition, resolveEdition } = await freshEdition();

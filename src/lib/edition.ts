@@ -23,7 +23,7 @@
  *  4. default "community"
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { verifyLicense } from "./license/verify";
@@ -97,13 +97,29 @@ const FLAG_SETS: Record<WebgenMotionEdition, ReadonlySet<FeatureFlag>> = {
   enterprise: ENTERPRISE_FLAGS,
 };
 
-/** Cached resolved edition. Reset on next process boot ou via
- *  resetEditionCache() après un install/remove license. */
+/** Cached resolved edition + la "signature" du fichier .license au moment
+ *  du cache. On invalide automatiquement si le fichier change (install /
+ *  remove / refresh), SANS dépendre de resetEditionCache() — crucial car
+ *  la route d'install et le rendu de page peuvent vivre dans des bundles /
+ *  instances séparés (Next dev, serverless), où le reset d'un côté ne
+ *  vide pas le cache vu de l'autre. */
 let cachedResolution: EditionResolution | null = null;
+let cachedKey: string | null = null;
 
 /** Path du fichier license — `~/.webgen-motion/.license`. */
 function getLicensePath(): string {
   return join(homedir(), ".webgen-motion", ".license");
+}
+
+/** Signature du fichier license (présence + mtime + taille). L'override
+ *  env et la config ne changent pas à l'exécution → seul le fichier varie. */
+function licenseFileKey(): string {
+  try {
+    const s = statSync(getLicensePath());
+    return `${s.mtimeMs}:${s.size}`;
+  } catch {
+    return "none";
+  }
 }
 
 /** Résolution complète de l'edition : edition + source + license info
@@ -136,7 +152,9 @@ export interface EditionResolution {
  *  Ben peut désormais issuer des licenses signées via
  *  scripts/issue-license.mjs et les distribuer aux clients Studio. */
 export function resolveEdition(): EditionResolution {
-  if (cachedResolution) return cachedResolution;
+  const key = licenseFileKey();
+  if (cachedResolution && cachedKey === key) return cachedResolution;
+  cachedKey = key;
 
   // 1. env override — DEV UNIQUEMENT. Dans l'app desktop packagée
   // (le shell Rust Tauri set WEBGEN_RUNNERS_DIR pour le sidecar),
@@ -215,4 +233,5 @@ export function isFeatureEnabled(flag: FeatureFlag): boolean {
  *  que la prochaine résolution lise le nouveau .license. */
 export function resetEditionCache(): void {
   cachedResolution = null;
+  cachedKey = null;
 }
