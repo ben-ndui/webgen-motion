@@ -10,7 +10,7 @@ import HeroCompileLoop from "./_components/hero-compile-loop";
  * chaque release » (spec : docs/design/LANDING-V3-WIREFRAME.md). On vend la
  * MÉCANIQUE, pas la catégorie : hero-promesse → preuve (méta-démo) →
  * La Boucle (ship → re-render) → pipeline (Edit Engine en vedette) →
- * personas → comparaison honnête → pricing anti-abonnement →
+ * personas → comparaison honnête → pricing (Lifetime + abo) →
  * manifeste → CTA.
  *
  * Styling in ./landing.css (scoped .gm-landing, token-driven →
@@ -104,8 +104,8 @@ export default function LandingPage() {
               </h1>
               <p className="hero-sub reveal d2">
                 GEN&nbsp;MOTION rejoue ton produit — site web ou app native —, pose la voix off,
-                monte sur la musique. <b>Et le refait à l&apos;identique après chaque release.</b> En
-                local, sans abonnement.
+                monte sur la musique. <b>Et le refait à l&apos;identique après chaque release.</b>{" "}
+                100% en local, sur ta machine.
               </p>
               <div className="hero-cta reveal d3">
                 <LandingPrimaryCta className="btn btn-primary btn-lg" data-wm-id="landing.hero.cta-download" />
