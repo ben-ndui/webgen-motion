@@ -373,7 +373,8 @@ export default function LandingPage() {
               <h2 className="pricing-title">Un outil qu&apos;on possède.<br />Ou qu&apos;on prend au mois.</h2>
               <p className="pricing-sub" data-wm-id="landing.pricing.sub">
                 Le SaaS d&apos;en face&nbsp;: ~456&nbsp;$/an/siège. GEN&nbsp;MOTION Studio&nbsp;:
-                199&nbsp;€ à vie (tu le possèdes), ou dès 15&nbsp;€/mois si tu préfères étaler.
+                199&nbsp;€ à vie — tu le possèdes pour toujours. Ou en abonnement dès
+                15&nbsp;€/mois, résiliable quand tu veux.
               </p>
             </div>
             <div className="tiers">
@@ -393,7 +394,7 @@ export default function LandingPage() {
               <article className="tier featured reveal d2" data-wm-id="landing.pricing.studio">
                 <span className="tier-name">Studio</span>
                 <div className="tier-price"><span className="amt">199&nbsp;€</span><span className="per">à vie</span></div>
-                <p className="tier-note">perpétuel · ou dès 15&nbsp;€/mois</p>
+                <p className="tier-note">paiement unique · mises à jour à vie</p>
                 <ul className="feat">
                   <li className="plus"><Check /> Tout Community, plus&nbsp;:</li>
                   <li><Check /> Export timeline <b>.otio</b> — Resolve / Premiere</li>
@@ -401,6 +402,10 @@ export default function LandingPage() {
                   <li><Check /> Presets Cinematic &amp; Glitch</li>
                   <li><Check /> Music library · multi-format · sans watermark</li>
                 </ul>
+                <p className="tier-or" data-wm-id="landing.pricing.studio-sub">
+                  <span className="lbl">ou en abonnement</span>
+                  <b>15&nbsp;€</b>/mois · <b>120&nbsp;€</b>/an — annule quand tu veux
+                </p>
                 <Link className="btn btn-primary btn-lg btn-block" href={DOWNLOAD}>Voir les offres Studio</Link>
               </article>
             </div>

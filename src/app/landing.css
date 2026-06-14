@@ -159,6 +159,9 @@
 .gm-landing .tier-price .amt { font-size: var(--t-3xl); color: var(--ink); font-weight: 600; letter-spacing: var(--tracking-tight); }
 .gm-landing .tier-price .per { font-size: var(--t-sm); color: var(--muted); }
 .gm-landing .tier-note { font-size: var(--t-xs); color: var(--faint); margin-top: -6px; }
+.gm-landing .tier-or { font-size: var(--t-sm); color: var(--muted); padding-top: var(--s-3); border-top: 1px dashed var(--line); }
+.gm-landing .tier-or b { color: var(--ink); font-weight: 600; }
+.gm-landing .tier-or .lbl { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--faint); display: block; margin-bottom: 2px; }
 .gm-landing .feat { list-style: none; padding: 0; margin: var(--s-2) 0 0; display: grid; gap: 11px; }
 .gm-landing .feat li { display: flex; gap: 11px; align-items: flex-start; font-size: var(--t-sm); color: var(--ink-soft); }
 .gm-landing .feat li.plus { color: var(--ink); font-weight: 500; }
