@@ -10,6 +10,7 @@ import WizardWelcomeStep from "./_components/wizard-welcome-step";
 import WizardBackendStep from "./_components/wizard-backend-step";
 import WizardElevenLabsStep from "./_components/wizard-elevenlabs-step";
 import WizardVoiceboxStep from "./_components/wizard-voicebox-step";
+import WizardGoogleStep from "./_components/wizard-google-step";
 import WizardDoneStep from "./_components/wizard-done-step";
 import type {
   PublicConfig,
@@ -55,6 +56,9 @@ export default function SetupPage() {
   const [voiceboxStatus, setVoiceboxStatus] = useState<
     "idle" | "checking" | "found" | "unreachable"
   >("idle");
+  // Google flow state
+  const [googleCredsPath, setGoogleCredsPath] = useState("");
+  const [googleVoice, setGoogleVoice] = useState("");
 
   // Initial config fetch + auto-jump to "done" si déjà configuré.
   useEffect(() => {
@@ -68,12 +72,16 @@ export default function SetupPage() {
           setVoiceboxProfileId(c.voicebox.profileId ?? "");
           setVoiceboxEngine(c.voicebox.engine);
           setVoiceboxModelSize(c.voicebox.modelSize);
+          setGoogleCredsPath(c.google.credentialsPath ?? "");
+          setGoogleVoice(c.google.voice ?? "");
           const elevenSaved =
             c.elevenlabs.hasApiKey && !!c.elevenlabs.voiceId;
           const voiceboxSaved = !!c.voicebox.profileId;
+          const googleSaved = c.google.hasCredentials;
           if (
             (c.defaultBackend === "elevenlabs" && elevenSaved) ||
-            (c.defaultBackend === "voicebox" && voiceboxSaved)
+            (c.defaultBackend === "voicebox" && voiceboxSaved) ||
+            (c.defaultBackend === "google" && googleSaved)
           ) {
             setStep("done");
           }
@@ -141,6 +149,44 @@ export default function SetupPage() {
     }
   };
 
+  const saveGoogle = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/motion/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          defaultBackend: "google",
+          google: {
+            credentialsPath: googleCredsPath.trim() || undefined,
+            voice: googleVoice.trim() || undefined,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        setError(err.error);
+        return;
+      }
+      const next = (await res.json()) as PublicConfig;
+      setConfig(next);
+      if (!next.google.hasCredentials) {
+        setError(
+          "Backend Google enregistré, mais aucun credentials trouvé. Renseigne le chemin du service account ou définis GOOGLE_APPLICATION_CREDENTIALS.",
+        );
+        return;
+      }
+      setStep("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Network error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveElevenLabs = async () => {
     if (!apiKey.trim() || !voiceId.trim()) {
       setError("API key et voice ID requis.");
@@ -199,8 +245,21 @@ export default function SetupPage() {
         {step === "backend" && (
           <WizardBackendStep
             initial={config?.defaultBackend ?? "elevenlabs"}
-            onPick={(b) => setStep(b === "voicebox" ? "voicebox" : "elevenlabs")}
+            onPick={(b) => setStep(b)}
             onPrev={() => setStep("welcome")}
+          />
+        )}
+
+        {step === "google" && (
+          <WizardGoogleStep
+            credentialsPath={googleCredsPath}
+            setCredentialsPath={setGoogleCredsPath}
+            voice={googleVoice}
+            setVoice={setGoogleVoice}
+            saving={saving}
+            error={error}
+            onPrev={() => setStep("backend")}
+            onSave={saveGoogle}
           />
         )}
 

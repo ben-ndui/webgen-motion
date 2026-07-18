@@ -7,16 +7,18 @@ import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
  * Backend choice step — ElevenLabs cloud vs Voicebox local.
  * Sprint refactor wizard.
  */
+type Backend = "elevenlabs" | "voicebox" | "google";
+
 export default function WizardBackendStep({
   initial,
   onPick,
   onPrev,
 }: {
-  initial: "elevenlabs" | "voicebox";
-  onPick: (b: "elevenlabs" | "voicebox") => void;
+  initial: Backend;
+  onPick: (b: Backend) => void;
   onPrev: () => void;
 }) {
-  const [pick, setPick] = useState<"elevenlabs" | "voicebox">(initial);
+  const [pick, setPick] = useState<Backend>(initial);
   return (
     <section
       data-wm-id="setup.step.backend"
@@ -41,7 +43,7 @@ export default function WizardBackendStep({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <button
           data-wm-id="setup.backend.elevenlabs-card"
           type="button"
@@ -85,6 +87,27 @@ export default function WizardBackendStep({
           <p className="text-xs text-muted leading-relaxed">
             7 moteurs (qwen, kokoro, chatterbox…). Tourne via l&apos;app
             desktop. Privacy totale, vitesse selon machine.
+          </p>
+        </button>
+        <button
+          data-wm-id="setup.backend.google-card"
+          type="button"
+          onClick={() => setPick("google")}
+          className={`text-left rounded-xl border-2 p-4 transition-all ${
+            pick === "google"
+              ? "border-accent bg-surface-2"
+              : "border-line hover:border-line-strong bg-surface"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-semibold text-ink">Google</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">
+              Gratuit
+            </span>
+          </div>
+          <p className="text-xs text-muted leading-relaxed">
+            Cloud TTS Neural2 FR. Gratuit dans le quota Google. Dico de
+            prononciation par tour (SSML). Mode narratif supporté.
           </p>
         </button>
       </div>

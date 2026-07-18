@@ -7,7 +7,7 @@
  */
 
 export interface PublicConfig {
-  defaultBackend: "elevenlabs" | "voicebox";
+  defaultBackend: "elevenlabs" | "voicebox" | "google";
   elevenlabs: {
     hasApiKey: boolean;
     apiKeyMasked: string | null;
@@ -20,6 +20,12 @@ export interface PublicConfig {
     engine: string;
     modelSize: string;
     language: string;
+  };
+  google: {
+    voice: string;
+    languageCode: string;
+    credentialsPath: string | null;
+    hasCredentials: boolean;
   };
   envFallback: {
     hasApiKey: boolean;
@@ -40,4 +46,10 @@ export interface VoiceboxProfile {
   description: string | null;
 }
 
-export type WizardStep = "welcome" | "backend" | "elevenlabs" | "voicebox" | "done";
+export type WizardStep =
+  | "welcome"
+  | "backend"
+  | "elevenlabs"
+  | "voicebox"
+  | "google"
+  | "done";

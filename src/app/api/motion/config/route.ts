@@ -23,7 +23,8 @@ export async function PUT(req: NextRequest) {
   const sanitized: MotionConfig = {};
   if (
     body.defaultBackend === "elevenlabs" ||
-    body.defaultBackend === "voicebox"
+    body.defaultBackend === "voicebox" ||
+    body.defaultBackend === "google"
   ) {
     sanitized.defaultBackend = body.defaultBackend;
   }
@@ -47,6 +48,22 @@ export async function PUT(req: NextRequest) {
       if (typeof v === "string") {
         sanitized.voicebox[k] = v.trim() || undefined;
       }
+    }
+  }
+  if (body.google) {
+    sanitized.google = {};
+    if (typeof body.google.voice === "string") {
+      sanitized.google.voice = body.google.voice.trim() || undefined;
+    }
+    if (typeof body.google.languageCode === "string") {
+      sanitized.google.languageCode = body.google.languageCode.trim() || undefined;
+    }
+    if (typeof body.google.speakingRate === "number") {
+      sanitized.google.speakingRate = body.google.speakingRate;
+    }
+    if (typeof body.google.credentialsPath === "string") {
+      sanitized.google.credentialsPath =
+        body.google.credentialsPath.trim() || undefined;
     }
   }
   if (body.agent) {

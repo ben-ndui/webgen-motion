@@ -360,6 +360,13 @@ export interface PublicConfig {
     modelSize: string;
     language: string;
   };
+  google: {
+    voice: string;
+    languageCode: string;
+    credentialsPath: string | null;
+    /** true si un service account est dispo (config OU env). */
+    hasCredentials: boolean;
+  };
   agent: {
     provider: AgentProviderKind;
     hasApiKey: boolean;
@@ -405,6 +412,14 @@ export function getPublicConfig(): PublicConfig {
       engine: cfg.voicebox?.engine ?? DEFAULT_VOICEBOX_ENGINE,
       modelSize: cfg.voicebox?.modelSize ?? DEFAULT_VOICEBOX_MODEL_SIZE,
       language: cfg.voicebox?.language ?? DEFAULT_VOICEBOX_LANGUAGE,
+    },
+    google: {
+      voice: cfg.google?.voice ?? "fr-FR-Neural2-D",
+      languageCode: cfg.google?.languageCode ?? "fr-FR",
+      credentialsPath: cfg.google?.credentialsPath ?? null,
+      hasCredentials: !!(
+        cfg.google?.credentialsPath || process.env.GOOGLE_APPLICATION_CREDENTIALS
+      ),
     },
     agent: {
       provider: agentProvider,
