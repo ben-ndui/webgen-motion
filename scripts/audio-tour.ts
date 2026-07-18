@@ -55,6 +55,7 @@ import { join } from "node:path";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
+import { marksToCharAlignment } from "../src/lib/google-alignment";
 import { getVoCacheDir } from "../src/lib/motion-tour-store";
 import {
   resolveVoiceBackend,
@@ -197,11 +198,17 @@ async function main(): Promise<void> {
     console.log(
       `  Settings : stability=${effectiveSettings.stability} similarity=${effectiveSettings.similarityBoost} style=${effectiveSettings.style} speaker_boost=${effectiveSettings.useSpeakerBoost}`,
     );
-  } else {
+  } else if (backend.kind === "voicebox") {
     console.log(`  Backend  : Voicebox (local @ ${backend.url})`);
     console.log(`  Profile  : ${backend.profileId}`);
     console.log(`  Engine   : ${backend.engine} · ${backend.modelSize}`);
     console.log(`  Lang     : ${backend.language}`);
+  } else {
+    console.log(`  Backend  : Google Cloud TTS (gratuit, quota Google)`);
+    console.log(`  Voice    : ${backend.voice} · ${backend.languageCode}`);
+    console.log(
+      `  Dico     : ${Object.keys(backend.pronunciation).length} terme(s) de prononciation`,
+    );
   }
   if (Object.keys(overrides).length > 0) {
     console.log(`  Overrides: ${Object.keys(overrides).length} step(s)`);
@@ -552,7 +559,9 @@ async function main(): Promise<void> {
             engine: backend.engine,
             modelSize: backend.modelSize,
           }
-        : { backend: "unknown" };
+        : backend?.kind === "google"
+          ? { backend: "google", voice: backend.voice }
+          : { backend: "unknown" };
   const alignPath = join(tourDir!, "voiceover-alignment.json");
   writeFileSync(
     alignPath,
@@ -731,7 +740,9 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
             engine: backend.engine,
             modelSize: backend.modelSize,
           }
-        : { backend: "unknown" };
+        : backend?.kind === "google"
+          ? { backend: "google", voice: backend.voice }
+          : { backend: "unknown" };
   const alignPath = join(tourDir, "voiceover-alignment.json");
   writeFileSync(
     alignPath,
@@ -801,7 +812,9 @@ async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
           effectiveSettings.style.toFixed(3),
           effectiveSettings.useSpeakerBoost ? "1" : "0",
         ].join(",")}`
-      : `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}`;
+      : backend.kind === "voicebox"
+        ? `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}`
+        : `google|${backend.voice}|${backend.languageCode}|${backend.speakingRate}|${JSON.stringify(backend.pronunciation)}`;
   const hash = createHash("sha1")
     .update(`${backendKey}|${phonetic}`)
     .digest("hex")
@@ -823,7 +836,9 @@ async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
   const fetched =
     backend.kind === "elevenlabs"
       ? await fetchElevenLabsTts(phonetic, backend)
-      : await fetchVoiceboxTts(phonetic, backend);
+      : backend.kind === "voicebox"
+        ? await fetchVoiceboxTts(phonetic, backend)
+        : await fetchGoogleTts(phonetic, backend);
   writeFileSync(mp3Path, fetched.audio);
   writeFileSync(
     alignPath,
@@ -879,6 +894,37 @@ interface FetchedTts {
   audio: Buffer;
   alignment: ElevenLabsAlignment | null;
   normalizedAlignment: ElevenLabsAlignment | null;
+}
+
+/**
+ * Google Cloud TTS (Neural2, GRATUIT quota) via le package smoothandesign-tts.
+ * Récupère les timepoints Google (1 <mark> par mot) et les convertit en
+ * alignement char-level (format ElevenLabs) → sous-titres karaoké compatibles.
+ * La prononciation (dico du tour) est appliquée en SSML <phoneme> DANS le
+ * package (pas de substitution texte). Durée du dernier mot estimée depuis
+ * l'espacement médian des marks (suffisant : le pad ffmpeg cale la longueur).
+ */
+async function fetchGoogleTts(
+  text: string,
+  cfg: Extract<ResolvedVoiceBackend, { kind: "google" }>,
+): Promise<FetchedTts> {
+  const { synthGoogleTtsAligned } = await import("smoothandesign-tts");
+  const { mp3, marks } = await synthGoogleTtsAligned(text, {
+    voice: cfg.voice,
+    languageCode: cfg.languageCode,
+    speakingRate: cfg.speakingRate,
+    pronunciation: cfg.pronunciation,
+  });
+  const gaps: number[] = [];
+  for (let i = 1; i < marks.length; i++) {
+    const g = marks[i].timeSec - marks[i - 1].timeSec;
+    if (g > 0) gaps.push(g);
+  }
+  gaps.sort((a, b) => a - b);
+  const medianGap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0.4;
+  const lastStart = marks.length ? marks[marks.length - 1].timeSec : 0;
+  const alignment = marksToCharAlignment(text, marks, lastStart + medianGap);
+  return { audio: mp3, alignment, normalizedAlignment: alignment };
 }
 
 async function fetchElevenLabsTts(

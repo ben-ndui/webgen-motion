@@ -164,9 +164,14 @@ export interface TourEntry {
   /** Optional path (repo-relative or absolute) of a bg music MP3.
    *  Mixed in compose at volume 0.18 (or ducked to 0.10 if VO too). */
   bgMusic?: string;
-  /** Override the global voice backend ("elevenlabs" cloud or
-   *  "voicebox" local). Falls back to the wizard's `defaultBackend`. */
-  voiceBackend?: "elevenlabs" | "voicebox";
+  /** Override the global voice backend ("elevenlabs" cloud, "voicebox"
+   *  local, ou "google" Cloud TTS gratuit). Falls back au `defaultBackend`. */
+  voiceBackend?: "elevenlabs" | "voicebox" | "google";
+  /** Voix Google (voiceBackend === "google"). Défaut fr-FR-Neural2-D. */
+  voiceGoogleVoice?: string;
+  /** Dico de prononciation DU TOUR (terme → IPA) — appliqué en SSML
+   *  <phoneme> par la voix Google. Ex. { UZME: "juzmi" }. */
+  voicePronunciation?: Record<string, string>;
   /** Override the global ElevenLabs voice id for this tour. Falls back
    *  to the wizard's config / `ELEVENLABS_VOICE_ID` when empty. Useful
    *  when you target multiple projects with different brand voices. */

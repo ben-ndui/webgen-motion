@@ -20,7 +20,7 @@ import { getEdition } from "./edition";
  * Sensitive (apiKey) lives outside the repo. Never commit config.json.
  */
 
-export type VoiceBackendKind = "elevenlabs" | "voicebox";
+export type VoiceBackendKind = "elevenlabs" | "voicebox" | "google";
 export type AgentProviderKind = "anthropic" | "openai" | "mistral";
 
 export interface MotionConfig {
@@ -50,6 +50,19 @@ export interface MotionConfig {
     modelSize?: string;
     /** Language code passed to /generate — Voicebox requires it. */
     language?: string;
+  };
+  /** Google Cloud TTS (Neural2 FR) — voix GRATUITE dans le quota Google.
+   *  Credentials via GOOGLE_APPLICATION_CREDENTIALS (service account JSON).
+   *  Le dico de prononciation vit PAR TOUR (voicePronunciation). */
+  google?: {
+    /** Voix Google (défaut fr-FR-Neural2-D). */
+    voice?: string;
+    /** Code langue (défaut fr-FR). */
+    languageCode?: string;
+    /** Débit (défaut 1.0). */
+    speakingRate?: number;
+    /** Chemin du service account JSON (sinon GOOGLE_APPLICATION_CREDENTIALS). */
+    credentialsPath?: string;
   };
   /** AI agent for auto-tour generation (Sprint 5). User brings their
    *  own key — webgen-motion ne proxifie rien, le user paie ses
@@ -209,6 +222,16 @@ export type ResolvedVoiceBackend =
       engine: string;
       modelSize: string;
       language: string;
+    }
+  | {
+      kind: "google";
+      voice: string;
+      languageCode: string;
+      speakingRate: number;
+      /** Dico de prononciation du tour (terme → IPA). */
+      pronunciation: Record<string, string>;
+      /** Chemin du service account (sinon ADC / env). */
+      credentialsPath?: string;
     };
 
 /**
@@ -224,10 +247,31 @@ export function resolveVoiceBackend(tour?: {
   voiceboxProfileId?: string;
   voiceboxEngine?: string;
   voiceboxModelSize?: string;
+  voiceGoogleVoice?: string;
+  voicePronunciation?: Record<string, string>;
 }): ResolvedVoiceBackend | null {
   const cfg = getConfig();
   const kind: VoiceBackendKind =
     tour?.voiceBackend ?? cfg.defaultBackend ?? "elevenlabs";
+
+  if (kind === "google") {
+    // Credentials : chemin explicite config/tour, sinon ADC via
+    // GOOGLE_APPLICATION_CREDENTIALS (résolu par le SDK à l'appel).
+    const credentialsPath =
+      cfg.google?.credentialsPath || process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    if (!credentialsPath) return null; // pas de creds → backend inutilisable
+    return {
+      kind: "google",
+      voice:
+        (tour?.voiceGoogleVoice && tour.voiceGoogleVoice.trim()) ||
+        cfg.google?.voice ||
+        "fr-FR-Neural2-D",
+      languageCode: cfg.google?.languageCode || "fr-FR",
+      speakingRate: cfg.google?.speakingRate ?? 1.0,
+      pronunciation: tour?.voicePronunciation ?? {},
+      credentialsPath,
+    };
+  }
 
   if (kind === "voicebox") {
     const profileId =

@@ -19,6 +19,7 @@
     "compose": "tsx scripts/compose-tour.ts"
   },
   "dependencies": {
+    "smoothandesign-tts": "file:../smoothandesign_tts",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
