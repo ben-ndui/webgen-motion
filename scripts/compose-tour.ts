@@ -528,14 +528,18 @@ async function main(): Promise<void> {
     stagingDir,
     "--concurrency",
     "4",
-    // Sprint 7 — quand frame3d est actif, WebGL est requis pour
-    // Three.js. Chromium headless de Remotion ne crée pas de
-    // context WebGL par défaut → on force "angle" (Almost Native
-    // GL Layer Engine) qui utilise SwiftShader software renderer
-    // si pas de GPU dispo. Aucun impact négatif sur les composes
-    // 2D (juste un peu plus de RAM côté Chromium).
+    // GL backend. On force "angle" (Metal sur macOS) partout — PAS
+    // "swangle" (SwiftShader software) : ce dernier TUILE les couches
+    // animées (opacity + transform) pendant les transitions de section
+    // → la fenêtre se répète en grille 3×3 (artefact de texture-wrap du
+    // rasterizer logiciel). Vérifié 2026-07-20 : swangle tuile, angle
+    // rend proprement. Le path 3D utilisait déjà angle (WebGL requis).
     "--gl",
-    frame3d ? "angle" : "swangle",
+    "angle",
+    // delayRender timeout par frame (défaut 30s) : sous charge (concat de
+    // gros MP4s + audio), une frame lourde peut dépasser → on élargit.
+    "--timeout",
+    "120000",
     "--log",
     "info",
     ...remotionBrowserArgs(remotionBrowser),

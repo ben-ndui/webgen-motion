@@ -28,14 +28,20 @@ type ProfilesState =
 export default function VoiceOverrideCard({
   tour,
   onChange,
+  globalBackend,
 }: {
   tour: TourEntry;
   onChange: (next: TourEntry) => void;
+  /** Défaut global (config wizard) — sert de fallback quand le tour ne pin
+   *  pas de backend. Peut être Google/Voicebox/ElevenLabs. */
+  globalBackend?: "elevenlabs" | "voicebox" | "google" | null;
 }) {
   // Falls back to global default — UI label says "(global)" when the
   // tour itself doesn't pin a backend, but we still show the active
   // form below so the user can see what's effectively going to run.
-  const effectiveBackend = tour.voiceBackend ?? "elevenlabs";
+  const effectiveBackend =
+    tour.voiceBackend ?? globalBackend ?? "elevenlabs";
+  const isGlobal = !tour.voiceBackend;
 
   // Auto-fetch Voicebox profiles when the user switches to Voicebox
   // so they can pick from a dropdown instead of pasting UUIDs by
@@ -87,17 +93,30 @@ export default function VoiceOverrideCard({
           Voix off — override par tour
         </p>
         <p className="hidden sm:block text-[11px] text-muted leading-relaxed">
-          Backend cloud (ElevenLabs) ou local (Voicebox). Laisse vide les
-          autres champs pour utiliser la config globale du wizard.
+          Google (gratuit), ElevenLabs (cloud) ou Voicebox (local). Laisse
+          les champs vides pour hériter de la config globale du wizard.
         </p>
       </div>
 
       {/* Backend toggle */}
       <div>
-        <p className="text-[10px] uppercase tracking-wider font-mono text-muted mb-1.5">
-          Backend
-        </p>
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="flex items-baseline justify-between mb-1.5">
+          <p className="text-[10px] uppercase tracking-wider font-mono text-muted">
+            Backend
+          </p>
+          {isGlobal && (
+            <span className="text-[9px] font-mono uppercase tracking-wider text-faint">
+              hérité · global
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          <BackendPill
+            active={effectiveBackend === "google"}
+            label="Google"
+            hint="Gratuit"
+            onClick={() => onChange({ ...tour, voiceBackend: "google" })}
+          />
           <BackendPill
             active={effectiveBackend === "elevenlabs"}
             label="ElevenLabs"
@@ -157,6 +176,50 @@ export default function VoiceOverrideCard({
               className="mt-1 w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </label>
+        </div>
+      ) : effectiveBackend === "google" ? (
+        <div className="space-y-2">
+          <label className="block">
+            <span className="text-[10px] uppercase tracking-wider font-mono text-muted">
+              Voix Google
+            </span>
+            <input
+              type="text"
+              value={tour.voiceGoogleVoice ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...tour,
+                  voiceGoogleVoice:
+                    e.target.value.trim().length > 0
+                      ? e.target.value.trim()
+                      : undefined,
+                })
+              }
+              placeholder="fr-FR-Neural2-D (global)"
+              className="mt-1 w-full rounded-lg border border-line-strong px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </label>
+          <div>
+            <span className="text-[10px] uppercase tracking-wider font-mono text-muted block mb-1">
+              Prononciation (terme → IPA)
+            </span>
+            <PronunciationEditor
+              initial={tour.voicePronunciation ?? {}}
+              onChange={(dict) =>
+                onChange({
+                  ...tour,
+                  voicePronunciation:
+                    Object.keys(dict).length > 0 ? dict : undefined,
+                })
+              }
+            />
+          </div>
+          <p className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1.5 leading-relaxed">
+            Voix Google Cloud — <strong>gratuite</strong> dans le quota. Le dico
+            est injecté en SSML <code className="font-mono">&lt;phoneme&gt;</code>{" "}
+            IPA : il guide la prononciation sans altérer le texte affiché ni les
+            sous-titres.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -290,13 +353,15 @@ export default function VoiceOverrideCard({
           <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 leading-relaxed">
             ⚠ Mode <strong>narrative</strong> non supporté avec Voicebox
             tant que le forced-alignment local (chunk A1.1) n&apos;est pas
-            livré — passe en per-step ou utilise ElevenLabs pour les
-            tours narratifs.
+            livré — passe en per-step, ou utilise <strong>Google</strong>{" "}
+            (gratuit) ou ElevenLabs pour les tours narratifs.
           </p>
         </div>
       )}
 
-      {/* Voice settings sliders */}
+      {/* Voice settings sliders — ElevenLabs only (stability/style/etc. sont
+          des paramètres propres à ElevenLabs, ignorés par Google/Voicebox). */}
+      {effectiveBackend === "elevenlabs" && (
       <div className="pt-2 border-t border-line-soft space-y-2.5">
         <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted">
           Réglages ElevenLabs
@@ -349,6 +414,7 @@ export default function VoiceOverrideCard({
           ↻ Reset
         </button>
       </div>
+      )}
     </div>
   );
 }
@@ -398,6 +464,83 @@ function VoiceSlider({
         className="w-full h-1 mt-1 accent-[var(--accent)] cursor-pointer"
       />
       <p className="hidden sm:block text-[10px] text-faint mt-0.5">{hint}</p>
+    </div>
+  );
+}
+
+/**
+ * Éditeur de dico de prononciation (terme → IPA) pour le backend Google.
+ * State interne (rows) seedé une fois depuis `initial` pour garder le focus
+ * stable pendant la frappe ; on repousse un objet reconstruit au parent à
+ * chaque édition (les lignes au terme vide sont ignorées).
+ */
+function PronunciationEditor({
+  initial,
+  onChange,
+}: {
+  initial: Record<string, string>;
+  onChange: (dict: Record<string, string>) => void;
+}) {
+  const [rows, setRows] = useState<Array<{ term: string; ipa: string }>>(() => {
+    const entries = Object.entries(initial);
+    return entries.length
+      ? entries.map(([term, ipa]) => ({ term, ipa }))
+      : [{ term: "", ipa: "" }];
+  });
+
+  const push = (next: Array<{ term: string; ipa: string }>) => {
+    setRows(next);
+    const dict: Record<string, string> = {};
+    for (const r of next) {
+      const t = r.term.trim();
+      if (t) dict[t] = r.ipa.trim();
+    }
+    onChange(dict);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      {rows.map((row, i) => (
+        <div key={i} className="flex items-center gap-1.5">
+          <input
+            type="text"
+            value={row.term}
+            onChange={(e) =>
+              push(rows.map((r, j) => (j === i ? { ...r, term: e.target.value } : r)))
+            }
+            placeholder="UZME"
+            className="flex-1 min-w-0 rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+          <span className="text-muted text-xs">→</span>
+          <input
+            type="text"
+            value={row.ipa}
+            onChange={(e) =>
+              push(rows.map((r, j) => (j === i ? { ...r, ipa: e.target.value } : r)))
+            }
+            placeholder="juzmi"
+            className="flex-1 min-w-0 rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent"
+          />
+          <button
+            type="button"
+            onClick={() =>
+              push(rows.length > 1 ? rows.filter((_, j) => j !== i) : [{ term: "", ipa: "" }])
+            }
+            className="flex-shrink-0 w-6 h-6 grid place-items-center rounded-md text-muted hover:text-rose-600 hover:bg-rose-50 transition-colors"
+            title="Supprimer cette ligne"
+            aria-label="Supprimer"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => push([...rows, { term: "", ipa: "" }])}
+        className="text-[10px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors"
+      >
+        + Ajouter un terme
+      </button>
     </div>
   );
 }

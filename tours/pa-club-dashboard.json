@@ -1,0 +1,180 @@
+{
+  "id": "pa-club-dashboard",
+  "name": "Performance Academy · Dashboard Club",
+  "description": "Tour de présentation du dashboard club (surface Club) : login dirigeant, vue d'ensemble, effectif, fiche joueur 5D, codes & licences, annonces, messagerie. Données 100% factices (émulateur local). Voix off Google gratuite.",
+  "estimatedSec": 90,
+  "startPath": "/login",
+  "baseUrl": "http://localhost:3005",
+  "format": "16:9",
+  "auth": "none",
+  "subtitles": true,
+  "voiceBackend": "google",
+  "voiceGoogleVoice": "fr-FR-Neural2-D",
+  "voicePronunciation": {
+    "MaxiYota": "maksijɔta",
+    "Yota": "jɔta"
+  },
+  "brand": {
+    "displayName": "Performance Academy",
+    "domain": "performance-academy.fr",
+    "tagline": "L'académie de la performance"
+  },
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Performance Academy",
+      "subtitle": "L'espace club",
+      "dwellMs": 2600,
+      "voiceover": "Performance Academy. L'espace qui donne à chaque club une vision claire de ses joueurs."
+    },
+    { "type": "wait", "dwellMs": 1600 },
+    {
+      "type": "type",
+      "selector": "[data-wm-id=\"auth.login-form\"] input[type=\"email\"]",
+      "text": "dirigeant@fcdemo.fr",
+      "dwellMs": 900
+    },
+    {
+      "type": "type",
+      "selector": "[data-wm-id=\"auth.login-form\"] input[type=\"password\"]",
+      "text": "demo1234",
+      "dwellMs": 900
+    },
+    { "type": "wait", "dwellMs": 700 },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"auth.login-form\"] button[type=\"submit\"]",
+      "dwellMs": 4200
+    },
+
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "Vue d'ensemble",
+      "subtitle": "La santé du club en un coup d'œil",
+      "dwellMs": 2200,
+      "voiceover": "Dès la connexion, tout est là : effectif, assiduité, expérience cumulée, et les alertes sur les joueurs à relancer."
+    },
+    { "type": "wait", "dwellMs": 2000 },
+    {
+      "type": "overlay",
+      "text": "Effectif · assiduité · XP · alertes — en temps réel",
+      "position": "bottom",
+      "dwellMs": 2400
+    },
+    { "type": "scroll", "to": 380, "dwellMs": 1800 },
+    {
+      "type": "overlay",
+      "text": "Progression du club et complétion par module",
+      "position": "bottom",
+      "dwellMs": 2200
+    },
+    { "type": "wait", "dwellMs": 1200 },
+
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "L'effectif",
+      "subtitle": "Tout le roster, filtrable",
+      "dwellMs": 2200,
+      "voiceover": "Le roster complet, filtrable par poste. Chaque joueur, avec son niveau, son assiduité et sa progression."
+    },
+    { "type": "click", "selector": "a[href=\"/players\"]", "dwellMs": 2800 },
+    {
+      "type": "overlay",
+      "text": "Recherche et filtres par poste",
+      "position": "top",
+      "dwellMs": 2200
+    },
+    { "type": "scroll", "to": 460, "dwellMs": 1700 },
+    { "type": "wait", "dwellMs": 1200 },
+
+    {
+      "type": "section",
+      "categoryId": "ai",
+      "title": "La fiche joueur",
+      "subtitle": "Le profil 5D comportemental",
+      "dwellMs": 2200,
+      "voiceover": "Et pour chaque joueur, une fiche détaillée : son profil comportemental en cinq dimensions, réservé au dirigeant."
+    },
+    { "type": "click", "selector": "[data-wm-id=\"players.row\"] button", "dwellMs": 3200 },
+    {
+      "type": "overlay",
+      "text": "Radar 5D : discipline, mental, nutrition, sommeil, physique",
+      "position": "center",
+      "dwellMs": 2600
+    },
+    { "type": "scroll", "to": 520, "dwellMs": 1800 },
+    {
+      "type": "overlay",
+      "text": "Courbe d'XP et historique des Modes de Vie",
+      "position": "bottom",
+      "dwellMs": 2200
+    },
+    { "type": "wait", "dwellMs": 1200 },
+
+    {
+      "type": "section",
+      "categoryId": "pricing",
+      "title": "Codes & licences",
+      "subtitle": "Un onboarding sans friction",
+      "dwellMs": 2200,
+      "voiceover": "Distribuer des accès ? Le dirigeant génère des codes d'activation en un clic, et suit son quota de licences en direct."
+    },
+    { "type": "click", "selector": "a[href=\"/codes\"]", "dwellMs": 2800 },
+    {
+      "type": "overlay",
+      "text": "Quota de licences et lots de codes",
+      "position": "bottom",
+      "dwellMs": 2300
+    },
+    { "type": "scroll", "to": 360, "dwellMs": 1500 },
+    { "type": "wait", "dwellMs": 1000 },
+
+    {
+      "type": "section",
+      "categoryId": "motion",
+      "title": "Les annonces",
+      "subtitle": "Diffuser à tout l'effectif",
+      "dwellMs": 2000,
+      "voiceover": "Une annonce à faire passer ? Elle part vers tout l'effectif, ou une catégorie précise, avec notification directe aux joueurs."
+    },
+    { "type": "click", "selector": "a[href=\"/announcements\"]", "dwellMs": 2600 },
+    {
+      "type": "overlay",
+      "text": "Annonces ciblées + push aux joueurs",
+      "position": "bottom",
+      "dwellMs": 2300
+    },
+    { "type": "wait", "dwellMs": 1200 },
+
+    {
+      "type": "section",
+      "categoryId": "features",
+      "title": "La messagerie",
+      "subtitle": "Club · joueurs · Performance Academy",
+      "dwellMs": 2000,
+      "voiceover": "Et tout le monde reste connecté : une messagerie entre le club, ses joueurs, et l'équipe Performance Academy."
+    },
+    { "type": "click", "selector": "a[href=\"/inbox\"]", "dwellMs": 2600 },
+    {
+      "type": "overlay",
+      "text": "Fils joueurs + support Performance Academy",
+      "position": "top",
+      "dwellMs": 2200
+    },
+    { "type": "click", "selector": "[data-wm-id=\"inbox.conv\"]", "dwellMs": 2400 },
+    { "type": "wait", "dwellMs": 1200 },
+
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Performance Academy",
+      "subtitle": "Passez à la vitesse supérieure",
+      "dwellMs": 2800,
+      "voiceover": "Performance Academy. Donnez à votre club les outils des plus grands. On en parle ?"
+    },
+    { "type": "wait", "dwellMs": 1500 }
+  ]
+}

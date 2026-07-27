@@ -27,56 +27,32 @@ const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInOut = (t: number) =>
   t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
-/** Plain fade — calm, clean for branding intros. */
-function fade(t: number): TransitionStyle {
-  return {
-    opacity: t,
-    transform: `scale(${0.96 + 0.04 * easeOut(t)})`,
-  };
+// ⚠️ ANTI-TUILAGE (load-bearing) : les transitions sont en OPACITÉ PURE,
+// sans `transform`/`filter`/`clip-path`. Raison : le compositeur Chromium de
+// Remotion TUILE une couche (répétition en grille 3×3) quand elle a
+// `opacity < 1` ET un `transform` (scale/translate) en même temps — pile la
+// situation d'une transition scale-in. En plein milieu de section l'opacité
+// vaut 1 → pas de tuilage ; c'est UNIQUEMENT pendant les transitions que ça
+// casse. En retirant le transform pendant le fondu, la couche n'est plus
+// mise à l'échelle tant qu'elle est semi-transparente → zéro tuilage.
+// Le Ken Burns (opacité 1, sur un div interne distinct) reste, lui, sûr.
+// Vérifié 2026-07-20. Ne PAS réintroduire de scale/translate dans un preset
+// de transition. Les easings restent dispo pour un futur fix Remotion.
+void easeOut;
+void easeInOut;
+
+/** Crossfade pur — apparition/disparition en opacité seule. */
+function crossfade(t: number): TransitionStyle {
+  return { opacity: t, transform: "none" };
 }
 
-/** Scale-up + blur, releases energy → motion / ai categories. */
-function scaleBlur(t: number): TransitionStyle {
-  const e = easeOut(t);
-  return {
-    opacity: t,
-    transform: `scale(${0.88 + 0.12 * e})`,
-    filter: `blur(${(1 - e) * 14}px) saturate(${0.8 + 0.2 * e})`,
-  };
-}
-
-/** Horizontal swipe — section enters from the right edge. Good for
- *  showcase / features. */
-function swipe(t: number): TransitionStyle {
-  const e = easeInOut(t);
-  return {
-    opacity: Math.min(1, t * 1.5),
-    transform: `translateX(${(1 - e) * 60}px) scale(${0.97 + 0.03 * e})`,
-  };
-}
-
-/** Vertical reveal via clip-path — clean, announces a new chapter. */
-function wipeDown(t: number): TransitionStyle {
-  const e = easeOut(t);
-  return {
-    opacity: 1,
-    transform: `scale(${0.99 + 0.01 * e})`,
-    clipPath: `inset(${(1 - e) * 100}% 0 0 0)`,
-  };
-}
-
-/** Glitch — tiny chromatic shift + skip. Suits ai / pipeline. */
-function glitch(t: number): TransitionStyle {
-  const e = easeOut(t);
-  // Small randomized jitter that converges to zero — uses t as seed
-  // so it's deterministic per frame.
-  const jitter = (1 - e) * 6 * Math.sin(t * 53);
-  return {
-    opacity: t < 0.1 ? 0 : t < 0.2 ? 0.4 : t,
-    transform: `translate(${jitter}px, ${jitter * 0.3}px) scale(${0.95 + 0.05 * e})`,
-    filter: `hue-rotate(${(1 - e) * 18}deg) saturate(${1 + (1 - e) * 0.6})`,
-  };
-}
+// Tous les presets = crossfade opacité (anti-tuilage). Les identifiants sont
+// conservés pour rétro-compat (tours + styles) mais rendent tous un fondu.
+const fade = crossfade;
+const scaleBlur = crossfade;
+const swipe = crossfade;
+const wipeDown = crossfade;
+const glitch = crossfade;
 
 const PRESETS: Record<TransitionId, (t: number) => TransitionStyle> = {
   fade,
@@ -91,14 +67,20 @@ const PRESETS: Record<TransitionId, (t: number) => TransitionStyle> = {
  * the category is unknown so we never crash on a tour that defines
  * its own custom categories.
  */
+// ⚠️ Transitions SANS `filter` CSS uniquement (fade / swipe / wipe-down).
+// `scale-blur` (blur) et `glitch` (hue-rotate) produisent un TUILAGE de la
+// couche sous le renderer GL logiciel de Remotion (`--gl swangle`) : la
+// fenêtre se répète en grille. Vérifié 2026-07-20. On réserve donc les
+// transitions à filtre au style « Glitch » explicite (transitionOverride),
+// jamais en défaut de catégorie sur de l'UI produit.
 const CATEGORY_TRANSITION: Record<string, TransitionId> = {
   branding: "fade",
-  motion: "scale-blur",
+  motion: "wipe-down",
   features: "swipe",
   stores: "wipe-down",
   releases: "wipe-down",
-  ai: "glitch",
-  pipeline: "glitch",
+  ai: "swipe",
+  pipeline: "wipe-down",
   pricing: "swipe",
   default: "fade",
 };

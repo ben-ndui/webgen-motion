@@ -14,9 +14,17 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatDuration } from "@/lib/format-duration";
 import type { TourEntry, TourStep } from "@/lib/types/tour";
+
+/** Backends de synthèse supportés + libellés affichés. */
+export type VoiceBackend = "elevenlabs" | "voicebox" | "google";
+export const BACKEND_LABEL: Record<VoiceBackend, string> = {
+  elevenlabs: "ElevenLabs",
+  voicebox: "Voicebox",
+  google: "Google",
+};
 import PhaseLoader, { type RunningProgress } from "./phase-loader";
 import type { SaveStatus } from "./script-tab";
 import VoiceOverrideCard from "./voice-override-card";
@@ -79,6 +87,27 @@ export default function VoiceTab({
   // generation since it just reads the alignment artifact.
   const [calibrate, setCalibrate] = useState<CalibrateState>({ kind: "idle" });
   const narrativeRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Backend global (config wizard) pour afficher le vrai backend effectif :
+  // le tour peut pinner `voiceBackend`, sinon on hérite du défaut global
+  // (qui peut être Google/Voicebox/ElevenLabs — ne plus supposer ElevenLabs).
+  const [globalBackend, setGlobalBackend] = useState<VoiceBackend | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/motion/config")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((c: { defaultBackend?: VoiceBackend } | null) => {
+        if (alive && c?.defaultBackend) setGlobalBackend(c.defaultBackend);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const backend: VoiceBackend =
+    tour.voiceBackend ?? globalBackend ?? "elevenlabs";
+  const backendLabel = BACKEND_LABEL[backend];
+  const backendIsGlobal = !tour.voiceBackend;
 
   const setVoiceMode = (mode: "per-step" | "narrative") => {
     onTourChange({
@@ -204,17 +233,27 @@ export default function VoiceTab({
       : "Génère la VO narrative continue"
     : counters.active === 0
       ? "Aucune voix off active — écris un texte dans le tab Script"
-      : "Génère la VO via ElevenLabs";
+      : `Génère la VO via ${backendLabel}`;
+  const synthSource =
+    backend === "elevenlabs"
+      ? "ta voix clonée ElevenLabs"
+      : backend === "google"
+        ? "la voix Google Cloud (gratuite)"
+        : "Voicebox en local";
+  const alignSource =
+    backend === "google"
+      ? "alignment reconstruit depuis les marks Google (mot → char-level)"
+      : "alignment char-level retourné";
   const generateDescription = isNarrative
-    ? "Synthèse via ta voix clonée. Mode narrative : 1 fetch /with-timestamps pour le script entier, alignment char-level retourné."
-    : "Synthèse via ta voix clonée. Mode per-step : 1 fetch par ligne, assemblage timeline avec padding silencieux entre chaque chunk.";
+    ? `Synthèse via ${synthSource}. Mode narrative : 1 synthèse pour le script entier, ${alignSource}.`
+    : `Synthèse via ${synthSource}. Mode per-step : 1 synthèse par ligne, assemblage timeline avec padding silencieux entre chaque chunk.`;
 
   const actionCard = (
     <div className="rounded-2xl border border-line bg-surface p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted mb-1">
-            ElevenLabs TTS
+            {backendLabel} TTS{backendIsGlobal ? " · global" : ""}
           </p>
           <h2 className="text-sm font-semibold text-ink leading-tight">
             Générer la voix off
@@ -299,8 +338,14 @@ export default function VoiceTab({
             <span className="kicker">Onglet 04</span>
             <h2 className="panel-title">Voix off</h2>
             <p className="panel-sub">
-              Mode narratif continu ou voix off par étape. ElevenLabs clone votre voix,
-              ou Voicebox tourne 100% en local.
+              Mode narratif continu ou voix off par étape. Backend actif :{" "}
+              <strong>{backendLabel}</strong>
+              {backend === "google"
+                ? " (voix Google Cloud gratuite)"
+                : backend === "voicebox"
+                  ? " (100% local)"
+                  : " (voix clonée cloud)"}
+              {backendIsGlobal ? " — hérité de la config globale" : " — pinné sur ce tour"}.
             </p>
           </div>
         </div>
@@ -331,8 +376,8 @@ export default function VoiceTab({
         />
         <span className="ml-auto text-xs text-muted font-mono">
           {isNarrative
-            ? "ElevenLabs → 1 clip · timings calibrés depuis l'alignment"
-            : "ElevenLabs → 1 clip / step · padding silencieux entre chaque"}
+            ? `${backendLabel} → 1 clip · timings calibrés depuis l'alignment`
+            : `${backendLabel} → 1 clip / step · padding silencieux entre chaque`}
         </span>
       </div>
 
@@ -541,7 +586,11 @@ export default function VoiceTab({
       <aside className="hidden lg:block lg:sticky lg:top-6 self-start space-y-4">
         {actionCard}
         {calibrateCard}
-        <VoiceOverrideCard tour={tour} onChange={onTourChange} />
+        <VoiceOverrideCard
+          tour={tour}
+          onChange={onTourChange}
+          globalBackend={globalBackend}
+        />
       </aside>
         </div>
       </div>

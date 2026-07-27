@@ -54,4 +54,12 @@ describe("VoiceTab (handoff layout)", () => {
     await userEvent.click(screen.getAllByRole("button", { name: /Générer la voix off/i })[0]);
     expect(onGenerateVo).toHaveBeenCalledOnce();
   });
+
+  it("affiche le backend pinné (Google) et pas ElevenLabs en dur", () => {
+    const tour = { ...makeTour(), voiceBackend: "google" as const };
+    render(<VoiceTab {...props({ tour })} />);
+    // Le kicker de la carte d'action reflète le backend effectif.
+    expect(screen.getAllByText(/Google TTS/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/ElevenLabs TTS/i)).not.toBeInTheDocument();
+  });
 });
