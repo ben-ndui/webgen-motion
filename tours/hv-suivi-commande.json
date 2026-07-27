@@ -1,0 +1,120 @@
+{
+  "id": "hv-suivi-commande",
+  "name": "Handicapé Vaillant · Suivre ma commande (9:16)",
+  "description": "Tour client pour l'Insta de Raf : comment accéder au suivi depuis le menu du site handicapevaillant.com et suivre sa commande. Format Reels 9:16, viewport mobile. Commande de démo factice (HV-DEMO-2026, aucun vrai client). Voix off Google FR. Overlays d'action en haut (séparés du karaoké en bas).",
+  "estimatedSec": 44,
+  "startPath": "/fr",
+  "baseUrl": "http://localhost:3001",
+  "format": "9:16",
+  "auth": "none",
+  "subtitles": true,
+  "composeStyle": "flat",
+  "voiceBackend": "google",
+  "voiceGoogleVoice": "fr-FR-Neural2-D",
+  "brand": {
+    "displayName": "Handicapé Vaillant",
+    "domain": "handicapevaillant.com",
+    "tagline": "handicapevaillant.com"
+  },
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Suivre ma commande",
+      "subtitle": "Handicapé Vaillant",
+      "dwellMs": 2600,
+      "voiceover": "Ta commande Handicapé Vaillant est en route ? Voici comment la suivre depuis le site."
+    },
+    { "type": "wait", "dwellMs": 1000 },
+    { "type": "click", "selector": "[data-wm-id=\"cookie.decline\"]", "dwellMs": 700 },
+    { "type": "wait", "dwellMs": 700 },
+    {
+      "type": "overlay",
+      "text": "1. Ouvre le menu",
+      "position": "top",
+      "dwellMs": 1800
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"header.menu\"]",
+      "dwellMs": 1600,
+      "voiceover": "Depuis le menu du site, j'ouvre « Suivre ma commande »."
+    },
+    {
+      "type": "overlay",
+      "text": "2. « Suivre ma commande »",
+      "position": "top",
+      "dwellMs": 1800
+    },
+    { "type": "click", "selector": "[data-wm-id=\"menu.track\"]", "dwellMs": 3200 },
+    { "type": "wait", "dwellMs": 1000 },
+    {
+      "type": "type",
+      "selector": "[data-wm-id=\"track.order\"]",
+      "text": "HV-DEMO-2026",
+      "dwellMs": 1200,
+      "voiceover": "J'entre mon numéro de commande, puis mon adresse email."
+    },
+    {
+      "type": "overlay",
+      "text": "Ton numéro — dans ton email de confirmation",
+      "position": "top",
+      "dwellMs": 2400
+    },
+    {
+      "type": "type",
+      "selector": "[data-wm-id=\"track.email\"]",
+      "text": "demo@handicapevaillant.com",
+      "dwellMs": 1200
+    },
+    {
+      "type": "overlay",
+      "text": "Et ton adresse email",
+      "position": "top",
+      "dwellMs": 1600
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"track.submit\"]",
+      "dwellMs": 5200
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2800,
+      "voiceover": "Et voilà. L'état de ma commande, la date de livraison estimée, et l'article commandé."
+    },
+    {
+      "type": "scroll",
+      "to": 380,
+      "dwellMs": 2000
+    },
+    {
+      "type": "overlay",
+      "text": "L'avancement du colis, étape par étape",
+      "position": "top",
+      "dwellMs": 2200
+    },
+    {
+      "type": "scroll",
+      "to": 820,
+      "dwellMs": 2200,
+      "voiceover": "Et le suivi du colis en direct, jusqu'à la livraison."
+    },
+    {
+      "type": "overlay",
+      "text": "Le suivi La Poste, en temps réel",
+      "position": "top",
+      "dwellMs": 2400
+    },
+    { "type": "wait", "dwellMs": 1000 },
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Handicapé Vaillant",
+      "subtitle": "Ta commande, suivie à chaque étape",
+      "dwellMs": 2800,
+      "voiceover": "Handicapé Vaillant. Ta commande, suivie à chaque étape."
+    },
+    { "type": "wait", "dwellMs": 1400 }
+  ]
+}

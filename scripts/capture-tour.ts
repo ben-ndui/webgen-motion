@@ -844,9 +844,12 @@ async function executeStep(
             document.body.appendChild(el);
           }
           const centerFontSize = "clamp(28px, 6.4vw, 64px)";
-          const pillFontSize = "clamp(15px, 2.2vw, 28px)";
-          const pillPadX = "clamp(18px, 2.6vw, 44px)";
-          const pillPadY = "clamp(12px, 1.6vw, 22px)";
+          // Pill = légende d'action : blanc sur orange, plus gros/gras que le
+          // sous-titre karaoké pour accrocher l'oeil (demande client — les
+          // légendes se noyaient face au karaoké).
+          const pillFontSize = "clamp(18px, 2.9vw, 34px)";
+          const pillPadX = "clamp(22px, 3vw, 48px)";
+          const pillPadY = "clamp(14px, 1.9vw, 26px)";
           el.style.cssText = [
             "position:fixed",
             "left:50%",
@@ -855,18 +858,18 @@ async function executeStep(
             isCenter ? "border-radius:0" : "border-radius:9999px",
             "font-family:system-ui,-apple-system,'Segoe UI',sans-serif",
             isCenter ? `font-size:${centerFontSize}` : `font-size:${pillFontSize}`,
-            isCenter ? "font-weight:800" : "font-weight:700",
+            isCenter ? "font-weight:800" : "font-weight:800",
             isCenter ? "letter-spacing:-0.025em" : "letter-spacing:-0.015em",
-            "line-height:1.1",
+            "line-height:1.15",
             "color:#FFFFFF",
             isCenter
               ? "background:transparent"
-              : `background:linear-gradient(135deg, rgba(15,17,23,0.88), rgba(20,22,30,0.85))`,
-            isCenter ? "" : "backdrop-filter:blur(16px) saturate(1.4)",
-            isCenter ? "" : "-webkit-backdrop-filter:blur(16px) saturate(1.4)",
+              // Orange plein : contraste fort, se distingue nettement du karaoké
+              // (fond sombre) et de l'UI du site.
+              : `background:linear-gradient(135deg, #FF8A1E, #F2620A)`,
             isCenter
               ? "text-shadow:0 6px 28px rgba(0,0,0,0.75)"
-              : `box-shadow:0 18px 60px rgba(0,0,0,0.55), 0 0 0 1px ${accent}66, inset 0 1px 0 rgba(255,255,255,0.18)`,
+              : `box-shadow:0 16px 46px rgba(242,98,10,0.42), 0 0 0 1px rgba(255,255,255,0.22), inset 0 1px 0 rgba(255,255,255,0.28)`,
             "opacity:0",
             "pointer-events:none",
             "white-space:normal",

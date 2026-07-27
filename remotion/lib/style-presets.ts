@@ -12,6 +12,7 @@ import type { TransitionId } from "./transitions";
  */
 
 export type ComposeStyleId =
+  | "flat"
   | "sober"
   | "energetic"
   | "cinematic"
@@ -52,6 +53,25 @@ export interface ComposeStyle {
 }
 
 const STYLES: Record<ComposeStyleId, ComposeStyle> = {
+  // Zéro tuilage garanti. AUCUN scale nulle part (Ken Burns 0 + backdrop
+  // scale 0) et fondu opacité pure : le tuilage du compositeur GL vient
+  // exclusivement d'une couche qui combine transform/scale + opacité < 1,
+  // donc en supprimant tout scale il ne peut plus apparaître. Le backdrop
+  // ne fait qu'osciller en opacité (l'opacité seule ne tuile pas). À utiliser
+  // pour les démos produit "flat design" / clients sensibles à l'artefact.
+  flat: {
+    label: "Flat",
+    hint: "Zéro mouvement de scale — anti-tuilage garanti",
+    kenBurnsScale: 0,
+    kenBurnsPan: 0,
+    transitionOverride: "fade",
+    backdropScaleAmp: 0,
+    backdropOpacityAmp: 0.08,
+    backdropFreq: 0.25,
+    beatPulseStrength: 0,
+    voPauseHaloStrength: 0,
+  },
+
   // Calm + documentary. Almost no motion. Suits corporate intros,
   // legal / financial demos where flashy is wrong.
   sober: {
@@ -113,6 +133,7 @@ const STYLES: Record<ComposeStyleId, ComposeStyle> = {
 };
 
 export const COMPOSE_STYLE_IDS: ComposeStyleId[] = [
+  "flat",
   "sober",
   "energetic",
   "cinematic",

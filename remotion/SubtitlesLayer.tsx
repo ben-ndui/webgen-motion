@@ -24,12 +24,25 @@ export function SubtitlesLayer({
   const { fps } = useVideoConfig();
   const nowSec = frame / fps;
 
-  const cue = cues.find((c) => nowSec >= c.startSec && nowSec < c.endSec);
+  // Une phrase à la fois, effacée dès qu'elle est finie. On affiche la phrase
+  // active ; une fois terminée on laisse 0.6s de grâce (le temps de finir de
+  // lire) puis on CACHE — sans attendre la phrase suivante. Ça évite qu'un
+  // dernier mot (« secondes ») reste collé en bas pendant les silences et
+  // passe derrière les overlays d'action. Pas de backdrop-filter → pas de
+  // clignotement, donc un fondu par phrase reste propre.
+  const GRACE_SEC = 0.6;
+  const active = cues.find((c) => nowSec >= c.startSec && nowSec < c.endSec);
+  let cue = active;
+  if (!cue) {
+    const started = cues.filter((c) => c.startSec <= nowSec);
+    const last = started[started.length - 1];
+    if (last && nowSec < last.endSec + GRACE_SEC) cue = last;
+  }
   if (!cue) return null;
 
-  // Soft pop-in over the cue's first 150ms.
-  const age = nowSec - cue.startSec;
-  const appear = Math.min(1, age / 0.15);
+  // Fondu d'apparition au début de CHAQUE phrase (0.18s). Sans backdrop-filter
+  // c'est net, et ça marque bien chaque nouvelle phrase.
+  const appear = Math.min(1, Math.max(0, (nowSec - cue.startSec) / 0.18));
   const isPortrait = format === "9:16";
 
   return (
@@ -51,11 +64,12 @@ export function SubtitlesLayer({
           lineHeight: 1.25,
           padding: "14px 26px",
           borderRadius: 18,
-          background: "rgba(8, 8, 12, 0.72)",
+          // ⚠️ PAS de backdrop-filter : il SCINTILLE image par image au
+          // rendu Remotion/Chromium (le sous-titre « blink » à chaque frame).
+          // Fond solide semi-opaque à la place — même lisibilité, zéro flicker.
+          background: "rgba(8, 8, 12, 0.82)",
           boxShadow:
             "0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.06)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
         }}
         data-wm-id="tour.subtitles"
       >
