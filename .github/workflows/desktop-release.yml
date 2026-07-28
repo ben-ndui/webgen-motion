@@ -214,3 +214,40 @@ jobs:
           # --skip-build : tauri-action a déjà build, on saute juste
           # le rebuild et on attaque submit + staple direct.
           node scripts/notarize-and-staple.mjs --skip-build
+
+  # Notif Discord après tous les builds (succès OU échec). Poste le statut
+  # global + le lien vers la release draft (installeurs attachés) + les logs
+  # CI. Webhook stocké en secret DISCORD_RELEASE_WEBHOOK (jamais en dur).
+  notify-discord:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
+          RESULT: ${{ needs.build.result }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "DISCORD_RELEASE_WEBHOOK absent — notif ignorée."
+            exit 0
+          fi
+          if [ "$RESULT" = "success" ]; then
+            COLOR=3066993
+            TITLE="✅ GEN MOTION $REF — build réussi"
+            DESC="Les installeurs (.dmg macOS · .msi Windows · .deb Linux) sont attachés à la **release draft**. Publie-la depuis l'onglet Releases pour la rendre téléchargeable."
+          else
+            COLOR=15158332
+            TITLE="❌ GEN MOTION $REF — build $RESULT"
+            DESC="Le build de release a échoué. Ouvre les logs CI pour la cause."
+          fi
+          RELEASES_URL="https://github.com/$REPO/releases"
+          RUN_URL="https://github.com/$REPO/actions/runs/$RUN_ID"
+          PAYLOAD=$(jq -n \
+            --arg t "$TITLE" --arg d "$DESC" --argjson c "$COLOR" \
+            --arg rel "$RELEASES_URL" --arg run "$RUN_URL" \
+            '{username:"GEN MOTION Release", embeds:[{title:$t, description:$d, color:$c, fields:[{name:"📦 Release (draft)", value:$rel}, {name:"🔧 Logs CI", value:$run}]}]}')
+          curl -sS -H "Content-Type: application/json" -d "$PAYLOAD" "$WEBHOOK"
