@@ -7,6 +7,40 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-28
+
+**La release « voix off gratuite + rendu propre »** : un backend TTS Google
+gratuit en plus d'ElevenLabs, des presets de compose sans artefacts, et un
+mode voix off continue — issus de l'usage réel sur des tours clients.
+
+### Added
+
+- **Backend voix off Google Cloud TTS (gratuit)** : moteur Neural2 FR via
+  service account, en plus d'ElevenLabs. Carte « Google — gratuit » dans le
+  wizard de setup (credentials + choix de la voix), `PublicConfig.google`,
+  sélection par tour (`voiceBackend: "google"`, `voiceGoogleVoice`).
+- **Preset de compose `flat`** : zéro mouvement de scale (Ken Burns 0 +
+  backdrop scale 0) + fondu opacité pure → supprime définitivement le tuilage
+  du compositeur GL (qui vient d'une couche `transform/scale` + `opacité < 1`).
+
+### Changed
+
+- **Transitions opacité pure** (`remotion/lib/transitions.ts`) : plus de
+  scale/translate/filter/clip pendant les transitions → fin du tuilage sur les
+  fondus entre sections.
+- **Sous-titres non-persistants** (`SubtitlesLayer`) : chaque phrase s'efface à
+  sa fin (+0,6 s de grâce), fondu par phrase — fini le dernier mot qui restait
+  collé en bas pendant les silences et passait derrière les overlays.
+- **Overlays d'action (pill)** : blanc sur orange, plus gros/gras, pour
+  accrocher l'œil face au karaoké de la voix off.
+
+### Notes
+
+- **Voix off continue** = narration « niveau-section » (une seule piste étirée
+  sur toute la section) plutôt que des phrases par étape (créneaux fixes qui
+  laissent des blancs sur les clics/saisies non trackés). Voir le tour
+  `hv-suivi-commande` comme référence.
+
 ## [0.4.0] — 2026-06-13
 
 **La release « prêt à vendre »** : revenu récurrent de bout en bout
