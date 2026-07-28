@@ -1,7 +1,7 @@
 {
   "id": "hv-suivi-commande",
   "name": "Handicapé Vaillant · Suivre ma commande (9:16)",
-  "description": "Tour client pour l'Insta de Raf : comment accéder au suivi depuis le menu du site handicapevaillant.com et suivre sa commande. Format Reels 9:16, viewport mobile. Commande de démo factice (HV-DEMO-2026, aucun vrai client). Voix off Google FR. Overlays d'action en haut (séparés du karaoké en bas).",
+  "description": "Tour client pour l'Insta de Raf : comment accéder au suivi depuis le menu du site handicapevaillant.com et suivre sa commande. Format Reels 9:16, viewport mobile. Commande de démo factice (HV-DEMO-2026, aucun vrai client). Voix off Google FR CONTINUE via narration niveau-section (une seule piste étirée sur toute la section 1, pas de créneaux par étape → zéro blanc). Overlays d'action en haut (séparés du karaoké en bas).",
   "estimatedSec": 44,
   "startPath": "/fr",
   "baseUrl": "http://localhost:3001",
@@ -23,7 +23,7 @@
       "title": "Suivre ma commande",
       "subtitle": "Handicapé Vaillant",
       "dwellMs": 2600,
-      "voiceover": "Ta commande Handicapé Vaillant est en route ? Voici comment la suivre depuis le site."
+      "voiceover": "Ta commande Handicapé Vaillant est en route, et tu veux la suivre ? C'est très simple. Sur la page d'accueil du site, ouvre le menu, tout en haut à gauche, puis appuie sur « Suivre ma commande ». Il te faut juste deux informations : ton numéro de commande, que tu trouves dans ton email de confirmation, et l'adresse email utilisée pour ta commande. Tu valides, et tout s'affiche : l'état de ta commande, la date de livraison estimée, et l'article commandé. Juste en dessous, tu suis l'avancement du colis, étape par étape : payée, en préparation, expédiée, puis livrée. Et tu as même le suivi La Poste en direct, jusqu'à la remise de ton colis. Tout est là, à jour, sans même créer de compte."
     },
     { "type": "wait", "dwellMs": 1000 },
     { "type": "click", "selector": "[data-wm-id=\"cookie.decline\"]", "dwellMs": 700 },
@@ -37,8 +37,7 @@
     {
       "type": "click",
       "selector": "[data-wm-id=\"header.menu\"]",
-      "dwellMs": 1600,
-      "voiceover": "Depuis le menu du site, j'ouvre « Suivre ma commande »."
+      "dwellMs": 1600
     },
     {
       "type": "overlay",
@@ -52,8 +51,7 @@
       "type": "type",
       "selector": "[data-wm-id=\"track.order\"]",
       "text": "HV-DEMO-2026",
-      "dwellMs": 1200,
-      "voiceover": "J'entre mon numéro de commande, puis mon adresse email."
+      "dwellMs": 1200
     },
     {
       "type": "overlay",
@@ -78,11 +76,7 @@
       "selector": "[data-wm-id=\"track.submit\"]",
       "dwellMs": 5200
     },
-    {
-      "type": "wait",
-      "dwellMs": 2800,
-      "voiceover": "Et voilà. L'état de ma commande, la date de livraison estimée, et l'article commandé."
-    },
+    { "type": "wait", "dwellMs": 2800 },
     {
       "type": "scroll",
       "to": 380,
@@ -97,8 +91,7 @@
     {
       "type": "scroll",
       "to": 820,
-      "dwellMs": 2200,
-      "voiceover": "Et le suivi du colis en direct, jusqu'à la livraison."
+      "dwellMs": 2200
     },
     {
       "type": "overlay",
