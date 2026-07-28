@@ -138,8 +138,13 @@ log(`bundle créé : ${appDir} (node = ${wantedTriple})`);
 // Mêmes entitlements que l'app principale : Node/V8 ont besoin de JIT
 // + disable-library-validation (cf. commentaires entitlements.plist),
 // sinon le helper meurt au boot dans une app notarisée.
+// `codesign` n'existe QUE sur macOS. Le bundle helper (.app) est macOS-only
+// mais reste construit partout car `node-helper/**/*` est une ressource Tauri
+// commune à tous les OS — on le construit donc sur Linux/Windows (pour que la
+// ressource existe) mais on NE signe QUE sur macOS. Sans ce garde, le build
+// Linux/Windows plantait à « ✗ codesign helper » (binaire codesign absent).
 const signingIdentity = process.env.APPLE_SIGNING_IDENTITY;
-if (signingIdentity) {
+if (signingIdentity && process.platform === "darwin") {
   const r = spawnSync(
     "codesign",
     [
@@ -156,6 +161,8 @@ if (signingIdentity) {
     fail(`codesign helper : ${(r.stderr ?? "").trim().split("\n")[0]}`);
   }
   log(`✓ helper signé (${signingIdentity})`);
+} else if (process.platform !== "darwin") {
+  log("plateforme non-macOS — bundle helper construit, signature ignorée (codesign macOS-only)");
 } else {
   log(
     "APPLE_SIGNING_IDENTITY absent — helper non signé (OK en dev, " +
