@@ -25,56 +25,56 @@
       "categoryId": "branding",
       "title": "Maki, sur le web",
       "subtitle": "La carte, dès l'arrivée",
-      "dwellMs": 2600,
+      "dwellMs": 3550,
       "voiceover": "Maki. Tous les restaurants et toutes les épiceries africaines, enfin réunis sur une carte. Et sur le web, la carte, c'est la porte d'entrée : dès l'arrivée, vous voyez ce qui existe autour de vous — en France, en Europe, et jusque sur le continent. Filtrez par type de commerce. Et regardez ce filtre-là : le transfert d'argent. Beaucoup d'épiceries font aussi point de transfert — Wave, Orange Money, Western Union — et Maki est le seul à vous montrer lesquelles, directement sur la carte."
     },
     {
       "type": "wait",
-      "dwellMs": 3200
+      "dwellMs": 4350
     },
     {
       "type": "overlay",
       "text": "Restaurants et épiceries, en temps réel",
       "position": "top",
-      "dwellMs": 2400
+      "dwellMs": 3250
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-grocery\"]",
-      "dwellMs": 2200
+      "dwellMs": 3000
     },
     {
       "type": "overlay",
       "text": "Le filtre transfert d'argent — unique à Maki",
       "position": "top",
-      "dwellMs": 2000
+      "dwellMs": 2700
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-money\"]",
-      "dwellMs": 1600
+      "dwellMs": 2200
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.service-wave\"]",
-      "dwellMs": 2600
+      "dwellMs": 3550
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.service-wave\"]",
-      "dwellMs": 1200
+      "dwellMs": 1650
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-all\"]",
-      "dwellMs": 1400
+      "dwellMs": 1900
     },
     {
       "type": "section",
       "categoryId": "features",
       "title": "La boutique en ligne",
       "subtitle": "Le catalogue, en direct",
-      "dwellMs": 2400,
+      "dwellMs": 3100,
       "voiceover": "Chaque commerce inscrit sur Maki peut vendre en ligne. Ici, l'Épicerie du Soleil, à Nice : son catalogue est en direct — les prix, le stock, tout vient du commerçant lui-même. Vous ajoutez au panier, le récapitulatif vous suit, et vous continuez vos courses tranquillement. Sans créer de compte.",
       "goto": "/boutique/demo-epicerie-soleil"
     },
@@ -82,96 +82,96 @@
       "type": "overlay",
       "text": "Prix et stock en temps réel",
       "position": "top",
-      "dwellMs": 2200
+      "dwellMs": 2800
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 1800
+      "dwellMs": 2300
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 1800
+      "dwellMs": 2300
     },
     {
       "type": "overlay",
       "text": "Le panier vous suit — toujours sans compte",
       "position": "top",
-      "dwellMs": 2200
+      "dwellMs": 2800
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.view-cart\"]",
-      "dwellMs": 2600
+      "dwellMs": 3350
     },
     {
       "type": "section",
       "categoryId": "pricing",
       "title": "Commander",
       "subtitle": "Un compte seulement au moment de payer",
-      "dwellMs": 2400,
+      "dwellMs": 2500,
       "voiceover": "Le panier est groupé par commerçant, et les montants affichés restent indicatifs : c'est le serveur qui fait les comptes, prix et stock relus au moment de payer. On ne vous demande un compte qu'à cet instant — Google, ou simplement votre e-mail. Votre adresse de livraison, et le paiement s'ouvre : sécurisé par Stripe, confirmé en temps réel. Ensuite, vous suivez votre commande étape par étape, du paiement jusqu'à la livraison."
     },
     {
       "type": "wait",
-      "dwellMs": 1600
+      "dwellMs": 1700
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"cart.checkout\"]",
-      "dwellMs": 1800
+      "dwellMs": 1900
     },
     {
       "type": "overlay",
       "text": "Guest-first : le compte n'arrive qu'ici",
       "position": "top",
-      "dwellMs": 2200
+      "dwellMs": 2300
     },
     {
       "type": "type",
       "selector": "[data-wm-id=\"auth.modal\"] input[type=\"email\"]",
       "text": "demo@maki.app",
-      "dwellMs": 1000
+      "dwellMs": 1050
     },
     {
       "type": "type",
       "selector": "[data-wm-id=\"auth.modal\"] input[type=\"password\"]",
       "text": "MakiDemo!2026",
-      "dwellMs": 900
+      "dwellMs": 950
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"auth.modal\"] button[type=\"submit\"]",
-      "dwellMs": 2600
+      "dwellMs": 2750
     },
     {
       "type": "type",
       "selector": "[data-wm-id=\"checkout.sheet\"] textarea",
       "text": "8 Rue de France, 06000 Nice",
-      "dwellMs": 1400
+      "dwellMs": 1450
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"checkout.sheet\"] button[type=\"submit\"]",
-      "dwellMs": 4600
+      "dwellMs": 4850
     },
     {
       "type": "overlay",
       "text": "Paiement sécurisé Stripe — total calculé par le serveur",
       "position": "top",
-      "dwellMs": 3000
+      "dwellMs": 3150
     },
     {
       "type": "wait",
-      "dwellMs": 1400
+      "dwellMs": 1450
     },
     {
       "type": "section",
       "categoryId": "ai",
       "title": "L'espace gérant",
       "subtitle": "La boutique, côté commerçant",
-      "dwellMs": 2400,
+      "dwellMs": 3250,
       "voiceover": "Et côté commerçant ? Un espace dédié, sur grand écran. La fiche de la boutique s'édite en direct — le nom, les horaires, les services de transfert — et la carte se met à jour immédiatement pour tous les clients. Les commandes arrivent en temps réel, et le gérant les fait avancer d'un geste : en préparation, expédiée, livrée. Ses reversements, enfin : ce qu'il a vendu, la commission, et ce qui lui revient — ligne par ligne, en toute transparence.",
       "goto": "/gerant"
     },
@@ -179,56 +179,56 @@
       "type": "overlay",
       "text": "La fiche s'édite ici, la carte suit en direct",
       "position": "top",
-      "dwellMs": 2400
+      "dwellMs": 3250
     },
     {
       "type": "goto",
-      "dwellMs": 2800,
+      "dwellMs": 3750,
       "url": "/gerant/commandes"
     },
     {
       "type": "overlay",
       "text": "Les commandes, en temps réel",
       "position": "top",
-      "dwellMs": 1800
+      "dwellMs": 2400
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"gerant.advance\"]",
-      "dwellMs": 2400
+      "dwellMs": 3250
     },
     {
       "type": "goto",
-      "dwellMs": 2800,
+      "dwellMs": 3750,
       "url": "/gerant/reversements"
     },
     {
       "type": "overlay",
       "text": "Ventes · commission · net — rien de caché",
       "position": "top",
-      "dwellMs": 2600
+      "dwellMs": 3500
     },
     {
       "type": "wait",
-      "dwellMs": 1200
+      "dwellMs": 1600
     },
     {
       "type": "section",
       "categoryId": "branding",
       "title": "Maki",
       "subtitle": "Sur mobile, et maintenant sur le web",
-      "dwellMs": 2800,
+      "dwellMs": 4400,
       "voiceover": "Maki. Sur mobile, et maintenant sur le web. La carte, la commande en ligne, l'espace commerçant — tout y est. Rendez-vous sur le site de Maki, et téléchargez l'app.",
       "goto": "/decouvrir"
     },
     {
       "type": "scroll",
       "to": 500,
-      "dwellMs": 2200
+      "dwellMs": 3450
     },
     {
       "type": "wait",
-      "dwellMs": 1400
+      "dwellMs": 2200
     }
   ]
 }

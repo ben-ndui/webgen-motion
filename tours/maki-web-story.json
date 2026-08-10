@@ -25,75 +25,75 @@
       "categoryId": "branding",
       "title": "Maki, sur le web",
       "subtitle": "Ouvre la carte",
-      "dwellMs": 2200,
+      "dwellMs": 3100,
       "voiceover": "Envie d'un resto africain, ou des produits du pays ? Ouvre Maki : tout est sur la carte, autour de toi. Filtre les épiceries — et même celles qui font le transfert d'argent. Les boutiques inscrites vendent en ligne : tu remplis ton panier, sans compte, tu payes en ligne quand tu es prêt, et tu suis ta commande en direct jusqu'à la livraison. Maki. Les saveurs d'Afrique, sur une carte — sur mobile, et maintenant sur le web."
     },
     {
       "type": "wait",
-      "dwellMs": 2600
+      "dwellMs": 3700
     },
     {
       "type": "overlay",
       "text": "Tout est sur la carte",
       "position": "top",
-      "dwellMs": 1800
+      "dwellMs": 2550
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-grocery\"]",
-      "dwellMs": 1800
+      "dwellMs": 2550
     },
     {
       "type": "overlay",
       "text": "Filtre transfert d'argent",
       "position": "top",
-      "dwellMs": 1600
+      "dwellMs": 2250
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-money\"]",
-      "dwellMs": 1400
+      "dwellMs": 2000
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.service-wave\"]",
-      "dwellMs": 2000
+      "dwellMs": 2850
     },
     {
       "type": "goto",
-      "dwellMs": 2800,
+      "dwellMs": 3950,
       "url": "/boutique/demo-epicerie-soleil"
     },
     {
       "type": "overlay",
       "text": "Les boutiques vendent en ligne",
       "position": "top",
-      "dwellMs": 1800
+      "dwellMs": 2550
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 1500
+      "dwellMs": 2150
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 1500
+      "dwellMs": 2150
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.view-cart\"]",
-      "dwellMs": 2400
+      "dwellMs": 3400
     },
     {
       "type": "overlay",
       "text": "Panier → paiement Stripe → suivi en direct",
       "position": "top",
-      "dwellMs": 2400
+      "dwellMs": 3400
     },
     {
       "type": "wait",
-      "dwellMs": 1000
+      "dwellMs": 1400
     },
     {
       "type": "section",
