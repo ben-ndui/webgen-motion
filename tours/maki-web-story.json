@@ -1,0 +1,111 @@
+{
+  "id": "maki-web-story",
+  "name": "Maki · La carte de la diaspora (9:16)",
+  "description": "Story/Reels de présentation du Maki web : la carte en invité, une boutique, le panier — court et rythmé. Données 100% factices (L'Épicerie du Soleil, semée puis purgée). Voix off Google FR CONTINUE via narration niveau-section (une piste sur toute la démo, zéro blanc). Overlays d'action en haut, karaoké en bas.",
+  "estimatedSec": 38,
+  "startPath": "/",
+  "baseUrl": "http://localhost:3000",
+  "format": "9:16",
+  "auth": "none",
+  "subtitles": true,
+  "composeStyle": "flat",
+  "voiceBackend": "google",
+  "voiceGoogleVoice": "fr-FR-Neural2-D",
+  "voicePronunciation": {
+    "Maki": "maki"
+  },
+  "brand": {
+    "displayName": "Maki",
+    "domain": "maki.app",
+    "tagline": "Les saveurs d'Afrique, sur une carte"
+  },
+  "steps": [
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Maki, sur le web",
+      "subtitle": "Ouvre la carte",
+      "dwellMs": 2200,
+      "voiceover": "Envie d'un resto africain, ou des produits du pays ? Ouvre Maki : tout est sur la carte, autour de toi. Filtre les épiceries — et même celles qui font le transfert d'argent. Les boutiques inscrites vendent en ligne : tu remplis ton panier, sans compte, tu payes en ligne quand tu es prêt, et tu suis ta commande en direct jusqu'à la livraison. Maki. Les saveurs d'Afrique, sur une carte — sur mobile, et maintenant sur le web."
+    },
+    {
+      "type": "wait",
+      "dwellMs": 2600
+    },
+    {
+      "type": "overlay",
+      "text": "Tout est sur la carte",
+      "position": "top",
+      "dwellMs": 1800
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.filter-grocery\"]",
+      "dwellMs": 1800
+    },
+    {
+      "type": "overlay",
+      "text": "Filtre transfert d'argent",
+      "position": "top",
+      "dwellMs": 1600
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.filter-money\"]",
+      "dwellMs": 1400
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.service-wave\"]",
+      "dwellMs": 2000
+    },
+    {
+      "type": "goto",
+      "dwellMs": 2800,
+      "url": "/boutique/demo-epicerie-soleil"
+    },
+    {
+      "type": "overlay",
+      "text": "Les boutiques vendent en ligne",
+      "position": "top",
+      "dwellMs": 1800
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"shop.add\"]",
+      "dwellMs": 1500
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"shop.add\"]",
+      "dwellMs": 1500
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"shop.view-cart\"]",
+      "dwellMs": 2400
+    },
+    {
+      "type": "overlay",
+      "text": "Panier → paiement Stripe → suivi en direct",
+      "position": "top",
+      "dwellMs": 2400
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1000
+    },
+    {
+      "type": "section",
+      "categoryId": "branding",
+      "title": "Maki",
+      "subtitle": "Sur mobile et sur le web",
+      "dwellMs": 2600,
+      "voiceover": "Maki. Télécharge l'app, ou passe par le web."
+    },
+    {
+      "type": "wait",
+      "dwellMs": 1400
+    }
+  ]
+}
