@@ -169,6 +169,10 @@ export interface TourEntry {
   voiceBackend?: "elevenlabs" | "voicebox" | "google";
   /** Voix Google (voiceBackend === "google"). Défaut fr-FR-Neural2-D. */
   voiceGoogleVoice?: string;
+  /** Position simulée pendant la capture, pour une app qui demande « autour
+   *  de moi ». Sans elle, la carte s'ouvre sur sa vue par défaut et la démo
+   *  montre une carte vide. */
+  geolocation?: { latitude: number; longitude: number; accuracy?: number };
   /** Débit de la voix Google, 0.25 à 4.0. Défaut 1.0 (celui de la config).
    *  Se règle PAR TOUR : une story veut un débit plus vif qu'une démo
    *  produit, et changer la config globale rejouerait tous les autres

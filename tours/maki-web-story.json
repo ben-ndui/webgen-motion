@@ -2,11 +2,15 @@
   "id": "maki-web-story",
   "name": "Maki · La carte de la diaspora (9:16)",
   "description": "Story verticale du Maki web : la carte, la feuille de filtres, le transfert d'argent, la boutique d'une épicerie et le panier sans compte. Aucune donnée semée (fiche de démonstration déjà en base), aucun paiement déclenché. Voix off continue vérifiée par scripts/measure-vo.mjs.",
-  "estimatedSec": 38,
+  "estimatedSec": 40,
   "startPath": "/",
   "baseUrl": "http://localhost:3000",
   "format": "9:16",
   "auth": "none",
+  "geolocation": {
+    "latitude": 43.5673,
+    "longitude": 7.0738
+  },
   "subtitles": true,
   "composeStyle": "flat",
   "voiceBackend": "google",
@@ -31,8 +35,18 @@
       "voiceover": "Envie d'un resto africain ? Des produits du pays ? Ouvre Maki. Tout est sur la carte, autour de toi. Les restaurants. Les épiceries. Et celles qui font le transfert d'argent — Wave, Orange Money, Western Union — repérées d'un seul filtre. Tu tombes sur une épicerie qui te plaît ? Entre. Son rayon est en ligne, avec les vrais prix et le vrai stock, mis à jour par le commerçant lui-même. Tu remplis ton panier, tu commandes, et c'est le prix affiché : pas de frais en plus, pas de taxe surprise, pas de livraison à payer. Tu passes chercher au comptoir, quand c'est prêt. Et si tu cherches une adresse près de chez toi, la carte la connaît déjà. Maki. Les saveurs d'Afrique, sur une carte."
     },
     {
+      "type": "click",
+      "selector": "[data-wm-id=\"welcome.enter\"]",
+      "dwellMs": 1600
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.locate\"]",
+      "dwellMs": 2600
+    },
+    {
       "type": "wait",
-      "dwellMs": 3100
+      "dwellMs": 700
     },
     {
       "type": "overlay",
@@ -58,7 +72,7 @@
     },
     {
       "type": "click",
-      "selector": "[data-wm-id=\"explore.service-wave\"]",
+      "selector": "[data-wm-id=\"explore.service-orange_money\"]",
       "dwellMs": 2400
     },
     {

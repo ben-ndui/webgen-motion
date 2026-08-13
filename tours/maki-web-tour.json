@@ -7,6 +7,10 @@
   "baseUrl": "http://localhost:3000",
   "format": "16:9",
   "auth": "none",
+  "geolocation": {
+    "latitude": 43.5673,
+    "longitude": 7.0738
+  },
   "subtitles": true,
   "composeStyle": "flat",
   "voiceBackend": "google",
@@ -31,8 +35,18 @@
       "voiceover": "Maki. Les restaurants et les épiceries africaines, réunis sur une seule carte. Sur le web, la carte c'est la porte d'entrée : dès l'arrivée, vous voyez ce qui existe autour de vous. Un bouton, un seul, ouvre les filtres. Vous choisissez ce que vous cherchez — un restaurant, une épicerie — et même l'origine de la cuisine : Afrique de l'Ouest, Maghreb, Afrique centrale. Et puis il y a celui-là : le transfert d'argent. Beaucoup d'épiceries africaines font aussi point de transfert — Wave, Orange Money, Western Union. Maki vous montre lesquelles, sur la même carte, sans avoir à pousser la porte de chaque boutique pour le demander."
     },
     {
+      "type": "click",
+      "selector": "[data-wm-id=\"welcome.enter\"]",
+      "dwellMs": 1600
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.locate\"]",
+      "dwellMs": 2600
+    },
+    {
       "type": "wait",
-      "dwellMs": 4400
+      "dwellMs": 700
     },
     {
       "type": "overlay",
@@ -75,7 +89,7 @@
     },
     {
       "type": "click",
-      "selector": "[data-wm-id=\"explore.service-wave\"]",
+      "selector": "[data-wm-id=\"explore.service-orange_money\"]",
       "dwellMs": 3350
     },
     {

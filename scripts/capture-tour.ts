@@ -239,6 +239,21 @@ async function main(): Promise<void> {
   });
 
   const page = await browser.newPage();
+
+  // Position simulée. Une app de carte s'ouvre sur « autour de moi » : sans
+  // position, le navigateur de capture tombe sur la vue par défaut — pour Maki,
+  // le monde entier, donc une démo qui montre l'Atlantique. On accorde la
+  // permission ET on pose les coordonnées : refuser la permission suffirait à
+  // laisser la carte dézoomée.
+  if (tour!.geolocation) {
+    const { latitude, longitude, accuracy } = tour!.geolocation;
+    await browser
+      .defaultBrowserContext()
+      .overridePermissions(baseUrl, ["geolocation"]);
+    await page.setGeolocation({ latitude, longitude, accuracy: accuracy ?? 40 });
+    console.log(`  ✓ Position simulée : ${latitude}, ${longitude}`);
+  }
+
   if (isPortrait) {
     await page.setUserAgent(mobileUserAgent);
     await page.setViewport(viewport);
