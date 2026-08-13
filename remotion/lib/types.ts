@@ -102,6 +102,13 @@ export interface TourBrand {
   displayName: string;
   domain: string;
   tagline: string;
+  /** Fond, accent et texte de la marque. Quand ils sont là, ils priment sur
+   *  la palette de la catégorie : `categories.json` sert TOUS les projets,
+   *  et une vidéo qui présente un produit doit porter les couleurs de ce
+   *  produit, pas le bleu générique de l'outil. */
+  bgColor?: string;
+  accent?: string;
+  fg?: string;
 }
 
 /** Beat in the bg music timeline — emitted by `analyze-audio.ts`. */
@@ -124,6 +131,11 @@ export interface TourCompositionProps extends Record<string, unknown> {
   fps: number;
   sections: ManifestSection[];
   brand: TourBrand;
+  /** Durée du carton d'ouverture. 0 = la première section démarre à la
+   *  première image, donc la voix off aussi. */
+  introSec?: number;
+  /** Durée du carton de fin. */
+  outroSec?: number;
   /** Style preset id — drives Ken Burns intensity, transition mapping,
    *  backdrop motion, and beats layer strength. Falls back to
    *  "energetic" when missing or unknown. */
@@ -182,10 +194,13 @@ export const TRANSITIONS = {
 export function computeDurationInFrames(
   sections: ManifestSection[],
   fps: number,
+  holds: { introSec?: number; outroSec?: number } = {},
 ): number {
   const sectionsSec = sections.reduce((acc, s) => acc + s.durationSec, 0);
   const total =
-    TRANSITIONS.introHoldSec + sectionsSec + TRANSITIONS.outroHoldSec;
+    (holds.introSec ?? TRANSITIONS.introHoldSec) +
+    sectionsSec +
+    (holds.outroSec ?? TRANSITIONS.outroHoldSec);
   return Math.ceil(total * fps);
 }
 
@@ -197,8 +212,9 @@ export function computeDurationInFrames(
 export function computeSectionFrames(
   sections: ManifestSection[],
   fps: number,
+  introSec: number = TRANSITIONS.introHoldSec,
 ): Array<{ startFrame: number; endFrame: number }> {
-  const intro = TRANSITIONS.introHoldSec * fps;
+  const intro = introSec * fps;
   let cursor = intro;
   const out: Array<{ startFrame: number; endFrame: number }> = [];
   for (const s of sections) {

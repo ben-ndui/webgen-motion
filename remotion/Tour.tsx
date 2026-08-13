@@ -34,6 +34,8 @@ export function Tour({
   format,
   sections,
   brand,
+  introSec,
+  outroSec,
   voiceoverFile,
   bgMusicFile,
   bgMusicVolume,
@@ -50,9 +52,13 @@ export function Tour({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const style = resolveStyle(composeStyle);
-  const sectionWindows = computeSectionFrames(sections, fps);
-  const introFrames = TRANSITIONS.introHoldSec * fps;
-  const outroFrames = TRANSITIONS.outroHoldSec * fps;
+  // Un tour peut supprimer le carton d'ouverture (introSec: 0) : sa première
+  // section porte alors le nom de la marque ET la voix off dès l'image un.
+  const introHold = introSec ?? TRANSITIONS.introHoldSec;
+  const outroHold = outroSec ?? TRANSITIONS.outroHoldSec;
+  const sectionWindows = computeSectionFrames(sections, fps, introHold);
+  const introFrames = introHold * fps;
+  const outroFrames = outroHold * fps;
   const crossfadeFrames = TRANSITIONS.crossfadeSec * fps;
   const fadeFrames = Math.round(crossfadeFrames);
 
@@ -80,6 +86,20 @@ export function Tour({
     const section = idx >= 0 ? sections[idx] : sections[sections.length - 1];
     activeCat = getCategory(section?.categoryId) ?? activeCat;
   }
+
+  // Les couleurs de la marque, si le tour les déclare, remplacent celles de
+  // la catégorie — sans quoi toute vidéo Maki sortirait en bleu Branding.
+  const paintBrand = (cat: typeof activeCat) =>
+    brand.bgColor || brand.accent || brand.fg
+      ? {
+          ...cat,
+          bgColor: brand.bgColor ?? cat.bgColor,
+          accent: brand.accent ?? cat.accent,
+          fg: brand.fg ?? cat.fg,
+        }
+      : cat;
+
+  activeCat = paintBrand(activeCat);
 
   const totalSectionsEnd = sectionWindows[sectionWindows.length - 1]?.endFrame ?? introFrames;
   const outroStart = totalSectionsEnd;
@@ -144,7 +164,7 @@ export function Tour({
        *  window of section N stays visible while section N+1 enters. */}
       {sections.map((s, i) => {
         const w = sectionWindows[i];
-        const cat = getCategory(s.categoryId) ?? MOTION_CATEGORIES.branding;
+        const cat = paintBrand(getCategory(s.categoryId) ?? MOTION_CATEGORIES.branding);
         const durationFrames = w.endFrame - w.startFrame;
         const entranceFrames = entranceFramesFor(i);
         const exitFrames =

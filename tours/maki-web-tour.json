@@ -12,7 +12,9 @@
     "longitude": 7.0738
   },
   "subtitles": true,
-  "composeStyle": "flat",
+  "composeStyle": "sober",
+  "introSec": 0,
+  "outroSec": 1.4,
   "voiceBackend": "google",
   "voiceGoogleVoice": "fr-FR-Neural2-D",
   "voiceGoogleRate": 1.04,
@@ -23,7 +25,10 @@
   "brand": {
     "displayName": "Maki",
     "domain": "makii.app",
-    "tagline": "L'Afrique, à deux rues."
+    "tagline": "L'Afrique, à deux rues.",
+    "bgColor": "#0E0E1A",
+    "accent": "#E85D04",
+    "fg": "#F5F3EE"
   },
   "steps": [
     {

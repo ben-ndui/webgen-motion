@@ -340,10 +340,17 @@ async function main(): Promise<void> {
     });
   }
 
+  // Le tour peut supprimer le carton d'ouverture : le plan de montage doit
+  // caler la voix sur la même origine que la composition, sinon la narration
+  // parle deux secondes avant l'image.
+  const planTour = getTour(tourId!);
+  const introSec = planTour?.introSec ?? TRANSITIONS.introHoldSec;
+  const outroSec = planTour?.outroSec ?? TRANSITIONS.outroHoldSec;
+
   const plan = editPlanEnabled
     ? buildEditPlan({
         fps,
-        introSec: TRANSITIONS.introHoldSec,
+        introSec,
         defaultCrossfadeSec: TRANSITIONS.crossfadeSec,
         sections: sections.map((s) => {
           const raw = manifest.sections.find((m) => m.index === s.index);
@@ -404,6 +411,11 @@ async function main(): Promise<void> {
     domain: tour?.brand?.domain ?? derivedDomain,
     tagline:
       tour?.brand?.tagline ?? tour?.brand?.domain ?? derivedDomain,
+    // Transmises telles quelles : la composition n'applique celles qui sont
+    // définies, et retombe sur la catégorie pour les autres.
+    bgColor: tour?.brand?.bgColor,
+    accent: tour?.brand?.accent,
+    fg: tour?.brand?.fg,
   };
 
   // Sprint 7 — frame3d gated par feature flag (Studio Edition).
@@ -455,6 +467,8 @@ async function main(): Promise<void> {
     fps,
     sections,
     brand,
+    introSec,
+    outroSec,
     voiceoverFile,
     bgMusicFile,
     bgMusicVolume: bgMusicVolumeArg,

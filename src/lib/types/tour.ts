@@ -235,6 +235,11 @@ export interface TourEntry {
     style?: number;
     useSpeakerBoost?: boolean;
   };
+  /** Durée du carton d'ouverture, en secondes. 0 = la première section
+   *  démarre à l'image un, donc la voix off aussi. Défaut 2.2. */
+  introSec?: number;
+  /** Durée du carton de fin. Défaut 2.2. */
+  outroSec?: number;
   /** Brand identity surfaced in the compose stage (intro card, outro
    *  card, Mac chrome URL bar). All fields optional — sensible
    *  fallbacks are computed from `name` and `baseUrl` when missing. */
@@ -247,6 +252,10 @@ export interface TourEntry {
     /** Subtitle line under the outro logo (e.g. "by Smooth & Design").
      *  Fallback: same as `domain`. */
     tagline?: string;
+    /** Couleurs de la marque — priment sur la palette de catégorie. */
+    bgColor?: string;
+    accent?: string;
+    fg?: string;
   };
   /** How voice-over is sourced.
    *  - "per-step" (default, legacy): each step carries its own VO line,

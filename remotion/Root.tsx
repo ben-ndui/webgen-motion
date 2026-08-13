@@ -81,7 +81,7 @@ export function Root() {
         calculateMetadata={({ props }) => ({
           durationInFrames: Math.max(
             60,
-            computeDurationInFrames(props.sections, FPS),
+            computeDurationInFrames(props.sections, FPS, { introSec: props.introSec, outroSec: props.outroSec }),
           ),
         })}
       />
@@ -98,7 +98,7 @@ export function Root() {
         calculateMetadata={({ props }) => ({
           durationInFrames: Math.max(
             60,
-            computeDurationInFrames(props.sections, FPS),
+            computeDurationInFrames(props.sections, FPS, { introSec: props.introSec, outroSec: props.outroSec }),
           ),
         })}
       />
