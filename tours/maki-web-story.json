@@ -1,8 +1,8 @@
 {
   "id": "maki-web-story",
   "name": "Maki · La carte de la diaspora (9:16)",
-  "description": "Story verticale de présentation du Maki web : la carte, le filtre transfert d'argent, la boutique en ligne, le panier guest-first et le retrait sur place. Données factices. Voix off Google FR CONTINUE — la version d'août 2026 laissait 17 s de silence sur 38 s.",
-  "estimatedSec": 45,
+  "description": "Story verticale du Maki web : la carte, la feuille de filtres, le transfert d'argent, la boutique d'une épicerie et le panier sans compte. Aucune donnée semée (fiche de démonstration déjà en base), aucun paiement déclenché. Voix off continue vérifiée par scripts/measure-vo.mjs.",
+  "estimatedSec": 38,
   "startPath": "/",
   "baseUrl": "http://localhost:3000",
   "format": "9:16",
@@ -13,7 +13,8 @@
   "voiceGoogleVoice": "fr-FR-Neural2-D",
   "voiceGoogleRate": 1.08,
   "voicePronunciation": {
-    "Maki": "maki"
+    "Maki": "maki",
+    "makii": "maki"
   },
   "brand": {
     "displayName": "Maki",
@@ -25,88 +26,93 @@
       "type": "section",
       "categoryId": "branding",
       "title": "Maki, sur le web",
-      "subtitle": "Ouvre la carte",
-      "dwellMs": 3200,
-      "voiceover": "Envie d'un resto africain ? Des produits du pays ? Ouvre Maki. Tout est sur la carte, autour de toi. Les restaurants. Les épiceries. Et celles qui font le transfert d'argent — Wave, Orange Money, Western Union — repérées d'un seul filtre. Tu tombes sur une épicerie qui te plaît ? Entre. Son rayon est en ligne, avec les vrais prix et le vrai stock, mis à jour par le commerçant lui-même. Tu remplis ton panier. Sans compte, sans formulaire. Tu payes quand tu es prêt, et c'est le prix affiché : pas de frais en plus, pas de taxe surprise. Puis tu passes chercher ta commande au comptoir, quand elle est prête. Pas de frais de service, pas de livraison à payer : tu passes chercher, c'est tout. Et si tu cherches une adresse près de chez toi, la carte la connaît déjà. Maki. Les saveurs d'Afrique, sur une carte."
+      "subtitle": "La carte, dès l'arrivée",
+      "dwellMs": 2600,
+      "voiceover": "Envie d'un resto africain ? Des produits du pays ? Ouvre Maki. Tout est sur la carte, autour de toi. Les restaurants. Les épiceries. Et celles qui font le transfert d'argent — Wave, Orange Money, Western Union — repérées d'un seul filtre. Tu tombes sur une épicerie qui te plaît ? Entre. Son rayon est en ligne, avec les vrais prix et le vrai stock, mis à jour par le commerçant lui-même. Tu remplis ton panier, tu commandes, et c'est le prix affiché : pas de frais en plus, pas de taxe surprise, pas de livraison à payer. Tu passes chercher au comptoir, quand c'est prêt. Et si tu cherches une adresse près de chez toi, la carte la connaît déjà. Maki. Les saveurs d'Afrique, sur une carte."
     },
     {
       "type": "wait",
-      "dwellMs": 3850
+      "dwellMs": 3100
     },
     {
       "type": "overlay",
       "text": "Tout est sur la carte",
       "position": "top",
-      "dwellMs": 2650
+      "dwellMs": 2150
+    },
+    {
+      "type": "click",
+      "selector": "[data-wm-id=\"explore.filters-open\"]",
+      "dwellMs": 2150
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-grocery\"]",
-      "dwellMs": 2650
+      "dwellMs": 1900
     },
     {
       "type": "overlay",
-      "text": "Filtre transfert d'argent",
+      "text": "Celles qui font le transfert",
       "position": "top",
-      "dwellMs": 2350
-    },
-    {
-      "type": "click",
-      "selector": "[data-wm-id=\"explore.filter-money\"]",
-      "dwellMs": 2100
+      "dwellMs": 1700
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.service-wave\"]",
-      "dwellMs": 2950
+      "dwellMs": 2400
+    },
+    {
+      "type": "keypress",
+      "key": "Escape",
+      "dwellMs": 1700
     },
     {
       "type": "goto",
-      "dwellMs": 4100,
-      "url": "/boutique/demo-epicerie-soleil"
+      "url": "/boutique/demo_epicerie_chez_awa",
+      "dwellMs": 3300
     },
     {
       "type": "overlay",
       "text": "Les boutiques vendent en ligne",
       "position": "top",
-      "dwellMs": 2650
+      "dwellMs": 2150
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 2250
+      "dwellMs": 1800
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 2250
+      "dwellMs": 1800
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.view-cart\"]",
-      "dwellMs": 3550
+      "dwellMs": 2850
     },
     {
       "type": "overlay",
-      "text": "Panier → paiement Stripe → suivi en direct",
-      "position": "top",
-      "dwellMs": 3550
+      "text": "Retrait sur place, sans frais",
+      "position": "bottom",
+      "dwellMs": 2850
     },
     {
       "type": "wait",
-      "dwellMs": 1450
+      "dwellMs": 1150
     },
     {
       "type": "section",
       "categoryId": "branding",
       "title": "Maki",
-      "subtitle": "Sur mobile et sur le web",
-      "dwellMs": 3250,
+      "subtitle": "makii.app",
+      "dwellMs": 3050,
       "voiceover": "Sur mobile, et maintenant sur le web. Télécharge l'app, ou passe par makii point app."
     },
     {
       "type": "wait",
-      "dwellMs": 1750
+      "dwellMs": 1650
     }
   ]
 }
