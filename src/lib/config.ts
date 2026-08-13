@@ -248,6 +248,7 @@ export function resolveVoiceBackend(tour?: {
   voiceboxEngine?: string;
   voiceboxModelSize?: string;
   voiceGoogleVoice?: string;
+  voiceGoogleRate?: number;
   voicePronunciation?: Record<string, string>;
 }): ResolvedVoiceBackend | null {
   const cfg = getConfig();
@@ -267,7 +268,9 @@ export function resolveVoiceBackend(tour?: {
         cfg.google?.voice ||
         "fr-FR-Neural2-D",
       languageCode: cfg.google?.languageCode || "fr-FR",
-      speakingRate: cfg.google?.speakingRate ?? 1.0,
+      // Le tour prime sur la config globale : le débit fait partie du ton
+      // d'un tour, pas des réglages de la machine.
+      speakingRate: tour?.voiceGoogleRate ?? cfg.google?.speakingRate ?? 1.0,
       pronunciation: tour?.voicePronunciation ?? {},
       credentialsPath,
     };

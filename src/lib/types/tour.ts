@@ -169,6 +169,11 @@ export interface TourEntry {
   voiceBackend?: "elevenlabs" | "voicebox" | "google";
   /** Voix Google (voiceBackend === "google"). Défaut fr-FR-Neural2-D. */
   voiceGoogleVoice?: string;
+  /** Débit de la voix Google, 0.25 à 4.0. Défaut 1.0 (celui de la config).
+   *  Se règle PAR TOUR : une story veut un débit plus vif qu'une démo
+   *  produit, et changer la config globale rejouerait tous les autres
+   *  tours au même rythme. Au-delà de 1.15 la diction se dégrade. */
+  voiceGoogleRate?: number;
   /** Dico de prononciation DU TOUR (terme → IPA) — appliqué en SSML
    *  <phoneme> par la voix Google. Ex. { UZME: "juzmi" }. */
   voicePronunciation?: Record<string, string>;

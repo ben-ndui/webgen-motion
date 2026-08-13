@@ -1,8 +1,8 @@
 {
   "id": "maki-web-story",
   "name": "Maki · La carte de la diaspora (9:16)",
-  "description": "Story/Reels de présentation du Maki web : la carte en invité, une boutique, le panier — court et rythmé. Données 100% factices (L'Épicerie du Soleil, semée puis purgée). Voix off Google FR CONTINUE via narration niveau-section (une piste sur toute la démo, zéro blanc). Overlays d'action en haut, karaoké en bas.",
-  "estimatedSec": 38,
+  "description": "Story verticale de présentation du Maki web : la carte, le filtre transfert d'argent, la boutique en ligne, le panier guest-first et le retrait sur place. Données factices. Voix off Google FR CONTINUE — la version d'août 2026 laissait 17 s de silence sur 38 s.",
+  "estimatedSec": 45,
   "startPath": "/",
   "baseUrl": "http://localhost:3000",
   "format": "9:16",
@@ -11,6 +11,7 @@
   "composeStyle": "flat",
   "voiceBackend": "google",
   "voiceGoogleVoice": "fr-FR-Neural2-D",
+  "voiceGoogleRate": 1.08,
   "voicePronunciation": {
     "Maki": "maki"
   },
@@ -25,87 +26,87 @@
       "categoryId": "branding",
       "title": "Maki, sur le web",
       "subtitle": "Ouvre la carte",
-      "dwellMs": 3100,
-      "voiceover": "Envie d'un resto africain, ou des produits du pays ? Ouvre Maki : tout est sur la carte, autour de toi. Filtre les épiceries — et même celles qui font le transfert d'argent. Les boutiques inscrites vendent en ligne : tu remplis ton panier, sans compte, tu payes en ligne quand tu es prêt, et tu suis ta commande en direct jusqu'à la livraison. Maki. Les saveurs d'Afrique, sur une carte — sur mobile, et maintenant sur le web."
+      "dwellMs": 3200,
+      "voiceover": "Envie d'un resto africain ? Des produits du pays ? Ouvre Maki. Tout est sur la carte, autour de toi. Les restaurants. Les épiceries. Et celles qui font le transfert d'argent — Wave, Orange Money, Western Union — repérées d'un seul filtre. Tu tombes sur une épicerie qui te plaît ? Entre. Son rayon est en ligne, avec les vrais prix et le vrai stock, mis à jour par le commerçant lui-même. Tu remplis ton panier. Sans compte, sans formulaire. Tu payes quand tu es prêt, et c'est le prix affiché : pas de frais en plus, pas de taxe surprise. Puis tu passes chercher ta commande au comptoir, quand elle est prête. Pas de frais de service, pas de livraison à payer : tu passes chercher, c'est tout. Et si tu cherches une adresse près de chez toi, la carte la connaît déjà. Maki. Les saveurs d'Afrique, sur une carte."
     },
     {
       "type": "wait",
-      "dwellMs": 3700
+      "dwellMs": 3850
     },
     {
       "type": "overlay",
       "text": "Tout est sur la carte",
       "position": "top",
-      "dwellMs": 2550
+      "dwellMs": 2650
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-grocery\"]",
-      "dwellMs": 2550
+      "dwellMs": 2650
     },
     {
       "type": "overlay",
       "text": "Filtre transfert d'argent",
       "position": "top",
-      "dwellMs": 2250
+      "dwellMs": 2350
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.filter-money\"]",
-      "dwellMs": 2000
+      "dwellMs": 2100
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"explore.service-wave\"]",
-      "dwellMs": 2850
+      "dwellMs": 2950
     },
     {
       "type": "goto",
-      "dwellMs": 3950,
+      "dwellMs": 4100,
       "url": "/boutique/demo-epicerie-soleil"
     },
     {
       "type": "overlay",
       "text": "Les boutiques vendent en ligne",
       "position": "top",
-      "dwellMs": 2550
+      "dwellMs": 2650
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 2150
+      "dwellMs": 2250
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.add\"]",
-      "dwellMs": 2150
+      "dwellMs": 2250
     },
     {
       "type": "click",
       "selector": "[data-wm-id=\"shop.view-cart\"]",
-      "dwellMs": 3400
+      "dwellMs": 3550
     },
     {
       "type": "overlay",
       "text": "Panier → paiement Stripe → suivi en direct",
       "position": "top",
-      "dwellMs": 3400
+      "dwellMs": 3550
     },
     {
       "type": "wait",
-      "dwellMs": 1400
+      "dwellMs": 1450
     },
     {
       "type": "section",
       "categoryId": "branding",
       "title": "Maki",
       "subtitle": "Sur mobile et sur le web",
-      "dwellMs": 2600,
-      "voiceover": "Maki. Télécharge l'app, ou passe par le web."
+      "dwellMs": 3250,
+      "voiceover": "Sur mobile, et maintenant sur le web. Télécharge l'app, ou passe par makii point app."
     },
     {
       "type": "wait",
-      "dwellMs": 1400
+      "dwellMs": 1750
     }
   ]
 }
