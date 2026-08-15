@@ -136,7 +136,8 @@ npx tsx scripts/compose-tour.ts  --tour-id <id> --tour-dir ~/.webgen-motion/tour
 | **Compose OK mais sans voix off** | Backend voix non configuré | Wizard `/setup` → ElevenLabs (clé) ou Voicebox local |
 | **Voix off échoue** | Clé ElevenLabs absente/invalide ou hors quota | Vérifier la clé dans `/setup` ; ou basculer sur Voicebox |
 | **`ffmpeg`/`ffprobe` introuvable (mode dev)** | Pas sur le PATH | `brew install ffmpeg` (macOS) / `apt install ffmpeg` (Linux) |
-| **Render 3D noir / WebGL** | Pas de GPU / contexte WebGL | Le compose force déjà `--gl angle/swangle` (SwiftShader) ; vérifier la RAM |
+| **Render 3D noir / WebGL** | Pas de GPU / contexte WebGL | Le compose force `--gl angle` (Metal sur macOS) ; vérifier la RAM |
+| **Fenêtre répétée en grille 3×3** | `--gl swangle` (rasterizer logiciel) | ⚠️ NE JAMAIS repasser sur `swangle` : il TUILE les couches animées pendant les transitions. Vérifié 20/07/2026 — `angle` rend proprement. Même cause pour les transitions à filtre CSS (`scale-blur`, `glitch`), réservées au style Glitch explicite. |
 | **Windows : alerte SmartScreen** | Binaire non signé Windows | Signature Windows pas encore en place (voir §4) |
 | **App refuse de s'ouvrir (macOS)** | Gatekeeper si build non notarisé | Utiliser le `.dmg` officiel (notarisé) ; ne pas contourner Gatekeeper sur un build maison |
 
