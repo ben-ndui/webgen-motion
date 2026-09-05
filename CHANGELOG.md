@@ -7,6 +7,35 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-09-05
+
+**La release « GEN MOTION »** : l'application s'appelle enfin par son nom de
+marque partout où on la cherche, et le tuilage du compositeur est coupé à la
+racine sur tous les styles.
+
+### Changed
+
+- **Nom de l'application = GEN MOTION** (`productName` + titre de fenêtre). Le
+  bundle installé (`GEN MOTION.app`, `GEN MOTION_0.6.0_aarch64.dmg`) et l'entrée
+  Spotlight / Applications portent désormais la marque — fini de chercher
+  « webgen ». L'`identifier` (`fr.smoothandesign.webgen-motion`) est **conservé**
+  pour ne pas casser la continuité de l'updater et des licences : les installs
+  existantes se mettent à jour en place et affichent GEN MOTION ensuite.
+- **Backdrop sans scale sur tous les presets** (`style-presets.ts`) :
+  `backdropScaleAmp` passe à **0** pour `sober`, `energetic`, `cinematic` et
+  `glitch` (déjà 0 sur `flat`). La dernière couche qui tuilait était le backdrop
+  radial animé en `scale` + `opacité < 1` ; aucun style ne bouge plus le backdrop
+  en échelle, donc plus aucune tuile GL, quel que soit le preset choisi.
+
+### Notes
+
+- **Voix off qui couvre toute la vidéo = voix niveau-section.** Sur un tour à
+  narration continue, préférer une voix par section (mapping 1:1 image↔voix) :
+  le mode narratif peut regrouper les segments sur les premières sections et
+  laisser la fin muette. Le slug repo, le package npm et les variables
+  `WEBGEN_MOTION_*` restent inchangés (rétro-compat git/npm/CI).
+
+
 ## [0.5.0] — 2026-07-28
 
 **La release « voix off gratuite + rendu propre »** : un backend TTS Google
