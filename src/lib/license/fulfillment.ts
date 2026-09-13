@@ -16,6 +16,7 @@
  */
 
 import { issueLicense, type IssuableEdition } from "./issue";
+import { envoyerEmail } from "@/lib/email/envoyer-email";
 
 export interface FulfillmentEnv {
   // Signature d'index : accepte directement `process.env` (ProcessEnv).
@@ -24,6 +25,10 @@ export interface FulfillmentEnv {
   LICENSE_SIGNING_PRIVATE_KEY_B64?: string;
   RESEND_API_KEY?: string;
   RESEND_FROM?: string;
+  /** "mailjet" ou "resend". Absente = Resend, le fournisseur historique. */
+  EMAIL_FOURNISSEUR?: string;
+  MJ_APIKEY_PUBLIC?: string;
+  MJ_APIKEY_PRIVATE?: string;
 }
 
 export interface FulfillmentInput {
@@ -83,46 +88,48 @@ export async function sendLicenseEmail(
   params: { to: string; licenseContent: string; edition: IssuableEdition },
   env: FulfillmentEnv,
 ): Promise<{ sent: boolean; skipped?: boolean; error?: string }> {
-  const apiKey = env.RESEND_API_KEY;
-  if (!apiKey || !apiKey.trim()) {
+  const config = {
+    fournisseurPrimaire: env.EMAIL_FOURNISSEUR,
+    cleResend: env.RESEND_API_KEY,
+    mailjetPublique: env.MJ_APIKEY_PUBLIC,
+    mailjetPrivee: env.MJ_APIKEY_PRIVATE,
+  };
+  const aucuneCle =
+    !config.cleResend?.trim() &&
+    !(config.mailjetPublique?.trim() && config.mailjetPrivee?.trim());
+  if (aucuneCle) {
     // Dev / pas encore configuré : on ne casse rien.
     console.warn(
-      "[fulfillment] RESEND_API_KEY absente → email NON envoyé (licence émise, à livrer manuellement)",
+      "[fulfillment] aucune clé de fournisseur → email NON envoyé (licence émise, à livrer manuellement)",
     );
     return { sent: false, skipped: true };
   }
   const from = env.RESEND_FROM ?? DEFAULT_FROM;
   const filename = `gen-motion-${params.edition}.license`;
-  const body = {
-    from,
-    to: [params.to],
-    subject: "Ta licence GEN MOTION " + params.edition,
-    text:
+  const texte =
       "Merci pour ton achat de GEN MOTION " +
       params.edition +
       " !\n\nTa licence est en pièce jointe (" +
       filename +
       "). Installe-la via /setup/license dans l'app, ou dépose-la dans " +
-      "~/.webgen-motion/.license\n\n— Smooth & Design",
-    attachments: [
-      {
-        filename,
-        content: Buffer.from(params.licenseContent, "utf-8").toString("base64"),
-      },
-    ],
-  };
+      "~/.webgen-motion/.license\n\n— Smooth & Design";
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      return { sent: false, error: `Resend ${res.status}: ${detail.slice(0, 200)}` };
+    const envoi = await envoyerEmail({
+      de: from,
+      a: [params.to],
+      sujet: "Ta licence GEN MOTION " + params.edition,
+      texte,
+      piecesJointes: [
+        {
+          nom: filename,
+          type: "application/octet-stream",
+          base64: Buffer.from(params.licenseContent, "utf-8").toString("base64"),
+        },
+      ],
+    }, config);
+    if (!envoi.envoye) {
+      // On n'arrive ici qu'après l'échec des DEUX fournisseurs.
+      return { sent: false, error: envoi.echecs.join(" | ") };
     }
     return { sent: true };
   } catch (e) {
