@@ -60,27 +60,27 @@ describe("decouperExpediteur", () => {
 });
 
 describe("envoyerEmail", () => {
-  it("sans EMAIL_FOURNISSEUR, le primaire reste Resend", async () => {
-    // Le défaut est le fournisseur historique : poser ce module ne bascule
-    // rien tout seul.
-    const appels = simulerFetch([{ corps: "{}" }]);
+  it("sans EMAIL_FOURNISSEUR, le primaire est Mailjet", async () => {
+    // Bascule du 13/09/2026. Le défaut vit dans le dépôt pour qu'un
+    // déploiement depuis n'importe où donne le même fournisseur.
+    const appels = simulerFetch([MAILJET_OK]);
     const resultat = await envoyerEmail(MESSAGE, CLES);
 
     expect(resultat.envoye).toBe(true);
-    expect(resultat.fournisseur).toBe("resend");
+    expect(resultat.fournisseur).toBe("mailjet");
     expect(appels).toHaveLength(1);
-    expect(appels[0].url).toContain("resend.com");
+    expect(appels[0].url).toContain("mailjet.com");
   });
 
-  it("EMAIL_FOURNISSEUR=mailjet fait passer Mailjet en primaire", async () => {
-    const appels = simulerFetch([MAILJET_OK]);
+  it("EMAIL_FOURNISSEUR=resend permet le retour en arrière", async () => {
+    const appels = simulerFetch([{ corps: "{}" }]);
     const resultat = await envoyerEmail(MESSAGE, {
       ...CLES,
-      fournisseurPrimaire: "mailjet",
+      fournisseurPrimaire: "resend",
     });
 
-    expect(resultat.fournisseur).toBe("mailjet");
-    expect(appels[0].url).toContain("mailjet.com");
+    expect(resultat.fournisseur).toBe("resend");
+    expect(appels[0].url).toContain("resend.com");
   });
 
   it("un 200 de Mailjet avec un message en ERREUR n'est pas un succès", async () => {
@@ -97,10 +97,7 @@ describe("envoyerEmail", () => {
       },
       { ok: false, status: 401, corps: "unauthorized" },
     ]);
-    const resultat = await envoyerEmail(MESSAGE, {
-      ...CLES,
-      fournisseurPrimaire: "mailjet",
-    });
+    const resultat = await envoyerEmail(MESSAGE, CLES);
 
     expect(resultat.envoye).toBe(false);
     expect(appels).toHaveLength(2);
@@ -112,10 +109,7 @@ describe("envoyerEmail", () => {
       { ok: false, status: 500, corps: "boom" },
       { corps: JSON.stringify({ id: "abc" }) },
     ]);
-    const resultat = await envoyerEmail(MESSAGE, {
-      ...CLES,
-      fournisseurPrimaire: "mailjet",
-    });
+    const resultat = await envoyerEmail(MESSAGE, CLES);
 
     expect(resultat.envoye).toBe(true);
     expect(resultat.fournisseur).toBe("resend");
@@ -129,10 +123,7 @@ describe("envoyerEmail", () => {
       },
       { corps: JSON.stringify({ id: "abc" }) },
     ]);
-    const resultat = await envoyerEmail(MESSAGE, {
-      ...CLES,
-      fournisseurPrimaire: "mailjet",
-    });
+    const resultat = await envoyerEmail(MESSAGE, CLES);
 
     expect(resultat.envoye).toBe(true);
     expect(resultat.fournisseur).toBe("resend");
@@ -176,13 +167,13 @@ describe("envoyerEmail", () => {
     };
 
     const appelsMailjet = simulerFetch([MAILJET_OK]);
-    await envoyerEmail(avecPiece, { ...CLES, fournisseurPrimaire: "mailjet" });
+    await envoyerEmail(avecPiece, CLES);
     expect(JSON.parse(appelsMailjet[0].body).Messages[0].Attachments).toEqual([
       { Filename: "licence.txt", ContentType: "text/plain", Base64Content: "TGljZW5jZQ==" },
     ]);
 
     const appelsResend = simulerFetch([{ corps: "{}" }]);
-    await envoyerEmail(avecPiece, CLES);
+    await envoyerEmail(avecPiece, { ...CLES, fournisseurPrimaire: "resend" });
     expect(JSON.parse(appelsResend[0].body).attachments).toEqual([
       { filename: "licence.txt", content: "TGljZW5jZQ==" },
     ]);

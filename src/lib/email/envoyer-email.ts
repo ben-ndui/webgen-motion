@@ -9,8 +9,8 @@
  * le relais sans redéploiement.
  *
  * Le primaire se choisit par la variable d'environnement EMAIL_FOURNISSEUR
- * ("mailjet" ou "resend"). En son absence, Resend reste primaire : poser ce
- * module ne change rien tant que la bascule n'est pas demandée.
+ * ("mailjet" ou "resend"). En son absence, Mailjet est primaire depuis la
+ * bascule du 13/09/2026 ; Resend reste le secours.
  *
  * Jumeau TypeScript de `taxiboat/functions/envoi_email.js`. Les deux doivent
  * évoluer ensemble — même contrat, mêmes garde-fous.
@@ -72,12 +72,17 @@ export async function envoyerEmail(
     }
   };
 
-  // Défaut volontaire : le fournisseur HISTORIQUE. Poser ce module ne change
-  // donc rien tant que EMAIL_FOURNISSEUR n'a pas été posé à "mailjet" — la
-  // bascule est une décision explicite, jamais un effet de bord.
-  const primaire = config.fournisseurPrimaire === "mailjet"
-    ? "mailjet"
-    : "resend";
+  // Bascule du 13/09/2026 : Mailjet est devenu le primaire, Resend le secours.
+  //
+  // Le défaut vit ICI, dans le dépôt, et pas seulement dans une variable
+  // d'environnement : le même mécanisme vaut côté Cloud Functions, où `.env*`
+  // est ignoré par git et se perdrait au déploiement suivant.
+  //
+  // Retour en arrière : poser EMAIL_FOURNISSEUR=resend, ou rendre son ancienne
+  // valeur à cette ligne. Dans les deux cas Mailjet reste le secours.
+  const primaire = config.fournisseurPrimaire === "resend"
+    ? "resend"
+    : "mailjet";
   ajouter(primaire);
   ajouter(primaire === "mailjet" ? "resend" : "mailjet");
 
