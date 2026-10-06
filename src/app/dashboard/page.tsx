@@ -7,7 +7,11 @@ import { formatDuration } from "@/lib/format-duration";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveEdition } from "@/lib/edition";
 import { getPublicConfig } from "@/lib/config";
+import { listerFilms } from "@/lib/film-loader";
+import { resumerFilm } from "@/lib/film-etat";
+import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import HubApp, { type HubTour } from "../_components/hub-app";
+import type { HubFilm } from "../_components/hub-films";
 
 /**
  * Hub / Dashboard — Phase 4 portage (handoff: GEN MOTION Hub.html).
@@ -23,6 +27,31 @@ function statusFor(id: string): HubTour["status"] {
   if (existsSync(join(dir, "final.mp4"))) return "rendered";
   if (existsSync(join(dir, "manifest.json"))) return "ready";
   return "draft";
+}
+
+// Les films de marque, statut tiré du disque. Une lecture ratée du dossier
+// remonte comme une ERREUR à l'écran, jamais comme « aucun film ». Sur la
+// vitrine publique (Vercel), pas de section du tout (`null`) : ce sont des
+// projets clients, réservés à l'app locale.
+function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
+  if (isPublicWebRuntime(process.env)) return { films: null, error: null };
+  try {
+    const films = listerFilms().map((fiche) => {
+      const resume = resumerFilm(fiche);
+      return {
+        id: resume.id,
+        nom: resume.nom,
+        statut: resume.statut,
+        langues: resume.langues,
+        declinaisons: resume.declinaisons.length,
+        rendus: resume.rendus,
+        erreurs: resume.erreurs.length,
+      };
+    });
+    return { films, error: null };
+  } catch (erreur) {
+    return { films: [], error: (erreur as Error).message };
+  }
 }
 
 export default function DashboardPage() {
@@ -49,5 +78,9 @@ export default function DashboardPage() {
     };
   });
 
-  return <HubApp tours={cards} edition={edition} configured={configured} />;
+  const { films, error } = filmsDuHub();
+
+  return (
+    <HubApp tours={cards} edition={edition} configured={configured} films={films} filmsError={error} />
+  );
 }

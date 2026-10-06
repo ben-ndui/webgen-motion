@@ -140,3 +140,14 @@
 .gm-hub .empty .ec svg { width: 22px; height: 22px; }
 .gm-hub .empty h3 { color: var(--ink); font-size: var(--t-lg); }
 .gm-hub .empty p { max-width: 38ch; }
+
+/* ---------------- FILMS DE MARQUE ---------------- */
+.gm-hub .films-wrap { padding: 0 var(--s-6) var(--s-8); display: flex; flex-direction: column; gap: var(--s-4); }
+.gm-hub .section-title { font-size: var(--t-lg); }
+.gm-hub .section-title .n { color: var(--faint); font-weight: 500; margin-left: 8px; }
+.gm-hub .fcard .tbody { gap: 11px; }
+.gm-hub .status.missing { color: var(--ink-soft); } .gm-hub .status.missing .sdot { background: transparent; border: 1.5px solid var(--ink-soft); }
+.gm-hub .films-note { display: flex; flex-direction: column; gap: 6px; padding: var(--s-5); border: 1px dashed var(--line-strong); border-radius: var(--r-lg); color: var(--muted); max-width: 72ch; line-height: 1.5; }
+.gm-hub .films-note b { color: var(--ink); font-weight: 600; }
+.gm-hub .films-note.error { border-style: solid; border-color: var(--ink); }
+.gm-hub .films-note code { font-family: var(--font-mono); font-size: 12px; color: var(--ink); overflow-wrap: anywhere; }

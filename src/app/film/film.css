@@ -1,0 +1,53 @@
+/* GEN MOTION — page d'un film de marque (/film/[id]).
+   Même langage que le hub : tokens globals.css (clair/sombre), noir et blanc,
+   Geist, aucune icône décorative. Une colonne sur écran étroit. */
+
+.gm-film { min-height: 100dvh; background: var(--bg-sunken); color: var(--ink-soft); font-size: var(--t-sm); padding: var(--s-6) clamp(16px, 4vw, var(--s-8)) var(--s-8); display: flex; flex-direction: column; gap: var(--s-5); max-width: 1180px; margin: 0 auto; box-sizing: border-box; }
+.gm-film code { font-family: var(--font-mono); font-size: 12px; color: var(--ink); overflow-wrap: anywhere; }
+.gm-film .film-head { display: flex; flex-direction: column; gap: 6px; }
+.gm-film .film-back { color: var(--muted); text-decoration: none; font-size: var(--t-xs); width: fit-content; }
+.gm-film .film-back:hover { color: var(--ink); }
+.gm-film .film-kicker { font-family: var(--font-mono); font-size: 10px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--faint); margin: 0; }
+.gm-film .film-title-row { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+.gm-film .film-title { font-size: var(--t-xl); color: var(--ink); font-weight: 600; letter-spacing: var(--tracking-tight); margin: 0; }
+.gm-film .film-status { font-size: var(--t-xs); font-weight: 500; padding: 4px 10px; border-radius: var(--r-full); border: 1px solid var(--line-strong); color: var(--ink); }
+.gm-film .film-status-rendu { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.gm-film .film-status-pret { border-color: var(--accent); color: var(--accent); }
+.gm-film .film-status-brouillon { color: var(--muted); }
+.gm-film .film-status-medias-manquants { border-style: dashed; }
+
+.gm-film .film-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: var(--s-5); align-items: start; }
+.gm-film .film-block { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+.gm-film .film-alert { border-color: var(--ink); }
+.gm-film .film-h2 { font-size: var(--t-base); color: var(--ink); font-weight: 600; margin: 0; }
+.gm-film .film-h3 { font-size: var(--t-base); color: var(--ink); font-weight: 600; margin: 0; }
+.gm-film .film-muted { color: var(--muted); margin: 0; line-height: 1.5; }
+.gm-film .film-warning { border-left: 2px solid var(--ink); padding-left: var(--s-3); color: var(--ink); margin: 0; }
+.gm-film .film-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.gm-film .film-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px var(--s-4); margin: 0; }
+.gm-film .film-dl dt { color: var(--faint); }
+.gm-film .film-dl dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.gm-film .film-swatches { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.gm-film .film-swatches li { display: flex; align-items: center; gap: 8px; font-size: var(--t-xs); }
+.gm-film .film-swatch { width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--line-strong); flex: none; }
+.gm-film .film-path { display: block; padding: 8px 10px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+
+.gm-film .film-media-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.gm-film .film-media-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--s-3); align-items: center; padding: 7px 0; border-top: 1px solid var(--line-soft); }
+.gm-film .film-media-meta { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.gm-film .film-media-state { font-size: var(--t-xs); font-weight: 500; }
+.gm-film .is-ok .film-media-state { color: var(--muted); }
+.gm-film .is-missing .film-media-state { color: var(--ink); text-decoration: underline; }
+
+.gm-film .film-section { display: flex; flex-direction: column; gap: var(--s-4); }
+.gm-film .film-rendus { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--s-5); }
+.gm-film .film-rendu-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); }
+.gm-film .film-btn { font: inherit; font-weight: 500; padding: 9px 15px; min-height: 40px; border-radius: var(--r-md); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; white-space: nowrap; }
+.gm-film .film-btn:hover:not(:disabled) { background: var(--accent-hover); }
+.gm-film .film-btn:disabled { opacity: .45; cursor: not-allowed; }
+.gm-film .film-btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.gm-film .film-btn-ghost:hover:not(:disabled) { background: var(--surface-2); }
+.gm-film .film-progress { display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
+.gm-film .film-progress progress { width: 100%; accent-color: var(--ink); }
+.gm-film .film-player { width: 100%; border-radius: var(--r-md); background: #000; }
+.gm-film .film-player-court { max-height: 520px; object-fit: contain; }

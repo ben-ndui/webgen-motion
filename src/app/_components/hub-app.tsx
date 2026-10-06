@@ -7,21 +7,13 @@ import HubConsole from "./hub-console";
 import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
-import TourCardMenu from "./tour-card-menu";
 import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
+import HubFilms, { type HubFilm } from "./hub-films";
+import TourCard, { type HubTour } from "./hub-tour-card";
 
-export interface HubTour {
-  id: string;
-  name: string;
-  fmt: "16:9" | "9:16";
-  steps: number;
-  dur: string;
-  cat: string;
-  status: "draft" | "ready" | "rendered";
-}
+export type { HubTour };
 
-const STATUS_LABEL = { draft: "Brouillon", ready: "Prêt", rendered: "Rendu" } as const;
 const SORTS = { recent: "Récents", name: "Nom A→Z", dur: "Durée", steps: "Étapes" } as const;
 type SortKey = keyof typeof SORTS;
 
@@ -34,62 +26,6 @@ const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
 const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
 const SparkIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" /></svg>;
-
-function Thumb({ tour }: { tour: HubTour }) {
-  const phone = tour.fmt === "9:16";
-  const body = (
-    <div className="dev-body">
-      <div className="b lg" />
-      <div className="b w1" />
-      {!phone && <div className="dev-accent" />}
-      <div className="b w3" />
-      <div className="b w2" />
-      {phone && <div className="dev-accent" />}
-    </div>
-  );
-  return (
-    <div className="thumb" data-wm-id="hub.card.thumb">
-      <div className="thumb-tl"><span className="fbadge">{tour.fmt}</span></div>
-      <div className="thumb-br"><span className="dur">{tour.dur}</span></div>
-      {phone ? (
-        <div className="device phone">{body}</div>
-      ) : (
-        <div className="device mac">
-          <div className="dev-bar"><i /><i /><i /></div>
-          {body}
-        </div>
-      )}
-      <div className="thumb-play"><span /></div>
-    </div>
-  );
-}
-
-function TourCard({ tour }: { tour: HubTour }) {
-  return (
-    <Link className="tcard" href={`/tour/${tour.id}`} data-wm-id="hub.card">
-      <Thumb tour={tour} />
-      <div className="tbody">
-        <div className="tbody-top">
-          <h3 className="tname">{tour.name}</h3>
-          <TourCardMenu tourId={tour.id} tourName={tour.name} />
-        </div>
-        <div className="tmeta">
-          <span className="tcat">{tour.cat}</span>
-          <span>{tour.steps} étapes</span>
-          <span className="sep" />
-          <span>{tour.dur}</span>
-          <span className="sep" />
-          <span>{tour.fmt}</span>
-        </div>
-        <div className="tfoot">
-          <span className={"status " + tour.status}>
-            <span className="sdot" />{STATUS_LABEL[tour.status]}
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 function CreateControl() {
   const [open, setOpen] = useState(false);
@@ -145,10 +81,15 @@ export default function HubApp({
   tours,
   edition,
   configured = true,
+  films = [],
+  filmsError = null,
 }: {
   tours: HubTour[];
   edition: string;
   configured?: boolean;
+  // null : section masquée (vitrine publique).
+  films?: HubFilm[] | null;
+  filmsError?: string | null;
 }) {
   const [fmt, setFmt] = useState<"all" | "16:9" | "9:16">("all");
   const [cat, setCat] = useState("all");
@@ -282,6 +223,8 @@ export default function HubApp({
             )}
           </div>
         </div>
+
+        {films !== null && <HubFilms films={films} error={filmsError} />}
       </main>
 
       {/* Director's Console du hub — drawer bas / flottant / fenêtre
