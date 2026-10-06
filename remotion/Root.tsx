@@ -1,5 +1,6 @@
 import { Composition } from "remotion";
 import { z } from "zod";
+import { CompositionFilm } from "./film/CompositionFilm";
 import { HelloWorld } from "./HelloWorld";
 import { Tour } from "./Tour";
 import { computeDurationInFrames, type TourCompositionProps } from "./lib/types";
@@ -102,6 +103,10 @@ export function Root() {
           ),
         })}
       />
+
+      {/* Mode « Film de marque » : la fiche FilmSpec arrive en inputProps
+          (scripts/render-film.ts). Moteur repris du gabarit film-motion. */}
+      <CompositionFilm />
     </>
   );
 }
