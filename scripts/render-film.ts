@@ -19,6 +19,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writ
 import { resolve } from "node:path";
 
 import { ensureChromium, remotionBrowserArgs, resolveChromiumExecutable } from "../src/lib/chromium";
+import { isFeatureEnabled } from "../src/lib/edition";
 import { POIDS_MINIMUM_D_UN_RENDU } from "../src/lib/film-etat";
 import { chargerFilm } from "../src/lib/film-loader";
 import { type RenduPrepare, preparerRendu } from "../src/lib/film-rendu";
@@ -181,6 +182,11 @@ function rendre(rendu: RenduPrepare, cheminNavigateur: string | undefined): Prom
 async function principal(): Promise<void> {
   const filmId = argument("--film-id");
   if (!estNomSur(filmId)) arreter("Usage : render-film.ts --film-id <id> [--declinaison <nom>]");
+  if (!isFeatureEnabled("film-de-marque")) {
+    arreter(
+      "Le rendu des films de marque est une feature Studio Edition. Active ta license (.license) ou, en dev : WEBGEN_MOTION_EDITION=studio",
+    );
+  }
 
   const fiche = chargerFilm(filmId);
   if (!fiche) arreter(`Rendu refusé : fiche introuvable (films/${filmId}.json).`);

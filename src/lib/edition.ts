@@ -53,6 +53,7 @@ export type FeatureFlag =
   | "cloud-rendering"
   | "auto-update-priority"
   | "otio-export"
+  | "film-de-marque"
   // Enterprise (sur mesure)
   | "white-label"
   | "api-headless"
@@ -82,6 +83,7 @@ const STUDIO_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([
   "cloud-rendering",
   "auto-update-priority",
   "otio-export",
+  "film-de-marque",
 ]);
 
 const ENTERPRISE_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([

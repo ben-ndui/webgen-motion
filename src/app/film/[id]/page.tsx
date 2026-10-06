@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { isFeatureEnabled } from "@/lib/edition";
 import { chargerFilm } from "@/lib/film-loader";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import { resumerFilm } from "@/lib/film-etat";
@@ -20,5 +21,6 @@ export default async function FilmPage({ params }: { params: Promise<{ id: strin
   if (isPublicWebRuntime(process.env)) notFound();
   const { id } = await params;
   const fiche = chargerFilm(id);
-  return <FilmVue id={id} resume={fiche ? resumerFilm(fiche) : null} />;
+  const studio = isFeatureEnabled("film-de-marque");
+  return <FilmVue id={id} resume={fiche ? resumerFilm(fiche) : null} studio={studio} />;
 }

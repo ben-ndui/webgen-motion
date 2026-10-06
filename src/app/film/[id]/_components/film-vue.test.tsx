@@ -52,21 +52,21 @@ describe("page film : les trois états", () => {
   });
 
   it("vide : fiche introuvable, et comment en créer une", () => {
-    render(<FilmVue id="absent" resume={null} />);
+    render(<FilmVue id="absent" resume={null} studio />);
     expect(screen.getByRole("heading", { name: "Film introuvable" })).toBeInTheDocument();
     expect(screen.getByText("films/absent.json")).toBeInTheDocument();
   });
 
   it("erreur : une fiche invalide affiche TOUTES ses erreurs, pas une page vide", () => {
     const erreurs = ["marque.couleurs.accent : couleur #RRGGBB attendue", "textes.en : manquant"];
-    render(<FilmVue id="faux" resume={resume({ statut: "brouillon", erreurs, declinaisons: [], medias: null })} />);
+    render(<FilmVue id="faux" resume={resume({ statut: "brouillon", erreurs, declinaisons: [], medias: null })} studio />);
     expect(screen.getByRole("alert")).toHaveTextContent("Fiche invalide · 2 erreurs");
     for (const erreur of erreurs) expect(screen.getByText(erreur)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Rendre" })).not.toBeInTheDocument();
   });
 
   it("fiche valide : résumé, médias présents/manquants avec le dossier exact, bouton de rendu", () => {
-    render(<FilmVue id="kotizo" resume={resume()} />);
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
     expect(screen.getByText("Prêt à rendre")).toBeInTheDocument();
     expect(screen.getByText("/home/ben/.webgen-motion/films/kotizo/public")).toBeInTheDocument();
     expect(screen.getByText("Médias · 1/2 présents")).toBeInTheDocument();
@@ -76,9 +76,29 @@ describe("page film : les trois états", () => {
 
   it("une déclinaison bloquée dit pourquoi et ne propose pas un rendu impossible", () => {
     const declinaisons = [{ ...DECLINAISON, problemes: ["capture absente : /x/ecrans/a.png"], rendu: null }];
-    render(<FilmVue id="kotizo" resume={resume({ statut: "medias-manquants", declinaisons })} />);
+    render(<FilmVue id="kotizo" resume={resume({ statut: "medias-manquants", declinaisons })} studio />);
     expect(screen.getByText("capture absente : /x/ecrans/a.png")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rendre" })).toBeDisabled();
+  });
+});
+
+describe("édition Community", () => {
+  it("le rendu est verrouillé, l'activation Studio est proposée, les rendus faits restent lisibles", () => {
+    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: { url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR", octets: 5_000_000, modifieLe: 1 } }];
+    const { container } = render(<FilmVue id="kotizo" resume={resume({ statut: "rendu", declinaisons })} studio={false} />);
+    expect(screen.getByText("Le rendu des films de marque fait partie de Studio Edition.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Activer une licence Studio" })).toHaveAttribute("href", "/setup");
+    expect(screen.getByRole("button", { name: "Rendre à nouveau" })).toBeDisabled();
+    expect(container.querySelector("video")).not.toBeNull();
+  });
+
+  it("le refus Studio de la route s'affiche en clair, pas en code", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({ error: "studio-required", message: "Le rendu des films de marque est une feature Studio Edition." }, { status: 403 }),
+    );
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
+    await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Le rendu des films de marque est une feature Studio Edition.");
   });
 });
 
@@ -91,7 +111,7 @@ describe("rendu d'une déclinaison", () => {
         { type: "done", ok: true, url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR&t=1", sizeBytes: 5_000_000 },
       ]),
     );
-    const { container } = render(<FilmVue id="kotizo" resume={resume()} />);
+    const { container } = render(<FilmVue id="kotizo" resume={resume()} studio />);
     await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
     await waitFor(() => expect(container.querySelector("video")).not.toBeNull());
     expect(container.querySelector("video")).toHaveAttribute("src", expect.stringContaining("declinaison=Court-FR"));
@@ -102,7 +122,7 @@ describe("rendu d'une déclinaison", () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       Response.json({ error: "Rendu refusé", erreurs: ["capture absente : /x/a.png"] }, { status: 400 }),
     );
-    render(<FilmVue id="kotizo" resume={resume()} />);
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
     await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Rendu refusé");
     expect(screen.getByText("capture absente : /x/a.png")).toBeInTheDocument();
@@ -110,7 +130,7 @@ describe("rendu d'une déclinaison", () => {
 
   it("un flux coupé sans « done » n'est pas présenté comme un succès", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(fluxNdjson([{ type: "phase", label: "Lancement du rendu…" }]));
-    const { container } = render(<FilmVue id="kotizo" resume={resume()} />);
+    const { container } = render(<FilmVue id="kotizo" resume={resume()} studio />);
     await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Le rendu s'est arrêté sans résultat.");
     expect(container.querySelector("video")).toBeNull();

@@ -157,6 +157,7 @@ describe("isFeatureEnabled — gating Studio", () => {
     "music-library",
     "watermark-removal",
     "otio-export",
+    "film-de-marque",
   ] as const;
   const COMMUNITY = [
     "compose-sober",

@@ -32,7 +32,9 @@ function Entete({ titre, statut, id }: { titre: string; statut: StatutDuFilm | n
  * (toutes les erreurs de `erreursDeLaSpec`, avec le chemin du champ), fiche
  * valide (résumé, médias attendus, rendus).
  */
-export default function FilmVue({ id, resume }: { id: string; resume: ResumeDuFilm | null }) {
+type PropsVue = { id: string; resume: ResumeDuFilm | null; studio: boolean };
+
+export default function FilmVue({ id, resume, studio }: PropsVue) {
   if (!resume) {
     return (
       <main className="gm-film">
@@ -78,7 +80,7 @@ export default function FilmVue({ id, resume }: { id: string; resume: ResumeDuFi
         <FilmResume resume={resume} />
         {resume.medias && <FilmMedias medias={resume.medias} />}
       </div>
-      <FilmRendus filmId={resume.id} declinaisons={resume.declinaisons} />
+      <FilmRendus filmId={resume.id} declinaisons={resume.declinaisons} studio={studio} />
     </main>
   );
 }

@@ -63,8 +63,9 @@ export function useRenduDeFilm(filmId: string) {
           signal: controleur.signal,
         });
         if (!reponse.ok || !reponse.body) {
-          const json = (await reponse.json().catch(() => null)) as { error?: string; erreurs?: string[] } | null;
-          poser(nom, { type: "erreur", message: json?.error ?? `Rendu refusé (${reponse.status})`, details: json?.erreurs ?? [] });
+          const json = (await reponse.json().catch(() => null)) as { error?: string; message?: string; erreurs?: string[] } | null;
+          const message = json?.message ?? json?.error ?? `Rendu refusé (${reponse.status})`;
+          poser(nom, { type: "erreur", message, details: json?.erreurs ?? [] });
           return;
         }
         await lireLeFlux(reponse.body, (evenement) => {

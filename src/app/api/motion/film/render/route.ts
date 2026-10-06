@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import { existsSync, statSync } from "node:fs";
 
+import { isFeatureEnabled } from "@/lib/edition";
 import { POIDS_MINIMUM_D_UN_RENDU } from "@/lib/film-etat";
 import { lireLigneDuRendu, lireRequeteDeRendu, preparerRendu } from "@/lib/film-rendu";
 import { urlDuRendu } from "@/lib/film-store";
@@ -25,6 +26,13 @@ export async function POST(req: NextRequest) {
   const lecture = lireRequeteDeRendu(corps);
   if (!lecture.ok) return NextResponse.json({ error: lecture.erreur }, { status: 400 });
   const { filmId, declinaison } = lecture.requete;
+
+  if (!isFeatureEnabled("film-de-marque")) {
+    return NextResponse.json(
+      { error: "studio-required", message: "Le rendu des films de marque est une feature Studio Edition." },
+      { status: 403 },
+    );
+  }
 
   const preparation = preparerRendu(filmId, declinaison);
   if (!preparation.ok) {

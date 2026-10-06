@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { EtatDeDeclinaison } from "@/lib/film-etat";
 import { type EtatDuRendu, useRenduDeFilm } from "./use-rendu-de-film";
 
@@ -19,13 +20,14 @@ function etatAffiche(declinaison: EtatDeDeclinaison, etat: EtatDuRendu | undefin
 
 type PropsCarte = {
   declinaison: EtatDeDeclinaison;
+  studio: boolean;
   etat: EtatDuRendu;
   occupe: boolean;
   onLancer: () => void;
   onAnnuler: () => void;
 };
 
-function CarteDeDeclinaison({ declinaison, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
+function CarteDeDeclinaison({ declinaison, studio, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
   const bloquee = declinaison.problemes.length > 0;
   const enCours = etat.type === "en-cours";
   const pourcentage = enCours && etat.total > 0 ? Math.round((etat.frames / etat.total) * 100) : null;
@@ -45,7 +47,7 @@ function CarteDeDeclinaison({ declinaison, etat, occupe, onLancer, onAnnuler }: 
             Annuler
           </button>
         ) : (
-          <button type="button" className="film-btn" onClick={onLancer} disabled={bloquee || occupe}>
+          <button type="button" className="film-btn" onClick={onLancer} disabled={!studio || bloquee || occupe}>
             {etat.type === "fait" ? "Rendre à nouveau" : "Rendre"}
           </button>
         )}
@@ -94,7 +96,9 @@ function CarteDeDeclinaison({ declinaison, etat, occupe, onLancer, onAnnuler }: 
 }
 
 /** Un bouton de rendu par déclinaison, sa progression, et le lecteur du rendu. */
-export default function FilmRendus({ filmId, declinaisons }: { filmId: string; declinaisons: EtatDeDeclinaison[] }) {
+type PropsRendus = { filmId: string; declinaisons: EtatDeDeclinaison[]; studio: boolean };
+
+export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus) {
   const { enCours, etats, lancer, annuler } = useRenduDeFilm(filmId);
 
   return (
@@ -102,6 +106,17 @@ export default function FilmRendus({ filmId, declinaisons }: { filmId: string; d
       <h2 id="film-rendus-titre" className="film-h2">
         Rendus
       </h2>
+      {!studio && (
+        <div className="film-block" data-wm-id="film.studio">
+          <p>
+            <b>Le rendu des films de marque fait partie de Studio Edition.</b>
+          </p>
+          <p className="film-muted">Les rendus déjà faits restent lisibles ci-dessous.</p>
+          <Link className="film-btn" href="/setup">
+            Activer une licence Studio
+          </Link>
+        </div>
+      )}
       {declinaisons.length === 0 ? (
         <p className="film-muted">Aucune déclinaison dans la fiche : rien à rendre.</p>
       ) : (
@@ -110,6 +125,7 @@ export default function FilmRendus({ filmId, declinaisons }: { filmId: string; d
             <CarteDeDeclinaison
               key={declinaison.nom}
               declinaison={declinaison}
+              studio={studio}
               etat={etatAffiche(declinaison, etats[declinaison.nom])}
               occupe={enCours !== null}
               onLancer={() => void lancer(declinaison.nom)}
