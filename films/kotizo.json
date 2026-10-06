@@ -1,0 +1,78 @@
+{
+  "exemple": false,
+  "marque": {
+    "couleurs": {
+      "encre": "#010D23",
+      "clair": "#FFFFFF",
+      "accent": "#2F6BFF",
+      "accentSurClair": "#003DD6",
+      "accentSurSombre": "#8FAFFF",
+      "bulleRecue": "#E9E9EB"
+    },
+    "police": "Jost",
+    "logo": { "type": "motSymbole", "texte": "kotizo", "graisse": 600, "approche": -0.03 },
+    "ombreTelephone": "0 2px 0 rgba(1,13,35,0.10), 0 40px 90px rgba(1,13,35,0.22)",
+    "contact": "Smooth & Design · contact@smoothandesign.fr"
+  },
+  "textes": {
+    "fr": {
+      "dossierDesEcrans": "ecrans",
+      "probleme": {
+        "heure": "20:41",
+        "messages": [
+          { "auteur": "moi", "texte": "Je te dois rien pour l'abonnement ?" },
+          { "auteur": "autre", "texte": "Ce soir, promis." }
+        ]
+      },
+      "bascule": {
+        "constat": "4 personnes.",
+        "chiffre": "4,49 € chacun.",
+        "signature": "Kotizo calcule, tu es remboursé."
+      },
+      "parcours": ["Crée ton groupe.", "Invite par un code.", "Chacun voit sa part.", "Tu es remboursé."],
+      "evenement": { "chute": "Personne à relancer." },
+      "marque": { "mots": ["Ton compte.", "Tes proches.", "Jamais Kotizo."] },
+      "fin": { "disponible": "Disponible sur l'App Store et Google Play" },
+      "apercu": {}
+    },
+    "en": {
+      "dossierDesEcrans": "ecrans-en",
+      "probleme": {
+        "heure": "8:41 PM",
+        "messages": [
+          { "auteur": "moi", "texte": "Don't I owe you for the subscription?" },
+          { "auteur": "autre", "texte": "Tonight, promise." }
+        ]
+      },
+      "bascule": {
+        "constat": "4 people.",
+        "chiffre": "€4.49 each.",
+        "signature": "Kotizo does the maths, you get paid back."
+      },
+      "parcours": ["Create your group.", "Invite with a code.", "Everyone sees their share.", "You get paid back."],
+      "evenement": { "chute": "Nobody left to chase." },
+      "marque": { "mots": ["Your account.", "Your people.", "Never Kotizo."] },
+      "fin": { "disponible": "Available on the App Store and Google Play" },
+      "apercu": {}
+    }
+  },
+  "ecrans": {
+    "parcours": ["creer-groupe.png", "inviter-code.png", "chacun-sa-part.png", "tu-es-rembourse.png"],
+    "evenement": ["evenement-0.png", "evenement-1.png", "evenement-2.png", "tu-es-rembourse.png"],
+    "marque": "virement-ben.png"
+  },
+  "musique": {
+    "fichier": "musique/aurectheme-summer-house-583397.mp3",
+    "titre": "Summer House, AurecTheme",
+    "source": "https://pixabay.com/music/house-summer-house-583397/",
+    "tempo": 123.52,
+    "premierTemps": 0.144
+  },
+  "declinaisons": [
+    { "nom": "Film-FR", "langue": "fr", "version": "long", "avecContact": true },
+    { "nom": "Film-EN", "langue": "en", "version": "long", "avecContact": true },
+    { "nom": "Court-FR", "langue": "fr", "version": "court", "avecContact": true },
+    { "nom": "Court-EN", "langue": "en", "version": "court", "avecContact": true }
+  ],
+  "apercu": { "fr": [], "en": [] }
+}
