@@ -2,7 +2,7 @@ import type { DeclinaisonDuFilm, FilmSpec } from "../../remotion/film/spec";
 import { type DossiersDuFilm, dossiersDuFilm, problemesDeLaDeclinaison } from "./film-etat";
 import { chargerFilm, getFilmsDir } from "./film-loader";
 import { etatDesMedias } from "./film-medias";
-import { estNomSur, fichiersDuRendu } from "./film-store";
+import { type TypeDeRendu, estNomSur, estTypeDeRendu, fichiersDuRendu } from "./film-store";
 
 /**
  * Ce que le runner (`scripts/render-film.ts`) et la route
@@ -11,23 +11,37 @@ import { estNomSur, fichiersDuRendu } from "./film-store";
  * quand on l'appelle à la main. Serveur seulement.
  */
 
-export type RequeteDeRendu = { filmId: string; declinaison: string };
+export type RequeteDeRendu = { filmId: string; declinaison: string; rendu: TypeDeRendu };
 
 export type LectureDeRequete = { ok: true; requete: RequeteDeRendu } | { ok: false; erreur: string };
 
-/** Valide le corps JSON de la route. Rien d'autre que deux noms sûrs. */
+/**
+ * Valide le corps JSON de la route : deux noms sûrs, et le type de rendu
+ * (« film » par défaut, ou « bibliotheque »). Rien d'autre n'est lu.
+ */
 export function lireRequeteDeRendu(corps: unknown): LectureDeRequete {
   if (typeof corps !== "object" || corps === null || Array.isArray(corps)) {
-    return { ok: false, erreur: "Corps JSON attendu : { filmId, declinaison }" };
+    return { ok: false, erreur: "Corps JSON attendu : { filmId, declinaison, rendu? }" };
   }
-  const { filmId, declinaison } = corps as Record<string, unknown>;
+  const { filmId, declinaison, rendu } = corps as Record<string, unknown>;
   if (!estNomSur(filmId)) return { ok: false, erreur: "filmId manquant ou invalide" };
   if (!estNomSur(declinaison)) return { ok: false, erreur: "declinaison manquante ou invalide" };
-  return { ok: true, requete: { filmId, declinaison } };
+  if (rendu !== undefined && !estTypeDeRendu(rendu)) {
+    return { ok: false, erreur: "rendu invalide : « film » ou « bibliotheque »" };
+  }
+  return { ok: true, requete: { filmId, declinaison, rendu: rendu ?? "film" } };
 }
+
+/** La composition Remotion de chaque type de rendu (remotion/film/CompositionFilm.tsx). */
+export const COMPOSITION_DU_RENDU: Record<TypeDeRendu, "Film" | "Bibliotheque"> = {
+  film: "Film",
+  bibliotheque: "Bibliotheque",
+};
 
 export type RenduPrepare = {
   ok: true;
+  type: TypeDeRendu;
+  composition: "Film" | "Bibliotheque";
   spec: FilmSpec;
   declinaison: DeclinaisonDuFilm;
   dossierPublic: string;
@@ -39,7 +53,7 @@ export type RenduPrepare = {
 
 export type RenduRefuse = { ok: false; statut: 400 | 404; erreurs: string[] };
 
-export type OptionsDePreparation = { dossierDesFiches?: string; dossiers?: DossiersDuFilm };
+export type OptionsDePreparation = { dossierDesFiches?: string; dossiers?: DossiersDuFilm; type?: TypeDeRendu };
 
 export function preparerRendu(
   filmId: string,
@@ -61,14 +75,17 @@ export function preparerRendu(
     return { ok: false, statut: 400, erreurs: [`déclinaison inconnue : « ${nomDeDeclinaison} » (connues : ${connues})`] };
   }
 
+  const type = options.type ?? "film";
   const dossiers = options.dossiers ?? dossiersDuFilm(filmId);
   const medias = etatDesMedias(spec, dossiers.public, [declinaison.langue]);
-  const problemes = problemesDeLaDeclinaison(spec, medias, declinaison.langue);
+  const problemes = problemesDeLaDeclinaison(spec, medias, declinaison.langue, type);
   if (problemes.length > 0) return { ok: false, statut: 400, erreurs: problemes };
 
-  const fichiers = fichiersDuRendu(dossiers.sortie, declinaison.nom);
+  const fichiers = fichiersDuRendu(dossiers.sortie, declinaison.nom, type);
   return {
     ok: true,
+    type,
+    composition: COMPOSITION_DU_RENDU[type],
     spec,
     declinaison,
     dossierPublic: medias.dossierPublic,

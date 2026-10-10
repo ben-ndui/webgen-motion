@@ -3,11 +3,15 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve, sep } from "node:path";
 
 import { type FilmSpec, type Langue, LANGUES, tousLesEcrans } from "../../remotion/film/spec";
+import type { TypeDeRendu } from "./film-store";
 
 /**
  * Les médias qu'une fiche de film attend dans son dossier public
- * (`~/.webgen-motion/films/<id>/public/`) : la musique, et chaque capture
- * dans le dossier de chaque langue. Serveur seulement (node:fs).
+ * (`~/.webgen-motion/films/<id>/public/`) : la musique, chaque capture dans
+ * le dossier de chaque langue, le fichier du logo s'il est fourni en image,
+ * et les captures de la bibliothèque si la fiche en a une. Chaque média dit
+ * à quel rendu il sert : une capture de l'éventail ne bloque pas le film.
+ * Serveur seulement (node:fs).
  *
  * Ce que `validerSpec` ne peut pas savoir (fonction pure) se vérifie ici :
  * le fichier existe, il reste DANS le dossier public, et deux états de
@@ -16,7 +20,9 @@ import { type FilmSpec, type Langue, LANGUES, tousLesEcrans } from "../../remoti
  */
 
 export type MediaAttendu = {
-  role: "musique" | "capture";
+  role: "musique" | "capture" | "logo";
+  // Les rendus qui en ont besoin (film, bibliothèque, ou les deux).
+  usages: TypeDeRendu[];
   // Les langues qui en ont besoin (la musique sert à toutes).
   langues: Langue[];
   // Chemin dans le dossier public, tel que la fiche le cite.
@@ -47,15 +53,19 @@ function estUnFichier(chemin: string): boolean {
   return existsSync(chemin) && statSync(chemin).isFile();
 }
 
-function ajouter(medias: MediaAttendu[], role: MediaAttendu["role"], langue: Langue, relatif: string, dossierPublic: string) {
+type Ajout = { role: MediaAttendu["role"]; langue: Langue; relatif: string; usages: TypeDeRendu[] };
+
+function ajouter(medias: MediaAttendu[], { role, langue, relatif, usages }: Ajout, dossierPublic: string) {
   const deja = medias.find((media) => media.relatif === relatif);
   if (deja) {
     if (!deja.langues.includes(langue)) deja.langues.push(langue);
+    for (const usage of usages) if (!deja.usages.includes(usage)) deja.usages.push(usage);
     return;
   }
   const { absolu, horsDuDossier } = cheminDansLeDossier(dossierPublic, relatif);
   medias.push({
     role,
+    usages: [...usages],
     langues: [langue],
     relatif,
     absolu,
@@ -97,11 +107,23 @@ export function etatDesMedias(
   langues: readonly Langue[] = LANGUES,
 ): EtatDesMedias {
   const medias: MediaAttendu[] = [];
-  for (const langue of langues) ajouter(medias, "musique", langue, spec.musique.fichier, dossierPublic);
+  const bibliotheque = spec.bibliotheque;
+  // La musique et le logo servent aux deux rendus (la bibliothèque a sa bande
+  // son, et son dernier plan construit le logo).
+  const lesDeux: TypeDeRendu[] = bibliotheque ? ["film", "bibliotheque"] : ["film"];
+  const logo = spec.marque.logo;
+  for (const langue of langues) {
+    ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: lesDeux }, dossierPublic);
+    if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: lesDeux }, dossierPublic);
+  }
   for (const langue of langues) {
     const dossier = spec.textes[langue].dossierDesEcrans;
     for (const ecran of tousLesEcrans(spec.ecrans)) {
-      ajouter(medias, "capture", langue, `${dossier}/${ecran}`, dossierPublic);
+      ajouter(medias, { role: "capture", langue, relatif: `${dossier}/${ecran}`, usages: ["film"] }, dossierPublic);
+    }
+    if (!bibliotheque) continue;
+    for (const ecran of [bibliotheque.ecranDeLAdresse, ...bibliotheque.eventail]) {
+      ajouter(medias, { role: "capture", langue, relatif: `${dossier}/${ecran}`, usages: ["bibliotheque"] }, dossierPublic);
     }
   }
 
@@ -116,20 +138,29 @@ export function etatDesMedias(
   return { dossierPublic: resolve(dossierPublic), medias, doublons };
 }
 
-/** Les médias absents (ou hors du dossier) dont une langue a besoin. */
-export function mediasManquants(etat: EtatDesMedias, langue: Langue): MediaAttendu[] {
-  return etat.medias.filter((media) => media.langues.includes(langue) && !media.present);
+/** Les médias absents (ou hors du dossier) dont un rendu a besoin dans une langue. */
+export function mediasManquants(etat: EtatDesMedias, langue: Langue, type: TypeDeRendu = "film"): MediaAttendu[] {
+  return etat.medias.filter((media) => media.langues.includes(langue) && media.usages.includes(type) && !media.present);
 }
 
-/** Tout ce qui empêche de rendre une langue, en phrases, avec le chemin attendu. */
-export function problemesDeMedias(etat: EtatDesMedias, langue: Langue): string[] {
-  const problemes = mediasManquants(etat, langue).map((media) =>
+const MEDIA_ABSENT: Record<MediaAttendu["role"], string> = {
+  musique: "musique absente",
+  capture: "capture absente",
+  logo: "logo absent",
+};
+
+/** Tout ce qui empêche un rendu dans une langue, en phrases, avec le chemin attendu. */
+export function problemesDeMedias(etat: EtatDesMedias, langue: Langue, type: TypeDeRendu = "film"): string[] {
+  const problemes = mediasManquants(etat, langue, type).map((media) =>
     media.horsDuDossier
       ? `${media.relatif} : chemin hors du dossier public, refusé`
-      : `${media.role === "musique" ? "musique" : "capture"} absente : ${media.absolu}`,
+      : `${MEDIA_ABSENT[media.role]} : ${media.absolu}`,
   );
-  for (const doublon of etat.doublons) {
-    if (doublon.langue === langue) problemes.push(doublon.message);
+  // Les doublons portent sur les suites du FILM (événement, parcours).
+  if (type === "film") {
+    for (const doublon of etat.doublons) {
+      if (doublon.langue === langue) problemes.push(doublon.message);
+    }
   }
   return problemes;
 }

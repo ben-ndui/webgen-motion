@@ -3,7 +3,7 @@ import { existsSync, statSync } from "node:fs";
 import type { DeclinaisonDuFilm, FilmSpec, Langue, MarqueDuFilm } from "../../remotion/film/spec";
 import type { FicheDeFilm } from "./film-loader";
 import { type EtatDesMedias, etatDesMedias, problemesDeMedias } from "./film-medias";
-import { fichiersDuRendu, getFilmOutDir, getFilmPublicDir, urlDuRendu } from "./film-store";
+import { type TypeDeRendu, fichiersDuRendu, getFilmOutDir, getFilmPublicDir, urlDuRendu } from "./film-store";
 
 /**
  * L'état d'un film, tiré du DISQUE (fiche + médias + rendus), pour le hub et
@@ -18,11 +18,17 @@ export type StatutDuFilm = "brouillon" | "medias-manquants" | "pret" | "rendu";
 
 export type RenduExistant = { url: string; octets: number; modifieLe: number };
 
-export type EtatDeDeclinaison = DeclinaisonDuFilm & {
+export type EtatDuRenduSurDisque = {
   // Vide = rendable. Sinon : chaque média manquant avec son chemin attendu.
   problemes: string[];
   rendu: RenduExistant | null;
 };
+
+export type EtatDeDeclinaison = DeclinaisonDuFilm &
+  EtatDuRenduSurDisque & {
+    // Le rendu de la bibliothèque de plans ; null quand la fiche n'en a pas.
+    bibliotheque: EtatDuRenduSurDisque | null;
+  };
 
 export type ResumeDuFilm = {
   id: string;
@@ -48,23 +54,34 @@ export function dossiersDuFilm(id: string): DossiersDuFilm {
 
 function nomDuFilm(spec: FilmSpec, id: string): string {
   const logo = spec.marque.logo;
-  return logo.type === "motSymbole" ? logo.texte : logo.logotype || id;
+  if (logo.type === "motSymbole") return logo.texte;
+  if (logo.type === "glyphe") return logo.logotype || id;
+  // Un logo fourni en image n'a pas de nom écrit : l'id de la fiche le remplace.
+  return id;
 }
 
-function renduExistant(id: string, nom: string, sortie: string): RenduExistant | null {
-  const chemin = fichiersDuRendu(sortie, nom).livrable;
+function renduExistant(id: string, nom: string, sortie: string, type: TypeDeRendu): RenduExistant | null {
+  const chemin = fichiersDuRendu(sortie, nom, type).livrable;
   if (!existsSync(chemin)) return null;
   const infos = statSync(chemin);
   if (!infos.isFile() || infos.size < POIDS_MINIMUM_D_UN_RENDU) return null;
-  return { url: urlDuRendu(id, nom, Math.round(infos.mtimeMs)), octets: infos.size, modifieLe: infos.mtimeMs };
+  return { url: urlDuRendu(id, nom, Math.round(infos.mtimeMs), type), octets: infos.size, modifieLe: infos.mtimeMs };
 }
 
 export const MESSAGE_FICHE_D_EXEMPLE = "fiche encore marquée « exemple: true » : la remplir, puis passer à false";
 
-/** Tout ce qui empêche de rendre une déclinaison ; vide = rendable. */
-export function problemesDeLaDeclinaison(spec: FilmSpec, medias: EtatDesMedias, langue: Langue): string[] {
+export const MESSAGE_SANS_BIBLIOTHEQUE = "la fiche n'a pas de « bibliotheque » : aucun plan de bibliothèque à rendre";
+
+/** Tout ce qui empêche un rendu d'une déclinaison ; vide = rendable. */
+export function problemesDeLaDeclinaison(
+  spec: FilmSpec,
+  medias: EtatDesMedias,
+  langue: Langue,
+  type: TypeDeRendu = "film",
+): string[] {
+  if (type === "bibliotheque" && !spec.bibliotheque) return [MESSAGE_SANS_BIBLIOTHEQUE];
   const problemes = spec.exemple ? [MESSAGE_FICHE_D_EXEMPLE] : [];
-  return [...problemes, ...problemesDeMedias(medias, langue)];
+  return [...problemes, ...problemesDeMedias(medias, langue, type)];
 }
 
 function statutDe(spec: FilmSpec, declinaisons: EtatDeDeclinaison[], rendus: number): StatutDuFilm {
@@ -96,7 +113,13 @@ export function resumerFilm(fiche: FicheDeFilm, dossiers: DossiersDuFilm = dossi
   const declinaisons = spec.declinaisons.map((declinaison) => ({
     ...declinaison,
     problemes: problemesDeLaDeclinaison(spec, medias, declinaison.langue),
-    rendu: renduExistant(fiche.id, declinaison.nom, dossiers.sortie),
+    rendu: renduExistant(fiche.id, declinaison.nom, dossiers.sortie, "film"),
+    bibliotheque: spec.bibliotheque
+      ? {
+          problemes: problemesDeLaDeclinaison(spec, medias, declinaison.langue, "bibliotheque"),
+          rendu: renduExistant(fiche.id, declinaison.nom, dossiers.sortie, "bibliotheque"),
+        }
+      : null,
   }));
   const rendus = declinaisons.filter((declinaison) => declinaison.rendu !== null).length;
   return {

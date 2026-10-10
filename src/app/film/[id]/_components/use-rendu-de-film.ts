@@ -2,11 +2,19 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import type { TypeDeRendu } from "@/lib/film-store";
+
 /**
  * Lance le rendu d'UNE déclinaison par `POST /api/motion/film/render` et lit
  * le flux NDJSON (phase, progress, error, done). Un seul rendu à la fois sur
- * la page : un rendu Remotion occupe déjà toute la machine.
+ * la page : un rendu Remotion occupe déjà toute la machine. Le film et la
+ * bibliothèque d'une même déclinaison ont chacun leur état (`cleDuRendu`).
  */
+
+/** La clé d'état d'un rendu : « film:Court-FR », « bibliotheque:Court-FR ». */
+export function cleDuRendu(type: TypeDeRendu, nom: string): string {
+  return `${type}:${nom}`;
+}
 
 export type EtatDuRendu =
   | { type: "repos" }
@@ -44,39 +52,40 @@ export function useRenduDeFilm(filmId: string) {
   const [etats, setEtats] = useState<Record<string, EtatDuRendu>>({});
   const annulation = useRef<AbortController | null>(null);
 
-  const poser = (nom: string, etat: EtatDuRendu) => setEtats((avant) => ({ ...avant, [nom]: etat }));
+  const poser = (cle: string, etat: EtatDuRendu) => setEtats((avant) => ({ ...avant, [cle]: etat }));
 
   const lancer = useCallback(
-    async (nom: string) => {
+    async (declinaison: string, type: TypeDeRendu = "film") => {
       if (annulation.current) return;
+      const cle = cleDuRendu(type, declinaison);
       const controleur = new AbortController();
       annulation.current = controleur;
-      setEnCours(nom);
-      poser(nom, { type: "en-cours", label: "Lancement du rendu…", frames: 0, total: 0 });
+      setEnCours(cle);
+      poser(cle, { type: "en-cours", label: "Lancement du rendu…", frames: 0, total: 0 });
       // Un flux qui se ferme sans « done » ni « error » n'est PAS un succès.
       let conclu = false;
       try {
         const reponse = await fetch("/api/motion/film/render", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filmId, declinaison: nom }),
+          body: JSON.stringify({ filmId, declinaison, rendu: type }),
           signal: controleur.signal,
         });
         if (!reponse.ok || !reponse.body) {
           const json = (await reponse.json().catch(() => null)) as { error?: string; message?: string; erreurs?: string[] } | null;
           const message = json?.message ?? json?.error ?? `Rendu refusé (${reponse.status})`;
-          poser(nom, { type: "erreur", message, details: json?.erreurs ?? [] });
+          poser(cle, { type: "erreur", message, details: json?.erreurs ?? [] });
           return;
         }
         await lireLeFlux(reponse.body, (evenement) => {
           if (evenement.type === "phase") {
             setEtats((avant) => {
-              const actuel = avant[nom];
+              const actuel = avant[cle];
               const base = actuel?.type === "en-cours" ? actuel : { frames: 0, total: 0 };
-              return { ...avant, [nom]: { ...base, type: "en-cours", label: String(evenement.label ?? "") } };
+              return { ...avant, [cle]: { ...base, type: "en-cours", label: String(evenement.label ?? "") } };
             });
           } else if (evenement.type === "progress") {
-            poser(nom, {
+            poser(cle, {
               type: "en-cours",
               label: String(evenement.label ?? ""),
               frames: Number(evenement.frames ?? 0),
@@ -84,16 +93,16 @@ export function useRenduDeFilm(filmId: string) {
             });
           } else if (evenement.type === "error") {
             conclu = true;
-            poser(nom, { type: "erreur", message: String(evenement.message ?? "Rendu en échec"), details: dernieresLignes(evenement.stderr) });
+            poser(cle, { type: "erreur", message: String(evenement.message ?? "Rendu en échec"), details: dernieresLignes(evenement.stderr) });
           } else if (evenement.type === "done" && evenement.ok) {
             conclu = true;
-            poser(nom, { type: "fait", url: String(evenement.url ?? ""), octets: Number(evenement.sizeBytes ?? 0) });
+            poser(cle, { type: "fait", url: String(evenement.url ?? ""), octets: Number(evenement.sizeBytes ?? 0) });
           }
         });
-        if (!conclu) poser(nom, { type: "erreur", message: "Le rendu s'est arrêté sans résultat.", details: [] });
+        if (!conclu) poser(cle, { type: "erreur", message: "Le rendu s'est arrêté sans résultat.", details: [] });
       } catch (erreur) {
         const annule = (erreur as Error).name === "AbortError";
-        poser(nom, { type: "erreur", message: annule ? "Rendu annulé." : (erreur as Error).message, details: [] });
+        poser(cle, { type: "erreur", message: annule ? "Rendu annulé." : (erreur as Error).message, details: [] });
       } finally {
         annulation.current = null;
         setEnCours(null);

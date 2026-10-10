@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import type { EtatDeDeclinaison } from "@/lib/film-etat";
-import { type EtatDuRendu, useRenduDeFilm } from "./use-rendu-de-film";
+import type { EtatDeDeclinaison, EtatDuRenduSurDisque } from "@/lib/film-etat";
+import type { TypeDeRendu } from "@/lib/film-store";
+import { type EtatDuRendu, cleDuRendu, useRenduDeFilm } from "./use-rendu-de-film";
 
 const FORMAT = { long: "16:9 · 1920 × 1080", court: "9:16 · 1080 × 1920" } as const;
 
@@ -12,14 +13,16 @@ function megaOctets(octets: number): string {
 
 // L'état à afficher : celui du rendu lancé sur cette page s'il y en a un,
 // sinon ce que le disque disait au chargement.
-function etatAffiche(declinaison: EtatDeDeclinaison, etat: EtatDuRendu | undefined): EtatDuRendu {
+function etatAffiche(surDisque: EtatDuRenduSurDisque, etat: EtatDuRendu | undefined): EtatDuRendu {
   if (etat) return etat;
-  if (declinaison.rendu) return { type: "fait", url: declinaison.rendu.url, octets: declinaison.rendu.octets };
+  if (surDisque.rendu) return { type: "fait", url: surDisque.rendu.url, octets: surDisque.rendu.octets };
   return { type: "repos" };
 }
 
 type PropsCarte = {
   declinaison: EtatDeDeclinaison;
+  // Ce que le disque dit de CE rendu : le film, ou la bibliothèque.
+  surDisque: EtatDuRenduSurDisque;
   studio: boolean;
   etat: EtatDuRendu;
   occupe: boolean;
@@ -27,8 +30,8 @@ type PropsCarte = {
   onAnnuler: () => void;
 };
 
-function CarteDeDeclinaison({ declinaison, studio, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
-  const bloquee = declinaison.problemes.length > 0;
+function CarteDeDeclinaison({ declinaison, surDisque, studio, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
+  const bloquee = surDisque.problemes.length > 0;
   const enCours = etat.type === "en-cours";
   const pourcentage = enCours && etat.total > 0 ? Math.round((etat.frames / etat.total) * 100) : null;
 
@@ -55,7 +58,7 @@ function CarteDeDeclinaison({ declinaison, studio, etat, occupe, onLancer, onAnn
 
       {bloquee && (
         <ul className="film-list film-warning" aria-label={`Ce qui bloque ${declinaison.nom}`}>
-          {declinaison.problemes.map((probleme) => (
+          {surDisque.problemes.map((probleme) => (
             <li key={probleme}>
               <code>{probleme}</code>
             </li>
@@ -95,45 +98,83 @@ function CarteDeDeclinaison({ declinaison, studio, etat, occupe, onLancer, onAnn
   );
 }
 
-/** Un bouton de rendu par déclinaison, sa progression, et le lecteur du rendu. */
+type PropsListe = {
+  declinaisons: EtatDeDeclinaison[];
+  type: TypeDeRendu;
+  studio: boolean;
+  rendus: ReturnType<typeof useRenduDeFilm>;
+};
+
+// Une carte par déclinaison, pour un type de rendu. Les déclinaisons sans
+// bibliothèque n'apparaissent pas dans la liste de la bibliothèque.
+function ListeDeRendus({ declinaisons, type, studio, rendus }: PropsListe) {
+  return (
+    <ul className="film-rendus">
+      {declinaisons.map((declinaison) => {
+        const surDisque = type === "film" ? declinaison : declinaison.bibliotheque;
+        if (!surDisque) return null;
+        return (
+          <CarteDeDeclinaison
+            key={declinaison.nom}
+            declinaison={declinaison}
+            surDisque={surDisque}
+            studio={studio}
+            etat={etatAffiche(surDisque, rendus.etats[cleDuRendu(type, declinaison.nom)])}
+            occupe={rendus.enCours !== null}
+            onLancer={() => void rendus.lancer(declinaison.nom, type)}
+            onAnnuler={rendus.annuler}
+          />
+        );
+      })}
+    </ul>
+  );
+}
+
+/**
+ * Un bouton de rendu par déclinaison, sa progression, et le lecteur du rendu.
+ * Si la fiche a une bibliothèque, ses plans se rendent dans une seconde liste.
+ */
 type PropsRendus = { filmId: string; declinaisons: EtatDeDeclinaison[]; studio: boolean };
 
 export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus) {
-  const { enCours, etats, lancer, annuler } = useRenduDeFilm(filmId);
+  const rendus = useRenduDeFilm(filmId);
+  const avecBibliotheque = declinaisons.some((declinaison) => declinaison.bibliotheque !== null);
 
   return (
-    <section aria-labelledby="film-rendus-titre" className="film-section">
-      <h2 id="film-rendus-titre" className="film-h2">
-        Rendus
-      </h2>
-      {!studio && (
-        <div className="film-block" data-wm-id="film.studio">
-          <p>
-            <b>Le rendu des films de marque fait partie de Studio Edition.</b>
+    <>
+      <section aria-labelledby="film-rendus-titre" className="film-section">
+        <h2 id="film-rendus-titre" className="film-h2">
+          Rendus
+        </h2>
+        {!studio && (
+          <div className="film-block" data-wm-id="film.studio">
+            <p>
+              <b>Le rendu des films de marque fait partie de Studio Edition.</b>
+            </p>
+            <p className="film-muted">Les rendus déjà faits restent lisibles ci-dessous.</p>
+            <Link className="film-btn" href="/setup">
+              Activer une licence Studio
+            </Link>
+          </div>
+        )}
+        {declinaisons.length === 0 ? (
+          <p className="film-muted">Aucune déclinaison dans la fiche : rien à rendre.</p>
+        ) : (
+          <ListeDeRendus declinaisons={declinaisons} type="film" studio={studio} rendus={rendus} />
+        )}
+      </section>
+
+      {avecBibliotheque && (
+        <section aria-labelledby="film-bibliotheque-titre" className="film-section" data-wm-id="film.bibliotheque">
+          <h2 id="film-bibliotheque-titre" className="film-h2">
+            Bibliothèque de plans
+          </h2>
+          <p className="film-muted">
+            Typo cinétique, barre d&apos;adresse, éventail de captures et logo construit, sur la musique du film.
           </p>
-          <p className="film-muted">Les rendus déjà faits restent lisibles ci-dessous.</p>
-          <Link className="film-btn" href="/setup">
-            Activer une licence Studio
-          </Link>
-        </div>
+          <ListeDeRendus declinaisons={declinaisons} type="bibliotheque" studio={studio} rendus={rendus} />
+        </section>
       )}
-      {declinaisons.length === 0 ? (
-        <p className="film-muted">Aucune déclinaison dans la fiche : rien à rendre.</p>
-      ) : (
-        <ul className="film-rendus">
-          {declinaisons.map((declinaison) => (
-            <CarteDeDeclinaison
-              key={declinaison.nom}
-              declinaison={declinaison}
-              studio={studio}
-              etat={etatAffiche(declinaison, etats[declinaison.nom])}
-              occupe={enCours !== null}
-              onLancer={() => void lancer(declinaison.nom)}
-              onAnnuler={annuler}
-            />
-          ))}
-        </ul>
-      )}
-    </section>
+    </>
   );
 }

@@ -2,9 +2,12 @@
  * Runner du mode « Film de marque » : rend une déclinaison d'une fiche
  * `films/<id>.json` avec la composition Remotion `Film` (remotion/film/).
  *
- *   npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]
+ *   npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR] [--bibliotheque]
  *
  * Sans `--declinaison`, rend toutes celles de la fiche, l'une après l'autre.
+ * Avec `--bibliotheque`, rend la composition `Bibliotheque` (les plans de la
+ * bibliothèque de la fiche) dans `<declinaison>.bibliotheque.mp4`, avec son
+ * propre verrou : film et bibliothèque d'une déclinaison ne se gênent pas.
  * Avant Remotion (src/lib/film-rendu.ts, partagé avec la route) : la fiche
  * est validée (toutes les erreurs, avec le chemin du champ), refusée si elle
  * est encore l'exemple, et chaque média attendu est vérifié dans
@@ -80,7 +83,7 @@ function argumentsRemotion(rendu: RenduPrepare, cheminNavigateur: string | undef
   return [
     cli,
     "render",
-    "Film",
+    rendu.composition,
     rendu.partiel,
     "--props",
     JSON.stringify({ spec: rendu.spec, declinaison: rendu.declinaison }),
@@ -139,7 +142,8 @@ function rendre(rendu: RenduPrepare, cheminNavigateur: string | undefined): Prom
   // Reste d'une tentative interrompue : jamais repris pour un livrable.
   rmSync(rendu.partiel, { force: true });
 
-  console.log(`▶ Film ${nom} (${rendu.declinaison.langue}, ${rendu.declinaison.version})`);
+  const quoi = rendu.type === "bibliotheque" ? " · bibliothèque" : "";
+  console.log(`▶ Film ${nom}${quoi} (${rendu.declinaison.langue}, ${rendu.declinaison.version})`);
   console.log(`  Public dir : ${rendu.dossierPublic}`);
   console.log(`  Sortie     : ${rendu.sortie}`);
 
@@ -181,7 +185,8 @@ function rendre(rendu: RenduPrepare, cheminNavigateur: string | undefined): Prom
 
 async function principal(): Promise<void> {
   const filmId = argument("--film-id");
-  if (!estNomSur(filmId)) arreter("Usage : render-film.ts --film-id <id> [--declinaison <nom>]");
+  if (!estNomSur(filmId)) arreter("Usage : render-film.ts --film-id <id> [--declinaison <nom>] [--bibliotheque]");
+  const type = process.argv.includes("--bibliotheque") ? "bibliotheque" : "film";
   if (!isFeatureEnabled("film-de-marque")) {
     arreter(
       "Le rendu des films de marque est une feature Studio Edition. Active ta license (.license) ou, en dev : WEBGEN_MOTION_EDITION=studio",
@@ -200,7 +205,7 @@ async function principal(): Promise<void> {
   // livrable qu'une capture anglaise manque.
   const rendus: RenduPrepare[] = [];
   for (const nom of noms) {
-    const preparation = preparerRendu(filmId, nom);
+    const preparation = preparerRendu(filmId, nom, { type });
     if (!preparation.ok) {
       arreter(`Rendu refusé (${filmId} · ${nom}) :\n  - ${preparation.erreurs.join("\n  - ")}`);
     }

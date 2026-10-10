@@ -8,17 +8,19 @@
 // passe par `validerSpec` (validerSpec.ts) avant le premier plan.
 //
 // Ce fichier n'importe que des types : Node le lit tel quel (avant-rendu.mjs).
-import type { Langue, TextesDuFilm } from "./textes/types";
+import type { Langue, TextesDeLaBibliotheque, TextesDuFilm } from "./textes/types";
 
-export type { Langue, TextesDuFilm };
+export type { Langue, TextesDeLaBibliotheque, TextesDuFilm };
 
 /**
- * Le logo animé, sous l'une de ses deux formes :
+ * Le logo animé, sous l'une de ses trois formes :
  * - `motSymbole` : un mot en bas de casse, souligné d'un filet d'accent qui
  *   se trace dessous (Kotizo) ;
  * - `glyphe` : un pictogramme dessiné trait par trait, puis un logotype en
  *   capitales espacées (VAGUA). Tracés OFFICIELS de l'identité, dans une
- *   boîte de 100 × 100 : on ne les redessine pas.
+ *   boîte de 100 × 100 : on ne les redessine pas ;
+ * - `image` : le fichier officiel, découvert par un rideau (logo S&D, qui
+ *   n'est ni un mot ni un tracé simple). Jamais recomposé en texte.
  */
 export type LogoDuFilm =
   | { type: "motSymbole"; texte: string; graisse: 400 | 500 | 600; approche: number }
@@ -29,6 +31,16 @@ export type LogoDuFilm =
       graisseDuLogotype: 300 | 400 | 500;
       // Espacement des capitales du logotype, en em.
       espacementDuLogotype: number;
+    }
+  | {
+      type: "image";
+      // Fichier officiel du logo, dans public/ (PNG ou SVG, fond transparent).
+      fichier: string;
+      // Largeur / hauteur du fichier : le logo se pose sans se déformer.
+      rapport: number;
+      // Vrai si le fichier est sombre (logo noir) : le film le pose sur
+      // l'encre, il faut l'inverser pour qu'il se lise (logo S&D).
+      inverser: boolean;
     };
 
 export type MarqueDuFilm = {
@@ -99,6 +111,22 @@ export type PlanDeLApercu = {
   fin: number;
 };
 
+/**
+ * La bibliothèque de plans (bibliotheque/) : des plans de motion design
+ * fabriqués, hors de la trame du film, qu'un film ou un reel pioche. Leurs
+ * textes sont dans `textes.<langue>.bibliotheque`. Absente : aucune
+ * composition « Bibliotheque » n'est créée.
+ */
+export type BibliothequeDuFilm = {
+  // Adresse tapée dans la barre, telle qu'on la lit (« smoothandesign.fr »).
+  adresse: string;
+  // Capture du SITE que la barre ouvre (bureau, 16:9), dans le dossier des
+  // écrans de chaque langue.
+  ecranDeLAdresse: string;
+  // 3 à 5 vraies captures en téléphone, ouvertes en éventail.
+  eventail: string[];
+};
+
 export type FilmSpec = {
   // Tant que c'est vrai, `npm run rendu` refuse de livrer : le film est
   // encore l'exemple du gabarit.
@@ -110,6 +138,7 @@ export type FilmSpec = {
   declinaisons: DeclinaisonDuFilm[];
   // Vide pour une langue = pas d'aperçu dans cette langue.
   apercu: Record<Langue, PlanDeLApercu[]>;
+  bibliotheque?: BibliothequeDuFilm;
 };
 
 export const LANGUES: readonly Langue[] = ["fr", "en"];

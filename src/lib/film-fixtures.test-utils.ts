@@ -41,3 +41,24 @@ export function deposerMedias(dossierPublic: string, spec: FilmSpec, langues: ("
     }
   }
 }
+
+/** Dépose les captures de la bibliothèque (adresse + éventail), chacune différente. */
+export function deposerBibliotheque(dossierPublic: string, spec: FilmSpec, langues: ("fr" | "en")[] = ["fr", "en"]): void {
+  const bibliotheque = spec.bibliotheque;
+  if (!bibliotheque) throw new Error("La fiche de test n'a pas de bibliothèque.");
+  for (const langue of langues) {
+    const dossier = spec.textes[langue].dossierDesEcrans;
+    for (const ecran of [bibliotheque.ecranDeLAdresse, ...bibliotheque.eventail]) {
+      ecrire(join(dossierPublic, dossier, ecran), `${langue}/bibliotheque/${ecran}`);
+    }
+  }
+}
+
+/** La fiche valide, sans bibliothèque (ni ses textes). */
+export function ficheSansBibliotheque(): FilmSpec {
+  const spec = ficheValide();
+  delete spec.bibliotheque;
+  delete spec.textes.fr.bibliotheque;
+  delete spec.textes.en.bibliotheque;
+  return spec;
+}

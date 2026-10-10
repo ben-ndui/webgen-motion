@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import type { FilmSpec } from "../../remotion/film/spec";
+import { erreursDeLaBibliotheque } from "../../remotion/film/bibliotheque/validerBibliotheque";
 import { erreursDeLaSpec } from "../../remotion/film/validerSpec";
 import { estNomSur } from "./film-store";
 
@@ -38,7 +39,10 @@ function lireFiche(id: string, chemin: string): FicheDeFilm {
   } catch (erreur) {
     return { id, etat: "invalide", erreurs: [`JSON invalide : ${(erreur as Error).message}`] };
   }
+  // La bibliothèque se valide ici aussi : une fiche qui en a une mal remplie
+  // le dit à l'écran, pas seulement au moment du rendu.
   const erreurs = erreursDeLaSpec(entree);
+  if (erreurs.length === 0) erreurs.push(...erreursDeLaBibliotheque(entree));
   if (erreurs.length > 0) return { id, etat: "invalide", erreurs };
   return { id, etat: "valide", spec: entree as FilmSpec };
 }

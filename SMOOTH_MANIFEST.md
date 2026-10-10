@@ -22,7 +22,7 @@ scripts/                  # Runners CLI (spawnés par les routes API)
   capture-mobile.ts       # E2E mobile iOS/Android (Maestro + simctl/adb)
   audio-tour.ts           # TTS + timeline audio
   compose-tour.ts         # Compose runner → spawn `remotion render`
-  render-film.ts          # Film de marque : valide la fiche + médias, rend la composition `Film`
+  render-film.ts          # Film de marque : valide la fiche + médias, rend la composition `Film` (ou `Bibliotheque` avec --bibliotheque)
   analyze-audio.ts        # ffmpeg silencedetect + beats RMS
   agent-generate-tour.ts  # Agent IA (Claude) génère un tour depuis une URL
   lib/edit-plan.ts        # Edit Engine (EDL : trims, beat-snap, J-cuts, VO, sous-titres)
@@ -57,6 +57,7 @@ ROADMAP.md · CHANGELOG.md · README.md · CLAUDE.md
 - **Agent génération** : Claude génère un tour JSON depuis une URL (`scripts/agent-generate-tour.ts`)
 - **Desktop app** : Tauri 2 signé + notarisé Apple, `.dmg` macOS arm64, update checker (`src-tauri/`, `.github/workflows/desktop-release.yml`)
 - **Film de marque** (mode A) : film 16:9 + court 9:16, FR/EN, calé sur la musique, à partir d'UNE fiche `films/<id>.json` (`FilmSpec`). Moteur = `src/` du gabarit brain `gabarits/film-motion` (commit cab1252) copié dans `remotion/film/` (logique inchangée), composition générique `Film` (`remotion/film/CompositionFilm.tsx`). Médias hors repo dans `~/.webgen-motion/films/<id>/public/` (= `--public-dir`), rendus dans `.../out/<declinaison>.mp4`. Chaîne : `src/lib/film-{store,loader,medias,etat,rendu}.ts` → `scripts/render-film.ts` → `POST /api/motion/film/render` (NDJSON) + `GET /api/motion/film/video`. UI : section du hub (`src/app/_components/hub-films.tsx`) + page `/film/[id]` (`src/app/film/[id]/`). Ouvert à toutes les éditions (question Studio en suspens)
+- **Bibliothèque de plans** (dans le mode Film de marque, synchronisée avec le gabarit brain commit 5a03417, 10/10/2026) : `remotion/film/bibliotheque/` = typo cinétique, barre d'adresse qui se tape, éventail de vraies captures, logo construit. Bloc optionnel `bibliotheque` de la fiche (+ `textes.<langue>.bibliotheque`), validé dès le chargement (`erreursDeLaBibliotheque` dans `film-loader`). Composition `Bibliotheque` à côté de `Film` (mêmes inputProps). Rendu : `render-film.ts --bibliotheque` → `out/<declinaison>.bibliotheque.mp4` (verrou et fichier partiel à part ; le point rend toute collision avec un nom de déclinaison impossible). Route `POST /api/motion/film/render` : `{ filmId, declinaison, rendu?: "film" | "bibliotheque" }` ; `GET /api/motion/film/video?...&rendu=bibliotheque`. Chaque média dit à quel rendu il sert (`usages`) : une capture de l'éventail ne bloque pas le film ; le logo fourni en image (`marque.logo.type = "image"`) est attendu pour les deux. Écran `/film/[id]` : section « Bibliothèque de plans » si la fiche en a une. L'aperçu App Store du gabarit n'est PAS repris.
 - **Éditions gated** : Community gratuit / Studio payant / Enterprise, licence Ed25519 offline-first (`src/lib/edition.ts`, `src/lib/license/`)
 
 ## Modèle de données
@@ -117,4 +118,4 @@ npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]   # san
 - **Film de marque — vitrine** : `/film/[id]` répond 404 et le hub masque la section quand `isPublicWebRuntime` (Vercel) : fiches = projets clients. Les films ne sont pas embarqués dans l'app desktop (seul `tours/` l'est).
 - **Push GitHub ben-ndui** : `env -u GITHUB_TOKEN git -c credential.helper='!gh auth git-credential' push` (sinon 403 write).
 
-> MAJ : 2026-10-06
+> MAJ : 2026-10-10

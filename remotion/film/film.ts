@@ -47,6 +47,12 @@ export const FILM: FilmSpec = {
       marque: { mots: ["Trois mots.", "Un par temps.", "La marque."] },
       fin: { disponible: "Disponible sur l'App Store et Google Play" },
       apercu: {},
+      bibliotheque: {
+        mot: "Livrée.",
+        anneau: "Conçue · Codée · Livrée",
+        legendesEventail: ["La première étape", "La deuxième", "La troisième", "C'est réglé"],
+        signature: "La promesse, en une ligne.",
+      },
     },
     en: {
       dossierDesEcrans: "ecrans-exemple",
@@ -63,6 +69,12 @@ export const FILM: FilmSpec = {
       marque: { mots: ["Three words.", "One per beat.", "The brand."] },
       fin: { disponible: "Available on the App Store and Google Play" },
       apercu: {},
+      bibliotheque: {
+        mot: "Shipped.",
+        anneau: "Designed · Built · Shipped",
+        legendesEventail: ["The first step", "The second", "The third", "Sorted"],
+        signature: "The promise, in one line.",
+      },
     },
   },
 
@@ -103,4 +115,13 @@ export const FILM: FilmSpec = {
   // { id: "carte", mesures: 2, prise: "parcours", debut: 39.3, fin: 42.5 },
   // avec la légende `textes.fr.apercu.carte`.
   apercu: { fr: [], en: [] },
+
+  // Plans de la bibliothèque (bibliotheque/), hors de la trame : retirer ce
+  // bloc ET les `textes.<langue>.bibliotheque` si le film n'en sert pas.
+  // Les captures se cherchent dans le dossier des écrans de chaque langue.
+  bibliotheque: {
+    adresse: "exemple.fr",
+    ecranDeLAdresse: "site.png",
+    eventail: ["parcours-1.png", "parcours-2.png", "parcours-3.png", "parcours-4.png"],
+  },
 };

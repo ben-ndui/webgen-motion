@@ -9,7 +9,7 @@ describe("lireRequeteDeRendu (entrées de la route)", () => {
   it("accepte deux noms sûrs", () => {
     expect(lireRequeteDeRendu({ filmId: "kotizo", declinaison: "Court-FR" })).toEqual({
       ok: true,
-      requete: { filmId: "kotizo", declinaison: "Court-FR" },
+      requete: { filmId: "kotizo", declinaison: "Court-FR", rendu: "film" },
     });
   });
 

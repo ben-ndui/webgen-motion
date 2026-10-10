@@ -1,6 +1,7 @@
 import { useMarque } from "../marque/MarqueDuFilm";
 import { imageDuTemps } from "../lib/tempo";
 import { Glyphe } from "./Glyphe";
+import { LogoImage } from "./LogoImage";
 import { MotSymbole } from "./MotSymbole";
 import { Revele } from "./Revele";
 
@@ -36,6 +37,21 @@ export function Logo({ taille, couleur, tempo, cadence }: Props) {
         couleur={couleur}
         debutMot={0}
         debutFilet={ouverture ? temps(2) : temps(1.5)}
+      />
+    );
+  }
+
+  if (logo.type === "image") {
+    // La taille est celle d'un mot-symbole : un logo dessiné, plus large
+    // qu'un mot de même corps, garde la même hauteur de lettre.
+    return (
+      <LogoImage
+        fichier={logo.fichier}
+        rapport={logo.rapport}
+        hauteur={Math.round(taille * 1.6)}
+        inverser={logo.inverser}
+        debut={0}
+        duree={ouverture ? temps(2) : 16}
       />
     );
   }

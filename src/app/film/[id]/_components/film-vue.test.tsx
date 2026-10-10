@@ -6,7 +6,7 @@ import type { ResumeDuFilm } from "@/lib/film-etat";
 import FilmLoading from "../loading";
 import FilmVue from "./film-vue";
 
-const DECLINAISON = { nom: "Court-FR", langue: "fr", version: "court", avecContact: true } as const;
+const DECLINAISON = { nom: "Court-FR", langue: "fr", version: "court", avecContact: true, bibliotheque: null } as const;
 
 function resume(surcharge: Partial<ResumeDuFilm> = {}): ResumeDuFilm {
   return {
@@ -21,8 +21,8 @@ function resume(surcharge: Partial<ResumeDuFilm> = {}): ResumeDuFilm {
     medias: {
       dossierPublic: "/home/ben/.webgen-motion/films/kotizo/public",
       medias: [
-        { role: "musique", langues: ["fr"], relatif: "musique/m.mp3", absolu: "/x/musique/m.mp3", present: true, horsDuDossier: false },
-        { role: "capture", langues: ["fr"], relatif: "ecrans/a.png", absolu: "/x/ecrans/a.png", present: false, horsDuDossier: false },
+        { role: "musique", usages: ["film"], langues: ["fr"], relatif: "musique/m.mp3", absolu: "/x/musique/m.mp3", present: true, horsDuDossier: false },
+        { role: "capture", usages: ["film"], langues: ["fr"], relatif: "ecrans/a.png", absolu: "/x/ecrans/a.png", present: false, horsDuDossier: false },
       ],
       doublons: [],
     },
@@ -134,5 +134,42 @@ describe("rendu d'une déclinaison", () => {
     await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Le rendu s'est arrêté sans résultat.");
     expect(container.querySelector("video")).toBeNull();
+  });
+});
+
+describe("bibliothèque de plans", () => {
+  it("n'apparaît pas pour une fiche sans bibliothèque", () => {
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
+    expect(screen.queryByRole("heading", { name: "Bibliothèque de plans" })).toBeNull();
+  });
+
+  it("se rend à part, avec son propre état, et la requête le dit", async () => {
+    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      fluxNdjson([{ type: "done", ok: true, url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR&rendu=bibliotheque", sizeBytes: 2_000_000 }]),
+    );
+    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: null, bibliotheque: { problemes: [], rendu: null } }];
+    const { container } = render(<FilmVue id="kotizo" resume={resume({ declinaisons })} studio />);
+    expect(screen.getByRole("heading", { name: "Bibliothèque de plans" })).toBeInTheDocument();
+
+    const boutons = screen.getAllByRole("button", { name: "Rendre" });
+    expect(boutons).toHaveLength(2);
+    await userEvent.click(boutons[1]!);
+    await waitFor(() => expect(container.querySelector("video")).not.toBeNull());
+
+    const corps = JSON.parse(String(fetch.mock.calls[0]![1]!.body));
+    expect(corps).toEqual({ filmId: "kotizo", declinaison: "Court-FR", rendu: "bibliotheque" });
+    expect(container.querySelector("video")).toHaveAttribute("src", expect.stringContaining("rendu=bibliotheque"));
+    // Le film n'a pas bougé : toujours à rendre.
+    expect(screen.getByRole("button", { name: "Rendre" })).toBeEnabled();
+  });
+
+  it("une bibliothèque bloquée dit pourquoi, sans bloquer le film", () => {
+    const manque = "capture absente : /x/ecrans/site.png";
+    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: null, bibliotheque: { problemes: [manque], rendu: null } }];
+    render(<FilmVue id="kotizo" resume={resume({ declinaisons })} studio />);
+    expect(screen.getByText(manque)).toBeInTheDocument();
+    const [film, bibliotheque] = screen.getAllByRole("button", { name: "Rendre" });
+    expect(film).toBeEnabled();
+    expect(bibliotheque).toBeDisabled();
   });
 });

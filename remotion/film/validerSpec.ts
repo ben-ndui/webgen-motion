@@ -17,26 +17,26 @@ const LANGUES = ["fr", "en"] as const;
 const COULEURS = ["encre", "clair", "accent", "accentSurClair", "accentSurSombre", "bulleRecue"] as const;
 const HEXADECIMAL = /^#[0-9a-f]{6}$/i;
 
-function estObjet(valeur: unknown): valeur is Objet {
+export function estObjet(valeur: unknown): valeur is Objet {
   return typeof valeur === "object" && valeur !== null && !Array.isArray(valeur);
 }
 
-function estTexte(valeur: unknown): valeur is string {
+export function estTexte(valeur: unknown): valeur is string {
   return typeof valeur === "string" && valeur.trim().length > 0;
 }
 
-function estNombre(valeur: unknown): valeur is number {
+export function estNombre(valeur: unknown): valeur is number {
   return typeof valeur === "number" && Number.isFinite(valeur);
 }
 
 // Chaque vérification ajoute ses erreurs à la liste, avec le chemin du champ.
-type Erreurs = string[];
+export type Erreurs = string[];
 
-function texte(erreurs: Erreurs, chemin: string, valeur: unknown): void {
+export function texte(erreurs: Erreurs, chemin: string, valeur: unknown): void {
   if (!estTexte(valeur)) erreurs.push(`${chemin} : texte non vide attendu`);
 }
 
-function textes(erreurs: Erreurs, chemin: string, valeur: unknown, nombre?: number): void {
+export function textes(erreurs: Erreurs, chemin: string, valeur: unknown, nombre?: number): void {
   if (!Array.isArray(valeur)) {
     erreurs.push(`${chemin} : liste attendue`);
     return;
@@ -86,7 +86,13 @@ function verifierLogo(erreurs: Erreurs, logo: unknown): void {
     if (!estNombre(logo.espacementDuLogotype)) erreurs.push("marque.logo.espacementDuLogotype : nombre attendu");
     return;
   }
-  erreurs.push("marque.logo.type : « motSymbole » ou « glyphe »");
+  if (logo.type === "image") {
+    texte(erreurs, "marque.logo.fichier", logo.fichier);
+    if (!estNombre(logo.rapport) || logo.rapport <= 0) erreurs.push("marque.logo.rapport : largeur / hauteur, positif");
+    if (typeof logo.inverser !== "boolean") erreurs.push("marque.logo.inverser : vrai ou faux");
+    return;
+  }
+  erreurs.push("marque.logo.type : « motSymbole », « glyphe » ou « image »");
 }
 
 function verifierTextes(erreurs: Erreurs, tous: unknown): void {

@@ -54,8 +54,10 @@ describe("validerSpec", () => {
     const spec = copie();
     spec.marque.logo = { type: "glyphe", traces: [], logotype: "VAGUA", graisseDuLogotype: 300, espacementDuLogotype: 0.32 };
     expect(erreursDeLaSpec(spec)).toEqual(["marque.logo.traces : au moins un tracé"]);
-    (spec.marque as { logo: unknown }).logo = { type: "image" };
-    expect(erreursDeLaSpec(spec)).toEqual(["marque.logo.type : « motSymbole » ou « glyphe »"]);
+    (spec.marque as { logo: unknown }).logo = { type: "video" };
+    expect(erreursDeLaSpec(spec)).toEqual(["marque.logo.type : « motSymbole », « glyphe » ou « image »"]);
+    spec.marque.logo = { type: "image", fichier: "logo/marque.png", rapport: 0, inverser: true };
+    expect(erreursDeLaSpec(spec)).toEqual(["marque.logo.rapport : largeur / hauteur, positif"]);
   });
 
   it("refuse un message de conversation sans auteur connu", () => {

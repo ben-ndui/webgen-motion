@@ -11,6 +11,14 @@ const ROLES_DES_COULEURS: { cle: keyof NonNullable<ResumeDuFilm["marque"]>["coul
 
 const FORMAT = { long: "16:9", court: "9:16" } as const;
 
+type LogoDeLaMarque = NonNullable<ResumeDuFilm["marque"]>["logo"];
+
+function descriptionDuLogo(logo: LogoDeLaMarque): string {
+  if (logo.type === "motSymbole") return `mot-symbole « ${logo.texte} »`;
+  if (logo.type === "glyphe") return `glyphe + « ${logo.logotype} »`;
+  return `image · ${logo.fichier}`;
+}
+
 /** Ce que dit la fiche : marque, musique, langues, déclinaisons. */
 export default function FilmResume({ resume }: { resume: ResumeDuFilm }) {
   const { marque, musique } = resume;
@@ -30,7 +38,7 @@ export default function FilmResume({ resume }: { resume: ResumeDuFilm }) {
             <dt>Police</dt>
             <dd>{marque.police}</dd>
             <dt>Logo</dt>
-            <dd>{marque.logo.type === "motSymbole" ? `mot-symbole « ${marque.logo.texte} »` : `glyphe + « ${marque.logo.logotype} »`}</dd>
+            <dd>{descriptionDuLogo(marque.logo)}</dd>
             <dt>Contact</dt>
             <dd>{marque.contact || "aucun"}</dd>
           </>

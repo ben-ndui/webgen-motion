@@ -10,7 +10,8 @@ import { descendantsDe } from "@/lib/process-tree";
 import { resolveRunnerSpawn } from "@/lib/runner-spawn";
 
 /**
- * Rend une déclinaison d'un film de marque (`films/<id>.json`) en lançant
+ * Rend une déclinaison d'un film de marque (`films/<id>.json`), ou ses plans
+ * de bibliothèque (`rendu: "bibliotheque"`), en lançant
  * `scripts/render-film.ts`, et diffuse la progression en NDJSON : même
  * contrat que `/api/motion/tour/compose/run` (phase, progress, error avec la
  * fin du stderr, done). Fiche, déclinaison et médias sont vérifiés AVANT le
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
   const lecture = lireRequeteDeRendu(corps);
   if (!lecture.ok) return NextResponse.json({ error: lecture.erreur }, { status: 400 });
-  const { filmId, declinaison } = lecture.requete;
+  const { filmId, declinaison, rendu } = lecture.requete;
 
   if (!isFeatureEnabled("film-de-marque")) {
     return NextResponse.json(
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const preparation = preparerRendu(filmId, declinaison);
+  const preparation = preparerRendu(filmId, declinaison, { type: rendu });
   if (!preparation.ok) {
     return NextResponse.json(
       { error: "Rendu refusé", erreurs: preparation.erreurs },
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const spawnSpec = resolveRunnerSpawn("render-film", ["--film-id", filmId, "--declinaison", declinaison]);
+  const argumentsDuRunner = ["--film-id", filmId, "--declinaison", declinaison];
+  if (rendu === "bibliotheque") argumentsDuRunner.push("--bibliotheque");
+  const spawnSpec = resolveRunnerSpawn("render-film", argumentsDuRunner);
   const debut = Date.now();
 
   // Annulation (le client coupe le flux) : on tue le GROUPE de process
@@ -149,7 +152,8 @@ export async function POST(req: NextRequest) {
           ok: true,
           filmId,
           declinaison,
-          url: urlDuRendu(filmId, declinaison, Math.round(infos.mtimeMs)),
+          rendu,
+          url: urlDuRendu(filmId, declinaison, Math.round(infos.mtimeMs), rendu),
           sizeBytes: infos.size,
           wallSec,
         });
