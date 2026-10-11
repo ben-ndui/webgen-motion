@@ -139,6 +139,11 @@ function verifierEcrans(erreurs: Erreurs, ecrans: unknown): void {
   if (Array.isArray(ecrans.evenement) && ecrans.evenement.length < 2) {
     erreurs.push("ecrans.evenement : au moins deux états, sinon rien ne bascule");
   }
+  // Le plan dure quatre mesures, un état par mesure : un cinquième ne se
+  // verrait jamais, et la phrase de chute non plus.
+  if (Array.isArray(ecrans.evenement) && ecrans.evenement.length > 4) {
+    erreurs.push(`ecrans.evenement : quatre états au plus (le plan dure quatre mesures), ${ecrans.evenement.length} reçus`);
+  }
   texte(erreurs, "ecrans.marque", ecrans.marque);
 }
 
@@ -155,6 +160,9 @@ function verifierMusique(erreurs: Erreurs, musique: unknown): void {
   }
   if (!estNombre(musique.premierTemps) || musique.premierTemps < 0) {
     erreurs.push("musique.premierTemps : nombre de secondes positif ou nul");
+  }
+  if (musique.volume !== undefined && (!estNombre(musique.volume) || musique.volume < 0 || musique.volume > 1)) {
+    erreurs.push("musique.volume : de 0 à 1");
   }
 }
 
@@ -204,6 +212,41 @@ function verifierApercu(erreurs: Erreurs, apercu: unknown, tous: unknown): void 
   }
 }
 
+// Liste écrite ici et non importée de montages.ts : ce fichier n'importe que
+// des types. Le test vérifie qu'elle reste identique.
+export const PLANS_DE_VOIX = ["ouverture", "probleme", "bascule", "parcours", "evenement", "marque", "fin"];
+
+function verifierVoix(erreurs: Erreurs, voix: unknown): void {
+  if (voix === undefined) return;
+  if (!estObjet(voix)) {
+    erreurs.push("voix : objet attendu");
+    return;
+  }
+  if (!estNombre(voix.musiqueSousLaVoix) || voix.musiqueSousLaVoix < 0 || voix.musiqueSousLaVoix > 1) {
+    erreurs.push("voix.musiqueSousLaVoix : de 0 à 1");
+  }
+  const lignes = estObjet(voix.lignes) ? voix.lignes : {};
+  for (const langue of LANGUES) {
+    const liste = lignes[langue];
+    if (liste === undefined) continue;
+    if (!Array.isArray(liste)) {
+      erreurs.push(`voix.lignes.${langue} : liste attendue`);
+      continue;
+    }
+    const vus = new Set<unknown>();
+    liste.forEach((ligne: unknown, index: number) => {
+      const chemin = `voix.lignes.${langue}[${index}]`;
+      const l = estObjet(ligne) ? ligne : {};
+      if (!PLANS_DE_VOIX.includes(l.plan as string)) erreurs.push(`${chemin}.plan : l'un de ${PLANS_DE_VOIX.join(", ")}`);
+      if (vus.has(l.plan)) erreurs.push(`${chemin}.plan : « ${String(l.plan)} » a déjà une ligne`);
+      vus.add(l.plan);
+      texte(erreurs, `${chemin}.texte`, l.texte);
+      if (l.fichier !== undefined) texte(erreurs, `${chemin}.fichier`, l.fichier);
+      if (l.duree !== undefined && (!estNombre(l.duree) || l.duree <= 0)) erreurs.push(`${chemin}.duree : secondes, positif`);
+    });
+  }
+}
+
 /** Toutes les erreurs de la fiche ; liste vide = fiche valide. */
 export function erreursDeLaSpec(entree: unknown): string[] {
   const erreurs: Erreurs = [];
@@ -215,6 +258,7 @@ export function erreursDeLaSpec(entree: unknown): string[] {
   verifierMusique(erreurs, entree.musique);
   verifierDeclinaisons(erreurs, entree.declinaisons);
   verifierApercu(erreurs, entree.apercu, entree.textes);
+  verifierVoix(erreurs, entree.voix);
   // Liste écrite ici et non importée de spec.ts : ce fichier n'importe que des
   // types (Node le lit tel quel). Le test vérifie qu'elle reste identique.
   const directions = ["marque", "editorial", "nocturne"];

@@ -98,4 +98,15 @@
 .gm-film .remplir-resume p { margin: 0; }
 .gm-film .bloc > .champ-etat { align-self: flex-start; }
 .gm-film .champ-etat.propose { color: var(--ink-soft); background: var(--surface-2); border-color: var(--line-strong); }
+.gm-film .bibliotheque-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.gm-film .bibliotheque-liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--s-3); align-items: center; padding: 8px 0; border-top: 1px solid var(--line-soft); font-size: var(--t-sm); }
+.gm-film .bibliotheque-nom { color: var(--ink); overflow-wrap: anywhere; }
+.gm-film .bibliotheque-duree { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.gm-film .ligne-voix { display: flex; flex-direction: column; gap: 6px; padding: var(--s-3); border: 1px solid var(--line); border-radius: var(--r-md); }
+.gm-film .ligne-voix-pied { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); }
+.gm-film .champ-saisie.zone { padding: 10px 12px; min-height: 64px; resize: vertical; line-height: 1.45; }
+.gm-film .voix-etat { font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; border-radius: var(--r-full); padding: 2px 8px; border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap; }
+.gm-film .voix-etat.a-generer { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+.gm-film .voix-etat.trop-longue { color: var(--ink); border-color: var(--ink); }
+.gm-film input[type="range"] { width: 100%; accent-color: var(--accent); }
 .gm-film .assistant-pied { display: flex; justify-content: space-between; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }

@@ -19,7 +19,7 @@ export type Etape = "marque" | "musique" | "ecrans" | "histoire" | "pret";
 const ORDRE: Etape[] = ["marque", "musique", "ecrans", "histoire", "pret"];
 const TITRES: Record<Etape, string> = {
   marque: "Ta marque",
-  musique: "Ta musique",
+  musique: "Le son",
   ecrans: "Tes écrans",
   histoire: "Ton histoire",
   pret: "C'est prêt ?",
@@ -82,7 +82,9 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
 
       <fieldset className="assistant-etapes" disabled={occupe} aria-busy={occupe}>
       {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} medias={etat.medias} />}
-      {etape === "musique" && <EtapeMusique fiche={fiche} musiquePresente={present("musique")} deposer={deposer} />}
+      {etape === "musique" && (
+        <EtapeMusique id={etat.id} fiche={fiche} langues={langues} musiquePresente={present("musique")} deposer={deposer} modifier={modifier} enregistrer={enregistrer} recharger={recharger} />
+      )}
       {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} doublons={etat.doublons} deposer={deposer} modifier={modifier} />}
       {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} />}
       {etape === "pret" && <EtapePret id={etat.id} etat={etat} fiche={fiche} modifier={modifier} enregistrer={enregistrer} onAller={(e) => setEtape(e)} />}

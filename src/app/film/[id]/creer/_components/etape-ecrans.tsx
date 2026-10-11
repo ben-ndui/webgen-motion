@@ -11,7 +11,8 @@ type Case = { nom: string; titre: string; format: "portrait" | "paysage" };
 type Groupe = { titre: string; aide: string; cases: Case[]; moments?: boolean };
 
 // Le même écran à plusieurs moments : au moins deux, sinon rien ne bascule.
-const MOMENTS = { min: 2, max: 5 } as const;
+// Le plan du moment clé dure quatre mesures, un état par mesure.
+const MOMENTS = { min: 2, max: 4 } as const;
 
 export function groupesDEcrans(fiche: FilmSpec): Groupe[] {
   const liste: Groupe[] = [

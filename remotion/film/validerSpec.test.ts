@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { FILM } from "./film";
+import { MONTAGES } from "./montages";
 import type { FilmSpec } from "./spec";
-import { erreursDeLaSpec, validerSpec } from "./validerSpec";
+import { erreursDeLaSpec, validerSpec, PLANS_DE_VOIX } from "./validerSpec";
 
 // Une copie modifiable de la fiche d'exemple, par un aller-retour JSON :
 // c'est aussi le chemin qu'emprunte une fiche fournie par un outil.
@@ -93,5 +94,33 @@ describe("validerSpec", () => {
     spec.textes.fr.apercu = { carte: "La carte" };
     spec.apercu.fr = [{ id: "carte", mesures: 2, prise: "parcours", debut: 42, fin: 40 }];
     expect(erreursDeLaSpec(spec)).toEqual(["apercu.fr[0] : debut et fin en secondes, fin après debut"]);
+  });
+});
+
+describe("voix off et volume de la musique", () => {
+  it("accepte une voix complète, une ligne pas encore générée, et un volume", () => {
+    const voix = {
+      musiqueSousLaVoix: 0.3,
+      lignes: { fr: [{ plan: "bascule", texte: "Le constat.", fichier: "voix/fr/bascule.mp3", duree: 2.4 }, { plan: "fin", texte: "À bientôt." }] },
+    };
+    expect(erreursDeLaSpec({ ...FILM, voix, musique: { ...FILM.musique, volume: 0.8 } })).toEqual([]);
+  });
+
+  it("refuse un plan inconnu, un plan en double, un niveau hors de 0 à 1", () => {
+    const voix = { musiqueSousLaVoix: 2, lignes: { fr: [{ plan: "generique", texte: "x" }, { plan: "fin", texte: "a" }, { plan: "fin", texte: "b" }] } };
+    const erreurs = erreursDeLaSpec({ ...FILM, voix }).join(" | ");
+    expect(erreurs).toContain("voix.musiqueSousLaVoix");
+    expect(erreurs).toContain("voix.lignes.fr[0].plan");
+    expect(erreurs).toContain("a déjà une ligne");
+  });
+
+  it("refuse plus de quatre états du moment clé (le cinquième ne se verrait jamais)", () => {
+    const ecrans = { ...FILM.ecrans, evenement: ["a.png", "b.png", "c.png", "d.png", "e.png"] };
+    expect(erreursDeLaSpec({ ...FILM, ecrans }).join(" ")).toContain("quatre états au plus");
+  });
+
+  it("la liste des plans de voix reste celle des montages", () => {
+    const ids = new Set([...MONTAGES.long.plans, ...MONTAGES.court.plans].map((p) => p.id));
+    expect(new Set(PLANS_DE_VOIX)).toEqual(ids);
   });
 });

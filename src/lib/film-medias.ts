@@ -20,7 +20,7 @@ import type { TypeDeRendu } from "./film-store";
  */
 
 export type MediaAttendu = {
-  role: "musique" | "capture" | "logo";
+  role: "musique" | "capture" | "logo" | "voix";
   // Les rendus qui en ont besoin (film, bibliothèque, ou les deux).
   usages: TypeDeRendu[];
   // Les langues qui en ont besoin (la musique sert à toutes).
@@ -116,6 +116,12 @@ export function etatDesMedias(
     ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: lesDeux }, dossierPublic);
     if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: lesDeux }, dossierPublic);
   }
+  // Les voix GÉNÉRÉES (une ligne sans fichier n'a rien à chercher sur le disque).
+  for (const langue of langues) {
+    for (const ligne of spec.voix?.lignes[langue] ?? []) {
+      if (ligne.fichier) ajouter(medias, { role: "voix", langue, relatif: ligne.fichier, usages: ["film"] }, dossierPublic);
+    }
+  }
   for (const langue of langues) {
     const dossier = spec.textes[langue].dossierDesEcrans;
     for (const ecran of tousLesEcrans(spec.ecrans)) {
@@ -147,6 +153,7 @@ const MEDIA_ABSENT: Record<MediaAttendu["role"], string> = {
   musique: "musique absente",
   capture: "capture absente",
   logo: "logo absent",
+  voix: "voix off absente (à régénérer)",
 };
 
 /** Tout ce qui empêche un rendu dans une langue, en phrases, avec le chemin attendu. */

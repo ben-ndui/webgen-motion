@@ -3,7 +3,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { deposerCapture, deposerLogo, deposerMusique } from "./film-depot";
+import { deposerCapture, deposerLogo, deposerMusique, deposerMusiqueDeLaBibliotheque } from "./film-depot";
+import { writeFileSync } from "node:fs";
 import { creerFilm, lireFicheBrute } from "./film-ecriture";
 import { ficheDeDepart } from "./film-fiche-depart";
 import { dossierJetable } from "./film-fixtures.test-utils";
@@ -63,6 +64,23 @@ describe("dépôt de la musique", () => {
     expect(lireFicheBrute("saya", lieux.fiches)).toEqual(avant);
     expect(readdirSync(join(lieux.public("saya"), "musique"))).toEqual([]);
     expect(deposerMusique("saya", "notes.txt", metronome(40), lieux)).toMatchObject({ ok: false, statut: 400 });
+  });
+});
+
+describe("musique de la bibliothèque", () => {
+  it("copie et mesure un morceau de la bibliothèque des tours", () => {
+    const lieux = nouveauFilm();
+    const fichier = join(dossierJetable("biblio"), "summer.wav");
+    writeFileSync(fichier, metronome(40));
+    const bibliotheque = {
+      morceau: (id: string) => (id === "summer" ? { id, originalName: "Summer House.wav", filename: "summer.wav", sizeBytes: 1, durationSec: 40, uploadedAt: "" } : null),
+      chemin: (id: string) => (id === "summer" ? fichier : null),
+    };
+    expect(deposerMusiqueDeLaBibliotheque("saya", "summer", lieux, bibliotheque)).toEqual({ ok: true });
+    const fiche = lireFicheBrute("saya", lieux.fiches) as { musique: { titre: string; tempo: number } };
+    expect(fiche.musique.titre).toBe("Summer House");
+    expect(Math.abs(fiche.musique.tempo - 120)).toBeLessThanOrEqual(0.2);
+    expect(deposerMusiqueDeLaBibliotheque("saya", "disparu", lieux, bibliotheque)).toMatchObject({ ok: false, statut: 404 });
   });
 });
 

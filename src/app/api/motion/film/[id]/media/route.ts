@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { readFileSync } from "node:fs";
 
-import { deposerCapture, deposerLogo, deposerMusique } from "@/lib/film-depot";
+import { deposerCapture, deposerLogo, deposerMusique, deposerMusiqueDeLaBibliotheque } from "@/lib/film-depot";
 import { cheminDUnMediaAttendu } from "@/lib/film-depot-lecture";
 
 const TYPES: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml" };
@@ -39,6 +39,14 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ erreur: "Envoi illisible" }, { status: 400 });
   }
   const role = formulaire.get("role");
+  // Un morceau de la bibliothèque : pas de fichier envoyé, juste son identifiant.
+  if (role === "bibliotheque") {
+    const morceau = formulaire.get("morceau");
+    if (typeof morceau !== "string") return NextResponse.json({ erreur: "Morceau manquant" }, { status: 400 });
+    const resultat = deposerMusiqueDeLaBibliotheque(id, morceau);
+    if (!resultat.ok) return NextResponse.json({ erreur: resultat.raison }, { status: resultat.statut });
+    return NextResponse.json({ ok: true });
+  }
   const fichier = formulaire.get("fichier");
   if (!(fichier instanceof File)) return NextResponse.json({ erreur: "Aucun fichier reçu" }, { status: 400 });
   const octets = new Uint8Array(await fichier.arrayBuffer());

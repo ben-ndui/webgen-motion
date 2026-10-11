@@ -86,6 +86,29 @@ export type MusiqueDuFilm = {
   tempo: number;
   // Position du premier temps dans le fichier, en secondes.
   premierTemps: number;
+  // Volume de la musique, de 0 à 1. Absent : 1.
+  volume?: number;
+};
+
+/**
+ * Une ligne de voix off : dite au début d'un plan. `fichier` et `duree`
+ * sont posés par GEN MOTION quand la voix est générée ; une ligne sans
+ * fichier n'est pas jouée (texte écrit, voix pas encore générée).
+ */
+export type LigneDeVoix = {
+  // Identifiant du plan (montages.ts) : ouverture, probleme, bascule…
+  plan: string;
+  texte: string;
+  // Chemin dans public/ (voix/<langue>/…mp3).
+  fichier?: string;
+  // Durée de la voix, en secondes.
+  duree?: number;
+};
+
+export type VoixDuFilm = {
+  // Volume de la musique PENDANT qu'une voix parle, de 0 à 1.
+  musiqueSousLaVoix: number;
+  lignes: Record<Langue, LigneDeVoix[]>;
 };
 
 export type VersionDuFilm = "long" | "court";
@@ -142,6 +165,8 @@ export type FilmSpec = {
   // Direction artistique (marque/direction.ts) : redistribue les couleurs de
   // la marque sans en inventer. Absente : « marque », le film tel quel.
   direction?: DirectionDuFilm;
+  // Voix off, plan par plan. Absente : le film n'a que sa musique.
+  voix?: VoixDuFilm;
 };
 
 export const DIRECTIONS = ["marque", "editorial", "nocturne"] as const;

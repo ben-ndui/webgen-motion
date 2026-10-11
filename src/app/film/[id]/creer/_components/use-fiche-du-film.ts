@@ -6,7 +6,7 @@ import type { EtatDeLEditeur } from "@/lib/film-editeur";
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
 
 export type Enregistrement = "a-jour" | "en-attente" | "en-cours" | "erreur";
-export type RoleDeDepot = "capture" | "musique" | "logo";
+export type RoleDeDepot = "capture" | "musique" | "logo" | "bibliotheque";
 
 // Assez pour finir un mot avant d'écrire, assez court pour ne rien perdre.
 const DELAI_D_ENREGISTREMENT_MS = 1200;
@@ -73,12 +73,13 @@ export function useFicheDuFilm(etatInitial: EtatDeLEditeur) {
    * version ne doit pas effacer ce qu'on venait de taper.
    */
   const deposer = useCallback(
-    async (role: RoleDeDepot, fichier: File, relatif?: string): Promise<string | null> => {
+    async (role: RoleDeDepot, fichier: File | null, relatif?: string): Promise<string | null> => {
       if (enregistrement !== "a-jour" && !(await enregistrer())) return "Enregistrement impossible, réessaie.";
       const formulaire = new FormData();
       formulaire.set("role", role);
-      formulaire.set("fichier", fichier);
-      if (relatif) formulaire.set("relatif", relatif);
+      if (fichier) formulaire.set("fichier", fichier);
+      // Pour la bibliothèque, `relatif` porte l'identifiant du morceau.
+      if (relatif) formulaire.set(role === "bibliotheque" ? "morceau" : "relatif", relatif);
       try {
         const reponse = await fetch(`${url}/media`, { method: "POST", body: formulaire });
         const corps = (await reponse.json().catch(() => ({}))) as { erreur?: string };
@@ -91,7 +92,7 @@ export function useFicheDuFilm(etatInitial: EtatDeLEditeur) {
       // tapé pendant l'envoi reste (relire la fiche entière l'effaçait).
       if (nouveau && role !== "capture") {
         const copie = structuredClone(ficheRef.current);
-        if (role === "musique") copie.musique = nouveau.fiche.musique;
+        if (role === "musique" || role === "bibliotheque") copie.musique = nouveau.fiche.musique;
         if (role === "logo") copie.marque.logo = nouveau.fiche.marque.logo;
         ficheRef.current = copie;
         setFiche(copie);

@@ -29,7 +29,7 @@ function libelle(champ: string): string {
   return champ;
 }
 
-const ROLES = { musique: "La musique", logo: "Le logo", capture: "Une capture" } as const;
+const ROLES = { musique: "La musique", logo: "Le logo", capture: "Une capture", voix: "Une voix off (à régénérer)" } as const;
 
 /** La valeur actuelle d'un texte de la fiche (« fr:parcours.2 »), pour savoir s'il a été retouché. */
 function valeurActuelle(fiche: FilmSpec, cle: string): string | undefined {
@@ -126,7 +126,7 @@ export default function EtapePret({ id, etat, fiche, modifier, enregistrer, onAl
             <ul className="reste">
               {manquants.map((media) => (
                 <li key={media.relatif}>
-                  <button type="button" onClick={() => onAller(media.role === "capture" ? "ecrans" : media.role === "musique" ? "musique" : "marque")}>
+                  <button type="button" onClick={() => onAller(media.role === "capture" ? "ecrans" : media.role === "logo" ? "marque" : "musique")}>
                     {media.role === "capture" ? nomDeLaCapture(fiche, media.relatif) : ROLES[media.role]}
                   </button>
                 </li>

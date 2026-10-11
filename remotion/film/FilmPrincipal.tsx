@@ -3,10 +3,11 @@ import { AbsoluteFill, Sequence } from "remotion";
 
 import { BandeSon } from "./composants/BandeSon";
 import { Glissement } from "./composants/Glissement";
+import { VoixOff, decalageDeVoix, voixPlacees } from "./composants/VoixOff";
 import { FournisseurDeMarque } from "./marque/MarqueDuFilm";
 import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "./marque/direction";
 import { usePolice } from "./marque/police";
-import { imageDuTemps, placerLesPlans } from "./lib/tempo";
+import { IMAGES_PAR_SECONDE, imageDuTemps, imagesParTemps, placerLesPlans } from "./lib/tempo";
 import { type IdDePlan, MONTAGES } from "./montages";
 import { P1Ouverture } from "./plans/P1Ouverture";
 import { P2Probleme } from "./plans/P2Probleme";
@@ -37,6 +38,7 @@ export function FilmPrincipal({ spec, declinaison }: ProprietesDuFilm) {
   const dossier = textes.dossierDesEcrans;
   const places = placerLesPlans(montage.plans, tempo);
   const glissement = imageDuTemps(TEMPS_DE_GLISSEMENT, tempo);
+  const voix = voixPlacees(spec.voix?.lignes[declinaison.langue] ?? [], places, IMAGES_PAR_SECONDE, decalageDeVoix(imagesParTemps(tempo)));
 
   // Un `Record` sur tous les identifiants : un plan ajouté à la trame sans
   // son rendu ne compile pas.
@@ -58,7 +60,8 @@ export function FilmPrincipal({ spec, declinaison }: ProprietesDuFilm) {
     <FournisseurDeMarque marque={spec.marque} direction={spec.direction}>
       {/* La police est posée ici, une fois : tous les textes en héritent. */}
       <AbsoluteFill style={{ background: fondDuFilm(spec.direction ?? DIRECTION_PAR_DEFAUT, spec.marque.couleurs), fontFamily: police }}>
-        <BandeSon musique={spec.musique} fondu={FONDU_FINAL} />
+        <BandeSon musique={spec.musique} fondu={FONDU_FINAL} voix={voix} sousLaVoix={spec.voix?.musiqueSousLaVoix} />
+        <VoixOff voix={voix} />
         {places.map((plan, index) => {
           const suivant = places[index + 1];
           const entree = montage.glissements.has(plan.id) ? glissement : 0;

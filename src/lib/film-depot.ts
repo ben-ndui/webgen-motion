@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import type { FilmSpec } from "../../remotion/film/spec";
@@ -15,6 +15,7 @@ import { chargerFilm, getFilmsDir } from "./film-loader";
 import { etatDesMedias } from "./film-medias";
 import { mesurerMusique } from "./film-musique";
 import { getFilmPublicDir } from "./film-store";
+import { getTrack, getTrackPath } from "./motion-audio-store";
 
 /**
  * Déposer un média dans un film, sans que la personne ait à nommer ou ranger
@@ -27,7 +28,7 @@ export const POIDS_MAX = { capture: 15 * 1024 * 1024, musique: 30 * 1024 * 1024,
 
 export type ResultatDuDepot = { ok: true } | { ok: false; statut: 400 | 404 | 409 | 413; raison: string };
 
-type Lieux = { fiches: string; public: (id: string) => string };
+export type Lieux = { fiches: string; public: (id: string) => string };
 const LIEUX_PAR_DEFAUT: Lieux = { fiches: getFilmsDir(), public: getFilmPublicDir };
 
 function ficheValide(id: string, lieux: Lieux): { ok: true; spec: FilmSpec } | ResultatDuDepot & { ok: false } {
@@ -113,4 +114,20 @@ export function deposerLogo(id: string, nomOriginal: string, octets: Uint8Array,
   spec.marque.logo = { type: "image", fichier: relatif, rapport: Math.round(rapport * 1000) / 1000, inverser };
   const ecriture = enregistrerFilm(id, spec, lieux.fiches);
   return ecriture.ok ? { ok: true } : ecriture;
+}
+
+/**
+ * Un morceau de la bibliothèque de GEN MOTION (celle des tours) : copié dans
+ * le film et mesuré, exactement comme un morceau déposé.
+ */
+export function deposerMusiqueDeLaBibliotheque(
+  id: string,
+  idDuMorceau: string,
+  lieux: Lieux = LIEUX_PAR_DEFAUT,
+  bibliotheque: { morceau: typeof getTrack; chemin: typeof getTrackPath } = { morceau: getTrack, chemin: getTrackPath },
+): ResultatDuDepot {
+  const morceau = bibliotheque.morceau(idDuMorceau);
+  const chemin = bibliotheque.chemin(idDuMorceau);
+  if (!morceau || !chemin) return { ok: false, statut: 404, raison: "Ce morceau n'est plus dans la bibliothèque" };
+  return deposerMusique(id, morceau.originalName, new Uint8Array(readFileSync(chemin)), lieux);
 }
