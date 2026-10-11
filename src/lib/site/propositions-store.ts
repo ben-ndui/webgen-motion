@@ -10,12 +10,12 @@ import type { Propositions } from "./remplissage";
  * dépôt git) : l'assistant affiche « Proposé, à vérifier » tant que la
  * valeur n'a pas changé. SERVEUR SEULEMENT.
  */
-function chemin(id: string, dossierDuFilm: (id: string) => string): string {
-  return join(dossierDuFilm(id), "propositions.json");
+function chemin(id: string, dossierDuFilm: (id: string) => string, fichier = "propositions.json"): string {
+  return join(dossierDuFilm(id), fichier);
 }
 
-export function lirePropositions(id: string, dossierDuFilm: (id: string) => string = getFilmDir): Propositions {
-  const fichier = chemin(id, dossierDuFilm);
+export function lirePropositions(id: string, dossierDuFilm: (id: string) => string = getFilmDir, nom = "propositions.json"): Propositions {
+  const fichier = chemin(id, dossierDuFilm, nom);
   if (!existsSync(fichier)) return {};
   try {
     const brut = JSON.parse(readFileSync(fichier, "utf-8")) as unknown;
@@ -26,6 +26,17 @@ export function lirePropositions(id: string, dossierDuFilm: (id: string) => stri
   }
 }
 
-export function ecrirePropositions(id: string, propositions: Propositions, dossierDuFilm: (id: string) => string = getFilmDir): void {
-  ecrireAtomiquement(chemin(id, dossierDuFilm), new TextEncoder().encode(`${JSON.stringify(propositions, null, 2)}\n`));
+export function ecrirePropositions(
+  id: string,
+  propositions: Propositions,
+  dossierDuFilm: (id: string) => string = getFilmDir,
+  nom = "propositions.json",
+): void {
+  ecrireAtomiquement(chemin(id, dossierDuFilm, nom), new TextEncoder().encode(`${JSON.stringify(propositions, null, 2)}\n`));
 }
+
+/** Les suggestions du dernier remplissage (tout ce que Claude a proposé). */
+export const lireSuggestions = (id: string, dossierDuFilm: (id: string) => string = getFilmDir) =>
+  lirePropositions(id, dossierDuFilm, "suggestions.json");
+export const ecrireSuggestions = (id: string, suggestions: Propositions, dossierDuFilm: (id: string) => string = getFilmDir) =>
+  ecrirePropositions(id, suggestions, dossierDuFilm, "suggestions.json");

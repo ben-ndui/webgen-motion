@@ -27,7 +27,7 @@ import { trouverLeLogo } from "../src/lib/site/logo-du-site";
 import { devinerLaMarque } from "../src/lib/site/marque-du-site";
 import { lancerLeNavigateur, ouvrir } from "../src/lib/site/navigateur-du-site";
 import { adresseLisible, choisirLesPages, normaliserLAdresse } from "../src/lib/site/pages-du-site";
-import { ecrirePropositions, lirePropositions } from "../src/lib/site/propositions-store";
+import { ecrirePropositions, ecrireSuggestions, lirePropositions } from "../src/lib/site/propositions-store";
 import { redigerAvecClaude } from "../src/lib/site/redaction-claude";
 import { remplirLaFiche } from "../src/lib/site/remplissage";
 
@@ -100,7 +100,7 @@ async function principal(): Promise<void> {
     }
 
     phase("Remplissage de la fiche…");
-    const { fiche: remplie, propositions } = remplirLaFiche(spec, { marque, adresse: adresseLisible(url), histoires }, lirePropositions(id));
+    const { fiche: remplie, propositions, suggestions } = remplirLaFiche(spec, { marque, adresse: adresseLisible(url), histoires }, lirePropositions(id));
     if (logo && remplie.marque.logo.type === "motSymbole") {
       const relatif = `logo/${nomDeFichierSur(adresseLisible(url))}.${logo.genre}`;
       ecrireAtomiquement(join(dossierPublic, relatif), logo.octets);
@@ -110,6 +110,9 @@ async function principal(): Promise<void> {
     const ecriture = enregistrerFilm(id, remplie);
     if (!ecriture.ok) arreter(ecriture.raison);
     ecrirePropositions(id, propositions);
+    // Une rédaction ratée ne doit pas effacer les suggestions du remplissage précédent.
+    if (Object.keys(histoires).length > 0) ecrireSuggestions(id, suggestions);
+    const enAttente = Object.entries(suggestions).filter(([cle, valeur]) => cle.includes(":") && propositions[cle] !== valeur).length;
 
     emettre({
       type: "done",
@@ -121,6 +124,7 @@ async function principal(): Promise<void> {
         redaction,
         textesProposes: Object.keys(propositions).filter((cle) => cle.includes(":")).length,
         aEcrire: rejetes,
+        suggestionsEnAttente: enAttente,
         marque: marque.sources,
       },
     });

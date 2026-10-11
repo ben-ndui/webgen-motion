@@ -8,7 +8,7 @@ import EtapePret from "./etape-pret";
 const fiche = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
 
 function etat(partiel: Partial<EtatDeLEditeur>): EtatDeLEditeur {
-  return { id: "saya", fiche, valide: true, erreurs: [], medias: [], textesAEcrire: [], doublons: [], propositions: {}, ...partiel };
+  return { id: "saya", fiche, valide: true, erreurs: [], medias: [], textesAEcrire: [], doublons: [], propositions: {}, suggestions: {}, ...partiel };
 }
 
 describe("étape « C'est prêt ? »", () => {

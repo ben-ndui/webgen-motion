@@ -12,13 +12,14 @@ type Props = {
   messages: TextesDuFilm["probleme"]["messages"];
   modifier: (changement: (textes: TextesDuFilm) => void) => void;
   propose: (champ: string, valeur: string) => boolean;
+  suggestion: (champ: string) => string | undefined;
 };
 
 /**
  * Les bulles de la conversation d'ouverture. Le PREMIER message revient à la
  * fin du plan (c'est la relance restée sans suite) : on le dit.
  */
-export default function Conversation({ langue, messages, modifier, propose }: Props) {
+export default function Conversation({ langue, messages, modifier, propose, suggestion }: Props) {
   const modele = FILM.textes[langue].probleme.messages;
   const exemple = (i: number) => modele[i]?.texte ?? (langue === "fr" ? "Un message" : "A message");
 
@@ -45,7 +46,7 @@ export default function Conversation({ langue, messages, modifier, propose }: Pr
             question={i === 0 ? "Message 1 (il revient à la fin, comme une relance)" : `Message ${i + 1}`}
             exemple={exemple(i)}
             valeur={message.texte}
-            propose={propose(`probleme.messages.${i}`, message.texte)}
+            propose={propose(`probleme.messages.${i}`, message.texte)} suggestion={suggestion(`probleme.messages.${i}`)}
             max={40}
             onChange={(v) => modifier((t) => { t.probleme.messages[i]!.texte = v; })}
           />

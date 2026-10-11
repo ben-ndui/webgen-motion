@@ -3,7 +3,7 @@ import { languesDuFilm, textesEncoreExemple } from "./film-fiche-depart";
 import { erreursDeLaFiche, getFilmsDir } from "./film-loader";
 import { type MediaAttendu, etatDesMedias } from "./film-medias";
 import { getFilmDir, getFilmPublicDir } from "./film-store";
-import { lirePropositions } from "./site/propositions-store";
+import { lirePropositions, lireSuggestions } from "./site/propositions-store";
 import type { FilmSpec, Langue } from "../../remotion/film/spec";
 
 /**
@@ -26,6 +26,8 @@ export type EtatDeLEditeur = {
   doublons: string[];
   // Ce que GEN MOTION a proposé depuis le site (clé « fr:bascule.constat »…).
   propositions: Record<string, string>;
+  // Tout ce que Claude a proposé au dernier remplissage, posé ou non.
+  suggestions: Record<string, string>;
 };
 
 export function etatDeLEditeur(
@@ -37,11 +39,12 @@ export function etatDeLEditeur(
   const erreurs = erreursDeLaFiche(brute);
   const fiche = brute as FilmSpec;
   const propositions = lirePropositions(id, dossiers.film ?? getFilmDir);
+  const suggestions = lireSuggestions(id, dossiers.film ?? getFilmDir);
   if (erreurs.length > 0) {
-    return { id, fiche, valide: false, erreurs, medias: [], textesAEcrire: [], doublons: [], propositions };
+    return { id, fiche, valide: false, erreurs, medias: [], textesAEcrire: [], doublons: [], propositions, suggestions };
   }
   const etat = etatDesMedias(fiche, dossiers.public(id), languesDuFilm(fiche));
   const medias = etat.medias.map(({ role, relatif, present, langues }) => ({ role, relatif, present, langues }));
   const doublons = etat.doublons.map((doublon) => doublon.message);
-  return { id, fiche, valide: true, erreurs, medias, textesAEcrire: textesEncoreExemple(fiche), doublons, propositions };
+  return { id, fiche, valide: true, erreurs, medias, textesAEcrire: textesEncoreExemple(fiche), doublons, propositions, suggestions };
 }

@@ -25,6 +25,11 @@
 .gm-film .champ-saisie:focus { border-color: var(--accent); box-shadow: var(--ring); }
 .gm-film .champ-saisie.petit { min-height: 36px; width: auto; font-size: var(--t-xs); }
 .gm-film .champ-saisie.trop-long { border-color: var(--ink); }
+.gm-film .histoire { display: flex; flex-direction: column; gap: var(--s-5); }
+.gm-film .tout-utiliser { flex-direction: row; align-items: center; justify-content: space-between; gap: var(--s-4); margin-bottom: 0; border-color: var(--accent-line); }
+.gm-film .suggestion { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); font-size: var(--t-xs); color: var(--muted); background: var(--surface-2); border: 1px dashed var(--line-strong); border-radius: var(--r-sm); padding: 6px 10px; }
+.gm-film .suggestion q { color: var(--ink); }
+.gm-film .suggestion .lien { flex: none; padding: 0; }
 .gm-film .champ-compteur { font-family: var(--font-mono); font-size: 11px; color: var(--faint); align-self: flex-end; }
 .gm-film .champ-compteur.trop-long { color: var(--ink); text-decoration: underline; }
 

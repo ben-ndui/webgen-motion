@@ -10,6 +10,7 @@ export type ResumeDuRemplissage = {
   redaction: string;
   textesProposes: number;
   aEcrire: string[];
+  suggestionsEnAttente: number;
   marque: string[];
 };
 

@@ -12,18 +12,23 @@ import type { HistoireProposee } from "./redaction-proposee";
  * pour que l'assistant l'affiche « Proposé, à vérifier ».
  */
 export type Propositions = Record<string, string>;
+// TOUT ce que Claude a proposé, posé ou non : sous un texte déjà écrit,
+// l'assistant affiche la suggestion et un bouton pour l'utiliser.
+export type Suggestions = Record<string, string>;
 
 type Ecriture = { cle: string; actuel: string; exemple: string; propose: string | undefined; poser: (v: string) => void };
 
-function poserSiExemple(ecritures: Ecriture[], propositions: Propositions): void {
+function poserSiExemple(ecritures: Ecriture[], propositions: Propositions, suggestions: Suggestions): void {
   for (const { cle, actuel, exemple, propose, poser } of ecritures) {
-    if (propose === undefined || actuel.trim() !== exemple.trim()) continue;
+    if (propose === undefined) continue;
+    suggestions[cle] = propose;
+    if (actuel.trim() !== exemple.trim()) continue;
     poser(propose);
     propositions[cle] = propose;
   }
 }
 
-function histoire(fiche: FilmSpec, langue: Langue, h: HistoireProposee, propositions: Propositions): void {
+function histoire(fiche: FilmSpec, langue: Langue, h: HistoireProposee, propositions: Propositions, suggestions: Suggestions): void {
   const t = fiche.textes[langue];
   const m = FILM.textes[langue];
   const cle = (champ: string) => `${langue}:${champ}`;
@@ -46,9 +51,10 @@ function histoire(fiche: FilmSpec, langue: Langue, h: HistoireProposee, proposit
       ...b.legendesEventail.map((v, i): Ecriture => ({ cle: cle(`bibliotheque.legendesEventail.${i}`), actuel: v, exemple: mb.legendesEventail[i] ?? "", propose: h.legendes?.[i], poser: (x) => { b.legendesEventail[i] = x; } })),
     );
   }
-  poserSiExemple(e, propositions);
+  poserSiExemple(e, propositions, suggestions);
 
   // La conversation : remplacée en bloc, et seulement si elle n'a pas été touchée.
+  h.conversation?.forEach((msg, i) => { suggestions[cle(`probleme.messages.${i}`)] = msg.texte; });
   const intacte = t.probleme.messages.length === m.probleme.messages.length && t.probleme.messages.every((msg, i) => msg.texte === m.probleme.messages[i]?.texte);
   if (h.conversation && intacte) {
     const [premier, ...suite] = h.conversation;
@@ -65,9 +71,14 @@ export type CeQuiAEteLu = {
   histoires: Partial<Record<Langue, HistoireProposee>>;
 };
 
-export function remplirLaFiche(entree: FilmSpec, lu: CeQuiAEteLu, deja: Propositions = {}): { fiche: FilmSpec; propositions: Propositions } {
+export function remplirLaFiche(
+  entree: FilmSpec,
+  lu: CeQuiAEteLu,
+  deja: Propositions = {},
+): { fiche: FilmSpec; propositions: Propositions; suggestions: Suggestions } {
   const fiche = structuredClone(entree);
   const propositions: Propositions = { ...deja };
+  const suggestions: Suggestions = {};
   const modele = FILM.marque;
 
   const couleursIntactes = (["encre", "clair", "accent"] as const).every((c) => fiche.marque.couleurs[c] === modele.couleurs[c]);
@@ -88,7 +99,8 @@ export function remplirLaFiche(entree: FilmSpec, lu: CeQuiAEteLu, deja: Proposit
     propositions["bibliotheque.adresse"] = lu.adresse;
   }
   for (const [langue, h] of Object.entries(lu.histoires) as [Langue, HistoireProposee][]) {
-    if (h) histoire(fiche, langue, h, propositions);
+    if (h) histoire(fiche, langue, h, propositions, suggestions);
   }
-  return { fiche, propositions };
+  if (fiche.bibliotheque) suggestions["bibliotheque.adresse"] = lu.adresse;
+  return { fiche, propositions, suggestions };
 }

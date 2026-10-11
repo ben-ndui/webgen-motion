@@ -34,4 +34,14 @@ describe("ChampTexte", () => {
     render(<ChampTexte question="Q" exemple="Ex." valeur="Lu sur le site" propose onChange={() => {}} />);
     expect(screen.getByText("Proposé, à vérifier")).toBeInTheDocument();
   });
+
+  it("sous un texte déjà écrit, montre la proposition du site et l'utilise d'un clic", () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<ChampTexte question="Le constat" exemple="Ex." valeur="Un constat" suggestion="Les parfums naturels sont rares." onChange={onChange} />);
+    expect(screen.getByText("Les parfums naturels sont rares.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Utiliser la proposition pour « Le constat »/ }));
+    expect(onChange).toHaveBeenLastCalledWith("Les parfums naturels sont rares.");
+    rerender(<ChampTexte question="Le constat" exemple="Ex." valeur="Les parfums naturels sont rares." suggestion="Les parfums naturels sont rares." onChange={onChange} />);
+    expect(screen.queryByRole("button", { name: /Utiliser/ })).not.toBeInTheDocument();
+  });
 });

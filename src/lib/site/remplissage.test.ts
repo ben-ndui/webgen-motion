@@ -44,6 +44,16 @@ describe("remplir la fiche depuis le site", () => {
     expect(propositions["fr:bascule.constat"]).toBeUndefined();
   });
 
+  it("garde en suggestion ce qu'il n'a pas posé, pour l'afficher sous le texte déjà écrit", () => {
+    const ecrite = structuredClone(FICHE);
+    ecrite.textes.fr.bascule.constat = "Un constat";
+    ecrite.textes.fr.probleme.messages[0]!.texte = "Mon message";
+    const { suggestions } = remplirLaFiche(ecrite, LU);
+    expect(suggestions["fr:bascule.constat"]).toBe("Les parfums naturels sont rares.");
+    expect(suggestions["fr:probleme.messages.0"]).toBe("Un parfum naturel ?");
+    expect(suggestions["fr:parcours.2"]).toBe("Commander");
+  });
+
   it("ce que Claude n'a pas proposé (le chiffre) reste à écrire", () => {
     const { fiche } = remplirLaFiche(FICHE, LU);
     expect(textesEncoreExemple(fiche).map((t) => t.champ)).toContain("bascule.chiffre");

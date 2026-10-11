@@ -12,6 +12,8 @@ type Props = {
   aide?: string;
   // Proposé depuis le site et pas encore retouché : à relire.
   propose?: boolean;
+  // Ce que le site propose pour ce texte, montré s'il diffère de la réponse.
+  suggestion?: string;
 };
 
 /**
@@ -20,7 +22,7 @@ type Props = {
  * case vidée retrouve l'exemple (la fiche reste valide, et le texte reste
  * signalé « à écrire »).
  */
-export default function ChampTexte({ question, exemple, valeur, onChange, max, aide, propose = false }: Props) {
+export default function ChampTexte({ question, exemple, valeur, onChange, max, aide, propose = false, suggestion }: Props) {
   const id = useId();
   const aEcrire = valeur.trim() === exemple.trim();
   const affichee = aEcrire ? "" : valeur;
@@ -44,6 +46,16 @@ export default function ChampTexte({ question, exemple, valeur, onChange, max, a
         aria-invalid={tropLong}
         onChange={(evenement) => onChange(evenement.target.value.trim() === "" ? exemple : evenement.target.value)}
       />
+      {suggestion && suggestion.trim() !== valeur.trim() && (
+        <div className="suggestion">
+          <span>
+            Proposé depuis ton site : <q>{suggestion}</q>
+          </span>
+          <button type="button" className="lien" onClick={() => onChange(suggestion)} aria-label={`Utiliser la proposition pour « ${question} »`}>
+            Utiliser
+          </button>
+        </div>
+      )}
       {max !== undefined && (
         <span className={`champ-compteur${tropLong ? " trop-long" : ""}`} aria-live="polite">
           {longueur} / {max}

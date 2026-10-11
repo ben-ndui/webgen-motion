@@ -84,7 +84,7 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
       {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} />}
       {etape === "musique" && <EtapeMusique fiche={fiche} musiquePresente={present("musique")} deposer={deposer} />}
       {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} doublons={etat.doublons} deposer={deposer} modifier={modifier} />}
-      {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} modifier={modifier} />}
+      {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} />}
       {etape === "pret" && <EtapePret id={etat.id} etat={etat} fiche={fiche} modifier={modifier} enregistrer={enregistrer} onAller={(e) => setEtape(e)} />}
 
       </fieldset>

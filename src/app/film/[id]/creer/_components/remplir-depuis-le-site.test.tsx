@@ -8,7 +8,7 @@ function fluxNdjson(evenements: object[]): Response {
   return new Response(corps, { headers: { "Content-Type": "application/x-ndjson" } });
 }
 
-const RESUME = { captures: 9, capturesGardees: 0, moments: 3, logo: true, redaction: "textes proposés par Claude", textesProposes: 21, aEcrire: ["fr.momentCle"], marque: [] };
+const RESUME = { captures: 9, capturesGardees: 0, suggestionsEnAttente: 0, moments: 3, logo: true, redaction: "textes proposés par Claude", textesProposes: 21, aEcrire: ["fr.momentCle"], marque: [] };
 
 afterEach(() => vi.restoreAllMocks());
 

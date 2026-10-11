@@ -10,14 +10,16 @@ type Props = {
   langue: Langue;
   modifier: (changement: (copie: FilmSpec) => void) => void;
   propose: (champ: string, valeur: string) => boolean;
+  suggestion: (champ: string) => string | undefined;
   propositions: Record<string, string>;
+  suggestions: Record<string, string>;
 };
 
 /**
  * Les textes des plans courts, ceux qui font les Reels : le mot signature,
  * la phrase en anneau, l'adresse du site, les légendes de l'éventail.
  */
-export default function HistoireDesReels({ fiche, langue, modifier, propose, propositions }: Props) {
+export default function HistoireDesReels({ fiche, langue, modifier, propose, suggestion, propositions, suggestions }: Props) {
   const t = fiche.textes[langue].bibliotheque;
   const modele = FILM.textes[langue].bibliotheque;
   if (!t || !modele || !fiche.bibliotheque || !FILM.bibliotheque) return null;
@@ -36,7 +38,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, pro
         aide="Un seul mot. S'il finit par un point, le point tombe dessus en couleur."
         exemple={modele.mot}
         valeur={t.mot}
-        propose={propose("bibliotheque.mot", t.mot)}
+        propose={propose("bibliotheque.mot", t.mot)} suggestion={suggestion("bibliotheque.mot")}
         max={LONGUEUR_MAX_DU_MOT}
         onChange={(v) => ecrire((x) => { x.mot = v; })}
       />
@@ -45,7 +47,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, pro
         aide="Trois mots séparés par « · », par exemple : Naturel · Fait main · Livré."
         exemple={modele.anneau}
         valeur={t.anneau}
-        propose={propose("bibliotheque.anneau", t.anneau)}
+        propose={propose("bibliotheque.anneau", t.anneau)} suggestion={suggestion("bibliotheque.anneau")}
         max={LONGUEUR_DE_L_ANNEAU.max}
         onChange={(v) => ecrire((x) => { x.anneau = v; })}
       />
@@ -55,6 +57,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, pro
         exemple={FILM.bibliotheque.adresse}
         valeur={fiche.bibliotheque.adresse}
         propose={propositions["bibliotheque.adresse"] === fiche.bibliotheque.adresse}
+        suggestion={suggestions["bibliotheque.adresse"]}
         max={40}
         onChange={(v) => modifier((copie) => { if (copie.bibliotheque) copie.bibliotheque.adresse = v.replace(/^https?:\/\//, ""); })}
       />
@@ -64,7 +67,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, pro
           question={`Légende de l'écran ${i + 1} (éventail)`}
           exemple={modele.legendesEventail[i] ?? ""}
           valeur={legende}
-          propose={propose(`bibliotheque.legendesEventail.${i}`, legende)}
+          propose={propose(`bibliotheque.legendesEventail.${i}`, legende)} suggestion={suggestion(`bibliotheque.legendesEventail.${i}`)}
           max={24}
           onChange={(v) => ecrire((x) => { x.legendesEventail[i] = v; })}
         />
@@ -73,7 +76,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, pro
         question="La ligne sous ton logo"
         exemple={modele.signature}
         valeur={t.signature}
-        propose={propose("bibliotheque.signature", t.signature)}
+        propose={propose("bibliotheque.signature", t.signature)} suggestion={suggestion("bibliotheque.signature")}
         max={50}
         onChange={(v) => ecrire((x) => { x.signature = v; })}
       />

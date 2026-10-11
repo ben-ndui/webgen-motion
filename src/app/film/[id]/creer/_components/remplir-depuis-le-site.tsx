@@ -16,6 +16,11 @@ function Resume({ etat }: { etat: Extract<EtatDuRemplissage, { type: "fait" }> }
   return (
     <div className="remplir-resume" role="status">
       <p><b>C&apos;est rempli.</b> {resume.captures} captures, {resume.logo ? "logo trouvé" : "logo à déposer"}, {resume.textesProposes} textes proposés.</p>
+      {resume.suggestionsEnAttente > 0 && (
+        <p className="champ-aide">
+          {resume.suggestionsEnAttente} texte{resume.suggestionsEnAttente > 1 ? "s" : ""} que tu avais déjà écrit{resume.suggestionsEnAttente > 1 ? "s" : ""} {resume.suggestionsEnAttente > 1 ? "ont été gardés" : "a été gardé"} : la proposition du site s&apos;affiche dessous, avec « Utiliser ».
+        </p>
+      )}
       {resume.capturesGardees > 0 && <p className="champ-aide">{resume.capturesGardees} captures déjà présentes ont été gardées telles quelles.</p>}
       <p className="champ-aide">Tout ce qui vient du site porte « Proposé, à vérifier » : relis-le, change ce qui ne te ressemble pas.</p>
       {resume.textesProposes === 0 && <p className="champ-aide">Textes : {resume.redaction}.</p>}
