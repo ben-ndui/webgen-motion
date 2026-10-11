@@ -15,6 +15,22 @@ const GRAISSES = ["200", "300", "400", "500", "600", "800"];
  * Le chargement est dynamique parce que la police est une DONNÉE : un import
  * statique (`@remotion/google-fonts/Jost`) figerait la marque dans le code.
  */
+// Ce qu'on voudrait charger : le latin, et le latin étendu (œ, ł, ő…).
+const JEUX_VOULUS = ["latin", "latin-ext"];
+
+type FichiersDeLaPolice = Record<string, Record<string, string> | undefined>;
+
+/**
+ * Les jeux de caractères à demander : ceux que la police a pour TOUTES les
+ * graisses chargées. Italiana n'a pas de latin étendu : le demander faisait
+ * échouer tout le rendu (« subset: latin-ext is not available », 11/10/2026).
+ * Une police sans latin du tout (cyrillique seul…) garde ses propres jeux.
+ */
+export function jeuxDeCaracteres(fichiers: FichiersDeLaPolice, graisses: string[], jeuxDeLaPolice: string[]): string[] {
+  const presents = JEUX_VOULUS.filter((jeu) => graisses.every((graisse) => Boolean(fichiers[graisse]?.[jeu])));
+  return presents.length > 0 ? presents : jeuxDeLaPolice.slice(0, 1);
+}
+
 export function usePolice(famille: string): string {
   const [attente] = useState(() => delayRender(`Police « ${famille} »`));
 
@@ -27,9 +43,11 @@ export function usePolice(famille: string): string {
     trouvee
       .load()
       .then((police) => {
-        const disponibles = Object.keys(police.getInfo().fonts.normal ?? {});
-        const graisses = GRAISSES.filter((graisse) => disponibles.includes(graisse));
-        return police.loadFont("normal", { weights: graisses, subsets: ["latin", "latin-ext"] }).waitUntilDone();
+        const info = police.getInfo();
+        const fichiers = (info.fonts.normal ?? {}) as FichiersDeLaPolice;
+        const graisses = GRAISSES.filter((graisse) => graisse in fichiers);
+        const subsets = jeuxDeCaracteres(fichiers, graisses, info.subsets);
+        return police.loadFont("normal", { weights: graisses, subsets }).waitUntilDone();
       })
       .then(() => continueRender(attente))
       .catch((erreur: unknown) => cancelRender(erreur));
