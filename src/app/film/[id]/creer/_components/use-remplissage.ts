@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 export type ResumeDuRemplissage = {
   captures: number;
   capturesGardees: number;
+  videos: number;
   moments: number;
   logo: boolean;
   redaction: string;
@@ -26,7 +27,7 @@ export function useRemplissage(id: string, onFini: () => Promise<void>) {
   const arret = useRef<AbortController | null>(null);
 
   const lancer = useCallback(
-    async (url: string) => {
+    async (url: string, remplacerCaptures = false) => {
       const controleur = new AbortController();
       arret.current = controleur;
       const etapes: string[] = [];
@@ -36,7 +37,7 @@ export function useRemplissage(id: string, onFini: () => Promise<void>) {
         const reponse = await fetch(`/api/motion/film/${id}/remplir`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
+          body: JSON.stringify({ url, remplacerCaptures }),
           signal: controleur.signal,
         });
         if (!reponse.ok || !reponse.body) {

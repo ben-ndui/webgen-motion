@@ -58,7 +58,7 @@ export function P6Marque({ tempo, textes, ecran, dossierDesEcrans }: Props) {
           transform: `translateY(${entre(page.course, 0, montee)}px)`,
         }}
       >
-        <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={page.telephone.largeur} />
+        <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={page.telephone.largeur} debut={temps(3)} />
       </div>
     </AbsoluteFill>
   );

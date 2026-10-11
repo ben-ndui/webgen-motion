@@ -15,7 +15,7 @@ function Resume({ etat }: { etat: Extract<EtatDuRemplissage, { type: "fait" }> }
   const aEcrire = [...new Set(resume.aEcrire.map((cle) => LIBELLES_A_ECRIRE[cle.split(".")[1] ?? ""] ?? cle))];
   return (
     <div className="remplir-resume" role="status">
-      <p><b>C&apos;est rempli.</b> {resume.captures} captures, {resume.logo ? "logo trouvé" : "logo à déposer"}, {resume.textesProposes} textes proposés.</p>
+      <p><b>C&apos;est rempli.</b> {resume.captures} captures, {resume.videos > 0 ? `${resume.videos} écrans filmés, ` : ""}{resume.logo ? "logo trouvé" : "logo à déposer"}, {resume.textesProposes} textes proposés.</p>
       {resume.suggestionsEnAttente > 0 && (
         <p className="champ-aide">
           {resume.suggestionsEnAttente} texte{resume.suggestionsEnAttente > 1 ? "s" : ""} que tu avais déjà écrit{resume.suggestionsEnAttente > 1 ? "s" : ""} {resume.suggestionsEnAttente > 1 ? "ont été gardés" : "a été gardé"} : la proposition du site s&apos;affiche dessous, avec « Utiliser ».
@@ -46,6 +46,7 @@ type Props = {
  */
 export default function RemplirDepuisLeSite({ id, adresseAuDepart, avantDeLancer, recharger, onOccupe }: Props) {
   const [adresse, setAdresse] = useState(adresseAuDepart ?? "");
+  const [remplacerCaptures, setRemplacerCaptures] = useState(false);
   const { etat, lancer, arreter } = useRemplissage(id, recharger);
   const dejaLance = useRef(false);
 
@@ -53,7 +54,7 @@ export default function RemplirDepuisLeSite({ id, adresseAuDepart, avantDeLancer
     if (!(await avantDeLancer())) return;
     onOccupe(true);
     try {
-      await lancer(url);
+      await lancer(url, remplacerCaptures);
     } finally {
       onOccupe(false);
     }
@@ -74,8 +75,8 @@ export default function RemplirDepuisLeSite({ id, adresseAuDepart, avantDeLancer
     <section className="bloc remplir" aria-labelledby="remplir-titre" data-wm-id="film.remplir">
       <h3 id="remplir-titre" className="bloc-titre">Remplir depuis ton site</h3>
       <p className="champ-aide">
-        GEN MOTION ouvre ton site, prend les captures au téléphone et sur ordinateur, lit tes couleurs et ton logo, et
-        propose tes textes. Ce que tu as déjà écrit n&apos;est jamais remplacé.
+        GEN MOTION ouvre ton site, le filme au téléphone et sur ordinateur, lit tes couleurs et ton logo, et propose
+        tes textes. Ce que tu as déjà écrit n&apos;est jamais remplacé.
       </p>
       <form className="remplir-ligne" onSubmit={(e) => { e.preventDefault(); void demarrer(adresse); }}>
         <input className="champ-saisie" value={adresse} onChange={(e) => setAdresse(e.target.value)} placeholder="monsite.fr" aria-label="Adresse de ton site" disabled={enCours} />
@@ -85,6 +86,10 @@ export default function RemplirDepuisLeSite({ id, adresseAuDepart, avantDeLancer
           <button type="submit" className="film-btn" disabled={!adresse.trim()}>Remplir</button>
         )}
       </form>
+      <label className="case-a-cocher">
+        <input type="checkbox" checked={remplacerCaptures} disabled={enCours} onChange={(e) => setRemplacerCaptures(e.target.checked)} />
+        Remplacer aussi mes captures actuelles par des vidéos filmées (sinon, seules les cases vides ou remplies par GEN MOTION passent en vidéo)
+      </label>
       {enCours && (
         <ol className="remplir-etapes" aria-live="polite">
           {etat.etapes.map((etape, i) => (

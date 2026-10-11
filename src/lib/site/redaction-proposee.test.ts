@@ -39,6 +39,11 @@ describe("rédaction proposée par Claude", () => {
     expect(message).toContain("1 200 clientes");
   });
 
+  it("donne à Claude les écrans du parcours dans l'ordre du film, accueil compris", () => {
+    const { message } = demandeDeRedaction(LECTURE, ["fr"], ["Accueil", "Parfums", "Boutique", "Histoire"]);
+    expect(message).toContain("« Accueil », « Parfums », « Boutique », « Histoire »");
+  });
+
   it("garde une réponse conforme", () => {
     const { histoires, rejetes } = lireLaReponse({ fr: BONNE }, ["fr"], LECTURE);
     expect(rejetes).toEqual([]);

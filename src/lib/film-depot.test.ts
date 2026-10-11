@@ -47,6 +47,35 @@ describe("dépôt d'une capture", () => {
   });
 });
 
+describe("dépôt d'une vidéo d'écran", () => {
+  function videoDEcran(): Uint8Array {
+    const chemin = join(dossierJetable("video"), "ecran.mov");
+    spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=1170x2532:rate=30:duration=3", "-pix_fmt", "yuv420p", chemin]);
+    return readFileSync(chemin);
+  }
+
+  it("la met au format du film, renomme la case en .mp4 et la fait citer par la fiche", () => {
+    const lieux = nouveauFilm();
+    expect(deposerCapture("saya", "ecrans-fr/parcours-2.png", videoDEcran(), lieux)).toEqual({ ok: true });
+    const sortie = join(lieux.public("saya"), "ecrans-fr/parcours-2.mp4");
+    const sonde = spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=codec_name,width,codec_type", "-of", "compact", sortie], { encoding: "utf-8" }).stdout;
+    expect(sonde).toContain("codec_name=h264");
+    expect(sonde).toContain("width=1080");
+    expect(sonde).not.toContain("codec_type=audio");
+    const fiche = lireFicheBrute("saya", lieux.fiches) as { ecrans: { parcours: string[] }; bibliotheque: { eventail: string[] } };
+    expect(fiche.ecrans.parcours[1]).toBe("parcours-2.mp4");
+    expect(fiche.bibliotheque.eventail[1]).toBe("parcours-2.mp4");
+  });
+
+  it("une image redéposée dans une case vidéo la repasse en .png", () => {
+    const lieux = nouveauFilm();
+    deposerCapture("saya", "ecrans-fr/parcours-2.png", videoDEcran(), lieux);
+    expect(deposerCapture("saya", "ecrans-fr/parcours-2.mp4", PNG_2x1, lieux)).toEqual({ ok: true });
+    const fiche = lireFicheBrute("saya", lieux.fiches) as { ecrans: { parcours: string[] } };
+    expect(fiche.ecrans.parcours[1]).toBe("parcours-2.png");
+  });
+});
+
 describe("dépôt de la musique", () => {
   it("mesure le morceau et le fait citer par la fiche", () => {
     const lieux = nouveauFilm();

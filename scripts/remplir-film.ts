@@ -5,7 +5,7 @@
  * propose les textes de « Ton histoire ». Tout arrive dans la fiche, marqué
  * « proposé », sans jamais écraser ce que la personne a déjà écrit.
  *
- *   tsx scripts/remplir-film.ts --film-id <id> --url <adresse>
+ *   tsx scripts/remplir-film.ts --film-id <id> --url <adresse> [--remplacer-captures]
  *
  * Progression en NDJSON sur stdout (même contrat que agent-generate-tour) :
  * { type: "phase", label } … puis { type: "done", resume } ou { type: "error", message }.
@@ -22,6 +22,7 @@ import { languesDuFilm } from "../src/lib/film-fiche-depart";
 import { chargerFilm } from "../src/lib/film-loader";
 import { estNomSur, getFilmPublicDir } from "../src/lib/film-store";
 import { capturerLeFilm, nommerLesCaptures } from "../src/lib/site/captures-du-film";
+import { filmerLeFilm, poserLesVideos } from "../src/lib/site/videos-du-film";
 import { lireLaPage } from "../src/lib/site/lecture-du-site";
 import { trouverLeLogo } from "../src/lib/site/logo-du-site";
 import { devinerLaMarque } from "../src/lib/site/marque-du-site";
@@ -69,19 +70,29 @@ async function principal(): Promise<void> {
     const marque = devinerLaMarque(lecture.couleurs, lecture.polices, catalogue);
     const logo = await trouverLeLogo(lecture.logos);
 
-    const captures = await capturerLeFilm(navigateur, url, choisirLesPages(lecture.liens), phase);
+    const pages = choisirLesPages(lecture.liens);
+    const captures = await capturerLeFilm(navigateur, url, pages, phase);
     const spec = structuredClone(fiche.spec);
     const fichiers = nommerLesCaptures(spec, captures);
+    const dejaProposees = lirePropositions(id);
     // Une capture déjà là (déposée à la main, ou d'un remplissage précédent)
     // n'est jamais remplacée : même règle que pour les textes.
     let gardees = 0;
+    const capturesPosees: string[] = [];
     for (const langue of langues) {
       for (const [nom, image] of fichiers) {
-        const chemin = join(dossierPublic, spec.textes[langue].dossierDesEcrans, nom);
-        if (existsSync(chemin)) gardees += 1;
-        else ecrireAtomiquement(chemin, image);
+        const relatif = `${spec.textes[langue].dossierDesEcrans}/${nom}`;
+        if (existsSync(join(dossierPublic, relatif))) gardees += 1;
+        else {
+          ecrireAtomiquement(join(dossierPublic, relatif), image);
+          capturesPosees.push(relatif);
+        }
       }
     }
+    const nosCaptures = { ...dejaProposees, ...Object.fromEntries(capturesPosees.map((r) => [`capture:${r}`, r])) };
+    const remplacerTout = process.argv.includes("--remplacer-captures");
+    const videos = poserLesVideos(spec, await filmerLeFilm(navigateur, spec, url, pages, phase), langues, dossierPublic, nosCaptures, remplacerTout);
+    capturesPosees.push(...videos.posees);
 
     let histoires = {};
     let rejetes: string[] = [];
@@ -89,7 +100,9 @@ async function principal(): Promise<void> {
     const agent = resolveAgent();
     if (agent) {
       phase("Claude rédige ton histoire à partir du site…");
-      const resultat = await redigerAvecClaude(lecture, langues, agent);
+      // Les écrans du parcours tels qu'ils sont filmés : l'accueil, puis les pages du menu.
+      const ecrans = ["Accueil", ...pages.parcours.map((page) => lecture.liens.find((l) => l.url === page)?.texte || new URL(page).pathname)];
+      const resultat = await redigerAvecClaude(lecture, langues, agent, ecrans.slice(0, spec.ecrans.parcours.length));
       if (resultat.ok) {
         histoires = resultat.histoires;
         rejetes = resultat.rejetes;
@@ -100,7 +113,9 @@ async function principal(): Promise<void> {
     }
 
     phase("Remplissage de la fiche…");
-    const { fiche: remplie, propositions, suggestions } = remplirLaFiche(spec, { marque, adresse: adresseLisible(url), histoires }, lirePropositions(id));
+    const { fiche: remplie, propositions, suggestions } = remplirLaFiche(spec, { marque, adresse: adresseLisible(url), histoires }, dejaProposees);
+    // Les captures et vidéos posées par GEN MOTION : un prochain remplissage pourra les remplacer.
+    for (const relatif of capturesPosees) propositions[`capture:${relatif}`] = relatif;
     if (logo && remplie.marque.logo.type === "motSymbole") {
       const relatif = `logo/${nomDeFichierSur(adresseLisible(url))}.${logo.genre}`;
       ecrireAtomiquement(join(dossierPublic, relatif), logo.octets);
@@ -119,6 +134,7 @@ async function principal(): Promise<void> {
       resume: {
         captures: fichiers.size * langues.length - gardees,
         capturesGardees: gardees,
+        videos: videos.posees.length,
         moments: captures.moments.length,
         logo: Boolean(logo),
         redaction,

@@ -8,13 +8,17 @@ import {
   ecrireAtomiquement,
   extensionAudio,
   genreDImage,
+  genreDeVideo,
   nomDeFichierSur,
   rapportDeLImage,
 } from "./film-fichiers-deposes";
 import { chargerFilm, getFilmsDir } from "./film-loader";
 import { etatDesMedias } from "./film-medias";
 import { mesurerMusique } from "./film-musique";
-import { getFilmPublicDir } from "./film-store";
+import { getFilmDir, getFilmPublicDir } from "./film-store";
+import { normaliserUneVideo } from "./film-depot-video";
+import { nomPour, remplacerUnEcran } from "./film-ecrans";
+import { ecrirePropositions, lirePropositions } from "./site/propositions-store";
 import { getTrack, getTrackPath } from "./motion-audio-store";
 
 /**
@@ -24,11 +28,11 @@ import { getTrack, getTrackPath } from "./motion-audio-store";
  * SERVEUR SEULEMENT.
  */
 
-export const POIDS_MAX = { capture: 15 * 1024 * 1024, musique: 30 * 1024 * 1024, logo: 5 * 1024 * 1024 } as const;
+export const POIDS_MAX = { capture: 15 * 1024 * 1024, video: 80 * 1024 * 1024, musique: 30 * 1024 * 1024, logo: 5 * 1024 * 1024 } as const;
 
 export type ResultatDuDepot = { ok: true } | { ok: false; statut: 400 | 404 | 409 | 413; raison: string };
 
-export type Lieux = { fiches: string; public: (id: string) => string };
+export type Lieux = { fiches: string; public: (id: string) => string; film?: (id: string) => string };
 const LIEUX_PAR_DEFAUT: Lieux = { fiches: getFilmsDir(), public: getFilmPublicDir };
 
 function ficheValide(id: string, lieux: Lieux): { ok: true; spec: FilmSpec } | ResultatDuDepot & { ok: false } {
@@ -55,14 +59,39 @@ export function deposerCapture(id: string, relatif: string, octets: Uint8Array, 
   const attendus = etatDesMedias(lecture.spec, lieux.public(id), languesDuFilm(lecture.spec)).medias;
   const case_ = attendus.find((media) => media.role === "capture" && media.relatif === relatif && !media.horsDuDossier);
   if (!case_) return { ok: false, statut: 400, raison: "Cette capture n'est pas attendue par le film" };
-  const poids = tropLourd(octets, POIDS_MAX.capture);
+  const video = genreDeVideo(octets) !== null;
+  const poids = tropLourd(octets, video ? POIDS_MAX.video : POIDS_MAX.capture);
   if (poids) return poids;
   const genre = genreDImage(octets);
-  if (genre !== "png" && genre !== "jpeg" && genre !== "webp") {
-    return { ok: false, statut: 400, raison: "Une capture doit être une image PNG, JPEG ou WebP" };
+  if (!video && genre !== "png" && genre !== "jpeg" && genre !== "webp") {
+    return { ok: false, statut: 400, raison: "Une capture doit être une image (PNG, JPEG, WebP) ou une vidéo (MP4, MOV, WebM)" };
   }
-  ecrireAtomiquement(case_.absolu, octets);
+  // Le nom de la case suit le contenu : une vidéo s'appelle .mp4, une image .png.
+  const [dossier, ancien] = [relatif.slice(0, relatif.lastIndexOf("/")), relatif.slice(relatif.lastIndexOf("/") + 1)];
+  const nouveau = nomPour(ancien, video);
+  const destination = join(lieux.public(id), dossier, nouveau);
+  if (video) {
+    if (!normaliserUneVideo(octets, destination)) return { ok: false, statut: 400, raison: "Cette vidéo n'a pas pu être lue" };
+  } else {
+    ecrireAtomiquement(destination, octets);
+  }
+  if (nouveau !== ancien) {
+    const spec = structuredClone(lecture.spec);
+    remplacerUnEcran(spec, ancien, nouveau);
+    const ecriture = enregistrerFilm(id, spec, lieux.fiches);
+    if (!ecriture.ok) return ecriture;
+  }
+  // Déposée à la main, la case appartient à la personne : un remplissage
+  // depuis le site ne la remplacera plus.
+  oublierLaCaptureDeGenMotion(id, [`${dossier}/${ancien}`, `${dossier}/${nouveau}`], lieux);
   return { ok: true };
+}
+
+function oublierLaCaptureDeGenMotion(id: string, relatifs: string[], lieux: Lieux): void {
+  const dossierDuFilm = lieux.film ?? getFilmDir;
+  const propositions = lirePropositions(id, dossierDuFilm);
+  const restantes = Object.fromEntries(Object.entries(propositions).filter(([cle]) => !relatifs.some((r) => cle === `capture:${r}`)));
+  if (Object.keys(restantes).length !== Object.keys(propositions).length) ecrirePropositions(id, restantes, dossierDuFilm);
 }
 
 /** La musique du film : déposée, mesurée, puis citée par la fiche. */

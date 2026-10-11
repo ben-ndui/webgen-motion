@@ -17,7 +17,7 @@ const EN_COURS = new Set<string>();
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   if (!estNomSur(id)) return NextResponse.json({ erreur: "Film invalide" }, { status: 400 });
-  let corps: { url?: unknown };
+  let corps: { url?: unknown; remplacerCaptures?: unknown };
   try {
     corps = await req.json();
   } catch {
@@ -29,7 +29,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (EN_COURS.has(id)) return NextResponse.json({ erreur: "Un remplissage est déjà en cours pour ce film." }, { status: 409 });
   EN_COURS.add(id);
 
-  const lancement = resolveRunnerSpawn("remplir-film", ["--film-id", id, "--url", url]);
+  const options = corps.remplacerCaptures === true ? ["--remplacer-captures"] : [];
+  const lancement = resolveRunnerSpawn("remplir-film", ["--film-id", id, "--url", url, ...options]);
   const encodeur = new TextEncoder();
   let enfant: ReturnType<typeof spawn> | null = null;
 

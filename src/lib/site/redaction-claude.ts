@@ -10,11 +10,11 @@ import { type LectureDeLaReponse, demandeDeRedaction, lireLaReponse } from "./re
  */
 export type ResultatDeRedaction = ({ ok: true } & LectureDeLaReponse) | { ok: false; raison: string };
 
-export async function redigerAvecClaude(lecture: LectureDuSite, langues: Langue[], agent: ResolvedAgent): Promise<ResultatDeRedaction> {
+export async function redigerAvecClaude(lecture: LectureDuSite, langues: Langue[], agent: ResolvedAgent, ecrans: string[] = []): Promise<ResultatDeRedaction> {
   if (agent.provider !== "anthropic") {
     return { ok: false, raison: "La rédaction automatique fonctionne avec une clé Claude (Anthropic)." };
   }
-  const { systeme, message } = demandeDeRedaction(lecture, langues);
+  const { systeme, message } = demandeDeRedaction(lecture, langues, ecrans);
   const reponse = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": agent.apiKey, "anthropic-version": API_VERSION },

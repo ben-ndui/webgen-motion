@@ -56,7 +56,10 @@ export default function CaseDeDepot({ titre, aide, present, apercu, resume, acce
         aria-label={`${titre} : ${present ? "remplacer le fichier" : "choisir un fichier"}`}
         aria-busy={envoi}
       >
-        {present && apercu ? (
+        {present && apercu && /\.mp4(?:$|[?&%])/i.test(apercu) ? (
+          // Un écran filmé : il défile en boucle dans sa case, sans le son.
+          <video src={`${apercu}&v=${version}`} className="depot-apercu" autoPlay muted loop playsInline aria-hidden />
+        ) : present && apercu ? (
           <img src={`${apercu}&v=${version}`} alt="" className="depot-apercu" />
         ) : (
           <span className="depot-invite">{envoi ? "Envoi…" : present ? resume ?? "Déposé" : "Glisse ton fichier ici"}</span>

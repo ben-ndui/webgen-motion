@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Img, staticFile } from "remotion";
+import { EcranReel } from "./EcranReel";
 
 import { CadreTelephone, hauteurDuTelephone } from "./CadreTelephone";
 
@@ -10,14 +10,17 @@ type Props = {
   ecran: string;
   largeur: number;
   style?: CSSProperties;
+  // Pour un écran filmé : l'image où il se met à défiler.
+  debut?: number;
 };
 
-/** Une VRAIE capture de l'application, dans le cadre commun. */
-export function Telephone({ ecran, largeur, style }: Props) {
+/** Un VRAI écran de l'application (capture ou vidéo), dans le cadre commun. */
+export function Telephone({ ecran, largeur, style, debut }: Props) {
   return (
     <CadreTelephone largeur={largeur} style={style}>
-      <Img
-        src={staticFile(ecran)}
+      <EcranReel
+        fichier={ecran}
+        debut={debut}
         style={{
           display: "block",
           width: "100%",

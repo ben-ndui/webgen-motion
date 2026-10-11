@@ -18,7 +18,7 @@ export function groupesDEcrans(fiche: FilmSpec): Groupe[] {
   const liste: Groupe[] = [
     {
       titre: "Ton parcours",
-      aide: "Les 4 écrans clés de ton app ou de ton site mobile, dans l'ordre où on les utilise. Une capture d'écran de téléphone par case.",
+      aide: "Les 4 écrans clés de ton app ou de ton site mobile, dans l'ordre où on les utilise. Une capture d'écran de téléphone, ou mieux : une courte vidéo d'écran (elle défilera dans le film).",
       cases: fiche.ecrans.parcours.map((nom, i) => ({ nom, titre: `Étape ${i + 1}`, format: "portrait" })),
     },
     {
@@ -88,7 +88,7 @@ export default function EtapeEcrans({ id, fiche, langues, medias, doublons, depo
                   key={relatif}
                   titre={c.titre}
                   format={c.format}
-                  accepte="image/png,image/jpeg,image/webp"
+                  accepte="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm"
                   present={present(relatif)}
                   apercu={`/api/motion/film/${id}/media?relatif=${encodeURIComponent(relatif)}`}
                   onDeposer={(fichier) => deposer("capture", fichier, relatif)}

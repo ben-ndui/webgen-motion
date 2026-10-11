@@ -1,6 +1,7 @@
-import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { EcranReel } from "../composants/EcranReel";
 import { useMarque, useSurface } from "../marque/MarqueDuFilm";
 import { transparence } from "../marque/couleurs";
 import { useFormat } from "../lib/format";
@@ -119,8 +120,9 @@ export function PBarreAdresse({ tempo, adresse, ecran }: Props) {
           </div>
         </div>
         <div style={{ height: hauteurSite * ouverture, overflow: "hidden" }}>
-          <Img
-            src={staticFile(ecran)}
+          <EcranReel
+            fichier={ecran}
+            debut={validation}
             style={{
               display: "block",
               width: largeur,

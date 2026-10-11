@@ -8,7 +8,7 @@ function fluxNdjson(evenements: object[]): Response {
   return new Response(corps, { headers: { "Content-Type": "application/x-ndjson" } });
 }
 
-const RESUME = { captures: 9, capturesGardees: 0, suggestionsEnAttente: 0, moments: 3, logo: true, redaction: "textes proposés par Claude", textesProposes: 21, aEcrire: ["fr.momentCle"], marque: [] };
+const RESUME = { captures: 9, capturesGardees: 0, videos: 4, suggestionsEnAttente: 0, moments: 3, logo: true, redaction: "textes proposés par Claude", textesProposes: 21, aEcrire: ["fr.momentCle"], marque: [] };
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -23,11 +23,11 @@ describe("Remplir depuis ton site", () => {
     render(<RemplirDepuisLeSite id="saya" avantDeLancer={avantDeLancer} recharger={recharger} onOccupe={onOccupe} />);
     fireEvent.change(screen.getByLabelText("Adresse de ton site"), { target: { value: "saya.com" } });
     fireEvent.click(screen.getByRole("button", { name: "Remplir" }));
-    expect(await screen.findByText(/9 captures, logo trouvé, 21 textes proposés/)).toBeInTheDocument();
+    expect(await screen.findByText(/9 captures, 4 écrans filmés, logo trouvé, 21 textes proposés/)).toBeInTheDocument();
     expect(screen.getByText("À écrire toi-même : le moment clé.")).toBeInTheDocument();
     expect(avantDeLancer).toHaveBeenCalled();
     expect(recharger).toHaveBeenCalled();
-    expect(JSON.parse(String(fetch.mock.calls[0]![1]!.body))).toEqual({ url: "saya.com" });
+    expect(JSON.parse(String(fetch.mock.calls[0]![1]!.body))).toEqual({ url: "saya.com", remplacerCaptures: false });
     expect(onOccupe).toHaveBeenCalledWith(true);
     expect(onOccupe).toHaveBeenLastCalledWith(false);
   });

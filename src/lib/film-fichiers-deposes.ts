@@ -22,6 +22,15 @@ export function genreDImage(octets: Uint8Array): GenreDImage | null {
   return null;
 }
 
+export type GenreDeVideo = "mp4" | "webm";
+
+/** MP4 et MOV (boîte « ftyp »), ou WebM (en-tête EBML) ; `null` sinon. */
+export function genreDeVideo(octets: Uint8Array): GenreDeVideo | null {
+  if (commencePar(octets, [0x66, 0x74, 0x79, 0x70], 4)) return "mp4";
+  if (commencePar(octets, [0x1a, 0x45, 0xdf, 0xa3])) return "webm";
+  return null;
+}
+
 /** Largeur / hauteur d'un PNG (en-tête IHDR) ou d'un SVG (viewBox, sinon width/height). */
 export function rapportDeLImage(octets: Uint8Array, genre: GenreDImage): number | null {
   if (genre === "png" && octets.length >= 24) {

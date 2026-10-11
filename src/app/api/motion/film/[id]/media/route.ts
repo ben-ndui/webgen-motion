@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { deposerCapture, deposerLogo, deposerMusique, deposerMusiqueDeLaBibliotheque } from "@/lib/film-depot";
 import { cheminDUnMediaAttendu } from "@/lib/film-depot-lecture";
 
-const TYPES: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml" };
+const TYPES: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", mp4: "video/mp4" };
 
 /**
  * GET /api/motion/film/<id>/media?relatif=… — l'aperçu d'une image déposée,

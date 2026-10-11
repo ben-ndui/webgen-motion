@@ -85,7 +85,8 @@ export function PEventail({ tempo, ecrans, legendes }: Props) {
               ].join(" "),
             }}
           >
-            <Telephone ecran={ecran} largeur={mise.largeur} />
+            {/* Filmé, l'écran défile quand sa légende le soulève. */}
+            <Telephone ecran={ecran} largeur={mise.largeur} debut={debutDeLegende(index)} />
           </div>
         );
       })}

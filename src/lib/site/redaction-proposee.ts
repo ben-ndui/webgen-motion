@@ -33,7 +33,13 @@ export const LONGUEURS = {
 
 const NOMS_DES_LANGUES: Record<Langue, string> = { fr: "français", en: "anglais" };
 
-export function demandeDeRedaction(lecture: LectureDuSite, langues: Langue[]): { systeme: string; message: string } {
+/**
+ * `ecrans` : les pages réellement capturées pour le parcours, DANS L'ORDRE
+ * du film (l'accueil d'abord). Sans elles, Claude légendait le menu et les
+ * légendes se décalaient d'un écran (constaté le 12/10/2026).
+ */
+export function demandeDeRedaction(lecture: LectureDuSite, langues: Langue[], ecrans: string[] = []): { systeme: string; message: string } {
+  const ordre = ecrans.length > 0 ? ` Les écrans sont, dans cet ordre : ${ecrans.map((e) => `« ${e} »`).join(", ")} : une légende par écran, dans le même ordre.` : "";
   const systeme = [
     "Tu écris les textes d'un court film de présentation (motion design) pour une marque, à partir de son site.",
     "Règle absolue : n'invente RIEN. Chaque affirmation, chaque nom de produit, chaque chiffre vient du contenu fourni.",
@@ -46,13 +52,13 @@ export function demandeDeRedaction(lecture: LectureDuSite, langues: Langue[]): {
     constat: `ce qui se passe aujourd'hui pour le client, ${LONGUEURS.constat} car. max`,
     chiffre: `un chiffre frappant PRIS SUR LE SITE (liste « chiffres » fournie) qui dit l'ampleur ou la qualité (clients, années, pourcentage), JAMAIS un prix ; ${LONGUEURS.chiffre} car. max, ou null`,
     promesse: `la promesse de la marque en une phrase, ${LONGUEURS.promesse} car. max`,
-    parcours: `4 légendes de 2 à 3 mots, une par étape d'utilisation (pages du site dans l'ordre), ${LONGUEURS.parcours} car. max`,
+    parcours: `4 légendes de 2 à 3 mots, une par écran du parcours, ${LONGUEURS.parcours} car. max.${ordre}`,
     momentCle: `ce que ça change pour le client, une phrase, ${LONGUEURS.momentCle} car. max`,
     troisMots: `3 mots ou très courtes phrases qui résument la marque, ${LONGUEURS.troisMots} car. max chacun`,
     ouTrouver: `où trouver la marque (l'adresse du site par exemple), ${LONGUEURS.ouTrouver} car. max`,
     motSignature: `UN mot qui résume la marque, terminé par un point, ${LONGUEURS.motSignature} car. max`,
     anneau: `trois mots séparés par « · », ${LONGUEURS.anneau} car. max`,
-    legendes: `4 légendes de 2 à 4 mots pour 4 écrans du site, ${LONGUEURS.legendes} car. max`,
+    legendes: `4 légendes de 2 à 4 mots, une par écran du parcours (les mêmes écrans), ${LONGUEURS.legendes} car. max`,
     signature: `une ligne sous le logo, ${LONGUEURS.signature} car. max`,
   };
   const message = [

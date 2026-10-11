@@ -85,7 +85,8 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
                 transform: `scale(${echelle})`,
               }}
             >
-              <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={largeur} />
+              {/* Filmé, l'écran défile quand la caméra arrive sur lui. */}
+              <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={largeur} debut={Math.max(0, temps(index * TEMPS_PAR_ETAPE) - temps(1))} />
             </div>
           );
         })}
