@@ -47,12 +47,13 @@ type Props = {
   fiche: FilmSpec;
   langues: Langue[];
   medias: MediaDeLEditeur[];
+  doublons: string[];
   deposer: (role: RoleDeDepot, fichier: File, relatif?: string) => Promise<string | null>;
   modifier: (changement: (copie: FilmSpec) => void) => void;
 };
 
 /** Étape 3 : les captures, rangées dans des cases qui disent ce qu'elles attendent. */
-export default function EtapeEcrans({ id, fiche, langues, medias, deposer, modifier }: Props) {
+export default function EtapeEcrans({ id, fiche, langues, medias, doublons, deposer, modifier }: Props) {
   const [langue, setLangue] = useState<Langue>(langues[0] ?? "fr");
   const dossier = fiche.textes[langue].dossierDesEcrans;
   const present = (relatif: string) => medias.some((m) => m.relatif === relatif && m.present);
@@ -72,6 +73,12 @@ export default function EtapeEcrans({ id, fiche, langues, medias, deposer, modif
         <section key={groupe.titre} className="bloc" aria-label={groupe.titre}>
           <h3 className="bloc-titre">{groupe.titre}</h3>
           <p className="champ-aide">{groupe.aide}</p>
+          {groupe.moments &&
+            doublons.map((doublon) => (
+              <p key={doublon} className="depot-erreur" role="alert">
+                Deux captures sont la même image ({doublon.replace(/^[^:]*: /, "")}) : le plan resterait figé. Remplace l&apos;une des deux.
+              </p>
+            ))}
           <div className={`cases${groupe.cases.some((c) => c.format === "paysage") ? " larges" : ""}`}>
             {groupe.cases.map((c) => {
               const relatif = `${dossier}/${c.nom}`;

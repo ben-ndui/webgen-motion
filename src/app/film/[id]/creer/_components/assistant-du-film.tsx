@@ -72,7 +72,7 @@ export default function AssistantDuFilm({ etatInitial }: { etatInitial: EtatDeLE
 
       {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} />}
       {etape === "musique" && <EtapeMusique fiche={fiche} musiquePresente={present("musique")} deposer={deposer} />}
-      {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} deposer={deposer} modifier={modifier} />}
+      {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} doublons={etat.doublons} deposer={deposer} modifier={modifier} />}
       {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} modifier={modifier} />}
       {etape === "pret" && <EtapePret id={etat.id} etat={etat} fiche={fiche} modifier={modifier} enregistrer={enregistrer} onAller={(e) => setEtape(e)} />}
 

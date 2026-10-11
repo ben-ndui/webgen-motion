@@ -58,7 +58,7 @@ type Props = {
  */
 export default function EtapePret({ id, etat, fiche, modifier, enregistrer, onAller }: Props) {
   const manquants = etat.medias.filter((media) => !media.present);
-  const reste = etat.textesAEcrire.length + manquants.length + etat.erreurs.length;
+  const reste = etat.textesAEcrire.length + manquants.length + etat.erreurs.length + etat.doublons.length;
 
   async function declarerPret() {
     modifier((copie) => { copie.exemple = false; });
@@ -93,6 +93,18 @@ export default function EtapePret({ id, etat, fiche, modifier, enregistrer, onAl
                   <button type="button" onClick={() => onAller("histoire")}>
                     {libelle(champ)}{etat.textesAEcrire.some((t) => t.langue !== langue) ? ` (${langue.toUpperCase()})` : ""}
                   </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+        {etat.doublons.length > 0 && (
+          <>
+            <p className="champ-aide">Captures identiques : le plan resterait figé, remplace l&apos;une des deux :</p>
+            <ul className="reste">
+              {etat.doublons.map((doublon) => (
+                <li key={doublon}>
+                  <button type="button" onClick={() => onAller("ecrans")}>{doublon}</button>
                 </li>
               ))}
             </ul>

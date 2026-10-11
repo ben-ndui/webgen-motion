@@ -21,6 +21,8 @@ export type EtatDeLEditeur = {
   erreurs: string[];
   medias: MediaDeLEditeur[];
   textesAEcrire: { langue: Langue; champ: string }[];
+  // Deux captures identiques dans une suite qui doit bouger : le rendu les refuse.
+  doublons: string[];
 };
 
 export function etatDeLEditeur(
@@ -32,10 +34,10 @@ export function etatDeLEditeur(
   const erreurs = erreursDeLaFiche(brute);
   const fiche = brute as FilmSpec;
   if (erreurs.length > 0) {
-    return { id, fiche, valide: false, erreurs, medias: [], textesAEcrire: [] };
+    return { id, fiche, valide: false, erreurs, medias: [], textesAEcrire: [], doublons: [] };
   }
-  const medias = etatDesMedias(fiche, dossiers.public(id), languesDuFilm(fiche)).medias.map(
-    ({ role, relatif, present, langues }) => ({ role, relatif, present, langues }),
-  );
-  return { id, fiche, valide: true, erreurs, medias, textesAEcrire: textesEncoreExemple(fiche) };
+  const etat = etatDesMedias(fiche, dossiers.public(id), languesDuFilm(fiche));
+  const medias = etat.medias.map(({ role, relatif, present, langues }) => ({ role, relatif, present, langues }));
+  const doublons = etat.doublons.map((doublon) => doublon.message);
+  return { id, fiche, valide: true, erreurs, medias, textesAEcrire: textesEncoreExemple(fiche), doublons };
 }

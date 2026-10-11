@@ -8,7 +8,7 @@ import EtapePret from "./etape-pret";
 const fiche = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
 
 function etat(partiel: Partial<EtatDeLEditeur>): EtatDeLEditeur {
-  return { id: "saya", fiche, valide: true, erreurs: [], medias: [], textesAEcrire: [], ...partiel };
+  return { id: "saya", fiche, valide: true, erreurs: [], medias: [], textesAEcrire: [], doublons: [], ...partiel };
 }
 
 describe("étape « C'est prêt ? »", () => {
@@ -44,6 +44,17 @@ describe("étape « C'est prêt ? »", () => {
     modifier.mock.calls[0]![0](copie);
     expect(copie.exemple).toBe(false);
     await vi.waitFor(() => expect(enregistrer).toHaveBeenCalled());
+  });
+
+  it("signale deux captures identiques et bloque « prêt »", () => {
+    const onAller = vi.fn();
+    render(
+      <EtapePret id="saya" fiche={fiche} etat={etat({ doublons: ["événement : a.png et b.png sont la même image"] })} modifier={() => {}} enregistrer={async () => true} onAller={onAller} />,
+    );
+    expect(screen.getByText("Il reste 1 chose à faire")).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/sont la même image/));
+    expect(onAller).toHaveBeenLastCalledWith("ecrans");
+    expect(screen.queryByRole("button", { name: "Mon film est prêt" })).not.toBeInTheDocument();
   });
 
   it("un film prêt mène au rendu", () => {

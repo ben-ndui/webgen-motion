@@ -21,6 +21,8 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { ensureBrowser } from "@remotion/renderer";
+
 import { ensureChromium, remotionBrowserArgs, resolveChromiumExecutable } from "../src/lib/chromium";
 import { isFeatureEnabled } from "../src/lib/edition";
 import { POIDS_MINIMUM_D_UN_RENDU } from "../src/lib/film-etat";
@@ -70,11 +72,23 @@ function rendreLeVerrou(verrou: string): void {
   }
 }
 
+/**
+ * Le navigateur du rendu. Hors app packagée, c'est celui de REMOTION
+ * (chrome-headless-shell, téléchargé une fois) et non le Google Chrome de
+ * l'utilisateur : le Chrome complet démarrait parfois après le délai de
+ * 25 s de Remotion (machine chargée, Chrome en pleine mise à jour), et le
+ * rendu échouait sur « Timed out … trying to connect to the browser »
+ * (constaté le 11/10/2026). Une surcharge explicite reste possible.
+ */
 async function navigateur(): Promise<string | undefined> {
-  const resolu = await resolveChromiumExecutable();
-  if (resolu) return resolu.path;
-  // App packagée sans navigateur : téléchargement unique, partagé avec la capture.
-  if (process.env.WEBGEN_RUNNERS_DIR) return (await ensureChromium()).path;
+  const surcharge = process.env.WEBGEN_CHROMIUM_BIN?.trim();
+  if (surcharge) return (await resolveChromiumExecutable())?.path;
+  if (process.env.WEBGEN_RUNNERS_DIR) {
+    // App packagée : le navigateur partagé avec la capture.
+    const resolu = await resolveChromiumExecutable();
+    return resolu ? resolu.path : (await ensureChromium()).path;
+  }
+  await ensureBrowser();
   return undefined;
 }
 
@@ -213,7 +227,7 @@ async function principal(): Promise<void> {
   }
 
   const cheminNavigateur = await navigateur();
-  if (cheminNavigateur) console.log(`  Chromium (Remotion) : ${cheminNavigateur}`);
+  console.log(`  Navigateur du rendu : ${cheminNavigateur ?? "chrome-headless-shell (Remotion)"}`);
   for (const rendu of rendus) await rendre(rendu, cheminNavigateur);
 }
 
