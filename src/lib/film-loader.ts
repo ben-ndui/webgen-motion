@@ -26,6 +26,16 @@ export function getFilmsDir(): string {
   return join(process.cwd(), "films");
 }
 
+/**
+ * Toutes les erreurs d'une fiche. La bibliothèque se valide ici aussi : une
+ * fiche qui en a une mal remplie le dit à l'écran, pas seulement au rendu.
+ */
+export function erreursDeLaFiche(entree: unknown): string[] {
+  const erreurs = erreursDeLaSpec(entree);
+  if (erreurs.length === 0) erreurs.push(...erreursDeLaBibliotheque(entree));
+  return erreurs;
+}
+
 function lireFiche(id: string, chemin: string): FicheDeFilm {
   let brut: string;
   try {
@@ -39,10 +49,7 @@ function lireFiche(id: string, chemin: string): FicheDeFilm {
   } catch (erreur) {
     return { id, etat: "invalide", erreurs: [`JSON invalide : ${(erreur as Error).message}`] };
   }
-  // La bibliothèque se valide ici aussi : une fiche qui en a une mal remplie
-  // le dit à l'écran, pas seulement au moment du rendu.
-  const erreurs = erreursDeLaSpec(entree);
-  if (erreurs.length === 0) erreurs.push(...erreursDeLaBibliotheque(entree));
+  const erreurs = erreursDeLaFiche(entree);
   if (erreurs.length > 0) return { id, etat: "invalide", erreurs };
   return { id, etat: "valide", spec: entree as FilmSpec };
 }

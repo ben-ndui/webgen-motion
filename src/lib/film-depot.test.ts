@@ -1,0 +1,84 @@
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+import { deposerCapture, deposerLogo, deposerMusique } from "./film-depot";
+import { creerFilm, lireFicheBrute } from "./film-ecriture";
+import { ficheDeDepart } from "./film-fiche-depart";
+import { dossierJetable } from "./film-fixtures.test-utils";
+
+const PNG_2x1 = Uint8Array.from([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0, 200, 0, 0, 0, 100, 8, 6, 0, 0, 0,
+]);
+const JPEG = Uint8Array.from([0xff, 0xd8, 0xff, 0xe0, 0, 16]);
+const SVG = new TextEncoder().encode('<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100"></svg>');
+
+function nouveauFilm() {
+  const racine = dossierJetable("depot");
+  const lieux = { fiches: join(racine, "fiches"), public: (id: string) => join(racine, "medias", id, "public") };
+  creerFilm("saya", ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" }), lieux.fiches);
+  return lieux;
+}
+
+function metronome(secondes: number): Uint8Array {
+  const chemin = join(dossierJetable("musique"), "clic.wav");
+  const expression = "if(lt(mod(t\\,0.5)\\,0.02)\\,0.9\\,0)";
+  spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", `aevalsrc=${expression}:s=8000:d=${secondes}`, chemin]);
+  return readFileSync(chemin);
+}
+
+describe("dépôt d'une capture", () => {
+  it("range l'image dans la case attendue, quel que soit le nom du fichier d'origine", () => {
+    const lieux = nouveauFilm();
+    expect(deposerCapture("saya", "ecrans-fr/parcours-1.png", JPEG, lieux)).toEqual({ ok: true });
+    expect(readFileSync(join(lieux.public("saya"), "ecrans-fr/parcours-1.png"))).toEqual(Buffer.from(JPEG));
+  });
+
+  it("refuse une case inconnue, un chemin qui sort du dossier, un fichier qui n'est pas une image", () => {
+    const lieux = nouveauFilm();
+    expect(deposerCapture("saya", "ecrans-fr/autre.png", PNG_2x1, lieux)).toMatchObject({ ok: false, statut: 400 });
+    expect(deposerCapture("saya", "../../evade.png", PNG_2x1, lieux)).toMatchObject({ ok: false, statut: 400 });
+    expect(deposerCapture("saya", "ecrans-en/parcours-1.png", PNG_2x1, lieux)).toMatchObject({ ok: false });
+    expect(deposerCapture("saya", "ecrans-fr/parcours-1.png", new TextEncoder().encode("bonjour"), lieux)).toMatchObject({ ok: false, statut: 400 });
+    expect(deposerCapture("saya", "ecrans-fr/parcours-1.png", new Uint8Array(0), lieux)).toMatchObject({ ok: false, raison: "Le fichier est vide" });
+    expect(deposerCapture("absent", "ecrans-fr/parcours-1.png", PNG_2x1, lieux)).toMatchObject({ ok: false, statut: 404 });
+  });
+});
+
+describe("dépôt de la musique", () => {
+  it("mesure le morceau et le fait citer par la fiche", () => {
+    const lieux = nouveauFilm();
+    expect(deposerMusique("saya", "Mon Morceau (Remix).wav", metronome(40), lieux)).toEqual({ ok: true });
+    const fiche = lireFicheBrute("saya", lieux.fiches) as { musique: Record<string, unknown> };
+    expect(fiche.musique).toMatchObject({ fichier: "musique/mon-morceau-remix.wav", titre: "Mon Morceau (Remix)" });
+    expect(Math.abs((fiche.musique.tempo as number) - 120)).toBeLessThanOrEqual(0.2);
+    expect(existsSync(join(lieux.public("saya"), "musique/mon-morceau-remix.wav"))).toBe(true);
+  });
+
+  it("refuse un morceau trop court sans laisser de fichier ni toucher la fiche", () => {
+    const lieux = nouveauFilm();
+    const avant = lireFicheBrute("saya", lieux.fiches);
+    expect(deposerMusique("saya", "court.wav", metronome(5), lieux)).toMatchObject({ ok: false, raison: expect.stringContaining("trop court") });
+    expect(lireFicheBrute("saya", lieux.fiches)).toEqual(avant);
+    expect(readdirSync(join(lieux.public("saya"), "musique"))).toEqual([]);
+    expect(deposerMusique("saya", "notes.txt", metronome(40), lieux)).toMatchObject({ ok: false, statut: 400 });
+  });
+});
+
+describe("dépôt du logo", () => {
+  it("lit les proportions d'un PNG et d'un SVG et remplace le logo en texte", () => {
+    const lieux = nouveauFilm();
+    expect(deposerLogo("saya", "Logo Saya.png", PNG_2x1, lieux)).toEqual({ ok: true });
+    let fiche = lireFicheBrute("saya", lieux.fiches) as { marque: { logo: Record<string, unknown> } };
+    expect(fiche.marque.logo).toEqual({ type: "image", fichier: "logo/logo-saya.png", rapport: 2, inverser: false });
+    expect(deposerLogo("saya", "logo.svg", SVG, lieux)).toEqual({ ok: true });
+    fiche = lireFicheBrute("saya", lieux.fiches) as { marque: { logo: Record<string, unknown> } };
+    expect(fiche.marque.logo).toMatchObject({ fichier: "logo/logo.svg", rapport: 3 });
+  });
+
+  it("refuse un JPEG (pas de transparence)", () => {
+    const lieux = nouveauFilm();
+    expect(deposerLogo("saya", "logo.jpg", JPEG, lieux)).toMatchObject({ ok: false, statut: 400 });
+  });
+});
