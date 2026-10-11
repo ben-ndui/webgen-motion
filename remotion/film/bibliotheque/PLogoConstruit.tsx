@@ -2,7 +2,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Logo } from "../composants/Logo";
 import { Revele } from "../composants/Revele";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useCouleurs, useSurface } from "../marque/MarqueDuFilm";
 import { useFormat } from "../lib/format";
 import { GLISSE, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -25,6 +26,7 @@ const EPAISSEUR = 6;
  */
 export function PLogoConstruit({ tempo, signature }: Props) {
   const couleurs = useCouleurs();
+  const surface = useSurface("sombre");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const { taille, corps, largeurDuTrait } = MISE_EN_PAGE[useFormat()];
@@ -35,7 +37,8 @@ export function PLogoConstruit({ tempo, signature }: Props) {
   const arriere = progression(image, temps(1), temps(2), GLISSE);
 
   return (
-    <AbsoluteFill style={{ background: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+    <AbsoluteFill style={{ background: surface.fond, alignItems: "center", justifyContent: "center" }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ position: "relative", width: largeurDuTrait }}>
         {/* Le masque a la largeur du TRAIT : son bord coïncide avec celui du
             trait, quelle que soit la largeur du logo. */}
@@ -46,7 +49,7 @@ export function PLogoConstruit({ tempo, signature }: Props) {
             clipPath: `inset(-20% ${(1 - avant) * 100}% -20% 0)`,
           }}
         >
-          <Logo taille={taille} couleur={couleurs.clair} tempo={tempo} cadence="fin" />
+          <Logo taille={taille} couleur={surface.texte} surSombre={surface.tonalite === "sombre"} tempo={tempo} cadence="fin" />
         </div>
         <div
           style={{
@@ -65,7 +68,7 @@ export function PLogoConstruit({ tempo, signature }: Props) {
       </div>
       <div style={{ marginTop: Math.round(taille * 0.7) }}>
         <Revele taille={corps} debut={temps(3)}>
-          <span style={{ ...PHRASE, fontSize: corps, color: couleurs.clairSecondaire }}>{signature}</span>
+          <span style={{ ...PHRASE, fontSize: corps, color: surface.texteSecondaire }}>{signature}</span>
         </Revele>
       </div>
     </AbsoluteFill>

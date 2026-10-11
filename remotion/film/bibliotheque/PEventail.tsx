@@ -2,7 +2,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
 import { Telephone, hauteurDuTelephone } from "../composants/Telephone";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { ARRIVEE, GLISSE, entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -49,7 +50,7 @@ export const MISE_EN_PAGE_DE_L_EVENTAIL = {
  * écran : on sait toujours de quel écran on parle.
  */
 export function PEventail({ tempo, ecrans, legendes }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("clair");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const mise = MISE_EN_PAGE_DE_L_EVENTAIL[useFormat()];
@@ -61,7 +62,8 @@ export function PEventail({ tempo, ecrans, legendes }: Props) {
   const debutDeLegende = (index: number) => temps(4 + index);
 
   return (
-    <AbsoluteFill style={{ background: couleurs.clair, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: surface.fond, overflow: "hidden" }}>
+      <DecorDeDirection surface={surface} />
       {ecrans.map((ecran, index) => {
         const place = places[index]!;
         const arrivee = progression(image, temps(index * 0.5), temps(1.5), ARRIVEE);
@@ -95,8 +97,8 @@ export function PEventail({ tempo, ecrans, legendes }: Props) {
             style={{ position: "absolute", left: 0, top: index * mise.interligne, whiteSpace: "nowrap" }}
           >
             <Revele taille={mise.corps} debut={debutDeLegende(index)}>
-              <span style={{ fontSize: mise.corps, fontWeight: 500, color: couleurs.encre }}>
-                <span style={{ color: couleurs.accentSurClair, marginRight: 22 }}>
+              <span style={{ fontSize: mise.corps, fontWeight: 500, color: surface.texte }}>
+                <span style={{ color: surface.accentTexte, marginRight: 22 }}>
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 {legende}

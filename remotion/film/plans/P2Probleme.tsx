@@ -1,7 +1,8 @@
 import { AbsoluteFill } from "remotion";
 
 import { ConversationSMS } from "../composants/ConversationSMS";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 import { useFormat } from "../lib/format";
 import type { TextesDuFilm } from "../textes/types";
 
@@ -16,10 +17,11 @@ const ECHELLE = { paysage: 1, portrait: 1.4 } as const;
  * une phrase. La relance revient à la fin (voir `ConversationSMS`).
  */
 export function P2Probleme({ tempo, textes }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("sombre");
   const echelle = ECHELLE[useFormat()];
   return (
-    <AbsoluteFill style={{ background: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+    <AbsoluteFill style={{ background: surface.fond, alignItems: "center", justifyContent: "center" }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ transform: `scale(${echelle})` }}>
         <ConversationSMS tempo={tempo} messages={textes.messages} heure={textes.heure} largeur={460} />
       </div>

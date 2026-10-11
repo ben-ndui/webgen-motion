@@ -5,6 +5,7 @@ import { BandeSon } from "../composants/BandeSon";
 import { Glissement } from "../composants/Glissement";
 import type { ProprietesDuFilm } from "../FilmPrincipal";
 import { FournisseurDeMarque } from "../marque/MarqueDuFilm";
+import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "../marque/direction";
 import { usePolice } from "../marque/police";
 import { imageDuTemps, placerLesPlans } from "../lib/tempo";
 import { type IdDePlanDeBibliotheque, MONTAGE_DE_LA_BIBLIOTHEQUE } from "./montage";
@@ -54,8 +55,8 @@ export function Bibliotheque({ spec, declinaison }: ProprietesDuFilm) {
   };
 
   return (
-    <FournisseurDeMarque marque={spec.marque}>
-      <AbsoluteFill style={{ background: spec.marque.couleurs.encre, fontFamily: police }}>
+    <FournisseurDeMarque marque={spec.marque} direction={spec.direction}>
+      <AbsoluteFill style={{ background: fondDuFilm(spec.direction ?? DIRECTION_PAR_DEFAUT, spec.marque.couleurs), fontFamily: police }}>
         <BandeSon musique={spec.musique} fondu={FONDU_FINAL} />
         {places.map((plan, index) => {
           const suivant = places[index + 1];

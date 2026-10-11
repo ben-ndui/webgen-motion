@@ -2,7 +2,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
 import { Telephone } from "../composants/Telephone";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { imageDuTemps } from "../lib/tempo";
 import { TITRE } from "../lib/typo";
@@ -33,7 +34,7 @@ const MISE_EN_PAGE = {
  * régler. Bascules franches, sur le temps : pas de fondu entre deux captures.
  */
 export function P5Evenement({ tempo, textes, etats, dossierDesEcrans }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("clair");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const page = MISE_EN_PAGE[useFormat()];
@@ -42,13 +43,14 @@ export function P5Evenement({ tempo, textes, etats, dossierDesEcrans }: Props) {
   const debutChute = temps(etats.length * TEMPS_PAR_ETAT - 2);
 
   return (
-    <AbsoluteFill style={{ background: couleurs.clair }}>
+    <AbsoluteFill style={{ background: surface.fond }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ position: "absolute", left: page.telephone.left, top: page.telephone.top }}>
         <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={page.telephone.largeur} />
       </div>
       <div style={{ position: "absolute", ...page.texte, textWrap: "balance" }}>
         <Revele taille={TITRE.fontSize as number} debut={debutChute}>
-          <span style={{ ...TITRE, color: couleurs.accentSurClair }}>{textes.chute}</span>
+          <span style={{ ...TITRE, ...surface.titre, color: surface.accentTexte }}>{textes.chute}</span>
         </Revele>
       </div>
     </AbsoluteFill>

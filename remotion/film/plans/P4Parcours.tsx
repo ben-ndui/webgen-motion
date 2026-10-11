@@ -2,7 +2,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
 import { Telephone, hauteurDuTelephone } from "../composants/Telephone";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useCouleurs, useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { GLISSE, entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -39,6 +40,7 @@ const TEMPS_PAR_ETAPE = 6;
  */
 export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props) {
   const couleurs = useCouleurs();
+  const surface = useSurface("clair");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const { largeur, pas, foyer, legende: placeDeLaLegende } = MISE_EN_PAGE[useFormat()];
@@ -56,7 +58,8 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
   const cameraY = foyer.y - position * pasY;
 
   return (
-    <AbsoluteFill style={{ background: couleurs.clair, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: surface.fond, overflow: "hidden" }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ position: "absolute", left: cameraX, top: cameraY }}>
         <svg style={{ position: "absolute", overflow: "visible", left: 0, top: 0 }} width={1} height={1}>
           <line
@@ -96,7 +99,7 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
           return (
             <div key={legende} style={{ position: "absolute", left: 0, top: 0, whiteSpace: "nowrap" }}>
               <Revele taille={84} debut={debut} sortie={sortie}>
-                <span style={{ ...PHRASE, fontSize: 84, fontWeight: 500, color: couleurs.encre }}>{legende}</span>
+                <span style={{ ...PHRASE, fontSize: 84, fontWeight: 500, ...surface.titre, color: surface.texte }}>{legende}</span>
               </Revele>
             </div>
           );

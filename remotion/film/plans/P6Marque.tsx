@@ -2,7 +2,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
 import { Telephone } from "../composants/Telephone";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -26,7 +27,7 @@ const MISE_EN_PAGE = {
  * le virement où l'organisateur est bénéficiaire, jamais Kotizo).
  */
 export function P6Marque({ tempo, textes, ecran, dossierDesEcrans }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("sombre");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const page = MISE_EN_PAGE[useFormat()];
@@ -34,12 +35,13 @@ export function P6Marque({ tempo, textes, ecran, dossierDesEcrans }: Props) {
   const dernier = textes.mots.length - 1;
 
   return (
-    <AbsoluteFill style={{ background: couleurs.encre }}>
+    <AbsoluteFill style={{ background: surface.fond }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ position: "absolute", ...page.texte }}>
         {textes.mots.map((mot, index) => (
           <div key={mot}>
             <Revele taille={TAILLES.titre} debut={temps(index)}>
-              <span style={{ ...TITRE, color: index === dernier ? couleurs.accentSurSombre : couleurs.clair }}>
+              <span style={{ ...TITRE, ...surface.titre, color: index === dernier ? surface.accentTexte : surface.texte }}>
                 {mot}
               </span>
             </Revele>

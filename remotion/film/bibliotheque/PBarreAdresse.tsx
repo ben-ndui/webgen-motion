@@ -1,6 +1,7 @@
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 
-import { useMarque } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useMarque, useSurface } from "../marque/MarqueDuFilm";
 import { transparence } from "../marque/couleurs";
 import { useFormat } from "../lib/format";
 import { GLISSE, entre, progression } from "../lib/mouvement";
@@ -31,6 +32,7 @@ const MISE_EN_PAGE = {
  */
 export function PBarreAdresse({ tempo, adresse, ecran }: Props) {
   const { couleurs, ombreTelephone } = useMarque();
+  const surface = useSurface("sombre");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const { largeur, hauteurBarre, corps, centre } = MISE_EN_PAGE[useFormat()];
@@ -50,7 +52,8 @@ export function PBarreAdresse({ tempo, adresse, ecran }: Props) {
   const haut = centre - hauteurTotale / 2;
 
   return (
-    <AbsoluteFill style={{ background: couleurs.encre }}>
+    <AbsoluteFill style={{ background: surface.fond }}>
+      <DecorDeDirection surface={surface} />
       <div
         style={{
           position: "absolute",

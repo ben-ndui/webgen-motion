@@ -1,6 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 
-import type { DeclinaisonDuFilm, FilmSpec, Langue, MarqueDuFilm } from "../../remotion/film/spec";
+import { DIRECTION_PAR_DEFAUT } from "../../remotion/film/marque/direction";
+import type { DeclinaisonDuFilm, DirectionDuFilm, FilmSpec, Langue, MarqueDuFilm } from "../../remotion/film/spec";
 import type { FicheDeFilm } from "./film-loader";
 import { type EtatDesMedias, etatDesMedias, problemesDeMedias } from "./film-medias";
 import { type TypeDeRendu, fichiersDuRendu, getFilmOutDir, getFilmPublicDir, urlDuRendu } from "./film-store";
@@ -44,6 +45,8 @@ export type ResumeDuFilm = {
   // Fiche valide seulement : de quoi résumer la marque à l'écran.
   marque: MarqueDuFilm | null;
   musique: { titre: string; tempo: number } | null;
+  // Fiche sans `direction` : celle par défaut, « marque ».
+  direction: DirectionDuFilm | null;
 };
 
 export type DossiersDuFilm = { public: string; sortie: string };
@@ -105,6 +108,7 @@ export function resumerFilm(fiche: FicheDeFilm, dossiers: DossiersDuFilm = dossi
       medias: null,
       marque: null,
       musique: null,
+      direction: null,
     };
   }
   const { spec } = fiche;
@@ -134,5 +138,6 @@ export function resumerFilm(fiche: FicheDeFilm, dossiers: DossiersDuFilm = dossi
     medias,
     marque: spec.marque,
     musique: { titre: spec.musique.titre, tempo: spec.musique.tempo },
+    direction: spec.direction ?? DIRECTION_PAR_DEFAUT,
   };
 }

@@ -139,7 +139,13 @@ export type FilmSpec = {
   // Vide pour une langue = pas d'aperçu dans cette langue.
   apercu: Record<Langue, PlanDeLApercu[]>;
   bibliotheque?: BibliothequeDuFilm;
+  // Direction artistique (marque/direction.ts) : redistribue les couleurs de
+  // la marque sans en inventer. Absente : « marque », le film tel quel.
+  direction?: DirectionDuFilm;
 };
+
+export const DIRECTIONS = ["marque", "editorial", "nocturne"] as const;
+export type DirectionDuFilm = (typeof DIRECTIONS)[number];
 
 export const LANGUES: readonly Langue[] = ["fr", "en"];
 

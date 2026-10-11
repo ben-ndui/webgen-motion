@@ -1,16 +1,18 @@
 import { AbsoluteFill } from "remotion";
 
 import { Logo } from "../composants/Logo";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 
 type Props = { tempo: number };
 
 /** Plan 1, l'ouverture : le logo se pose sur l'encre, sur la première mesure. */
 export function P1Ouverture({ tempo }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("sombre");
   return (
-    <AbsoluteFill style={{ background: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-      <Logo taille={180} couleur={couleurs.clair} tempo={tempo} cadence="ouverture" />
+    <AbsoluteFill style={{ background: surface.fond, alignItems: "center", justifyContent: "center" }}>
+      <DecorDeDirection surface={surface} />
+      <Logo taille={180} couleur={surface.texte} surSombre={surface.tonalite === "sombre"} tempo={tempo} cadence="ouverture" />
     </AbsoluteFill>
   );
 }

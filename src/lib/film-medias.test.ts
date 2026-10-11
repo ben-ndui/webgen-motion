@@ -113,4 +113,12 @@ describe("statut du film", () => {
     writeFileSync(join(lieux.sortie, ".Film-EN.en-cours.mp4"), Buffer.alloc(5000));
     expect(resumerFilm({ id: "x", etat: "valide", spec }, lieux).rendus).toBe(0);
   });
+
+  it("la direction artistique : celle de la fiche, « marque » sans indication, aucune sur fiche invalide", () => {
+    const spec = ficheValide();
+    delete spec.direction;
+    expect(resumerFilm({ id: "x", etat: "valide", spec }, dossiers()).direction).toBe("marque");
+    expect(resumerFilm({ id: "x", etat: "valide", spec: { ...spec, direction: "editorial" } }, dossiers()).direction).toBe("editorial");
+    expect(resumerFilm({ id: "x", etat: "invalide", erreurs: ["x"] }, dossiers()).direction).toBeNull();
+  });
 });

@@ -1,6 +1,7 @@
 import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useCouleurs, useDirection, useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, useFormat } from "../lib/format";
 import { ARRIVEE, GLISSE, entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -38,7 +39,9 @@ const TEMPS_PAR_TOUR = 8;
  *    (couleur, jamais opacité : mosaïque Remotion).
  */
 export function PTypoCinetique({ tempo, textes }: Props) {
-  const couleurs = useCouleurs();
+  const direction = useDirection();
+  const surface = useSurface("sombre");
+  const { accent } = useCouleurs();
   const image = useCurrentFrame();
   const { fps } = useVideoConfig();
   const temps = (n: number) => imageDuTemps(n, tempo);
@@ -68,7 +71,8 @@ export function PTypoCinetique({ tempo, textes }: Props) {
   const boite = 2 * (rayonReel + corpsAnneau * 2);
 
   return (
-    <AbsoluteFill style={{ background: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
+    <AbsoluteFill style={{ background: surface.fond, alignItems: "center", justifyContent: "center" }}>
+      <DecorDeDirection surface={surface} />
       {/* Le mot : une fente FIXE (le masque), d'où il sort lettre à lettre et
           par où il repart ; seule la ligne bouge dedans. */}
       <div style={{ overflow: "hidden", paddingTop: Math.round(taille * 0.35), paddingBottom: Math.round(taille * 0.2) }}>
@@ -83,10 +87,10 @@ export function PTypoCinetique({ tempo, textes }: Props) {
                 style={{
                   display: "inline-block",
                   fontSize: taille,
-                  fontWeight: 500,
+                  fontWeight: direction.graisseDuMot,
                   lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                  color: couleurs.clair,
+                  letterSpacing: direction.interlettrageDuMot,
+                  color: surface.texte,
                   whiteSpace: "pre",
                   transform: `translateY(${(1 - montee) * 120}%) skewX(${entre(-18, 0, ressort)}deg) scaleY(${entre(1.3, 1, ressort)})`,
                   transformOrigin: "bottom",
@@ -115,7 +119,7 @@ export function PTypoCinetique({ tempo, textes }: Props) {
                 width: pastille,
                 height: pastille,
                 borderRadius: pastille,
-                background: couleurs.accent,
+                background: accent,
                 transform: `translateY(${entre(-taille * 1.8, 0, rebondDuMot)}px)`,
                 visibility: image < chuteDeLaPastille ? "hidden" : "visible",
               }}
@@ -135,7 +139,7 @@ export function PTypoCinetique({ tempo, textes }: Props) {
           marginLeft: -pastilleCentrale / 2,
           marginTop: -pastilleCentrale / 2,
           borderRadius: pastilleCentrale,
-          background: couleurs.accent,
+          background: accent,
           transform: `translateY(${entre(-900, 0, rebondAuCentre)}px)`,
           visibility: image < chuteAuCentre ? "hidden" : "visible",
         }}
@@ -176,10 +180,10 @@ export function PTypoCinetique({ tempo, textes }: Props) {
                   left: 0,
                   top: 0,
                   fontSize: corpsAnneau,
-                  fontWeight: 600,
+                  fontWeight: direction.graisseDeLAnneau,
                   lineHeight: 1,
                   whiteSpace: "pre",
-                  color: lettreDeFace(angle, rotation) ? couleurs.clair : couleurs.clairLibelle,
+                  color: lettreDeFace(angle, rotation) ? surface.texte : surface.texteDeDos,
                   transform: `translate(-50%, -50%) rotateY(${angle}rad) translateZ(${rayonReel}px)`,
                 }}
               >

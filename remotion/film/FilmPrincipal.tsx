@@ -4,6 +4,7 @@ import { AbsoluteFill, Sequence } from "remotion";
 import { BandeSon } from "./composants/BandeSon";
 import { Glissement } from "./composants/Glissement";
 import { FournisseurDeMarque } from "./marque/MarqueDuFilm";
+import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "./marque/direction";
 import { usePolice } from "./marque/police";
 import { imageDuTemps, placerLesPlans } from "./lib/tempo";
 import { type IdDePlan, MONTAGES } from "./montages";
@@ -54,9 +55,9 @@ export function FilmPrincipal({ spec, declinaison }: ProprietesDuFilm) {
   };
 
   return (
-    <FournisseurDeMarque marque={spec.marque}>
+    <FournisseurDeMarque marque={spec.marque} direction={spec.direction}>
       {/* La police est posée ici, une fois : tous les textes en héritent. */}
-      <AbsoluteFill style={{ background: spec.marque.couleurs.encre, fontFamily: police }}>
+      <AbsoluteFill style={{ background: fondDuFilm(spec.direction ?? DIRECTION_PAR_DEFAUT, spec.marque.couleurs), fontFamily: police }}>
         <BandeSon musique={spec.musique} fondu={FONDU_FINAL} />
         {places.map((plan, index) => {
           const suivant = places[index + 1];

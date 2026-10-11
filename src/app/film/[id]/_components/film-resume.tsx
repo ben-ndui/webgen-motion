@@ -11,6 +11,8 @@ const ROLES_DES_COULEURS: { cle: keyof NonNullable<ResumeDuFilm["marque"]>["coul
 
 const FORMAT = { long: "16:9", court: "9:16" } as const;
 
+const DIRECTIONS = { marque: "Marque", editorial: "Éditorial", nocturne: "Nocturne" } as const;
+
 type LogoDeLaMarque = NonNullable<ResumeDuFilm["marque"]>["logo"];
 
 function descriptionDuLogo(logo: LogoDeLaMarque): string {
@@ -41,6 +43,12 @@ export default function FilmResume({ resume }: { resume: ResumeDuFilm }) {
             <dd>{descriptionDuLogo(marque.logo)}</dd>
             <dt>Contact</dt>
             <dd>{marque.contact || "aucun"}</dd>
+          </>
+        )}
+        {resume.direction && (
+          <>
+            <dt>Direction</dt>
+            <dd>{DIRECTIONS[resume.direction]}</dd>
           </>
         )}
         {musique && (

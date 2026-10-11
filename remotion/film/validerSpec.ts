@@ -215,6 +215,12 @@ export function erreursDeLaSpec(entree: unknown): string[] {
   verifierMusique(erreurs, entree.musique);
   verifierDeclinaisons(erreurs, entree.declinaisons);
   verifierApercu(erreurs, entree.apercu, entree.textes);
+  // Liste écrite ici et non importée de spec.ts : ce fichier n'importe que des
+  // types (Node le lit tel quel). Le test vérifie qu'elle reste identique.
+  const directions = ["marque", "editorial", "nocturne"];
+  if (entree.direction !== undefined && !directions.includes(entree.direction as string)) {
+    erreurs.push(`direction : l'une de ${directions.join(", ")} (reçu « ${String(entree.direction)} »)`);
+  }
   return erreurs;
 }
 

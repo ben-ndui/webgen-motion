@@ -2,7 +2,8 @@ import { AbsoluteFill } from "remotion";
 
 import { Logo } from "../composants/Logo";
 import { Revele } from "../composants/Revele";
-import { useMarque } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useMarque, useSurface } from "../marque/MarqueDuFilm";
 import { imageDuTemps } from "../lib/tempo";
 import { PHRASE } from "../lib/typo";
 import type { TextesDuFilm } from "../textes/types";
@@ -15,23 +16,25 @@ type Props = { tempo: number; textes: TextesDuFilm["fin"]; avecContact: boolean 
  * plateforme l'interdit (Fiverr) ou l'affiche déjà (fiche de store).
  */
 export function P7Fin({ tempo, textes, avecContact }: Props) {
-  const { couleurs, contact } = useMarque();
+  const { contact } = useMarque();
+  const surface = useSurface("sombre");
   const temps = (n: number) => imageDuTemps(n, tempo);
 
   return (
-    <AbsoluteFill style={{ background: couleurs.encre, alignItems: "center", justifyContent: "center" }}>
-      <Logo taille={120} couleur={couleurs.clair} tempo={tempo} cadence="fin" />
+    <AbsoluteFill style={{ background: surface.fond, alignItems: "center", justifyContent: "center" }}>
+      <DecorDeDirection surface={surface} />
+      <Logo taille={120} couleur={surface.texte} surSombre={surface.tonalite === "sombre"} tempo={tempo} cadence="fin" />
 
       <div style={{ marginTop: 64, textAlign: "center" }}>
         <Revele taille={44} debut={temps(2.5)}>
-          <span style={{ ...PHRASE, fontSize: 44, color: couleurs.clairSecondaire }}>{textes.disponible}</span>
+          <span style={{ ...PHRASE, fontSize: 44, color: surface.texteSecondaire }}>{textes.disponible}</span>
         </Revele>
       </div>
 
       {avecContact ? (
         <div style={{ marginTop: 28, textAlign: "center" }}>
           <Revele taille={32} debut={temps(3.5)}>
-            <span style={{ ...PHRASE, fontSize: 32, color: couleurs.clairLibelle }}>{contact}</span>
+            <span style={{ ...PHRASE, fontSize: 32, color: surface.texteLibelle }}>{contact}</span>
           </Revele>
         </div>
       ) : null}

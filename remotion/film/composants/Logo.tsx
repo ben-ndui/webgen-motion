@@ -10,6 +10,9 @@ type Props = {
   // s'en déduisent, aux proportions du film VAGUA.
   taille: number;
   couleur: string;
+  // Le fond sous le logo : un logo FICHIER ne prend pas `couleur`, il
+  // s'inverse selon le fond (voir LogoImage).
+  surSombre: boolean;
   tempo: number;
   // « ouverture » : le logo se pose, un trait par temps. « fin » : il se
   // redessine vite, le spectateur le connaît déjà.
@@ -22,7 +25,7 @@ type Props = {
  * mesures du film VAGUA : glyphe 260 et logotype 92 en colonne, puis 150 et
  * 104 en ligne.
  */
-export function Logo({ taille, couleur, tempo, cadence }: Props) {
+export function Logo({ taille, couleur, surSombre, tempo, cadence }: Props) {
   const temps = (n: number) => imageDuTemps(n, tempo);
   const { logo } = useMarque();
   const ouverture = cadence === "ouverture";
@@ -49,7 +52,9 @@ export function Logo({ taille, couleur, tempo, cadence }: Props) {
         fichier={logo.fichier}
         rapport={logo.rapport}
         hauteur={Math.round(taille * 1.6)}
-        inverser={logo.inverser}
+        // `inverser` décrit le fichier : sombre, il s'inverse sur l'encre ;
+        // clair, il s'inverse sur le clair (directions qui imposent le clair).
+        inverser={logo.inverser ? surSombre : !surSombre}
         debut={0}
         duree={ouverture ? temps(2) : 16}
       />

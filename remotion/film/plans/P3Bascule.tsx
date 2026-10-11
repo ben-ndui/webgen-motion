@@ -1,7 +1,8 @@
 import { AbsoluteFill } from "remotion";
 
 import { Revele } from "../composants/Revele";
-import { useCouleurs } from "../marque/MarqueDuFilm";
+import { DecorDeDirection } from "../composants/DecorDeDirection";
+import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, useFormat } from "../lib/format";
 import { imageDuTemps } from "../lib/tempo";
 import { MARGE, PHRASE, TAILLES, TITRE } from "../lib/typo";
@@ -20,13 +21,14 @@ type Props = { tempo: number; textes: TextesDuFilm["bascule"] };
  * l'app), puis la promesse en une phrase. Aucune marque tierce nommée.
  */
 export function P3Bascule({ tempo, textes }: Props) {
-  const couleurs = useCouleurs();
+  const surface = useSurface("clair");
   const temps = (n: number) => imageDuTemps(n, tempo);
   const page = MISE_EN_PAGE[useFormat()];
-  const ligne = { ...TITRE, color: couleurs.encre, display: "block" } as const;
+  const ligne = { ...TITRE, ...surface.titre, color: surface.texte, display: "block" } as const;
 
   return (
-    <AbsoluteFill style={{ background: couleurs.clair }}>
+    <AbsoluteFill style={{ background: surface.fond }}>
+      <DecorDeDirection surface={surface} />
       <div style={{ position: "absolute", ...page, textWrap: "balance" }}>
         <div>
           <Revele taille={TAILLES.titre} debut={temps(0)}>
@@ -35,12 +37,12 @@ export function P3Bascule({ tempo, textes }: Props) {
         </div>
         <div>
           <Revele taille={TAILLES.titre} debut={temps(1.5)}>
-            <span style={{ ...ligne, color: couleurs.accentSurClair }}>{textes.chiffre}</span>
+            <span style={{ ...ligne, color: surface.accentTexte }}>{textes.chiffre}</span>
           </Revele>
         </div>
         <div style={{ marginTop: 28 }}>
           <Revele taille={TAILLES.phrase} debut={temps(5)}>
-            <span style={{ ...PHRASE, fontWeight: 500, color: couleurs.encreSecondaire }}>{textes.signature}</span>
+            <span style={{ ...PHRASE, fontWeight: 500, color: surface.texteSecondaire }}>{textes.signature}</span>
           </Revele>
         </div>
       </div>

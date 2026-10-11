@@ -34,6 +34,7 @@ function resume(surcharge: Partial<ResumeDuFilm> = {}): ResumeDuFilm {
       contact: "Smooth & Design",
     },
     musique: { titre: "Summer House", tempo: 123.52 },
+    direction: "nocturne",
     ...surcharge,
   };
 }
@@ -68,6 +69,7 @@ describe("page film : les trois états", () => {
   it("fiche valide : résumé, médias présents/manquants avec le dossier exact, bouton de rendu", () => {
     render(<FilmVue id="kotizo" resume={resume()} studio />);
     expect(screen.getByText("Prêt à rendre")).toBeInTheDocument();
+    expect(screen.getByText("Nocturne")).toBeInTheDocument();
     expect(screen.getByText("/home/ben/.webgen-motion/films/kotizo/public")).toBeInTheDocument();
     expect(screen.getByText("Médias · 1/2 présents")).toBeInTheDocument();
     expect(screen.getByText("Manquant")).toBeInTheDocument();

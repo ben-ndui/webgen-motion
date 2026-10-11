@@ -3,8 +3,9 @@ import { cancelRender, continueRender, delayRender } from "remotion";
 import { getAvailableFonts } from "@remotion/google-fonts";
 
 // 300 pour un logotype léger (glyphe), 400 et 500 pour les phrases du film,
-// 600 pour un mot-symbole. Une police qui n'a pas une graisse s'en passe.
-const GRAISSES = ["300", "400", "500", "600"];
+// 600 pour un mot-symbole ; 200 et 800 pour les directions artistiques
+// (nocturne fin, éditorial gras). Une police qui n'a pas une graisse s'en passe.
+const GRAISSES = ["200", "300", "400", "500", "600", "800"];
 
 /**
  * Charge une police Google Fonts PAR SON NOM (celui de la fiche du film), et
