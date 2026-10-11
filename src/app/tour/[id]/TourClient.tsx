@@ -1,20 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
-  ArrowLeft,
   Check,
-  ChevronRight,
-  Film,
-  HelpCircle,
   Loader2,
   Save,
 } from "lucide-react";
 import type { TourEntry } from "@/lib/types/tour";
 import { Tabs } from "@/components/ui";
-import ThemeToggle from "../../_components/theme-toggle";
+import AppTopBar, { PointDeMeta } from "../../_components/app-top-bar";
 import ScriptTab, { type SaveStatus } from "./_components/script-tab";
 import CaptureTab, {
   type CaptureState,
@@ -562,65 +557,17 @@ export default function TourClient({ tour }: { tour: TourEntry }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Sticky top bar — token-driven (light/dark) */}
-      <header className="sticky top-0 z-50 bg-surface border-b border-line">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <Link href="/" className="shrink-0 flex items-center gap-2 group">
-                <span className="w-7 h-7 rounded-md bg-ink text-bg grid place-items-center">
-                  <Film className="w-3.5 h-3.5" strokeWidth={2.5} />
-                </span>
-                <span className="font-semibold text-sm tracking-tight text-ink">
-                  GEN MOTION
-                </span>
-              </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-faint" />
-              <Link
-                href="/dashboard"
-                className="text-sm text-muted font-medium hover:text-ink transition-colors"
-              >
-                Tours
-              </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-faint" />
-              <span
-                className="text-sm text-ink font-medium truncate"
-                title={tour.description}
-              >
-                {tour.name}
-              </span>
-              {/* meta pill : format · durée · étapes */}
-              <span className="hidden md:inline-flex items-center gap-2 ml-1 px-2.5 py-1 rounded-full border border-line bg-surface-2 font-mono text-[11px] text-muted">
-                <span>{tour.format ?? "16:9"}</span>
-                <span className="w-1 h-1 rounded-full bg-line-strong" />
-                <span>{tour.steps.length} étapes</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <SaveButton
-                status={saveStatus}
-                error={saveError}
-                onSave={saveTour}
-              />
-              <Link
-                href="/help"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted hover:text-ink hover:bg-surface-2 rounded-md transition-colors"
-              >
-                <HelpCircle className="w-3.5 h-3.5" />
-                Aide
-              </Link>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-muted hover:text-ink hover:bg-surface-2 rounded-md transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                Retour
-              </Link>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
+      <AppTopBar
+        fil={[{ libelle: "Tours", href: "/dashboard" }, { libelle: tour.name, titre: tour.description }]}
+        meta={
+          <>
+            <span>{tour.format ?? "16:9"}</span>
+            <PointDeMeta />
+            <span>{tour.steps.length} étapes</span>
+          </>
+        }
+        actions={<SaveButton status={saveStatus} error={saveError} onSave={saveTour} />}
+      />
 
       {/* Director's Console — shell additif : 3e colonne (rail 44px /
           dock 360–560px) autour du main. Les mutations IA passent par

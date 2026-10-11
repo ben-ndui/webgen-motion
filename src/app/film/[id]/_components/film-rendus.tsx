@@ -143,9 +143,12 @@ export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus
   return (
     <>
       <section aria-labelledby="film-rendus-titre" className="film-section">
-        <h2 id="film-rendus-titre" className="film-h2">
-          Rendus
-        </h2>
+        <div className="film-section-head">
+          <span className="kicker">Le film</span>
+          <h2 id="film-rendus-titre" className="film-h2">
+            Rendus
+          </h2>
+        </div>
         {!studio && (
           <div className="film-block" data-wm-id="film.studio">
             <p>
@@ -166,12 +169,15 @@ export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus
 
       {avecBibliotheque && (
         <section aria-labelledby="film-bibliotheque-titre" className="film-section" data-wm-id="film.bibliotheque">
-          <h2 id="film-bibliotheque-titre" className="film-h2">
-            Bibliothèque de plans
-          </h2>
-          <p className="film-muted">
-            Typo cinétique, barre d&apos;adresse, éventail de captures et logo construit, sur la musique du film.
-          </p>
+          <div className="film-section-head">
+            <span className="kicker">Les plans seuls</span>
+            <h2 id="film-bibliotheque-titre" className="film-h2">
+              Bibliothèque de plans
+            </h2>
+            <p className="film-muted">
+              Typo cinétique, barre d&apos;adresse, éventail de captures et logo construit, sur la musique du film.
+            </p>
+          </div>
           <ListeDeRendus declinaisons={declinaisons} type="bibliotheque" studio={studio} rendus={rendus} />
         </section>
       )}

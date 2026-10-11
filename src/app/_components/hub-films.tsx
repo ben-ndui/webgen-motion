@@ -71,7 +71,7 @@ function FilmCard({ film }: { film: HubFilm }) {
 
 export default function HubFilms({ films, error }: { films: HubFilm[]; error: string | null }) {
   return (
-    <section className="films-wrap" data-wm-id="hub.films" aria-labelledby="hub-films-title">
+    <section id="films" className="films-wrap" data-wm-id="hub.films" aria-labelledby="hub-films-title">
       <h2 id="hub-films-title" className="section-title">
         Films de marque <span className="n">{error ? "" : films.length}</span>
       </h2>

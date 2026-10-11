@@ -9,8 +9,6 @@ const ROLES_DES_COULEURS: { cle: keyof NonNullable<ResumeDuFilm["marque"]>["coul
   { cle: "bulleRecue", libelle: "Bulle reçue" },
 ];
 
-const FORMAT = { long: "16:9", court: "9:16" } as const;
-
 const DIRECTIONS = { marque: "Marque", editorial: "Éditorial", nocturne: "Nocturne" } as const;
 
 type LogoDeLaMarque = NonNullable<ResumeDuFilm["marque"]>["logo"];
@@ -21,63 +19,41 @@ function descriptionDuLogo(logo: LogoDeLaMarque): string {
   return `image · ${logo.fichier}`;
 }
 
-/** Ce que dit la fiche : marque, musique, langues, déclinaisons. */
+function Ligne({ cle, valeur }: { cle: string; valeur: string }) {
+  return (
+    <div className="sum-row">
+      <span className="k">{cle}</span>
+      <span className="v">{valeur}</span>
+    </div>
+  );
+}
+
+/** Ce que dit la fiche : direction, marque, musique, langues. */
 export default function FilmResume({ resume }: { resume: ResumeDuFilm }) {
   const { marque, musique } = resume;
   return (
-    <section className="film-block" aria-labelledby="film-resume-titre">
-      <h2 id="film-resume-titre" className="film-h2">
+    <section className="side-card" aria-labelledby="film-resume-titre" data-wm-id="film.fiche">
+      <h2 id="film-resume-titre" className="side-title">
         Fiche
       </h2>
       {resume.exemple && (
         <p className="film-warning">
-          Fiche encore marquée « exemple: true » : le rendu est refusé tant qu'elle n'est pas remplie.
+          Fiche encore marquée « exemple: true » : le rendu est refusé tant qu&apos;elle n&apos;est pas remplie.
         </p>
       )}
-      <dl className="film-dl">
-        {marque && (
-          <>
-            <dt>Police</dt>
-            <dd>{marque.police}</dd>
-            <dt>Logo</dt>
-            <dd>{descriptionDuLogo(marque.logo)}</dd>
-            <dt>Contact</dt>
-            <dd>{marque.contact || "aucun"}</dd>
-          </>
-        )}
-        {resume.direction && (
-          <>
-            <dt>Direction</dt>
-            <dd>{DIRECTIONS[resume.direction]}</dd>
-          </>
-        )}
-        {musique && (
-          <>
-            <dt>Musique</dt>
-            <dd>
-              {musique.titre} · {musique.tempo} BPM
-            </dd>
-          </>
-        )}
-        <dt>Langues</dt>
-        <dd>{resume.langues.map((langue) => langue.toUpperCase()).join(" · ") || "aucune"}</dd>
-        <dt>Déclinaisons</dt>
-        <dd>
-          {resume.declinaisons.length === 0
-            ? "aucune"
-            : resume.declinaisons
-                .map((declinaison) => `${declinaison.nom} (${FORMAT[declinaison.version]})`)
-                .join(" · ")}
-        </dd>
-      </dl>
+      {resume.direction && <Ligne cle="Direction" valeur={DIRECTIONS[resume.direction]} />}
+      {marque && <Ligne cle="Police" valeur={marque.police} />}
+      {marque && <Ligne cle="Logo" valeur={descriptionDuLogo(marque.logo)} />}
+      {musique && <Ligne cle="Musique" valeur={musique.titre} />}
+      {musique && <Ligne cle="Tempo" valeur={`${musique.tempo} BPM`} />}
+      <Ligne cle="Langues" valeur={resume.langues.map((langue) => langue.toUpperCase()).join(" · ") || "aucune"} />
+      {marque && <Ligne cle="Contact" valeur={marque.contact || "aucun"} />}
       {marque && (
         <ul className="film-swatches" aria-label="Couleurs de la marque">
           {ROLES_DES_COULEURS.map(({ cle, libelle }) => (
-            <li key={cle}>
+            <li key={cle} title={`${libelle} ${marque.couleurs[cle]}`}>
               <span className="film-swatch" style={{ background: marque.couleurs[cle] }} aria-hidden />
-              <span>
-                {libelle} <code>{marque.couleurs[cle]}</code>
-              </span>
+              <span>{libelle}</span>
             </li>
           ))}
         </ul>

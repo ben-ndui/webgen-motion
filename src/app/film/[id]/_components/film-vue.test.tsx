@@ -73,6 +73,11 @@ describe("page film : les trois états", () => {
     expect(screen.getByText("/home/ben/.webgen-motion/films/kotizo/public")).toBeInTheDocument();
     expect(screen.getByText("Médias · 1/2 présents")).toBeInTheDocument();
     expect(screen.getByText("Manquant")).toBeInTheDocument();
+    // Le manquant reste visible ; les présents se replient sous un résumé.
+    expect(screen.getByText("Manquant").closest("details")).toBeNull();
+    expect(screen.getByText("1 fichier présent")).toBeInTheDocument();
+    // La barre du haut de l'app : fil d'Ariane vers les films du hub.
+    expect(screen.getByRole("link", { name: "Films" })).toHaveAttribute("href", "/dashboard#films");
     expect(screen.getByRole("button", { name: "Rendre" })).toBeEnabled();
   });
 

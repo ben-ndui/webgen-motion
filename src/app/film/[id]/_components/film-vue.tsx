@@ -1,6 +1,6 @@
-import "../../film.css";
-import Link from "next/link";
 import type { ResumeDuFilm, StatutDuFilm } from "@/lib/film-etat";
+import { PointDeMeta } from "../../../_components/app-top-bar";
+import CadreDuFilm, { EnTeteDuFilm } from "./cadre-du-film";
 import FilmMedias from "./film-medias";
 import FilmRendus from "./film-rendus";
 import FilmResume from "./film-resume";
@@ -12,33 +12,35 @@ const LIBELLE_DU_STATUT: Record<StatutDuFilm, string> = {
   rendu: "Rendu",
 };
 
-function Entete({ titre, statut, id }: { titre: string; statut: StatutDuFilm | null; id: string }) {
+function Statut({ statut }: { statut: StatutDuFilm }) {
+  return <span className={`film-status film-status-${statut}`}>{LIBELLE_DU_STATUT[statut]}</span>;
+}
+
+function MetaDuFilm({ resume }: { resume: ResumeDuFilm }) {
+  const nombre = resume.declinaisons.length;
   return (
-    <header className="film-head">
-      <Link className="film-back" href="/dashboard">
-        ← Hub
-      </Link>
-      <p className="film-kicker">Film de marque · films/{id}.json</p>
-      <div className="film-title-row">
-        <h1 className="film-title">{titre}</h1>
-        {statut && <span className={`film-status film-status-${statut}`}>{LIBELLE_DU_STATUT[statut]}</span>}
-      </div>
-    </header>
+    <>
+      <span>
+        {nombre} déclinaison{nombre > 1 ? "s" : ""}
+      </span>
+      <PointDeMeta />
+      <span>{resume.langues.map((langue) => langue.toUpperCase()).join(" · ") || "aucune langue"}</span>
+    </>
   );
 }
 
 /**
  * La page d'un film, dans ses trois cas : fiche introuvable, fiche invalide
  * (toutes les erreurs de `erreursDeLaSpec`, avec le chemin du champ), fiche
- * valide (résumé, médias attendus, rendus).
+ * valide (rendus, et à côté la fiche et les médias).
  */
 type PropsVue = { id: string; resume: ResumeDuFilm | null; studio: boolean };
 
 export default function FilmVue({ id, resume, studio }: PropsVue) {
   if (!resume) {
     return (
-      <main className="gm-film">
-        <Entete titre="Film introuvable" statut={null} id={id} />
+      <CadreDuFilm nom={id}>
+        <EnTeteDuFilm id={id} titre="Film introuvable" sousTitre="Aucune fiche à ce nom dans le dossier du projet." />
         <div className="film-block">
           <p>
             Aucune fiche <code>films/{id}.json</code> dans le dossier du projet.
@@ -48,14 +50,19 @@ export default function FilmVue({ id, resume, studio }: PropsVue) {
             chiffres, _ et -.
           </p>
         </div>
-      </main>
+      </CadreDuFilm>
     );
   }
 
   if (resume.erreurs.length > 0) {
     return (
-      <main className="gm-film">
-        <Entete titre={resume.id} statut={resume.statut} id={id} />
+      <CadreDuFilm nom={resume.id}>
+        <EnTeteDuFilm
+          id={id}
+          titre={resume.id}
+          sousTitre="La fiche ne peut pas être rendue tant que ces champs ne sont pas corrigés."
+          statut={<Statut statut={resume.statut} />}
+        />
         <div className="film-block film-alert" role="alert">
           <h2 className="film-h2">
             Fiche invalide · {resume.erreurs.length} erreur{resume.erreurs.length > 1 ? "s" : ""}
@@ -69,18 +76,27 @@ export default function FilmVue({ id, resume, studio }: PropsVue) {
             ))}
           </ul>
         </div>
-      </main>
+      </CadreDuFilm>
     );
   }
 
   return (
-    <main className="gm-film">
-      <Entete titre={resume.nom} statut={resume.statut} id={id} />
-      <div className="film-grid">
-        <FilmResume resume={resume} />
-        {resume.medias && <FilmMedias medias={resume.medias} />}
+    <CadreDuFilm nom={resume.nom} meta={<MetaDuFilm resume={resume} />}>
+      <EnTeteDuFilm
+        id={id}
+        titre={resume.nom}
+        sousTitre="Chaque déclinaison se rend depuis la fiche. Les médias et les rendus sont relus sur le disque à chaque chargement de la page."
+        statut={<Statut statut={resume.statut} />}
+      />
+      <div className="two-col">
+        <div className="film-main">
+          <FilmRendus filmId={resume.id} declinaisons={resume.declinaisons} studio={studio} />
+        </div>
+        <aside className="side-stack">
+          <FilmResume resume={resume} />
+          {resume.medias && <FilmMedias medias={resume.medias} />}
+        </aside>
       </div>
-      <FilmRendus filmId={resume.id} declinaisons={resume.declinaisons} studio={studio} />
-    </main>
+    </CadreDuFilm>
   );
 }

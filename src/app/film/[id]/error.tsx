@@ -1,7 +1,6 @@
 "use client";
 
-import "../film.css";
-import Link from "next/link";
+import CadreDuFilm from "./_components/cadre-du-film";
 
 /**
  * Erreur inattendue en lisant le film (disque illisible, droits…). Une fiche
@@ -15,10 +14,7 @@ export default function FilmError({
   unstable_retry: () => void;
 }) {
   return (
-    <main className="gm-film">
-      <Link className="film-back" href="/dashboard">
-        ← Hub
-      </Link>
+    <CadreDuFilm nom="Erreur">
       <div className="film-block film-alert" role="alert">
         <h1 className="film-h2">Lecture du film impossible</h1>
         <p className="film-muted">{error.digest ? `Erreur serveur (réf. ${error.digest})` : error.message}</p>
@@ -26,6 +22,6 @@ export default function FilmError({
           Réessayer
         </button>
       </div>
-    </main>
+    </CadreDuFilm>
   );
 }
