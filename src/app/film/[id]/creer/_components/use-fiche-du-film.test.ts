@@ -6,7 +6,7 @@ import { ficheDeDepart } from "@/lib/film-fiche-depart";
 import { useFicheDuFilm } from "./use-fiche-du-film";
 
 const FICHE = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
-const ETAT: EtatDeLEditeur = { id: "saya", fiche: FICHE, valide: true, erreurs: [], medias: [], textesAEcrire: [], doublons: [] };
+const ETAT: EtatDeLEditeur = { id: "saya", fiche: FICHE, valide: true, erreurs: [], medias: [], textesAEcrire: [], doublons: [], propositions: {} };
 
 // Un faux serveur en mémoire : il garde la fiche qu'on lui envoie, et le dépôt
 // de musique y écrit un tempo mesuré, comme le vrai.

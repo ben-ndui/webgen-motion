@@ -9,13 +9,15 @@ type Props = {
   fiche: FilmSpec;
   langue: Langue;
   modifier: (changement: (copie: FilmSpec) => void) => void;
+  propose: (champ: string, valeur: string) => boolean;
+  propositions: Record<string, string>;
 };
 
 /**
  * Les textes des plans courts, ceux qui font les Reels : le mot signature,
  * la phrase en anneau, l'adresse du site, les légendes de l'éventail.
  */
-export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
+export default function HistoireDesReels({ fiche, langue, modifier, propose, propositions }: Props) {
   const t = fiche.textes[langue].bibliotheque;
   const modele = FILM.textes[langue].bibliotheque;
   if (!t || !modele || !fiche.bibliotheque || !FILM.bibliotheque) return null;
@@ -34,6 +36,7 @@ export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
         aide="Un seul mot. S'il finit par un point, le point tombe dessus en couleur."
         exemple={modele.mot}
         valeur={t.mot}
+        propose={propose("bibliotheque.mot", t.mot)}
         max={LONGUEUR_MAX_DU_MOT}
         onChange={(v) => ecrire((x) => { x.mot = v; })}
       />
@@ -42,6 +45,7 @@ export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
         aide="Trois mots séparés par « · », par exemple : Naturel · Fait main · Livré."
         exemple={modele.anneau}
         valeur={t.anneau}
+        propose={propose("bibliotheque.anneau", t.anneau)}
         max={LONGUEUR_DE_L_ANNEAU.max}
         onChange={(v) => ecrire((x) => { x.anneau = v; })}
       />
@@ -50,6 +54,7 @@ export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
         aide="Sans « https:// » : maisonsayasignature.com"
         exemple={FILM.bibliotheque.adresse}
         valeur={fiche.bibliotheque.adresse}
+        propose={propositions["bibliotheque.adresse"] === fiche.bibliotheque.adresse}
         max={40}
         onChange={(v) => modifier((copie) => { if (copie.bibliotheque) copie.bibliotheque.adresse = v.replace(/^https?:\/\//, ""); })}
       />
@@ -59,6 +64,7 @@ export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
           question={`Légende de l'écran ${i + 1} (éventail)`}
           exemple={modele.legendesEventail[i] ?? ""}
           valeur={legende}
+          propose={propose(`bibliotheque.legendesEventail.${i}`, legende)}
           max={24}
           onChange={(v) => ecrire((x) => { x.legendesEventail[i] = v; })}
         />
@@ -67,6 +73,7 @@ export default function HistoireDesReels({ fiche, langue, modifier }: Props) {
         question="La ligne sous ton logo"
         exemple={modele.signature}
         valeur={t.signature}
+        propose={propose("bibliotheque.signature", t.signature)}
         max={50}
         onChange={(v) => ecrire((x) => { x.signature = v; })}
       />

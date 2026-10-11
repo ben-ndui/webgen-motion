@@ -110,5 +110,14 @@ export function useFicheDuFilm(etatInitial: EtatDeLEditeur) {
     return () => window.removeEventListener("beforeunload", avant);
   }, [enregistrement]);
 
-  return { etat, fiche, enregistrement, modifier, enregistrer, deposer };
+  /** Reprend la fiche du serveur en entier (après un remplissage depuis le site). */
+  const recharger = useCallback(async () => {
+    const nouveau = await relire();
+    if (!nouveau) return;
+    ficheRef.current = nouveau.fiche;
+    setFiche(nouveau.fiche);
+    setEnregistrement("a-jour");
+  }, [relire]);
+
+  return { etat, fiche, enregistrement, modifier, enregistrer, deposer, recharger };
 }

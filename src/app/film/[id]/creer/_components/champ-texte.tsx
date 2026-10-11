@@ -10,6 +10,8 @@ type Props = {
   onChange: (valeur: string) => void;
   max?: number;
   aide?: string;
+  // Proposé depuis le site et pas encore retouché : à relire.
+  propose?: boolean;
 };
 
 /**
@@ -18,7 +20,7 @@ type Props = {
  * case vidée retrouve l'exemple (la fiche reste valide, et le texte reste
  * signalé « à écrire »).
  */
-export default function ChampTexte({ question, exemple, valeur, onChange, max, aide }: Props) {
+export default function ChampTexte({ question, exemple, valeur, onChange, max, aide, propose = false }: Props) {
   const id = useId();
   const aEcrire = valeur.trim() === exemple.trim();
   const affichee = aEcrire ? "" : valeur;
@@ -31,7 +33,7 @@ export default function ChampTexte({ question, exemple, valeur, onChange, max, a
         <label htmlFor={id} className="champ-question">
           {question}
         </label>
-        {aEcrire ? <span className="champ-etat">À écrire</span> : null}
+        {aEcrire ? <span className="champ-etat">À écrire</span> : propose ? <span className="champ-etat propose">Proposé, à vérifier</span> : null}
       </div>
       {aide && <p className="champ-aide">{aide}</p>}
       <input

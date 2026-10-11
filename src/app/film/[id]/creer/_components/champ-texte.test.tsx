@@ -29,4 +29,9 @@ describe("ChampTexte", () => {
     expect(screen.getByLabelText("Mot")).toHaveAttribute("aria-invalid", "true");
     expect(screen.getByText("18 / 5")).toBeInTheDocument();
   });
+
+  it("une valeur proposée depuis le site, pas encore retouchée, porte « Proposé, à vérifier »", () => {
+    render(<ChampTexte question="Q" exemple="Ex." valeur="Lu sur le site" propose onChange={() => {}} />);
+    expect(screen.getByText("Proposé, à vérifier")).toBeInTheDocument();
+  });
 });

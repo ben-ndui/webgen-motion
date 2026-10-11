@@ -33,13 +33,15 @@ type Props = {
   modifier: (changement: (copie: FilmSpec) => void) => void;
   deposer: (role: RoleDeDepot, fichier: File) => Promise<string | null>;
   logoPresent: boolean;
+  propositions: Record<string, string>;
 };
 
 /** Étape 1 : le logo, trois couleurs, une police, le contact de fin. */
-export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent }: Props) {
+export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent, propositions }: Props) {
   const { couleurs, logo } = fiche.marque;
   const base: CouleursDeBase = { encre: couleurs.encre, clair: couleurs.clair, accent: couleurs.accent };
   const problemes = problemesDeLaPalette(base);
+  const couleursProposees = propositions["marque.couleurs"] === [base.encre, base.clair, base.accent].join(" ");
 
   function changerCouleur(cle: keyof CouleursDeBase, valeur: string) {
     modifier((copie) => {
@@ -83,6 +85,7 @@ export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent 
       <section className="bloc" aria-labelledby="bloc-couleurs">
         <h3 id="bloc-couleurs" className="bloc-titre">Tes couleurs</h3>
         <p className="champ-aide">Trois couleurs suffisent : les nuances pour le texte se calculent pour rester lisibles.</p>
+        {couleursProposees && <span className="champ-etat propose">Lues sur ton site, à vérifier</span>}
         <div className="couleurs">
           {COULEURS.map(({ cle, libelle, aide }) => (
             <label key={cle} className="couleur">

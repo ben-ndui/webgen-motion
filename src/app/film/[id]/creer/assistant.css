@@ -82,4 +82,15 @@
 
 .gm-film .enregistrement { font-family: var(--font-mono); font-size: 11px; color: var(--faint); padding-bottom: 10px; }
 .gm-film .enregistrement.erreur { color: var(--ink); }
+.gm-film .assistant-etapes { border: 0; margin: 0; padding: 0; min-width: 0; }
+.gm-film .assistant-etapes[disabled] { opacity: .55; }
+.gm-film .remplir { border-color: var(--accent-line); background: color-mix(in oklch, var(--accent-soft) 45%, var(--surface)); margin-bottom: 0; }
+.gm-film .remplir-ligne { display: flex; gap: var(--s-2); }
+.gm-film .remplir-ligne .champ-saisie { flex: 1; }
+.gm-film .remplir-etapes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--t-xs); color: var(--muted); }
+.gm-film .remplir-etapes .courante { color: var(--ink); font-weight: 500; }
+.gm-film .remplir-resume { display: flex; flex-direction: column; gap: 4px; font-size: var(--t-sm); color: var(--ink); }
+.gm-film .remplir-resume p { margin: 0; }
+.gm-film .bloc > .champ-etat { align-self: flex-start; }
+.gm-film .champ-etat.propose { color: var(--ink-soft); background: var(--surface-2); border-color: var(--line-strong); }
 .gm-film .assistant-pied { display: flex; justify-content: space-between; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }

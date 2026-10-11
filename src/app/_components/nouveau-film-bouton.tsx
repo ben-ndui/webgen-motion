@@ -29,6 +29,7 @@ export default function NouveauFilmBouton() {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(false);
   const [nom, setNom] = useState("");
+  const [site, setSite] = useState("");
   const [langues, setLangues] = useState<Langue[]>(["fr"]);
   const [formats, setFormats] = useState<VersionDuFilm[]>(["court"]);
   const [direction, setDirection] = useState<DirectionDuFilm>("marque");
@@ -49,7 +50,8 @@ export default function NouveauFilmBouton() {
         setErreurs(corps.erreurs ?? ["La création a échoué, réessaie."]);
         return;
       }
-      router.push(`/film/${corps.id}/creer`);
+      const suite = site.trim() ? `?site=${encodeURIComponent(site.trim())}` : "";
+      router.push(`/film/${corps.id}/creer${suite}`);
     } catch {
       setErreurs(["GEN MOTION ne répond pas : vérifie que l'application est lancée."]);
     } finally {
@@ -95,6 +97,18 @@ export default function NouveauFilmBouton() {
                 autoFocus
                 onChange={(evenement) => setNom(evenement.target.value)}
               />
+            </label>
+
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted">Le lien de ton site (facultatif)</span>
+              <input
+                className="h-10 rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink outline-none focus:border-accent focus:shadow-[var(--ring)]"
+                value={site}
+                inputMode="url"
+                placeholder="monsite.fr"
+                onChange={(evenement) => setSite(evenement.target.value)}
+              />
+              <span className="text-[11px] text-muted">GEN MOTION y prendra les captures, tes couleurs, ton logo, et proposera tes textes.</span>
             </label>
 
             <ChoixDeCases titre="Langues" multiple options={LANGUES} valeurs={langues} onChange={(v) => setLangues(v as Langue[])} />

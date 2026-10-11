@@ -13,9 +13,16 @@ import "./assistant.css";
  */
 export const dynamic = "force-dynamic";
 
-export default async function CreerUnFilmPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CreerUnFilmPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ site?: string }>;
+}) {
   if (isPublicWebRuntime(process.env)) notFound();
   const { id } = await params;
+  const { site } = await searchParams;
   const etat = etatDeLEditeur(id);
   if (!etat) {
     return (
@@ -28,7 +35,7 @@ export default async function CreerUnFilmPage({ params }: { params: Promise<{ id
   return (
     <CadreDuFilm nom={nom}>
       <EnTeteDuFilm id={id} titre={`Créer le film de ${nom}`} sousTitre="Cinq étapes, dans l'ordre que tu veux. Tout s'enregistre au fur et à mesure." />
-      <AssistantDuFilm etatInitial={etat} />
+      <AssistantDuFilm etatInitial={etat} adresseAuDepart={typeof site === "string" ? site : undefined} />
     </CadreDuFilm>
   );
 }

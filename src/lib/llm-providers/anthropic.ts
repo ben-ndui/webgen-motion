@@ -19,8 +19,8 @@ import type {
 import { isGeneratedTour } from "./base";
 import { buildSystemPrompt, buildUserPrompt } from "./prompt";
 
-const API_URL = "https://api.anthropic.com/v1/messages";
-const API_VERSION = "2023-06-01";
+export const API_URL = "https://api.anthropic.com/v1/messages";
+export const API_VERSION = "2023-06-01";
 
 /** Pricing per million tokens (USD), as published by Anthropic in
  *  May 2026. Sonnet est 5× moins cher qu'Opus, on l'utilise par
@@ -157,7 +157,7 @@ export function createAnthropicProvider(
 /** Extracts the first ```json ... ``` block in the response. If the
  *  model didn't wrap (sometimes happens with Sonnet at low temp),
  *  return the raw text — JSON.parse will catch malformed cases. */
-function extractJsonBlock(text: string): string {
+export function extractJsonBlock(text: string): string {
   const fenced = text.match(/```json\s*([\s\S]*?)```/);
   if (fenced) return fenced[1].trim();
   const anyFence = text.match(/```\s*([\s\S]*?)```/);

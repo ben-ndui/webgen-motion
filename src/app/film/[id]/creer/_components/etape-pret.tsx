@@ -31,6 +31,15 @@ function libelle(champ: string): string {
 
 const ROLES = { musique: "La musique", logo: "Le logo", capture: "Une capture" } as const;
 
+/** La valeur actuelle d'un texte de la fiche (« fr:parcours.2 »), pour savoir s'il a été retouché. */
+function valeurActuelle(fiche: FilmSpec, cle: string): string | undefined {
+  const [langue, champ] = cle.split(":") as ["fr" | "en", string];
+  let noeud: unknown = fiche.textes[langue];
+  for (const morceau of champ.split(".")) noeud = (noeud as Record<string, unknown> | undefined)?.[morceau];
+  if (typeof noeud === "object" && noeud !== null && "texte" in noeud) return String((noeud as { texte: unknown }).texte);
+  return typeof noeud === "string" ? noeud : undefined;
+}
+
 /** « ecrans-fr/evenement-2.png » → « Le moment clé : Moment 2 ». */
 function nomDeLaCapture(fiche: FilmSpec, relatif: string): string {
   const [dossier, nom] = relatif.split("/");
@@ -58,6 +67,7 @@ type Props = {
  */
 export default function EtapePret({ id, etat, fiche, modifier, enregistrer, onAller }: Props) {
   const manquants = etat.medias.filter((media) => !media.present);
+  const aRelire = Object.entries(etat.propositions).filter(([cle, valeur]) => cle.includes(":") && valeurActuelle(fiche, cle) === valeur).length;
   const reste = etat.textesAEcrire.length + manquants.length + etat.erreurs.length + etat.doublons.length;
 
   async function declarerPret() {
@@ -123,6 +133,11 @@ export default function EtapePret({ id, etat, fiche, modifier, enregistrer, onAl
               ))}
             </ul>
           </>
+        )}
+        {aRelire > 0 && (
+          <p className="champ-aide">
+            {aRelire} texte{aRelire > 1 ? "s" : ""} proposé{aRelire > 1 ? "s" : ""} depuis ton site, pas encore retouché{aRelire > 1 ? "s" : ""} : relis-les avant de produire (étape « Ton histoire »).
+          </p>
         )}
         {reste === 0 && (
           <button type="button" className="film-btn" onClick={() => void declarerPret()}>
