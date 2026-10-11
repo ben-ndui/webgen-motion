@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { readFileSync } from "node:fs";
+
 import { deposerCapture, deposerLogo, deposerMusique } from "@/lib/film-depot";
+import { cheminDUnMediaAttendu } from "@/lib/film-depot-lecture";
+
+const TYPES: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml" };
+
+/**
+ * GET /api/motion/film/<id>/media?relatif=… — l'aperçu d'une image déposée,
+ * pour la vignette de sa case. Seuls les médias ATTENDUS par la fiche se
+ * lisent : aucun chemin arbitraire du disque.
+ */
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  const relatif = req.nextUrl.searchParams.get("relatif") ?? "";
+  const chemin = cheminDUnMediaAttendu(id, relatif);
+  const extension = relatif.split(".").pop()?.toLowerCase() ?? "";
+  if (!chemin || !TYPES[extension]) return NextResponse.json({ erreur: "Média introuvable" }, { status: 404 });
+  // Un SVG déposé pourrait porter du script : servi en image, sans exécution.
+  return new NextResponse(readFileSync(chemin), {
+    headers: { "Content-Type": TYPES[extension], "Cache-Control": "no-store", "Content-Security-Policy": "script-src 'none'; sandbox" },
+  });
+}
 
 /**
  * POST /api/motion/film/<id>/media — dépose un fichier (multipart) :

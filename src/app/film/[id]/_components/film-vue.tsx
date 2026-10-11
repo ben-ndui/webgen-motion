@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { ResumeDuFilm, StatutDuFilm } from "@/lib/film-etat";
 import { PointDeMeta } from "../../../_components/app-top-bar";
 import CadreDuFilm, { EnTeteDuFilm } from "./cadre-du-film";
@@ -86,7 +88,14 @@ export default function FilmVue({ id, resume, studio }: PropsVue) {
         id={id}
         titre={resume.nom}
         sousTitre="Chaque déclinaison se rend depuis la fiche. Les médias et les rendus sont relus sur le disque à chaque chargement de la page."
-        statut={<Statut statut={resume.statut} />}
+        statut={
+          <div className="film-actions">
+            <Statut statut={resume.statut} />
+            <Link className="film-btn film-btn-ghost" href={`/film/${id}/creer`} data-wm-id="film.modifier">
+              Modifier le film
+            </Link>
+          </div>
+        }
       />
       <div className="two-col">
         <div className="film-main">

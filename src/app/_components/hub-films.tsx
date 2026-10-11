@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NouveauFilmBouton from "./nouveau-film-bouton";
 
 /**
  * Section « Films de marque » du hub : une carte par fiche `films/<id>.json`,
@@ -72,9 +73,12 @@ function FilmCard({ film }: { film: HubFilm }) {
 export default function HubFilms({ films, error }: { films: HubFilm[]; error: string | null }) {
   return (
     <section id="films" className="films-wrap" data-wm-id="hub.films" aria-labelledby="hub-films-title">
-      <h2 id="hub-films-title" className="section-title">
-        Films de marque <span className="n">{error ? "" : films.length}</span>
-      </h2>
+      <div className="films-head">
+        <h2 id="hub-films-title" className="section-title">
+          Films de marque <span className="n">{error ? "" : films.length}</span>
+        </h2>
+        <NouveauFilmBouton />
+      </div>
       {error ? (
         <div className="films-note error" role="alert">
           <b>Impossible de lire le dossier films/</b>
@@ -84,9 +88,8 @@ export default function HubFilms({ films, error }: { films: HubFilm[]; error: st
         <div className="films-note">
           <b>Aucun film de marque</b>
           <span>
-            Pour en créer un : déposer une fiche <code>films/&lt;id&gt;.json</code> au format FilmSpec (gabarit
-            film-motion du brain), puis ses captures et sa musique dans{" "}
-            <code>~/.webgen-motion/films/&lt;id&gt;/public/</code>.
+            Clique sur « Nouveau film » : tu donnes un nom, tu choisis un style, et GEN MOTION te guide
+            pour importer ton logo, ta musique et tes captures.
           </span>
         </div>
       ) : (

@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { enregistrerFilm } from "@/lib/film-ecriture";
+import { etatDeLEditeur } from "@/lib/film-editeur";
+
+/** GET /api/motion/film/<id> — l'état complet de l'assistant (fiche, médias, textes à écrire). */
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  const etat = etatDeLEditeur(id);
+  if (!etat) return NextResponse.json({ erreur: "Film introuvable" }, { status: 404 });
+  return NextResponse.json(etat, { headers: { "Cache-Control": "no-store" } });
+}
 
 /**
  * PUT /api/motion/film/<id> — enregistre la fiche envoyée par l'éditeur.

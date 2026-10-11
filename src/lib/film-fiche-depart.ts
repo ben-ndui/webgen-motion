@@ -94,6 +94,11 @@ export function textesEncoreExemple(fiche: FilmSpec): TexteAEcrire[] {
       ["evenement.chute", texte.evenement.chute, modele.evenement.chute],
       ["fin.disponible", texte.fin.disponible, modele.fin.disponible],
       ...texte.parcours.map((v, i): [string, string, string] => [`parcours.${i}`, v, modele.parcours[i] ?? ""]),
+      ...texte.probleme.messages.map((m, i): [string, string, string] => [
+        `probleme.messages.${i}`,
+        m.texte,
+        modele.probleme.messages[i]?.texte ?? (langue === "fr" ? "Un message" : "A message"),
+      ]),
       ...texte.marque.mots.map((v, i): [string, string, string] => [`marque.mots.${i}`, v, modele.marque.mots[i] ?? ""]),
     ];
     if (texte.bibliotheque && modele.bibliotheque) {
@@ -101,6 +106,11 @@ export function textesEncoreExemple(fiche: FilmSpec): TexteAEcrire[] {
         ["bibliotheque.mot", texte.bibliotheque.mot, modele.bibliotheque.mot],
         ["bibliotheque.anneau", texte.bibliotheque.anneau, modele.bibliotheque.anneau],
         ["bibliotheque.signature", texte.bibliotheque.signature, modele.bibliotheque.signature],
+        ...texte.bibliotheque.legendesEventail.map((v, i): [string, string, string] => [
+          `bibliotheque.legendesEventail.${i}`,
+          v,
+          modele.bibliotheque?.legendesEventail[i] ?? "",
+        ]),
       );
     }
     if (fiche.bibliotheque && FILM.bibliotheque) {

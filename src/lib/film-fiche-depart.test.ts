@@ -25,11 +25,14 @@ describe("fiche d'un nouveau film", () => {
     const fiche = ficheDeDepart(CHOIX);
     const restants = textesEncoreExemple(fiche);
     expect(restants.length).toBeGreaterThan(10);
+    expect(restants.map((r) => r.champ)).toContain("probleme.messages.0");
     expect(restants.every((r) => r.langue === "fr")).toBe(true);
     for (const { champ } of restants) {
       const chemin = champ.split(".");
       const parent = chemin.slice(0, -1).reduce<Record<string, unknown>>((o, k) => o[k] as Record<string, unknown>, fiche.textes.fr as unknown as Record<string, unknown>);
       if (champ.startsWith("bibliotheque.adresse")) fiche.bibliotheque!.adresse = "maisonsayasignature.com";
+      else if (champ.startsWith("bibliotheque.legendesEventail.")) fiche.textes.fr.bibliotheque!.legendesEventail[Number(chemin[2])] = `écrit ${champ}`;
+      else if (champ.startsWith("probleme.messages.")) fiche.textes.fr.probleme.messages[Number(chemin[2])]!.texte = `écrit ${champ}`;
       else parent[chemin.at(-1)!] = `écrit ${champ}`;
     }
     expect(textesEncoreExemple(fiche)).toEqual([]);
