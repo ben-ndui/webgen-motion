@@ -81,7 +81,7 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
       </div>
 
       <fieldset className="assistant-etapes" disabled={occupe} aria-busy={occupe}>
-      {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} />}
+      {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} medias={etat.medias} />}
       {etape === "musique" && <EtapeMusique fiche={fiche} musiquePresente={present("musique")} deposer={deposer} />}
       {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} doublons={etat.doublons} deposer={deposer} modifier={modifier} />}
       {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} />}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { erreursDeLaFiche } from "./film-loader";
-import { ficheDeDepart, idDepuisNom, problemesDuChoix, textesEncoreExemple } from "./film-fiche-depart";
+import { changerLesDeclinaisons, ficheDeDepart, idDepuisNom, problemesDuChoix, textesEncoreExemple } from "./film-fiche-depart";
 
 const CHOIX = { nom: "Maison Saya", langues: ["fr" as const], formats: ["court" as const], direction: "nocturne" as const };
 
@@ -51,5 +51,15 @@ describe("fiche d'un nouveau film", () => {
       "Le nom doit contenir au moins une lettre ou un chiffre",
     );
     expect(problemesDuChoix(CHOIX)).toEqual([]);
+  });
+
+  it("changer langues et formats après coup : garde les réglages, refuse de tout retirer", () => {
+    const fiche = ficheDeDepart({ ...CHOIX, langues: ["fr", "en"], formats: ["long", "court"] });
+    fiche.declinaisons.find((d) => d.nom === "Court-FR")!.avecContact = false;
+    changerLesDeclinaisons(fiche, ["fr"], ["court"]);
+    expect(fiche.declinaisons).toEqual([{ nom: "Court-FR", langue: "fr", version: "court", avecContact: false }]);
+    changerLesDeclinaisons(fiche, [], ["court"]);
+    expect(fiche.declinaisons).toHaveLength(1);
+    expect(erreursDeLaFiche(fiche)).toEqual([]);
   });
 });

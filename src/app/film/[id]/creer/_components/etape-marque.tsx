@@ -1,11 +1,13 @@
 "use client";
 
+import type { MediaDeLEditeur } from "@/lib/film-editeur";
 import { type CouleursDeBase, paletteDuFilm, problemesDeLaPalette } from "@/lib/film-palette";
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
 import ChoixDeCases from "../../../../_components/choix-de-cases";
-import { STYLES } from "../../../../_components/styles-de-film";
+import { STYLES } from "../../../../_components/choix-du-film";
 import { DIRECTION_PAR_DEFAUT } from "../../../../../../remotion/film/marque/direction";
 import type { DirectionDuFilm } from "../../../../../../remotion/film/spec";
+import BlocLanguesFormats from "./bloc-langues-formats";
 import CaseDeDepot from "./case-de-depot";
 import type { RoleDeDepot } from "./use-fiche-du-film";
 
@@ -38,10 +40,11 @@ type Props = {
   deposer: (role: RoleDeDepot, fichier: File) => Promise<string | null>;
   logoPresent: boolean;
   propositions: Record<string, string>;
+  medias: MediaDeLEditeur[];
 };
 
 /** Étape 1 : le logo, trois couleurs, une police, le contact de fin. */
-export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent, propositions }: Props) {
+export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent, propositions, medias }: Props) {
   const { couleurs, logo } = fiche.marque;
   const base: CouleursDeBase = { encre: couleurs.encre, clair: couleurs.clair, accent: couleurs.accent };
   const problemes = problemesDeLaPalette(base);
@@ -122,6 +125,8 @@ export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent,
           onChange={(valeurs) => modifier((c) => { c.direction = valeurs[0] as DirectionDuFilm; })}
         />
       </section>
+
+      <BlocLanguesFormats fiche={fiche} medias={medias} modifier={modifier} />
 
       <section className="bloc" aria-labelledby="bloc-police">
         <h3 id="bloc-police" className="bloc-titre">Ta police</h3>

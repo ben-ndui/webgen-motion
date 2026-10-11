@@ -6,16 +6,8 @@ import { Film, Plus, X } from "lucide-react";
 
 import type { DirectionDuFilm, Langue, VersionDuFilm } from "../../../remotion/film/spec";
 import ChoixDeCases from "./choix-de-cases";
-import { STYLES } from "./styles-de-film";
+import { FORMATS_DU_FILM, LANGUES_DU_FILM, STYLES } from "./choix-du-film";
 
-const LANGUES: { valeur: Langue; libelle: string }[] = [
-  { valeur: "fr", libelle: "Français" },
-  { valeur: "en", libelle: "Anglais" },
-];
-const FORMATS: { valeur: VersionDuFilm; libelle: string; aide: string }[] = [
-  { valeur: "court", libelle: "Vertical 9:16", aide: "Instagram, TikTok, Reels" },
-  { valeur: "long", libelle: "Horizontal 16:9", aide: "Site, YouTube, présentation" },
-];
 
 /**
  * « Nouveau film » : quatre choix simples, puis l'assistant prend le relais.
@@ -107,8 +99,8 @@ export default function NouveauFilmBouton() {
               <span className="text-[11px] text-muted">GEN MOTION y prendra les captures, tes couleurs, ton logo, et proposera tes textes.</span>
             </label>
 
-            <ChoixDeCases titre="Langues" multiple options={LANGUES} valeurs={langues} onChange={(v) => setLangues(v as Langue[])} />
-            <ChoixDeCases titre="Formats" multiple options={FORMATS} valeurs={formats} onChange={(v) => setFormats(v as VersionDuFilm[])} />
+            <ChoixDeCases titre="Langues" multiple options={LANGUES_DU_FILM} valeurs={langues} onChange={(v) => setLangues(v as Langue[])} />
+            <ChoixDeCases titre="Formats" multiple options={FORMATS_DU_FILM} valeurs={formats} onChange={(v) => setFormats(v as VersionDuFilm[])} />
             <ChoixDeCases
               titre="Style"
               options={STYLES.map((style) => ({ ...style, image: `/film/styles/${style.valeur}.jpg` }))}

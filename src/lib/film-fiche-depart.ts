@@ -53,7 +53,7 @@ export function idDepuisNom(nom: string): string {
 
 const NOM_DU_FORMAT: Record<VersionDuFilm, string> = { long: "Film", court: "Court" };
 
-function declinaisons(langues: Langue[], formats: VersionDuFilm[]): DeclinaisonDuFilm[] {
+export function declinaisons(langues: Langue[], formats: VersionDuFilm[]): DeclinaisonDuFilm[] {
   return formats.flatMap((version) =>
     langues.map((langue) => ({ nom: `${NOM_DU_FORMAT[version]}-${langue.toUpperCase()}`, langue, version, avecContact: true })),
   );
@@ -69,6 +69,25 @@ export function ficheDeDepart(choix: ChoixDeDepart): FilmSpec {
   for (const langue of LANGUES) fiche.textes[langue].dossierDesEcrans = `ecrans-${langue}`;
   fiche.declinaisons = declinaisons(choix.langues, choix.formats);
   return fiche;
+}
+
+/** Les formats rendus : ceux des déclinaisons. */
+export function formatsDuFilm(fiche: FilmSpec): VersionDuFilm[] {
+  return VERSIONS.filter((version) => fiche.declinaisons.some((d) => d.version === version));
+}
+
+/**
+ * Change les langues et les formats d'un film déjà créé. Une déclinaison qui
+ * reste garde ses réglages (« avec contact » notamment) ; refuse de tout
+ * retirer (il faut au moins une langue et un format).
+ */
+export function changerLesDeclinaisons(fiche: FilmSpec, langues: Langue[], formats: VersionDuFilm[]): void {
+  if (langues.length === 0 || formats.length === 0) return;
+  const anciennes = new Map(fiche.declinaisons.map((d) => [d.nom, d]));
+  // Ordre stable, celui de la création, quel que soit l'ordre des clics.
+  const languesRangees = LANGUES.filter((l) => langues.includes(l));
+  const formatsRanges = VERSIONS.filter((f) => formats.includes(f));
+  fiche.declinaisons = declinaisons(languesRangees, formatsRanges).map((nouvelle) => anciennes.get(nouvelle.nom) ?? nouvelle);
 }
 
 /** Les langues réellement rendues : celles des déclinaisons. */
