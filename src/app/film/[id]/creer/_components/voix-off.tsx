@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { MUSIQUE_SOUS_LA_VOIX } from "@/lib/film-voix-niveaux";
 import { lignesDeDepart, phraseDeDepart, reperesMontes, tempsDeParole } from "@/lib/film-voix-plans";
 import type { FilmSpec, Langue, LigneDeVoix } from "../../../../../../remotion/film/spec";
 import GenerationDesVoix from "./generation-des-voix";
@@ -60,7 +61,7 @@ export default function VoixOff({ id, fiche, langues, modifier, enregistrer, rec
         <h3 id="bloc-voix" className="bloc-titre">Ta voix off</h3>
         <p className="champ-aide">Une voix dit chaque texte au moment où il apparaît à l&apos;image, et se tait jusqu&apos;au suivant. La musique baisse toute seule pendant qu&apos;elle parle.</p>
         <button type="button" className="film-btn" onClick={() => modifier((c) => {
-          c.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [], en: [] } };
+          c.voix = { musiqueSousLaVoix: MUSIQUE_SOUS_LA_VOIX, lignes: { fr: [], en: [] } };
           for (const l of langues) c.voix.lignes[l] = lignesDeDepart(c, l);
         })}>Ajouter une voix off</button>
       </section>

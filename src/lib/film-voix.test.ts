@@ -8,6 +8,7 @@ import { creerFilm, lireFicheBrute } from "./film-ecriture";
 import { ficheDeDepart } from "./film-fiche-depart";
 import { dossierJetable } from "./film-fixtures.test-utils";
 import { genererLesVoix } from "./film-voix";
+import { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
 
 const MOTEUR: ResolvedVoiceBackend = { kind: "google", voice: "fr-FR-Neural2-D", languageCode: "fr-FR", speakingRate: 1, pronunciation: {}, credentialsPath: "x" };
 
@@ -55,7 +56,7 @@ describe("génération de la voix off d'un film", () => {
     const fiche = lireFicheBrute("saya", lieux.fiches) as { voix: { lignes: { fr: { fichier: string }[] } } };
     const mesure = spawnSync("ffmpeg", ["-i", join(lieux.public("saya"), fiche.voix.lignes.fr[0]!.fichier), "-af", "ebur128", "-f", "null", "-"], { encoding: "utf-8" });
     const lufs = Number(/I:\s+(-?[\d.]+) LUFS\s*$/m.exec(mesure.stderr.split("Summary")[1] ?? "")?.[1]);
-    expect(Math.abs(lufs - -14)).toBeLessThan(2);
+    expect(Math.abs(lufs - VOLUME_DE_LA_VOIX_LUFS)).toBeLessThan(2);
   });
 
   it("ne régénère pas une ligne déjà là", async () => {

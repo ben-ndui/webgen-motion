@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { MUSIQUE_SOUS_LA_VOIX } from "@/lib/film-voix-niveaux";
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
 
 type Props = {
@@ -16,7 +17,7 @@ type Props = {
 /** Le volume de la musique sous la voix, et le bouton qui génère les répliques en attente. */
 export default function GenerationDesVoix({ id, fiche, aGenerer, modifier, enregistrer, recharger }: Props) {
   const [etat, setEtat] = useState<{ enCours: boolean; message: string | null; erreurs: string[] }>({ enCours: false, message: null, erreurs: [] });
-  const niveau = Math.round((fiche.voix?.musiqueSousLaVoix ?? 0.3) * 100);
+  const niveau = Math.round((fiche.voix?.musiqueSousLaVoix ?? MUSIQUE_SOUS_LA_VOIX) * 100);
 
   async function generer() {
     setEtat({ enCours: true, message: null, erreurs: [] });

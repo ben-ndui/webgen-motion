@@ -10,6 +10,7 @@ import { chargerFilm, getFilmsDir } from "./film-loader";
 import { getFilmPublicDir } from "./film-store";
 import { moteurPourLeFilm, reperesMontes } from "./film-voix-plans";
 import { getVoCacheDir } from "./motion-tour-store";
+import { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
 import { ensureTts } from "./voix/synthese";
 
 /**
@@ -44,11 +45,9 @@ export function dureeDeLAudio(chemin: string): number | null {
   return sortie.status === 0 && duree > 0 ? Math.round(duree * 100) / 100 : null;
 }
 
-// Volume cible d'une voix (LUFS, norme des réseaux). Les voix de synthèse
-// sortent vers -20 LUFS et les musiques du commerce vers -10 : sans ce
-// réglage, la voix est noyée sous la musique même baissée (mesuré le
-// 11/10/2026 : -20,7 LUFS de voix contre -9,7 de musique).
-export const VOLUME_DE_LA_VOIX_LUFS = -14;
+// Les voix de synthèse sortent vers -20 LUFS et les musiques du commerce
+// vers -10 : on remonte chaque voix (niveaux mesurés : film-voix-niveaux.ts).
+export { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
 
 /** Copie la voix dans le film à un volume constant et audible. */
 export function normaliserLaVoix(source: string, destination: string): boolean {
