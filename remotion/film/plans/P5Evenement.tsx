@@ -7,6 +7,7 @@ import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { imageDuTemps } from "../lib/tempo";
 import { TITRE } from "../lib/typo";
+import { TEMPS_PAR_ETAT, tempsDeLaChute } from "../reperes";
 import type { EcransDuFilm, TextesDuFilm } from "../spec";
 
 type Props = {
@@ -16,7 +17,6 @@ type Props = {
   dossierDesEcrans: string;
 };
 
-const TEMPS_PAR_ETAT = 4;
 
 // En 9:16, le téléphone sous la réserve du haut, la chute dessous et
 // au-dessus de la réserve du bas (1920 - 400).
@@ -40,7 +40,7 @@ export function P5Evenement({ tempo, textes, etats, dossierDesEcrans }: Props) {
   const page = MISE_EN_PAGE[useFormat()];
   const indexCourant = Math.min(etats.length - 1, Math.floor(image / temps(TEMPS_PAR_ETAT)));
   const ecran = etats[indexCourant] ?? etats[0];
-  const debutChute = temps(etats.length * TEMPS_PAR_ETAT - 2);
+  const debutChute = temps(tempsDeLaChute(etats.length));
 
   return (
     <AbsoluteFill style={{ background: surface.fond }}>

@@ -24,7 +24,7 @@ function fournisseurLocal(appels: string[]) {
 function filmAvecVoix() {
   const racine = dossierJetable("voix");
   const fiche = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
-  fiche.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [{ plan: "bascule", texte: "Les parfums naturels sont rares." }, { plan: "fin", texte: "Sur maisonsayasignature.com." }], en: [] } };
+  fiche.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [{ repere: "bascule.constat", texte: "Les parfums naturels sont rares." }, { repere: "fin.disponible", texte: "Sur maisonsayasignature.com." }], en: [] } };
   const lieux = { fiches: join(racine, "fiches"), public: (id: string) => join(racine, "public", id), cache: join(racine, "cache"), moteur: () => MOTEUR };
   creerFilm("saya", fiche, lieux.fiches);
   return lieux;
@@ -68,8 +68,8 @@ describe("génération de la voix off d'un film", () => {
 
   it("ignore une phrase écrite pour un plan absent du montage (jamais entendue)", async () => {
     const lieux = filmAvecVoix();
-    const fiche = lireFicheBrute("saya", lieux.fiches) as { voix: { lignes: { fr: { plan: string; texte: string }[] } } };
-    fiche.voix.lignes.fr.push({ plan: "marque", texte: "Pas dans le format vertical." });
+    const fiche = lireFicheBrute("saya", lieux.fiches) as { voix: { lignes: { fr: { repere: string; texte: string }[] } } };
+    fiche.voix.lignes.fr.push({ repere: "marque.mots.0", texte: "Pas dans le format vertical." });
     const { enregistrerFilm } = await import("./film-ecriture");
     enregistrerFilm("saya", fiche, lieux.fiches);
     const appels: string[] = [];
@@ -91,6 +91,6 @@ describe("génération de la voix off d'un film", () => {
       return local(texte, cache);
     };
     const resultat = await genererLesVoix("saya", { ...lieux, synthetiser: capricieux });
-    expect(resultat).toEqual({ ok: true, generees: 1, erreurs: ["FR · fin : quota dépassé"] });
+    expect(resultat).toEqual({ ok: true, generees: 1, erreurs: ["FR · fin.disponible : quota dépassé"] });
   });
 });

@@ -2,19 +2,29 @@
 
 import { useState } from "react";
 
-import { type PlanParle, lignesDeDepart, phraseDeDepart, tempsDeParole } from "@/lib/film-voix-plans";
+import { lignesDeDepart, phraseDeDepart, reperesMontes, tempsDeParole } from "@/lib/film-voix-plans";
 import type { FilmSpec, Langue, LigneDeVoix } from "../../../../../../remotion/film/spec";
+import GenerationDesVoix from "./generation-des-voix";
 import LigneDeVoixOff from "./ligne-de-voix";
 
-const PLANS: { id: PlanParle; titre: string }[] = [
-  { id: "ouverture", titre: "L'ouverture (ton logo)" },
-  { id: "probleme", titre: "Le problème (la conversation)" },
-  { id: "bascule", titre: "La bascule" },
-  { id: "parcours", titre: "Le parcours" },
-  { id: "evenement", titre: "Le moment clé" },
-  { id: "marque", titre: "Tes trois mots" },
-  { id: "fin", titre: "La fin" },
-];
+const PLANS: Record<string, string> = {
+  ouverture: "L'ouverture",
+  probleme: "Le problème",
+  bascule: "La bascule",
+  parcours: "Le parcours",
+  evenement: "Le moment clé",
+  marque: "Tes trois mots",
+  fin: "La fin",
+};
+
+/** « parcours.2 » → « Étape 3 » : ce que la personne voit à l'écran à ce moment. */
+function libelleDuRepere(cle: string): string {
+  const [plan, sous, rang] = cle.split(".");
+  if (plan === "parcours") return `Étape ${Number(sous) + 1}`;
+  if (plan === "marque") return `Mot ${Number(rang) + 1}`;
+  if (plan === "probleme") return `Message ${Number(rang) + 1}`;
+  return { nom: "Ton nom", constat: "Le constat", chiffre: "Le chiffre", signature: "La promesse", chute: "La phrase de chute", disponible: "Où te trouver" }[sous ?? ""] ?? cle;
+}
 
 type Props = {
   id: string;
@@ -26,44 +36,29 @@ type Props = {
 };
 
 /**
- * La voix off du film : une phrase par plan, pré-remplie avec ce que le plan
- * affiche, générée avec la voix réglée dans GEN MOTION. Changer un texte
- * oblige à régénérer sa voix (l'ancienne ne correspondrait plus).
+ * La voix off, réplique par réplique : chacune est dite AU MOMENT où son
+ * texte apparaît à l'image, et se tait jusqu'à la suivante. Changer un
+ * texte oblige à régénérer sa voix (l'ancienne ne dirait plus la même chose).
  */
 export default function VoixOff({ id, fiche, langues, modifier, enregistrer, recharger }: Props) {
   const [langue, setLangue] = useState<Langue>(langues[0] ?? "fr");
-  const [generation, setGeneration] = useState<{ enCours: boolean; message: string | null; erreurs: string[] }>({ enCours: false, message: null, erreurs: [] });
-  const temps = tempsDeParole(fiche);
+  const temps = tempsDeParole(fiche, langue);
+  const reperes = reperesMontes(fiche, langue);
   const lignes = fiche.voix?.lignes[langue] ?? [];
-  // Seules comptent les phrases des plans montés : les autres ne sont ni montrées ni jouées.
-  const aGenerer = langues.reduce((n, l) => n + (fiche.voix?.lignes[l] ?? []).filter((ligne) => !ligne.fichier && temps[ligne.plan as PlanParle] !== undefined).length, 0);
+  const montes = (l: Langue) => new Set(reperesMontes(fiche, l).map((r) => r.cle));
+  const aGenerer = langues.reduce((n, l) => n + (fiche.voix?.lignes[l] ?? []).filter((ligne) => !ligne.fichier && montes(l).has(ligne.repere)).length, 0);
 
-  const ecrireLigne = (plan: string, changement: (ligne: LigneDeVoix | undefined, liste: LigneDeVoix[]) => void) =>
+  const ecrire = (changement: (liste: LigneDeVoix[]) => void) =>
     modifier((c) => {
       if (!c.voix) return;
-      const liste = c.voix.lignes[langue] ?? (c.voix.lignes[langue] = []);
-      changement(liste.find((l) => l.plan === plan), liste);
+      changement(c.voix.lignes[langue] ?? (c.voix.lignes[langue] = []));
     });
-
-  async function generer() {
-    setGeneration({ enCours: true, message: null, erreurs: [] });
-    if (!(await enregistrer())) return setGeneration({ enCours: false, message: "Enregistrement impossible, réessaie.", erreurs: [] });
-    try {
-      const reponse = await fetch(`/api/motion/film/${id}/voix`, { method: "POST" });
-      const corps = (await reponse.json().catch(() => ({}))) as { generees?: number; erreurs?: string[]; erreur?: string };
-      await recharger();
-      if (!reponse.ok) return setGeneration({ enCours: false, message: corps.erreur ?? "La génération a échoué.", erreurs: [] });
-      setGeneration({ enCours: false, message: `${corps.generees ?? 0} voix générée${(corps.generees ?? 0) > 1 ? "s" : ""}.`, erreurs: corps.erreurs ?? [] });
-    } catch {
-      setGeneration({ enCours: false, message: "GEN MOTION ne répond pas.", erreurs: [] });
-    }
-  }
 
   if (!fiche.voix) {
     return (
       <section className="bloc" aria-labelledby="bloc-voix">
         <h3 id="bloc-voix" className="bloc-titre">Ta voix off</h3>
-        <p className="champ-aide">Une voix lit une phrase sur chaque plan, et la musique baisse toute seule pendant qu&apos;elle parle. On part des textes déjà à l&apos;écran : tu les ajustes ensuite.</p>
+        <p className="champ-aide">Une voix dit chaque texte au moment où il apparaît à l&apos;image, et se tait jusqu&apos;au suivant. La musique baisse toute seule pendant qu&apos;elle parle.</p>
         <button type="button" className="film-btn" onClick={() => modifier((c) => {
           c.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [], en: [] } };
           for (const l of langues) c.voix.lignes[l] = lignesDeDepart(c, l);
@@ -84,38 +79,35 @@ export default function VoixOff({ id, fiche, langues, modifier, enregistrer, rec
           ))}
         </div>
       )}
-      {PLANS.filter((plan) => temps[plan.id] !== undefined).map((plan) => {
-        const ligne = lignes.find((l) => l.plan === plan.id);
-        if (!ligne) {
-          return (
-            <button key={plan.id} type="button" className="lien" onClick={() => ecrireLigne(plan.id, (_, liste) => liste.push({ plan: plan.id, texte: phraseDeDepart(fiche, langue, plan.id) || "…" }))}>
-              + Une phrase sur « {plan.titre} »
-            </button>
-          );
-        }
-        return (
-          <LigneDeVoixOff
-            key={plan.id}
-            titre={plan.titre}
-            ligne={ligne}
-            disponible={temps[plan.id]}
-            onTexte={(texte) => ecrireLigne(plan.id, (l) => { if (l) { l.texte = texte; delete l.fichier; delete l.duree; } })}
-            onRetirer={() => ecrireLigne(plan.id, (_, liste) => { liste.splice(liste.findIndex((l) => l.plan === plan.id), 1); })}
-          />
-        );
-      })}
-      <label className="champ">
-        <span className="champ-question">Volume de la musique pendant la voix : {Math.round(fiche.voix.musiqueSousLaVoix * 100)} %</span>
-        <input type="range" min={0} max={100} value={Math.round(fiche.voix.musiqueSousLaVoix * 100)} onChange={(e) => modifier((c) => { if (c.voix) c.voix.musiqueSousLaVoix = Number(e.target.value) / 100; })} />
-      </label>
-      <div className="ecrans-actions">
-        <button type="button" className="film-btn" disabled={generation.enCours || aGenerer === 0} onClick={() => void generer()}>
-          {generation.enCours ? "Génération…" : aGenerer > 0 ? `Générer les voix (${aGenerer})` : "Voix à jour"}
-        </button>
-        <button type="button" className="lien" onClick={() => modifier((c) => { delete c.voix; })}>Retirer la voix off</button>
-      </div>
-      {generation.message && <p className="champ-aide" role="status">{generation.message}</p>}
-      {generation.erreurs.map((erreur) => <p key={erreur} className="depot-erreur" role="alert">{erreur}</p>)}
+      {Object.entries(PLANS).filter(([plan]) => reperes.some((r) => r.plan === plan)).map(([plan, titre]) => (
+        <div key={plan} className="voix-plan">
+          <span className="kicker">{titre}</span>
+          {reperes.filter((r) => r.plan === plan).map((repere) => {
+            const ligne = lignes.find((l) => l.repere === repere.cle);
+            if (!ligne) {
+              return (
+                <button key={repere.cle} type="button" className="lien" onClick={() => ecrire((liste) => liste.push({ repere: repere.cle, texte: phraseDeDepart(fiche, langue, repere.cle) || "…" }))}>
+                  + Dire « {libelleDuRepere(repere.cle)} »
+                </button>
+              );
+            }
+            return (
+              <LigneDeVoixOff
+                key={repere.cle}
+                titre={libelleDuRepere(repere.cle)}
+                ligne={ligne}
+                disponible={temps[repere.cle]}
+                onTexte={(texte) => ecrire((liste) => {
+                  const l = liste.find((x) => x.repere === repere.cle);
+                  if (l) { l.texte = texte; delete l.fichier; delete l.duree; }
+                })}
+                onRetirer={() => ecrire((liste) => { liste.splice(liste.findIndex((x) => x.repere === repere.cle), 1); })}
+              />
+            );
+          })}
+        </div>
+      ))}
+      <GenerationDesVoix id={id} fiche={fiche} aGenerer={aGenerer} modifier={modifier} enregistrer={enregistrer} recharger={recharger} />
     </section>
   );
 }

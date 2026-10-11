@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { FILM } from "./film";
 import { MONTAGES } from "./montages";
 import type { FilmSpec } from "./spec";
-import { erreursDeLaSpec, validerSpec, PLANS_DE_VOIX } from "./validerSpec";
+import { erreursDeLaSpec, validerSpec, REPERE_DE_VOIX } from "./validerSpec";
+import { reperesDuFilm } from "./reperes";
 
 // Une copie modifiable de la fiche d'exemple, par un aller-retour JSON :
 // c'est aussi le chemin qu'emprunte une fiche fournie par un outil.
@@ -101,17 +102,17 @@ describe("voix off et volume de la musique", () => {
   it("accepte une voix complète, une ligne pas encore générée, et un volume", () => {
     const voix = {
       musiqueSousLaVoix: 0.3,
-      lignes: { fr: [{ plan: "bascule", texte: "Le constat.", fichier: "voix/fr/bascule.mp3", duree: 2.4 }, { plan: "fin", texte: "À bientôt." }] },
+      lignes: { fr: [{ repere: "bascule.chiffre", texte: "Le chiffre.", fichier: "voix/fr/bascule.mp3", duree: 1.4 }, { repere: "fin.disponible", texte: "À bientôt." }] },
     };
     expect(erreursDeLaSpec({ ...FILM, voix, musique: { ...FILM.musique, volume: 0.8 } })).toEqual([]);
   });
 
-  it("refuse un plan inconnu, un plan en double, un niveau hors de 0 à 1", () => {
-    const voix = { musiqueSousLaVoix: 2, lignes: { fr: [{ plan: "generique", texte: "x" }, { plan: "fin", texte: "a" }, { plan: "fin", texte: "b" }] } };
+  it("refuse un repère inconnu, un repère en double, un niveau hors de 0 à 1", () => {
+    const voix = { musiqueSousLaVoix: 2, lignes: { fr: [{ repere: "generique", texte: "x" }, { repere: "parcours.1", texte: "a" }, { repere: "parcours.1", texte: "b" }] } };
     const erreurs = erreursDeLaSpec({ ...FILM, voix }).join(" | ");
     expect(erreurs).toContain("voix.musiqueSousLaVoix");
-    expect(erreurs).toContain("voix.lignes.fr[0].plan");
-    expect(erreurs).toContain("a déjà une ligne");
+    expect(erreurs).toContain("repère inconnu « generique »");
+    expect(erreurs).toContain("a déjà une réplique");
   });
 
   it("refuse plus de quatre états du moment clé (le cinquième ne se verrait jamais)", () => {
@@ -119,8 +120,10 @@ describe("voix off et volume de la musique", () => {
     expect(erreursDeLaSpec({ ...FILM, ecrans }).join(" ")).toContain("quatre états au plus");
   });
 
-  it("la liste des plans de voix reste celle des montages", () => {
+  it("tous les repères du film sont acceptés, et ils couvrent tous les plans des montages", () => {
+    const reperes = reperesDuFilm(FILM, "fr");
+    expect(reperes.every((r) => REPERE_DE_VOIX.test(r.cle))).toBe(true);
     const ids = new Set([...MONTAGES.long.plans, ...MONTAGES.court.plans].map((p) => p.id));
-    expect(new Set(PLANS_DE_VOIX)).toEqual(ids);
+    expect(new Set(reperes.map((r) => r.plan))).toEqual(ids);
   });
 });

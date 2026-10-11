@@ -36,7 +36,7 @@ export default function LigneDeVoixOff({ titre, ligne, disponible, onTexte, onRe
         onChange={(e) => onTexte(e.target.value)}
       />
       <div className="ligne-voix-pied">
-        <span className="champ-compteur">{disponible !== undefined ? `${SECONDES.format(disponible)} s de parole sur ce plan` : ""}</span>
+        <span className="champ-compteur">{disponible !== undefined ? `${SECONDES.format(disponible)} s avant le texte suivant` : ""}</span>
         <button type="button" className="lien" onClick={onRetirer}>Retirer</button>
       </div>
     </div>

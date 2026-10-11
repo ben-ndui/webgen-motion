@@ -2,49 +2,49 @@ import { describe, expect, it } from "vitest";
 
 import type { ResolvedVoiceBackend } from "./config";
 import { ficheDeDepart } from "./film-fiche-depart";
-import { ligneTropLongue, lignesDeDepart, moteurPourLaLangue, phraseDeDepart, tempsDeParole } from "./film-voix-plans";
+import { ligneTropLongue, lignesDeDepart, moteurPourLeFilm, phraseDeDepart, reperesMontes, tempsDeParole } from "./film-voix-plans";
 
 const FICHE = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
+const A_120 = { ...FICHE, musique: { ...FICHE.musique, tempo: 120 } };
 
-describe("voix off : plans et phrases", () => {
-  it("donne le temps de parole de chaque plan du montage, à partir du tempo", () => {
-    const temps = tempsDeParole({ ...FICHE, musique: { ...FICHE.musique, tempo: 120 } });
-    // À 120 BPM, une mesure dure 2 s ; la bascule fait 3 mesures, moins un demi-temps (0,25 s, arrondi à l’image).
-    expect(temps.bascule).toBeCloseTo(5.75, 1);
-    // Le court n'a pas de plan « marque ».
-    expect(temps.marque).toBeUndefined();
+describe("voix off : une réplique par repère", () => {
+  it("chaque étape du parcours a son propre moment, et se tait jusqu'à la suivante", () => {
+    const temps = tempsDeParole(A_120);
+    // À 120 BPM, un temps dure 0,5 s ; une étape dure 6 temps.
+    expect(temps["parcours.0"]).toBeCloseTo(3, 1);
+    expect(temps["parcours.1"]).toBeCloseTo(3, 1);
+    // La bascule : constat à 0, chiffre à 1,5 temps, promesse à 5 : 0,75 s pour le constat.
+    expect(temps["bascule.constat"]).toBeCloseTo(0.75, 1);
+    expect(temps["bascule.chiffre"]).toBeCloseTo(1.75, 1);
   });
 
-  it("prend le plus court des montages quand un plan est dans les deux", () => {
-    const temps = tempsDeParole({ ...FICHE, declinaisons: [...FICHE.declinaisons, { nom: "Film-FR", langue: "fr", version: "long", avecContact: true }] });
-    expect(temps.marque).toBeGreaterThan(0);
+  it("le format vertical n'a pas de plan « marque » : aucun repère, aucune réplique", () => {
+    expect(reperesMontes(FICHE, "fr").some((r) => r.plan === "marque")).toBe(false);
+    expect(tempsDeParole(FICHE)["marque.mots.0"]).toBeUndefined();
   });
 
-  it("propose des phrases tirées des textes à l'écran, sans ligne vide", () => {
-    const lignes = lignesDeDepart(FICHE, "fr");
-    // Le format vertical n'a pas de plan « marque » : pas de phrase pour lui.
-    expect(lignes.map((l) => l.plan)).toEqual(["bascule", "parcours", "evenement", "fin"]);
+  it("propose de dire ce que l'image affiche, réplique par réplique", () => {
     const fiche = structuredClone(FICHE);
-    fiche.textes.fr.parcours = ["Choisir", "Sentir.", "Commander", "Recevoir"];
-    expect(lignesDeDepart(fiche, "fr").find((l) => l.plan === "parcours")?.texte).toBe("Choisir. Sentir. Commander. Recevoir.");
-    expect(lignes.every((l) => l.texte.length > 0 && !l.fichier)).toBe(true);
+    fiche.textes.fr.parcours = ["Choisir", "Sentir", "Commander", "Recevoir"];
+    const lignes = lignesDeDepart(fiche, "fr");
+    expect(lignes.filter((l) => l.repere.startsWith("parcours.")).map((l) => l.texte)).toEqual(["Choisir", "Sentir", "Commander", "Recevoir"]);
+    expect(lignes.some((l) => l.repere.startsWith("probleme.") || l.repere === "ouverture.nom")).toBe(false);
+    expect(lignes.every((l) => !l.fichier)).toBe(true);
   });
 
-  it("a une phrase de départ pour l'ouverture (le nom) et le problème (le 1er message)", () => {
-    expect(phraseDeDepart(FICHE, "fr", "ouverture")).toBe("Saya");
-    expect(phraseDeDepart(FICHE, "fr", "probleme")).toBe(FICHE.textes.fr.probleme.messages[0]!.texte);
+  it("a une phrase de départ pour chaque repère, y compris l'ouverture", () => {
+    expect(phraseDeDepart(FICHE, "fr", "ouverture.nom")).toBe("Saya");
+    expect(phraseDeDepart(FICHE, "fr", "probleme.messages.0")).toBe(FICHE.textes.fr.probleme.messages[0]!.texte);
   });
 
-  it("signale une voix plus longue que son plan", () => {
-    const temps = { bascule: 3 };
-    expect(ligneTropLongue({ plan: "bascule", texte: "x", duree: 3.4 }, temps)).toBe(true);
-    expect(ligneTropLongue({ plan: "bascule", texte: "x", duree: 2.5 }, temps)).toBe(false);
-    expect(ligneTropLongue({ plan: "bascule", texte: "x" }, temps)).toBe(false);
+  it("signale une réplique plus longue que son temps", () => {
+    expect(ligneTropLongue({ repere: "parcours.0", texte: "x", duree: 3.4 }, { "parcours.0": 3 })).toBe(true);
+    expect(ligneTropLongue({ repere: "parcours.0", texte: "x", duree: 2.5 }, { "parcours.0": 3 })).toBe(false);
   });
 
-  it("fait parler la voix Google dans la langue du film", () => {
+  it("la voix parle la langue du film, au débit du style", () => {
     const google: ResolvedVoiceBackend = { kind: "google", voice: "fr-FR-Neural2-D", languageCode: "fr-FR", speakingRate: 1, pronunciation: {}, credentialsPath: "x" };
-    expect(moteurPourLaLangue(google, "fr")).toBe(google);
-    expect(moteurPourLaLangue(google, "en")).toMatchObject({ voice: "en-US-Neural2-J", languageCode: "en-US" });
+    expect(moteurPourLeFilm(google, "fr", "nocturne")).toMatchObject({ voice: "fr-FR-Neural2-D", speakingRate: 0.9 });
+    expect(moteurPourLeFilm(google, "en", "editorial")).toMatchObject({ voice: "en-US-Neural2-J", languageCode: "en-US", speakingRate: 1.08 });
   });
 });

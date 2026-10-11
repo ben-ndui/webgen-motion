@@ -1,3 +1,4 @@
+import { TEMPS_PAR_BULLE } from "../reperes";
 import type { CSSProperties } from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 
@@ -14,7 +15,6 @@ type Props = {
   heure: string;
 };
 
-const TEMPS_PAR_BULLE = 2;
 
 /**
  * Le problème MONTRÉ plutôt que raconté : un vrai fil de messages façon

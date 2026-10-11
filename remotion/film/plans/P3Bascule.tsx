@@ -6,6 +6,7 @@ import { useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, useFormat } from "../lib/format";
 import { imageDuTemps } from "../lib/tempo";
 import { MARGE, PHRASE, TAILLES, TITRE } from "../lib/typo";
+import { BASCULE } from "../reperes";
 import type { TextesDuFilm } from "../textes/types";
 
 const MISE_EN_PAGE = {
@@ -31,17 +32,17 @@ export function P3Bascule({ tempo, textes }: Props) {
       <DecorDeDirection surface={surface} />
       <div style={{ position: "absolute", ...page, textWrap: "balance" }}>
         <div>
-          <Revele taille={TAILLES.titre} debut={temps(0)}>
+          <Revele taille={TAILLES.titre} debut={temps(BASCULE.constat)}>
             <span style={ligne}>{textes.constat}</span>
           </Revele>
         </div>
         <div>
-          <Revele taille={TAILLES.titre} debut={temps(1.5)}>
+          <Revele taille={TAILLES.titre} debut={temps(BASCULE.chiffre)}>
             <span style={{ ...ligne, color: surface.accentTexte }}>{textes.chiffre}</span>
           </Revele>
         </div>
         <div style={{ marginTop: 28 }}>
-          <Revele taille={TAILLES.phrase} debut={temps(5)}>
+          <Revele taille={TAILLES.phrase} debut={temps(BASCULE.signature)}>
             <span style={{ ...PHRASE, fontWeight: 500, color: surface.texteSecondaire }}>{textes.signature}</span>
           </Revele>
         </div>

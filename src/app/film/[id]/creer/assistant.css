@@ -102,6 +102,7 @@
 .gm-film .bibliotheque-liste li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: var(--s-3); align-items: center; padding: 8px 0; border-top: 1px solid var(--line-soft); font-size: var(--t-sm); }
 .gm-film .bibliotheque-nom { color: var(--ink); overflow-wrap: anywhere; }
 .gm-film .bibliotheque-duree { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.gm-film .voix-plan { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-2); }
 .gm-film .ligne-voix { display: flex; flex-direction: column; gap: 6px; padding: var(--s-3); border: 1px solid var(--line); border-radius: var(--r-md); }
 .gm-film .ligne-voix-pied { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); }
 .gm-film .champ-saisie.zone { padding: 10px 12px; min-height: 64px; resize: vertical; line-height: 1.45; }

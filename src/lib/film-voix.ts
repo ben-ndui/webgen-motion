@@ -8,7 +8,7 @@ import { enregistrerFilm } from "./film-ecriture";
 import { languesDuFilm } from "./film-fiche-depart";
 import { chargerFilm, getFilmsDir } from "./film-loader";
 import { getFilmPublicDir } from "./film-store";
-import { type PlanParle, moteurPourLaLangue, tempsDeParole } from "./film-voix-plans";
+import { moteurPourLeFilm, reperesMontes } from "./film-voix-plans";
 import { getVoCacheDir } from "./motion-tour-store";
 import { ensureTts } from "./voix/synthese";
 
@@ -74,18 +74,18 @@ export async function genererLesVoix(id: string, partiel: Partial<Lieux> = {}): 
   mkdirSync(lieux.cache, { recursive: true });
   let generees = 0;
   const erreurs: string[] = [];
-  const montes = tempsDeParole(spec);
 
   for (const langue of languesDuFilm(spec)) {
+    const montes = new Set(reperesMontes(spec, langue).map((r) => r.cle));
     for (const ligne of spec.voix?.lignes[langue] ?? []) {
       const dejaLa = ligne.fichier && existsSync(join(dossierPublic, ligne.fichier));
       // Un plan absent des montages rendus ne serait jamais entendu.
-      if (dejaLa || !ligne.texte.trim() || montes[ligne.plan as PlanParle] === undefined) continue;
+      if (dejaLa || !ligne.texte.trim() || !montes.has(ligne.repere)) continue;
       try {
-        const voix = await lieux.synthetiser(ligne.texte, lieux.cache, moteurPourLaLangue(moteur, langue));
+        const voix = await lieux.synthetiser(ligne.texte, lieux.cache, moteurPourLeFilm(moteur, langue, spec.direction));
         // Le nom du fichier en cache est une empreinte du texte et de la voix :
         // un texte changé donne un nouveau fichier, jamais l'ancien son.
-        const relatif = `voix/${langue}/${ligne.plan}-${basename(voix.mp3Path)}`;
+        const relatif = `voix/${langue}/${ligne.repere.replaceAll(".", "-")}-${basename(voix.mp3Path)}`;
         const destination = join(dossierPublic, relatif);
         mkdirSync(dirname(destination), { recursive: true });
         if (!normaliserLaVoix(voix.mp3Path, destination)) throw new Error("la voix n'a pas pu être mise au bon volume");
@@ -95,7 +95,7 @@ export async function genererLesVoix(id: string, partiel: Partial<Lieux> = {}): 
         ligne.duree = duree;
         generees += 1;
       } catch (erreur) {
-        erreurs.push(`${langue.toUpperCase()} · ${ligne.plan} : ${(erreur as Error).message}`);
+        erreurs.push(`${langue.toUpperCase()} · ${ligne.repere} : ${(erreur as Error).message}`);
       }
     }
   }

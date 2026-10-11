@@ -3,7 +3,7 @@ import { existsSync, statSync } from "node:fs";
 import { DIRECTION_PAR_DEFAUT } from "../../remotion/film/marque/direction";
 import type { DeclinaisonDuFilm, DirectionDuFilm, FilmSpec, Langue, MarqueDuFilm } from "../../remotion/film/spec";
 import type { FicheDeFilm } from "./film-loader";
-import { type PlanParle, tempsDeParole } from "./film-voix-plans";
+import { reperesMontes } from "./film-voix-plans";
 import { type EtatDesMedias, etatDesMedias, problemesDeMedias } from "./film-medias";
 import { type TypeDeRendu, fichiersDuRendu, getFilmOutDir, getFilmPublicDir, urlDuRendu } from "./film-store";
 
@@ -88,9 +88,9 @@ export function problemesDeLaDeclinaison(
   // Une voix écrite mais pas générée ne serait pas jouée : le film sortirait
   // muet là où la personne attend sa phrase.
   if (type === "film") {
-    const montes = tempsDeParole(spec);
+    const montes = new Set(reperesMontes(spec, langue).map((r) => r.cle));
     for (const ligne of spec.voix?.lignes[langue] ?? []) {
-      if (!ligne.fichier && montes[ligne.plan as PlanParle] !== undefined) problemes.push(`voix off à générer : plan « ${ligne.plan} »`);
+      if (!ligne.fichier && montes.has(ligne.repere)) problemes.push(`voix off à générer : « ${ligne.repere} »`);
     }
   }
   return [...problemes, ...problemesDeMedias(medias, langue, type)];

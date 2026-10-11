@@ -91,13 +91,13 @@ export type MusiqueDuFilm = {
 };
 
 /**
- * Une ligne de voix off : dite au début d'un plan. `fichier` et `duree`
- * sont posés par GEN MOTION quand la voix est générée ; une ligne sans
- * fichier n'est pas jouée (texte écrit, voix pas encore générée).
+ * Une réplique de voix off, dite AU MOMENT où son texte apparaît à l'image
+ * (son repère, reperes.ts). `fichier` et `duree` sont posés par GEN MOTION
+ * quand la voix est générée ; une réplique sans fichier n'est pas jouée.
  */
 export type LigneDeVoix = {
-  // Identifiant du plan (montages.ts) : ouverture, probleme, bascule…
-  plan: string;
+  // Repère (reperes.ts) : « bascule.chiffre », « parcours.2 », « marque.mots.1 »…
+  repere: string;
   texte: string;
   // Chemin dans public/ (voix/<langue>/…mp3).
   fichier?: string;

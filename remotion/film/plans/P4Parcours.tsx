@@ -8,6 +8,7 @@ import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { GLISSE, entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
 import { MARGE, PHRASE } from "../lib/typo";
+import { ENTREE_DE_LEGENDE, TEMPS_PAR_ETAPE } from "../reperes";
 import type { EcransDuFilm, TextesDuFilm } from "../spec";
 
 type Props = {
@@ -31,7 +32,6 @@ const MISE_EN_PAGE = {
     legende: { left: MARGE_PORTRAIT, top: RESERVE_HAUT + 10 },
   },
 } as const;
-const TEMPS_PAR_ETAPE = 6;
 
 /**
  * Plan 4, le parcours : quatre VRAIES captures, une légende par étape. La
@@ -93,7 +93,7 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
 
       <div style={{ position: "absolute", ...placeDeLaLegende }}>
         {legendes.map((legende, index) => {
-          const debut = temps(index * TEMPS_PAR_ETAPE) + Math.round(temps(1) / 2);
+          const debut = temps(index * TEMPS_PAR_ETAPE + ENTREE_DE_LEGENDE);
           const derniere = index === legendes.length - 1;
           const sortie = derniere ? undefined : temps((index + 1) * TEMPS_PAR_ETAPE) - temps(1);
           return (

@@ -212,9 +212,11 @@ function verifierApercu(erreurs: Erreurs, apercu: unknown, tous: unknown): void 
   }
 }
 
-// Liste écrite ici et non importée de montages.ts : ce fichier n'importe que
-// des types. Le test vérifie qu'elle reste identique.
-export const PLANS_DE_VOIX = ["ouverture", "probleme", "bascule", "parcours", "evenement", "marque", "fin"];
+// Les repères qu'une voix peut prendre (reperes.ts). Écrits ici et non
+// importés : ce fichier n'importe que des types. Le test vérifie qu'ils
+// couvrent exactement les repères du film.
+export const REPERE_DE_VOIX =
+  /^(ouverture\.nom|probleme\.messages\.\d|bascule\.(constat|chiffre|signature)|parcours\.[0-3]|evenement\.chute|marque\.mots\.[0-2]|fin\.disponible)$/;
 
 function verifierVoix(erreurs: Erreurs, voix: unknown): void {
   if (voix === undefined) return;
@@ -237,9 +239,9 @@ function verifierVoix(erreurs: Erreurs, voix: unknown): void {
     liste.forEach((ligne: unknown, index: number) => {
       const chemin = `voix.lignes.${langue}[${index}]`;
       const l = estObjet(ligne) ? ligne : {};
-      if (!PLANS_DE_VOIX.includes(l.plan as string)) erreurs.push(`${chemin}.plan : l'un de ${PLANS_DE_VOIX.join(", ")}`);
-      if (vus.has(l.plan)) erreurs.push(`${chemin}.plan : « ${String(l.plan)} » a déjà une ligne`);
-      vus.add(l.plan);
+      if (typeof l.repere !== "string" || !REPERE_DE_VOIX.test(l.repere)) erreurs.push(`${chemin}.repere : repère inconnu « ${String(l.repere)} »`);
+      if (vus.has(l.repere)) erreurs.push(`${chemin}.repere : « ${String(l.repere)} » a déjà une réplique`);
+      vus.add(l.repere);
       texte(erreurs, `${chemin}.texte`, l.texte);
       if (l.fichier !== undefined) texte(erreurs, `${chemin}.fichier`, l.fichier);
       if (l.duree !== undefined && (!estNombre(l.duree) || l.duree <= 0)) erreurs.push(`${chemin}.duree : secondes, positif`);

@@ -3,11 +3,12 @@ import { AbsoluteFill, Sequence } from "remotion";
 
 import { BandeSon } from "./composants/BandeSon";
 import { Glissement } from "./composants/Glissement";
-import { VoixOff, decalageDeVoix, voixPlacees } from "./composants/VoixOff";
+import { VoixOff, voixPlacees } from "./composants/VoixOff";
+import { reperesDuFilm } from "./reperes";
 import { FournisseurDeMarque } from "./marque/MarqueDuFilm";
 import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "./marque/direction";
 import { usePolice } from "./marque/police";
-import { IMAGES_PAR_SECONDE, imageDuTemps, imagesParTemps, placerLesPlans } from "./lib/tempo";
+import { IMAGES_PAR_SECONDE, imageDuTemps, placerLesPlans } from "./lib/tempo";
 import { type IdDePlan, MONTAGES } from "./montages";
 import { P1Ouverture } from "./plans/P1Ouverture";
 import { P2Probleme } from "./plans/P2Probleme";
@@ -38,7 +39,7 @@ export function FilmPrincipal({ spec, declinaison }: ProprietesDuFilm) {
   const dossier = textes.dossierDesEcrans;
   const places = placerLesPlans(montage.plans, tempo);
   const glissement = imageDuTemps(TEMPS_DE_GLISSEMENT, tempo);
-  const voix = voixPlacees(spec.voix?.lignes[declinaison.langue] ?? [], places, IMAGES_PAR_SECONDE, decalageDeVoix(imagesParTemps(tempo)));
+  const voix = voixPlacees(spec.voix?.lignes[declinaison.langue] ?? [], reperesDuFilm(spec, declinaison.langue), places, tempo, IMAGES_PAR_SECONDE);
 
   // Un `Record` sur tous les identifiants : un plan ajouté à la trame sans
   // son rendu ne compile pas.
