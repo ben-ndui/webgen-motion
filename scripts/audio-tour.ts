@@ -42,7 +42,6 @@
  *                               text overrides; "" disables a step's VO
  */
 
-import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import {
   existsSync,
@@ -55,25 +54,14 @@ import { join } from "node:path";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
-import { marksToCharAlignment } from "../src/lib/google-alignment";
+import { ensureTts } from "../src/lib/voix/synthese";
+import { DEFAULT_VOICE_SETTINGS, type EffectiveVoiceSettings, type ElevenLabsAlignment } from "../src/lib/voix/types";
 import { getVoCacheDir } from "../src/lib/motion-tour-store";
 import {
   resolveVoiceBackend,
   type ResolvedVoiceBackend,
 } from "../src/lib/config";
 
-/**
- * Character-level alignment returned by ElevenLabs
- * `/with-timestamps`. Indices in the three arrays are aligned : the
- * Nth character starts at `character_start_times_seconds[N]` and ends
- * at `character_end_times_seconds[N]`. Whitespace + punctuation are
- * included as their own characters.
- */
-interface ElevenLabsAlignment {
-  characters: string[];
-  character_start_times_seconds: number[];
-  character_end_times_seconds: number[];
-}
 
 function arg(flag: string, fallback?: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -106,20 +94,6 @@ interface ManifestSection {
   durationSec: number;
 }
 
-/** Effective ElevenLabs voice settings — tour override merged with defaults. */
-interface EffectiveVoiceSettings {
-  stability: number;
-  similarityBoost: number;
-  style: number;
-  useSpeakerBoost: boolean;
-}
-
-const DEFAULT_VOICE_SETTINGS: EffectiveVoiceSettings = {
-  stability: 0.55,
-  similarityBoost: 0.78,
-  style: 0.12,
-  useSpeakerBoost: true,
-};
 
 /** Module-level reference populated once per run, used by fetchElevenLabsTts.
  *  Declared BEFORE the kickoff so the TDZ doesn't fire during main()'s
@@ -374,7 +348,7 @@ async function main(): Promise<void> {
       console.log(
         `  [${sec.sectionIdx}/${plans.length}] section-level VO (${sec.durationSec.toFixed(1)}s)`,
       );
-      const tts = await ensureTts(sectionLevelVo, cacheDir);
+      const tts = await ensureTts(sectionLevelVo, cacheDir, backend, effectiveSettings);
       runFfmpeg(buildPadArgs(tts.mp3Path, sectionMp3, sec.durationSec, /* fadeIn */ 0.08));
       alignmentItems.push({
         linearStepIdx: sec.splash?.linearIdx ?? null,
@@ -467,7 +441,7 @@ async function main(): Promise<void> {
         const preview =
           p.voiceover.slice(0, 50) + (p.voiceover.length > 50 ? "…" : "");
         console.log(`      step ${p.linearIdx} · "${preview}"`);
-        const tts = await ensureTts(p.voiceover, cacheDir);
+        const tts = await ensureTts(p.voiceover, cacheDir, backend, effectiveSettings);
         runFfmpeg(buildPadArgs(tts.mp3Path, stepMp3, stepSec, /* fadeIn */ 0.08));
         alignmentItems.push({
           linearStepIdx: p.linearIdx,
@@ -645,7 +619,7 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
   console.log(`  Markers: ${markers.length}`);
   console.log(`  Clean text length: ${cleanText.length} chars`);
 
-  const tts = await ensureTts(cleanText, cacheDir);
+  const tts = await ensureTts(cleanText, cacheDir, backend, effectiveSettings);
   if (!tts.alignment) {
     throw new Error(
       "ElevenLabs returned no alignment — narrative mode requires /with-timestamps to provide character timings",
@@ -778,85 +752,6 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
   }
 }
 
-interface TtsArtifact {
-  mp3Path: string;
-  /** Native ElevenLabs alignment (character-level). */
-  alignment: ElevenLabsAlignment | null;
-  /** Same shape but applied AFTER text normalization (digit→words…). */
-  normalizedAlignment: ElevenLabsAlignment | null;
-}
-
-/**
- * Generate or fetch from cache the TTS audio for `text`, returns
- * the path to the cached MP3 PLUS the character-level alignment from
- * ElevenLabs. Phonetic substitutions (UZME→Youzmi) are applied before
- * hashing + sending to the API.
- *
- * Cache layout per text:
- *   <hash>.mp3                — the audio binary
- *   <hash>.alignment.json     — { alignment, normalizedAlignment }
- *
- * Both are written atomically; if one is missing on read we re-query
- * to keep them in sync.
- */
-async function ensureTts(text: string, cacheDir: string): Promise<TtsArtifact> {
-  if (!backend) throw new Error("Voice backend not resolved");
-  const phonetic = applyPronunciation(text);
-  // Cache key depends on the backend identity — switching backend or
-  // tweaking any synthesis param invalidates the cached MP3.
-  const backendKey =
-    backend.kind === "elevenlabs"
-      ? `eleven|${backend.voiceId}|${backend.model}|${[
-          effectiveSettings.stability.toFixed(3),
-          effectiveSettings.similarityBoost.toFixed(3),
-          effectiveSettings.style.toFixed(3),
-          effectiveSettings.useSpeakerBoost ? "1" : "0",
-        ].join(",")}`
-      : backend.kind === "voicebox"
-        ? `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}`
-        : `google|${backend.voice}|${backend.languageCode}|${backend.speakingRate}|${JSON.stringify(backend.pronunciation)}`;
-  const hash = createHash("sha1")
-    .update(`${backendKey}|${phonetic}`)
-    .digest("hex")
-    .slice(0, 16);
-  const mp3Path = join(cacheDir, `${hash}.mp3`);
-  const alignPath = join(cacheDir, `${hash}.alignment.json`);
-  if (existsSync(mp3Path) && existsSync(alignPath)) {
-    const cached = JSON.parse(readFileSync(alignPath, "utf-8")) as {
-      alignment: ElevenLabsAlignment | null;
-      normalizedAlignment: ElevenLabsAlignment | null;
-    };
-    return {
-      mp3Path,
-      alignment: cached.alignment,
-      normalizedAlignment: cached.normalizedAlignment,
-    };
-  }
-  console.log(`      TTS → "${phonetic.slice(0, 60)}${phonetic.length > 60 ? "…" : ""}"`);
-  const fetched =
-    backend.kind === "elevenlabs"
-      ? await fetchElevenLabsTts(phonetic, backend)
-      : backend.kind === "voicebox"
-        ? await fetchVoiceboxTts(phonetic, backend)
-        : await fetchGoogleTts(phonetic, backend);
-  writeFileSync(mp3Path, fetched.audio);
-  writeFileSync(
-    alignPath,
-    JSON.stringify(
-      {
-        alignment: fetched.alignment,
-        normalizedAlignment: fetched.normalizedAlignment,
-      },
-      null,
-      2,
-    ),
-  );
-  return {
-    mp3Path,
-    alignment: fetched.alignment,
-    normalizedAlignment: fetched.normalizedAlignment,
-  };
-}
 
 /**
  * Build ffmpeg args that pad/truncate `inputMp3` to `targetSec`,
@@ -888,232 +783,6 @@ function buildPadArgs(
     "-ar", "44100",
     outputMp3,
   ];
-}
-
-interface FetchedTts {
-  audio: Buffer;
-  alignment: ElevenLabsAlignment | null;
-  normalizedAlignment: ElevenLabsAlignment | null;
-}
-
-/**
- * Google Cloud TTS (Neural2, GRATUIT quota) via le package smoothandesign-tts.
- * Récupère les timepoints Google (1 <mark> par mot) et les convertit en
- * alignement char-level (format ElevenLabs) → sous-titres karaoké compatibles.
- * La prononciation (dico du tour) est appliquée en SSML <phoneme> DANS le
- * package (pas de substitution texte). Durée du dernier mot estimée depuis
- * l'espacement médian des marks (suffisant : le pad ffmpeg cale la longueur).
- */
-async function fetchGoogleTts(
-  text: string,
-  cfg: Extract<ResolvedVoiceBackend, { kind: "google" }>,
-): Promise<FetchedTts> {
-  const { synthGoogleTtsAligned } = await import("smoothandesign-tts");
-  const { mp3, marks } = await synthGoogleTtsAligned(text, {
-    voice: cfg.voice,
-    languageCode: cfg.languageCode,
-    speakingRate: cfg.speakingRate,
-    pronunciation: cfg.pronunciation,
-  });
-  const gaps: number[] = [];
-  for (let i = 1; i < marks.length; i++) {
-    const g = marks[i].timeSec - marks[i - 1].timeSec;
-    if (g > 0) gaps.push(g);
-  }
-  gaps.sort((a, b) => a - b);
-  const medianGap = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0.4;
-  const lastStart = marks.length ? marks[marks.length - 1].timeSec : 0;
-  const alignment = marksToCharAlignment(text, marks, lastStart + medianGap);
-  return { audio: mp3, alignment, normalizedAlignment: alignment };
-}
-
-async function fetchElevenLabsTts(
-  text: string,
-  cfg: Extract<ResolvedVoiceBackend, { kind: "elevenlabs" }>,
-): Promise<FetchedTts> {
-  // `/with-timestamps` returns JSON { audio_base64, alignment,
-  // normalized_alignment } instead of the raw MP3 binary. Same body
-  // shape as the standard endpoint, just a different content type.
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(cfg.voiceId)}/with-timestamps`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "xi-api-key": cfg.apiKey,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      text,
-      model_id: cfg.model,
-      voice_settings: {
-        stability: effectiveSettings.stability,
-        similarity_boost: effectiveSettings.similarityBoost,
-        style: effectiveSettings.style,
-        use_speaker_boost: effectiveSettings.useSpeakerBoost,
-      },
-    }),
-  });
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "<no body>");
-    throw new Error(
-      `ElevenLabs TTS failed (${res.status}): ${errText.slice(0, 500)}`,
-    );
-  }
-  const json = (await res.json()) as {
-    audio_base64?: string;
-    alignment?: ElevenLabsAlignment | null;
-    normalized_alignment?: ElevenLabsAlignment | null;
-  };
-  if (!json.audio_base64) {
-    throw new Error(`ElevenLabs response missing audio_base64`);
-  }
-  const audio = Buffer.from(json.audio_base64, "base64");
-  if (audio.byteLength < 1024) {
-    throw new Error(`ElevenLabs returned suspiciously small payload (${audio.byteLength} bytes)`);
-  }
-  return {
-    audio,
-    alignment: json.alignment ?? null,
-    normalizedAlignment: json.normalized_alignment ?? null,
-  };
-}
-
-/**
- * Voicebox synthesis pipeline. The backend is asynchronous : POST
- * /generate enqueues a job and returns a generation_id, then we
- * poll /generate/{id}/status until completed, then download from
- * /audio/{id}.
- *
- * No char-level timestamps are returned today. The runner produces
- * `fetched.alignment = null` here ; narrative mode + Voicebox is
- * gated server-side (chunk A1.1 will reintroduce alignment via a
- * local Whisper forced-aligner pass).
- */
-async function fetchVoiceboxTts(
-  text: string,
-  cfg: Extract<ResolvedVoiceBackend, { kind: "voicebox" }>,
-): Promise<FetchedTts> {
-  const base = cfg.url.replace(/\/+$/, "");
-
-  const submitRes = await fetch(`${base}/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      profile_id: cfg.profileId,
-      text,
-      language: cfg.language,
-      engine: cfg.engine,
-      model_size: cfg.modelSize,
-      normalize: true,
-      crossfade_ms: 50,
-    }),
-  });
-  if (!submitRes.ok) {
-    const errText = await submitRes.text().catch(() => "<no body>");
-    throw new Error(
-      `Voicebox /generate failed (${submitRes.status}): ${errText.slice(0, 500)}`,
-    );
-  }
-  const submit = (await submitRes.json()) as {
-    id?: string;
-    status?: string;
-    error?: string | null;
-  };
-  const generationId = submit.id;
-  if (!generationId) {
-    throw new Error(`Voicebox /generate returned no id`);
-  }
-
-  // Voicebox exposes status via **SSE**, not JSON polling — each event
-  // is `data: {…}\n\n` and the stream closes on completed/failed.
-  // We consume it once and break out as soon as a terminal status
-  // event lands. 120s abort fence so a stuck inference doesn't hang
-  // the whole pipeline.
-  const timeoutMs = 120_000;
-  const abort = new AbortController();
-  const timer = setTimeout(() => abort.abort(), timeoutMs);
-  let finalStatus = "generating";
-  let lastError: string | null = null;
-  try {
-    const sseRes = await fetch(
-      `${base}/generate/${encodeURIComponent(generationId)}/status`,
-      {
-        headers: { Accept: "text/event-stream" },
-        signal: abort.signal,
-      },
-    );
-    if (!sseRes.ok || !sseRes.body) {
-      throw new Error(
-        `Voicebox /generate/${generationId}/status failed (${sseRes.status})`,
-      );
-    }
-    const reader = sseRes.body.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
-    outer: while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      // SSE events are separated by a blank line ; collect full events.
-      const events = buf.split("\n\n");
-      buf = events.pop() ?? "";
-      for (const ev of events) {
-        const payload = ev
-          .split("\n")
-          .filter((l) => l.startsWith("data: "))
-          .map((l) => l.slice(6))
-          .join("");
-        if (!payload) continue;
-        try {
-          const parsed = JSON.parse(payload) as {
-            status?: string;
-            error?: string | null;
-          };
-          if (parsed.status) finalStatus = parsed.status;
-          if (parsed.error) lastError = parsed.error;
-          if (finalStatus === "completed" || finalStatus === "failed") {
-            await reader.cancel().catch(() => {});
-            break outer;
-          }
-        } catch {
-          // malformed event — skip
-        }
-      }
-    }
-  } finally {
-    clearTimeout(timer);
-  }
-  if (finalStatus === "failed") {
-    throw new Error(
-      `Voicebox generation failed : ${lastError ?? "no error message"}`,
-    );
-  }
-  if (finalStatus !== "completed") {
-    throw new Error(
-      `Voicebox generation didn't reach completed (last status: ${finalStatus})`,
-    );
-  }
-
-  const audioRes = await fetch(
-    `${base}/audio/${encodeURIComponent(generationId)}`,
-  );
-  if (!audioRes.ok) {
-    throw new Error(
-      `Voicebox /audio/${generationId} failed (${audioRes.status})`,
-    );
-  }
-  const audio = Buffer.from(await audioRes.arrayBuffer());
-  if (audio.byteLength < 1024) {
-    throw new Error(
-      `Voicebox returned suspiciously small payload (${audio.byteLength} bytes)`,
-    );
-  }
-
-  return {
-    audio,
-    alignment: null,
-    normalizedAlignment: null,
-  };
 }
 
 const FFMPEG_BIN = process.env.WEBGEN_FFMPEG_BIN || "ffmpeg";
