@@ -6,6 +6,7 @@ import { Film, Plus, X } from "lucide-react";
 
 import type { DirectionDuFilm, Langue, VersionDuFilm } from "../../../remotion/film/spec";
 import ChoixDeCases from "./choix-de-cases";
+import { STYLES } from "./styles-de-film";
 
 const LANGUES: { valeur: Langue; libelle: string }[] = [
   { valeur: "fr", libelle: "Français" },
@@ -14,11 +15,6 @@ const LANGUES: { valeur: Langue; libelle: string }[] = [
 const FORMATS: { valeur: VersionDuFilm; libelle: string; aide: string }[] = [
   { valeur: "court", libelle: "Vertical 9:16", aide: "Instagram, TikTok, Reels" },
   { valeur: "long", libelle: "Horizontal 16:9", aide: "Site, YouTube, présentation" },
-];
-const STYLES: { valeur: DirectionDuFilm; libelle: string; aide: string }[] = [
-  { valeur: "marque", libelle: "Marque", aide: "Sobre, tes couleurs" },
-  { valeur: "editorial", libelle: "Éditorial", aide: "Clair, lettres fortes" },
-  { valeur: "nocturne", libelle: "Nocturne", aide: "Sombre, lettres fines" },
 ];
 
 /**

@@ -2,6 +2,10 @@
 
 import { type CouleursDeBase, paletteDuFilm, problemesDeLaPalette } from "@/lib/film-palette";
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
+import ChoixDeCases from "../../../../_components/choix-de-cases";
+import { STYLES } from "../../../../_components/styles-de-film";
+import { DIRECTION_PAR_DEFAUT } from "../../../../../../remotion/film/marque/direction";
+import type { DirectionDuFilm } from "../../../../../../remotion/film/spec";
 import CaseDeDepot from "./case-de-depot";
 import type { RoleDeDepot } from "./use-fiche-du-film";
 
@@ -106,6 +110,17 @@ export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent,
         {problemes.map((probleme) => (
           <p key={probleme} className="depot-erreur" role="alert">{probleme}</p>
         ))}
+      </section>
+
+      <section className="bloc" aria-labelledby="bloc-style">
+        <h3 id="bloc-style" className="bloc-titre">Ton style</h3>
+        <p className="champ-aide">Il change l&apos;allure de tout le film, avec tes couleurs. Tu peux en changer quand tu veux.</p>
+        <ChoixDeCases
+          titre="Style du film"
+          options={STYLES.map((style) => ({ ...style, image: `/film/styles/${style.valeur}.jpg` }))}
+          valeurs={[fiche.direction ?? DIRECTION_PAR_DEFAUT]}
+          onChange={(valeurs) => modifier((c) => { c.direction = valeurs[0] as DirectionDuFilm; })}
+        />
       </section>
 
       <section className="bloc" aria-labelledby="bloc-police">
