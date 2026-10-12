@@ -31,7 +31,8 @@ export type Repere = {
 /** Tous les repères d'un film, plan par plan, dans l'ordre où ils arrivent. */
 export function reperesDuFilm(spec: FilmSpec, langue: Langue): Repere[] {
   const t = spec.textes[langue];
-  const nom = spec.marque.logo.type === "motSymbole" ? spec.marque.logo.texte : spec.marque.logo.type === "glyphe" ? spec.marque.logo.logotype : "";
+  const logo = spec.marque.logo;
+  const nom = spec.marque.nom?.trim() || (logo.type === "motSymbole" ? logo.texte : logo.type === "glyphe" ? logo.logotype : "");
   return [
     { cle: "ouverture.nom", plan: "ouverture", temps: 0, texte: nom },
     ...t.probleme.messages.map((m, i) => ({ cle: `probleme.messages.${i}`, plan: "probleme", temps: i * TEMPS_PAR_BULLE, texte: m.texte })),

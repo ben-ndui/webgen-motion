@@ -13,6 +13,7 @@ describe("fiche d'un nouveau film", () => {
     expect(fiche.direction).toBe("nocturne");
     expect(fiche.declinaisons.map((d) => d.nom)).toEqual(["Film-FR", "Film-EN", "Court-FR", "Court-EN"]);
     expect(fiche.marque.logo).toMatchObject({ type: "motSymbole", texte: "Maison Saya" });
+    expect(fiche.marque.nom).toBe("Maison Saya");
     expect(fiche.textes.fr.dossierDesEcrans).toBe("ecrans-fr");
   });
 

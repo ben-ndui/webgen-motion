@@ -11,6 +11,7 @@ import { getFilmPublicDir } from "./film-store";
 import { moteurPourLeFilm, reperesMontes } from "./film-voix-plans";
 import { getVoCacheDir } from "./motion-tour-store";
 import { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
+import { texteAPrononcer } from "./voix/prononciation-film";
 import { ensureTts } from "./voix/synthese";
 
 /**
@@ -81,7 +82,7 @@ export async function genererLesVoix(id: string, partiel: Partial<Lieux> = {}): 
       // Un plan absent des montages rendus ne serait jamais entendu.
       if (dejaLa || !ligne.texte.trim() || !montes.has(ligne.repere)) continue;
       try {
-        const voix = await lieux.synthetiser(ligne.texte, lieux.cache, moteurPourLeFilm(moteur, langue, spec.direction));
+        const voix = await lieux.synthetiser(texteAPrononcer(ligne.texte), lieux.cache, moteurPourLeFilm(moteur, langue, spec.direction));
         // Le nom du fichier en cache est une empreinte du texte et de la voix :
         // un texte changé donne un nouveau fichier, jamais l'ancien son.
         const relatif = `voix/${langue}/${ligne.repere.replaceAll(".", "-")}-${basename(voix.mp3Path)}`;

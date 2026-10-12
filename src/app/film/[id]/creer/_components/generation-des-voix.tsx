@@ -44,6 +44,10 @@ export default function GenerationDesVoix({ id, fiche, aGenerer, modifier, enreg
         <button type="button" className="film-btn" disabled={etat.enCours || aGenerer === 0} onClick={() => void generer()}>
           {etat.enCours ? "Génération…" : aGenerer > 0 ? `Générer les voix (${aGenerer})` : "Voix à jour"}
         </button>
+        <button type="button" className="lien" disabled={etat.enCours} onClick={() => modifier((c) => {
+          // Après un changement de style (débit) ou de prononciation : tout refaire.
+          for (const liste of Object.values(c.voix?.lignes ?? {})) for (const l of liste) { delete l.fichier; delete l.duree; }
+        })}>Tout régénérer</button>
         <button type="button" className="lien" onClick={() => modifier((c) => { delete c.voix; })}>Retirer la voix off</button>
       </div>
       {etat.message && <p className="champ-aide" role="status">{etat.message}</p>}

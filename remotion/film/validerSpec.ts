@@ -62,6 +62,7 @@ function verifierMarque(erreurs: Erreurs, marque: unknown): void {
   texte(erreurs, "marque.police", marque.police);
   texte(erreurs, "marque.ombreTelephone", marque.ombreTelephone);
   if (typeof marque.contact !== "string") erreurs.push("marque.contact : texte attendu");
+  if (marque.nom !== undefined && typeof marque.nom !== "string") erreurs.push("marque.nom : texte attendu");
   verifierLogo(erreurs, marque.logo);
 }
 

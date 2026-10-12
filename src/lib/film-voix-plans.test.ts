@@ -28,8 +28,16 @@ describe("voix off : une réplique par repère", () => {
     fiche.textes.fr.parcours = ["Choisir", "Sentir", "Commander", "Recevoir"];
     const lignes = lignesDeDepart(fiche, "fr");
     expect(lignes.filter((l) => l.repere.startsWith("parcours.")).map((l) => l.texte)).toEqual(["Choisir", "Sentir", "Commander", "Recevoir"]);
-    expect(lignes.some((l) => l.repere.startsWith("probleme.") || l.repere === "ouverture.nom")).toBe(false);
+    // Tout ce que l'image montre est dit : le nom, la conversation, chaque étape.
+    expect(lignes[0]).toEqual({ repere: "ouverture.nom", texte: "Saya" });
+    expect(lignes.some((l) => l.repere.startsWith("probleme.messages."))).toBe(true);
     expect(lignes.every((l) => !l.fichier)).toBe(true);
+  });
+
+  it("dit le nom de la marque même quand le logo est une image", () => {
+    const fiche = structuredClone(FICHE);
+    fiche.marque.logo = { type: "image", fichier: "logo/saya.png", rapport: 2, inverser: false };
+    expect(phraseDeDepart(fiche, "fr", "ouverture.nom")).toBe("Saya");
   });
 
   it("a une phrase de départ pour chaque repère, y compris l'ouverture", () => {

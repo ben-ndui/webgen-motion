@@ -64,6 +64,7 @@ export function ficheDeDepart(choix: ChoixDeDepart): FilmSpec {
   const nom = choix.nom.trim();
   fiche.exemple = true;
   fiche.direction = choix.direction;
+  fiche.marque.nom = nom;
   fiche.marque.logo = { type: "motSymbole", texte: nom, graisse: 600, approche: -0.03 };
   fiche.marque.contact = "";
   for (const langue of LANGUES) fiche.textes[langue].dossierDesEcrans = `ecrans-${langue}`;

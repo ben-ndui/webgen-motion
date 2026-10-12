@@ -38,14 +38,15 @@ export function tempsDeParole(fiche: FilmSpec, langue: Langue = "fr"): Record<st
   return temps;
 }
 
-// Ce qu'on fait dire par défaut : ce que l'image affiche au même moment.
-// L'ouverture (le logo) et la conversation restent muettes, sauf choix.
-const DITS_PAR_DEFAUT = /^(bascule\.|parcours\.|evenement\.chute|marque\.mots\.|fin\.disponible)/;
-
-/** Les répliques de départ : le texte de chaque repère, dit quand il apparaît. */
+/**
+ * Les répliques de départ : TOUT ce que l'image montre est dit, au moment où
+ * elle le montre (choix de Ben, 12/10/2026) : le nom de la marque à
+ * l'ouverture, la conversation, chaque étape. Un repère sans texte (logo
+ * fourni en image) reste muet.
+ */
 export function lignesDeDepart(fiche: FilmSpec, langue: Langue): LigneDeVoix[] {
   return reperesMontes(fiche, langue)
-    .filter((r) => DITS_PAR_DEFAUT.test(r.cle) && r.texte.trim())
+    .filter((r) => r.texte.trim())
     .map((r) => ({ repere: r.cle, texte: r.texte.trim() }));
 }
 

@@ -57,6 +57,7 @@ export function dossiersDuFilm(id: string): DossiersDuFilm {
 }
 
 function nomDuFilm(spec: FilmSpec, id: string): string {
+  if (spec.marque.nom?.trim()) return spec.marque.nom.trim();
   const logo = spec.marque.logo;
   if (logo.type === "motSymbole") return logo.texte;
   if (logo.type === "glyphe") return logo.logotype || id;

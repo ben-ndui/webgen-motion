@@ -89,6 +89,15 @@ export default function EtapeMarque({ id, fiche, modifier, deposer, logoPresent,
         )}
       </section>
 
+      <section className="bloc" aria-labelledby="bloc-nom">
+        <h3 id="bloc-nom" className="bloc-titre">Le nom de ta marque</h3>
+        <label className="champ">
+          <span className="champ-question">Tel que la voix off le dit à l&apos;ouverture</span>
+          <input className="champ-saisie" value={fiche.marque.nom ?? ""} maxLength={40} placeholder="Maison Saya"
+            onChange={(e) => modifier((c) => { c.marque.nom = e.target.value; })} />
+        </label>
+      </section>
+
       <section className="bloc" aria-labelledby="bloc-couleurs">
         <h3 id="bloc-couleurs" className="bloc-titre">Tes couleurs</h3>
         <p className="champ-aide">Trois couleurs suffisent : les nuances pour le texte se calculent pour rester lisibles.</p>

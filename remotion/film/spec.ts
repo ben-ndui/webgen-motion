@@ -44,6 +44,9 @@ export type LogoDuFilm =
     };
 
 export type MarqueDuFilm = {
+  // Le nom de la marque, tel qu'on le dit (voix off de l'ouverture, titre du
+  // film) : un logo fourni en image ne le donne pas.
+  nom?: string;
   couleurs: {
     // Fond sombre des plans de marque, et texte sur fond clair.
     encre: string;

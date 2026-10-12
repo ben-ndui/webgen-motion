@@ -25,7 +25,7 @@ function fournisseurLocal(appels: string[]) {
 function filmAvecVoix() {
   const racine = dossierJetable("voix");
   const fiche = ficheDeDepart({ nom: "Saya", langues: ["fr"], formats: ["court"], direction: "nocturne" });
-  fiche.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [{ repere: "bascule.constat", texte: "Les parfums naturels sont rares." }, { repere: "fin.disponible", texte: "Sur maisonsayasignature.com." }], en: [] } };
+  fiche.voix = { musiqueSousLaVoix: 0.3, lignes: { fr: [{ repere: "bascule.constat", texte: "Les parfums naturels sont rares." }, { repere: "fin.disponible", texte: "Sur maisonsayasignature.com/fr." }], en: [] } };
   const lieux = { fiches: join(racine, "fiches"), public: (id: string) => join(racine, "public", id), cache: join(racine, "cache"), moteur: () => MOTEUR };
   creerFilm("saya", fiche, lieux.fiches);
   return lieux;
@@ -37,6 +37,8 @@ describe("génération de la voix off d'un film", () => {
     const appels: string[] = [];
     const resultat = await genererLesVoix("saya", { ...lieux, synthetiser: fournisseurLocal(appels) });
     expect(resultat).toEqual({ ok: true, generees: 2, erreurs: [] });
+    // La voix reçoit ce qu'elle doit DIRE : « slash », pas « / ».
+    expect(appels).toContain("Sur maisonsayasignature.com slash fr.");
     const fiche = lireFicheBrute("saya", lieux.fiches) as { voix: { lignes: { fr: { fichier: string; duree: number }[] } } };
     for (const ligne of fiche.voix.lignes.fr) {
       expect(ligne.fichier).toMatch(/^voix\/fr\//);
