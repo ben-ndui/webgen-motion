@@ -225,6 +225,9 @@ function verifierVoix(erreurs: Erreurs, voix: unknown): void {
     erreurs.push("voix : objet attendu");
     return;
   }
+  if (voix.genre !== undefined && voix.genre !== "feminin" && voix.genre !== "masculin") {
+    erreurs.push("voix.genre : « feminin » ou « masculin »");
+  }
   if (!estNombre(voix.musiqueSousLaVoix) || voix.musiqueSousLaVoix < 0 || voix.musiqueSousLaVoix > 1) {
     erreurs.push("voix.musiqueSousLaVoix : de 0 à 1");
   }

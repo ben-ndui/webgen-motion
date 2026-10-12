@@ -55,4 +55,11 @@ describe("voix off : une réplique par repère", () => {
     expect(moteurPourLeFilm(google, "fr", "nocturne")).toMatchObject({ voice: "fr-FR-Neural2-D", speakingRate: 0.9 });
     expect(moteurPourLeFilm(google, "en", "editorial")).toMatchObject({ voice: "en-US-Neural2-J", languageCode: "en-US", speakingRate: 1.08 });
   });
+
+  it("prend la voix féminine ou masculine choisie, dans la langue du film", () => {
+    const google: ResolvedVoiceBackend = { kind: "google", voice: "fr-FR-Neural2-D", languageCode: "fr-FR", speakingRate: 1, pronunciation: {}, credentialsPath: "x" };
+    expect(moteurPourLeFilm(google, "fr", "marque", "feminin")).toMatchObject({ voice: "fr-FR-Neural2-A", languageCode: "fr-FR" });
+    expect(moteurPourLeFilm(google, "en", "marque", "feminin")).toMatchObject({ voice: "en-US-Neural2-F", languageCode: "en-US" });
+    expect(moteurPourLeFilm(google, "fr", "marque", "masculin")).toMatchObject({ voice: "fr-FR-Neural2-D" });
+  });
 });

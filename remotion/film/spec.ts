@@ -108,7 +108,12 @@ export type LigneDeVoix = {
   duree?: number;
 };
 
+export const GENRES_DE_VOIX = ["feminin", "masculin"] as const;
+export type GenreDeVoix = (typeof GENRES_DE_VOIX)[number];
+
 export type VoixDuFilm = {
+  // Voix féminine ou masculine (voix Google). Absent : la voix des réglages.
+  genre?: GenreDeVoix;
   // Volume de la musique PENDANT qu'une voix parle, de 0 à 1.
   musiqueSousLaVoix: number;
   lignes: Record<Langue, LigneDeVoix[]>;

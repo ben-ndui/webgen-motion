@@ -1,7 +1,7 @@
 import { imageDuTemps, IMAGES_PAR_SECONDE, placerLesPlans } from "../../remotion/film/lib/tempo";
 import { MONTAGES } from "../../remotion/film/montages";
 import { type Repere, reperesDuFilm } from "../../remotion/film/reperes";
-import type { DirectionDuFilm, FilmSpec, Langue, LigneDeVoix } from "../../remotion/film/spec";
+import type { DirectionDuFilm, FilmSpec, GenreDeVoix, Langue, LigneDeVoix } from "../../remotion/film/spec";
 import type { ResolvedVoiceBackend } from "./config";
 
 /**
@@ -64,17 +64,27 @@ export function ligneTropLongue(ligne: LigneDeVoix, temps: Record<string, number
 // Le débit suit le style : posé en nocturne, vif en éditorial.
 const DEBIT: Record<DirectionDuFilm, number> = { marque: 1, editorial: 1.08, nocturne: 0.9 };
 
-// Voix Google par langue quand la configuration est réglée sur une autre langue.
-const VOIX_GOOGLE: Record<Langue, { voice: string; languageCode: string }> = {
-  fr: { voice: "fr-FR-Neural2-D", languageCode: "fr-FR" },
-  en: { voice: "en-US-Neural2-J", languageCode: "en-US" },
+// Voix Google par langue et par genre (Neural2, catalogue Google Cloud TTS).
+export const VOIX_GOOGLE: Record<Langue, Record<GenreDeVoix, string>> = {
+  fr: { feminin: "fr-FR-Neural2-A", masculin: "fr-FR-Neural2-D" },
+  en: { feminin: "en-US-Neural2-F", masculin: "en-US-Neural2-J" },
 };
+const CODE_DE_LANGUE: Record<Langue, string> = { fr: "fr-FR", en: "en-US" };
 
-/** Le moteur de voix réglé pour la langue ET le style du film. */
-export function moteurPourLeFilm(moteur: ResolvedVoiceBackend, langue: Langue, direction: DirectionDuFilm = "marque"): ResolvedVoiceBackend {
+/**
+ * Le moteur de voix réglé pour la langue, le style et le genre du film. Sans
+ * genre choisi, la voix des réglages est gardée (si elle parle la langue).
+ */
+export function moteurPourLeFilm(
+  moteur: ResolvedVoiceBackend,
+  langue: Langue,
+  direction: DirectionDuFilm = "marque",
+  genre?: GenreDeVoix,
+): ResolvedVoiceBackend {
   if (moteur.kind === "google") {
     const memeLangue = moteur.languageCode.toLowerCase().startsWith(langue);
-    return { ...moteur, ...(memeLangue ? {} : VOIX_GOOGLE[langue]), speakingRate: DEBIT[direction] };
+    const voice = genre ? VOIX_GOOGLE[langue][genre] : memeLangue ? moteur.voice : VOIX_GOOGLE[langue].masculin;
+    return { ...moteur, voice, languageCode: memeLangue ? moteur.languageCode : CODE_DE_LANGUE[langue], speakingRate: DEBIT[direction] };
   }
   if (moteur.kind === "voicebox") return { ...moteur, language: langue };
   // ElevenLabs multilingue : la même voix parle les deux langues ; pas de réglage de débit.

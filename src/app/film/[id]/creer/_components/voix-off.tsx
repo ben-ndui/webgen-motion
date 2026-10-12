@@ -4,9 +4,15 @@ import { useState } from "react";
 
 import { MUSIQUE_SOUS_LA_VOIX } from "@/lib/film-voix-niveaux";
 import { lignesDeDepart, phraseDeDepart, reperesMontes, tempsDeParole } from "@/lib/film-voix-plans";
-import type { FilmSpec, Langue, LigneDeVoix } from "../../../../../../remotion/film/spec";
+import type { FilmSpec, GenreDeVoix, Langue, LigneDeVoix } from "../../../../../../remotion/film/spec";
+import ChoixDeCases from "../../../../_components/choix-de-cases";
 import GenerationDesVoix from "./generation-des-voix";
 import LigneDeVoixOff from "./ligne-de-voix";
+
+const GENRES: { valeur: GenreDeVoix; libelle: string; aide: string }[] = [
+  { valeur: "feminin", libelle: "Voix féminine", aide: "Douce, posée" },
+  { valeur: "masculin", libelle: "Voix masculine", aide: "Grave, assurée" },
+];
 
 const PLANS: Record<string, string> = {
   ouverture: "L'ouverture",
@@ -71,6 +77,18 @@ export default function VoixOff({ id, fiche, langues, modifier, enregistrer, rec
   return (
     <section className="bloc" aria-labelledby="bloc-voix">
       <h3 id="bloc-voix" className="bloc-titre">Ta voix off</h3>
+      <ChoixDeCases
+        titre="La voix"
+        options={GENRES}
+        valeurs={[fiche.voix.genre ?? "masculin"]}
+        onChange={(valeurs) => modifier((c) => {
+          if (!c.voix || c.voix.genre === valeurs[0]) return;
+          c.voix.genre = valeurs[0] as GenreDeVoix;
+          // Une autre voix : toutes les répliques sont à refaire.
+          for (const liste of Object.values(c.voix.lignes)) for (const l of liste) { delete l.fichier; delete l.duree; }
+        })}
+      />
+      <p className="champ-aide">Avec une voix ElevenLabs ou Voicebox réglée dans GEN MOTION, c&apos;est cette voix-là qui parle.</p>
       {langues.length > 1 && (
         <div className="langues" role="tablist" aria-label="Langue de la voix">
           {langues.map((l) => (

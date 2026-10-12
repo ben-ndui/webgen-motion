@@ -82,7 +82,7 @@ export async function genererLesVoix(id: string, partiel: Partial<Lieux> = {}): 
       // Un plan absent des montages rendus ne serait jamais entendu.
       if (dejaLa || !ligne.texte.trim() || !montes.has(ligne.repere)) continue;
       try {
-        const voix = await lieux.synthetiser(texteAPrononcer(ligne.texte), lieux.cache, moteurPourLeFilm(moteur, langue, spec.direction));
+        const voix = await lieux.synthetiser(texteAPrononcer(ligne.texte), lieux.cache, moteurPourLeFilm(moteur, langue, spec.direction, spec.voix?.genre));
         // Le nom du fichier en cache est une empreinte du texte et de la voix :
         // un texte changé donne un nouveau fichier, jamais l'ancien son.
         const relatif = `voix/${langue}/${ligne.repere.replaceAll(".", "-")}-${basename(voix.mp3Path)}`;
