@@ -3,6 +3,12 @@
    propres à la nouvelle page : le film en preuve, les trois usages, les
    étapes et les garanties. Mêmes tokens, donc clair et sombre gratuits. */
 
+/* Seul le haut de page occupe tout l'écran. Les autres sections prennent la
+   hauteur de leur contenu : un écran plein par section laissait de grands
+   vides une fois l'aimantation entre sections retirée. Le haut de 112 px
+   garde le titre visible sous la barre quand on saute à une section. */
+.gm-landing .section:not(.hero) { min-height: auto; padding-block: 112px 96px; }
+
 .gm-landing .accueil-titre {
   font-size: var(--t-3xl);
   line-height: var(--lh-tight);
@@ -60,21 +66,22 @@
 .gm-landing .accueil-usages {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-6);
-  align-items: start;
+  column-gap: var(--s-6);
 }
-@media (max-width: 960px) { .gm-landing .accueil-usages { grid-template-columns: 1fr; } }
-.gm-landing .accueil-usage { display: grid; gap: var(--s-3); }
+@media (max-width: 960px) { .gm-landing .accueil-usages { grid-template-columns: 1fr; row-gap: var(--s-6); } }
+/* Chaque usage prend trois rangées (preuve, titre, texte) partagées avec
+   ses voisins : les titres restent alignés quelle que soit la preuve. */
+.gm-landing .accueil-usage { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: var(--s-3); }
 .gm-landing .accueil-usage h3 { font-size: var(--t-xl); display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
 .gm-landing .accueil-usage p { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; }
 .gm-landing .accueil-usage-preuve {
-  height: 340px;
+  min-height: 340px;
   display: grid;
   place-items: center;
   margin-bottom: var(--s-2);
 }
 .gm-landing .accueil-usage-preuve > .vitrine-video { width: 100%; }
-.gm-landing .accueil-telephone > .vitrine-video { width: auto; height: 100%; border-radius: 28px; }
+.gm-landing .accueil-telephone > .vitrine-video { width: auto; height: 340px; border-radius: 28px; }
 .gm-landing .accueil-telephone video { height: 100%; width: auto; }
 .gm-landing .accueil-badge {
   font-size: var(--t-xs);
@@ -88,12 +95,8 @@
 /* Le scénario : une page de script, pas une vidéo. */
 .gm-landing .accueil-scenario {
   width: 100%;
-  height: 100%;
-  /* Le scénario dépasse la hauteur des deux vidéos voisines : il défile
-     dans sa carte, et le fondu du bas dit qu'il y a une suite. */
-  overflow-y: auto;
-  mask-image: linear-gradient(to bottom, #000 82%, transparent);
-  padding: var(--s-5) var(--s-5) var(--s-7);
+  align-self: stretch;
+  padding: var(--s-5);
   border-radius: var(--r-xl);
   border: 1px solid var(--line);
   background: var(--surface);
@@ -103,7 +106,6 @@
   font-size: var(--t-xs);
   line-height: 1.5;
 }
-.gm-landing .accueil-scenario:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .gm-landing .accueil-scenario-tete { display: grid; gap: 2px; }
 .gm-landing .accueil-scenario-tete b { font-size: var(--t-sm); color: var(--ink); }
 .gm-landing .accueil-scenario-tete span { color: var(--faint); }
@@ -140,7 +142,7 @@
 }
 
 /* ---------------- Ce que tu gardes ---------------- */
-.gm-landing .accueil-confiance { min-height: auto; padding-block: var(--s-8, 96px); }
+.gm-landing .section.accueil-confiance { padding-block: 48px 96px; scroll-margin-top: var(--nav-h); }
 .gm-landing .accueil-garanties {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -158,7 +160,10 @@
 /* ---------------- Téléphone : gouttière de 16 px ---------------- */
 @media (max-width: 640px) {
   .gm-landing .section { padding-inline: 16px; }
+  .gm-landing .section:not(.hero) { padding-block: 88px 64px; }
+  .gm-landing .section.accueil-confiance { padding-block: 24px 64px; }
   .gm-landing .nav { padding-inline: 16px; }
   .gm-landing .accueil-titre { font-size: var(--t-2xl); }
-  .gm-landing .accueil-usage-preuve { height: 300px; }
+  .gm-landing .accueil-usage-preuve { min-height: 0; }
+  .gm-landing .accueil-telephone > .vitrine-video { height: 300px; }
 }

@@ -14,7 +14,7 @@ const PLANS: { image: string; replique?: string }[] = [
 
 export default function ScenarioDeLaSerie() {
   return (
-    <div className="accueil-scenario" role="region" tabIndex={0} aria-label="Scénario d'un épisode écrit par Claude">
+    <div className="accueil-scenario" aria-label="Scénario d'un épisode écrit par Claude">
       <p className="accueil-scenario-tete">
         <b>Épisode 1 · On code vos idées</b>
         <span>Écrit par Claude pour Smooth &amp; Design, depuis son site (4 des 6 plans)</span>

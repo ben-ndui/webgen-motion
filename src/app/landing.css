@@ -12,14 +12,12 @@
 .gm-landing .scroller {
   height: 100dvh;
   overflow-y: auto;
-  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
 }
 
 .gm-landing .section {
   position: relative;
   min-height: 100dvh;
-  scroll-snap-align: start;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -110,7 +108,7 @@
 .gm-landing .cta-sub { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--faint); letter-spacing: .04em; }
 
 /* ---------------- FOOTER ---------------- */
-.gm-landing .footer { border-top: 1px solid var(--line); padding: var(--s-7); background: var(--bg); scroll-snap-align: start; }
+.gm-landing .footer { border-top: 1px solid var(--line); padding: var(--s-7); background: var(--bg); }
 .gm-landing .footer .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s-5); flex-wrap: wrap; }
 .gm-landing .footer-links { display: flex; flex-wrap: wrap; gap: var(--s-2); }
 .gm-landing .footer-links a { font-size: var(--t-xs); color: var(--muted); padding: 4px 8px; border-radius: var(--r-sm); white-space: nowrap; }
