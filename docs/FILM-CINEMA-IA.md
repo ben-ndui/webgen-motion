@@ -1,123 +1,131 @@
-# Fiche — Cinéma IA dans le mode Film de marque
+# Fiche — Cinéma IA : du Reel à la mini-série
 
-> Statut : validée par Ben le 14/10/2026 (lots 1 → 3 d'abord). **Lot 1 livré** :
-> fiche, validateur, prompt, budget, génération Veo et reprise (`src/lib/cinema/`).
-> Preuve de faisabilité : deux démos SAYA tournées à la main le 14/10
-> (la reine au palais, puis la promo parfum au jardin de nuit), 6 plans Veo,
-> environ 5,8 $ au total.
+> Statut : direction **B** validée par Ben le 14/10/2026 (« pensé série dès le
+> lot 2 »). **Lot 1 livré et mergé** (moteur de génération, `src/lib/cinema/`).
+> Cette version de la fiche est **à valider avant de coder le lot 2**.
 
 ## Ce que la fonctionnalité promet
 
-Un client décrit une scène (« une femme en robe bleu nuit cueille un hibiscus,
-puis se parfume ») ; GEN MOTION génère les plans par IA dans **les couleurs de
-sa marque**, les monte sur sa musique et **finit sur son vrai logo et sa
-signature**. Le Reel sort en 9:16, prêt pour Instagram et TikTok.
+Une cliente veut des **mini-séries** pour ses réseaux (SAYA, demande relayée
+par Eliak le 14/10). GEN MOTION lui fabrique des épisodes de 15 s à 2 min :
+des personnages qui restent **les mêmes d'un plan et d'un épisode à l'autre**,
+qui **parlent en français**, dans les couleurs de sa marque, et chaque épisode
+finit sur son vrai logo. Un Reel publicitaire n'est qu'un épisode d'une scène.
 
-## Ce que les deux démos nous ont appris (et que le code doit tenir)
+## Ce que les recettes du 14/10 ont prouvé
 
-| Constat du 14/10 | Règle dans la fonctionnalité |
-|---|---|
-| Le même personnage décrit deux fois ressort parfois en deux femmes différentes (plan « fenêtre » écarté) | Le personnage et l'objet sont décrits **une fois** dans la fiche, et réinjectés mot pour mot dans chaque plan |
-| Veo écrit mal les lettres | Interdiction du texte dans l'image (négatif imposé) ; la marque vient du **vrai logo** en fin de Reel |
-| Veo glisse parfois un fondu enchaîné à l'intérieur d'un plan (jardin, 4 à 5 s) | Planche contact + **découpe** du plan (début, fin, une coupe au milieu) ; détection automatique proposée, jamais imposée |
-| La fin du film passait par une image blanche avant le logo | Le plan de fin part du fond de la marque, sans transition par une autre couleur |
-| Le filigrane « APERÇU » couvrait le logo | Filigrane au centre sur les plans IA, **décalé sous le logo** sur la fin |
-| Deux générations lancées ensemble ont faussé le compteur (5 comptés pour 6 payés) | Le budget se **réserve avant** l'appel, sous verrou de fichier |
+| Recette | Résultat | Conséquence dans le produit |
+|---|---|---|
+| Démos SAYA (palais, jardin, flacon) | Rendu cinéma crédible, 6 plans, ~5,8 $ | Le prompt réinjecte décor, personnage et objet mot pour mot |
+| Personnage décrit en texte dans deux plans | Parfois deux femmes différentes | Le texte ne suffit pas : **un portrait de référence par personnage** |
+| Portrait généré (Gemini image) puis 2 plans Veo qui le citent, dans deux décors | **Même femme** dans la boutique et sur la terrasse | La cohérence vient du portrait, pas de la description |
+| Réplique demandée en français | Dite mot pour mot, lèvres synchrones (vérifié par transcription) | Les dialogues entrent dans le plan |
+| Veo **Lite** | Refuse `negativePrompt` ET `referenceImages` | Lite seulement pour les plans **sans personnage** ; Fast dès qu'un personnage apparaît |
+| Recette réelle du lot 1 (Lite, 0,64 $) | Lancé, suivi, prêt en ~90 s, budget juste, 2e demande bloquée | Le moteur tient contre le vrai Google |
 
 ## Les règles de vérité (non négociables)
 
-1. **« Contenu généré par IA »** est incrusté sur chaque plan généré, sans
-   option pour l'enlever (transparence, AI Act art. 50).
-2. **Aucun visage réel sans consentement** : animer la photo d'une personne
-   exige une case « j'ai son accord écrit », conservée dans la fiche.
-3. **Objet imaginé** (flacon, bouteille, plat inventé) : autorisé. Ce n'est pas
-   un champ qu'on remplit (il pourrait mentir) : tout plan `geste` ou `objet`
-   montre un objet imaginé tant qu'aucune photo réelle ne le remplace (lot 4).
-   Tant qu'il en reste un, le rendu porte le filigrane « APERÇU » et l'écran
-   le dit : « flacon imaginé pour la démo, remplace-le par la photo du vrai
-   produit avant diffusion ».
-4. Le coût s'affiche **avant** le clic, en dollars, au plan près.
+1. **« Contenu généré par IA »** incrusté sur chaque plan généré, sans option
+   pour l'enlever (transparence, AI Act art. 50).
+2. **Un personnage est fictif par défaut** : son portrait est généré. Un
+   portrait déposé (photo d'une vraie personne) exige la case « j'ai son
+   accord écrit », conservée dans la fiche ; sans elle, rien ne se génère.
+3. **Objet imaginé** (flacon inventé) : autorisé, mais tant qu'un plan en
+   montre un, le rendu porte « APERÇU » et l'écran dit de le remplacer par la
+   photo du vrai produit avant diffusion. Ce n'est pas un champ qu'on remplit :
+   c'est déduit du plan.
+4. **Le coût s'affiche avant chaque clic**, au plan près, avec le modèle que
+   GEN MOTION a choisi et pourquoi (« Fast : Awa apparaît dans ce plan »).
+5. **Une réplique non dite n'est pas un succès** : si la transcription locale
+   est disponible, GEN MOTION compare ce que le personnage dit au texte
+   demandé et signale l'écart (lot 4).
 
-## Le parcours dans l'assistant
-
-Une nouvelle étape **« Cinéma »** dans `film/[id]/creer`, après « Marque » :
-
-1. **Le casting** : le personnage (un paragraphe) et l'objet (un paragraphe).
-   Remplissables depuis le site par Claude, comme le reste de la fiche.
-2. **Les plans** (1 à 4) : pour chacun, un rôle (`scene`, `geste`, `objet`)
-   et une consigne courte. GEN MOTION compose le prompt complet : consigne +
-   personnage + objet + palette de la marque + direction artistique
-   (`nocturne` → nuit, lanternes, or ; `editorial` → jour, papier, lumière
-   franche).
-3. **Générer** : un bouton par plan, coût affiché, état en direct
-   (en file, en cours ~1 à 3 min, prêt, refusé).
-4. **Découper** : planche contact du plan, début et fin réglables, une coupe
-   optionnelle au milieu, coupes suggérées par la détection de scène.
-5. **Le Reel** : ordre des plans, fondus, fin sur le logo construit.
-
-États : vide (« aucun plan, décris ta première scène »), génération en cours,
-refus de Google (la raison affichée, et « rien n'a été facturé »), clé absente
-(lien vers les réglages), budget atteint (« 6 plans sur 6, augmente le budget
-pour continuer »).
-
-## Le modèle de données (`FilmSpec.cinema`, optionnel)
+## Le modèle de données (`FilmSpec.cinema`)
 
 ```ts
+type Personnage = {
+  id: string;                       // "awa"
+  nom: string;                      // "Awa", tel qu'on l'appelle dans les consignes
+  description: string;              // physique et tenue, en une phrase
+  portrait?: string;                // cinema/personnages/<id>.jpg, généré ou déposé
+  portraitReel?: { consentement: true };   // présent seulement pour une vraie personne
+};
 type PlanDeCinema = {
-  id: string;                      // "jardin", "geste"…
-  role: "scene" | "geste" | "objet";
-  consigne: string;                // ce que Ben ou le client écrit
-  fichier?: string;                // cinema/<id>.mp4, posé par GEN MOTION
+  id: string;
+  consigne: string;                 // ce qui se passe à l'image
+  personnages: string[];            // ids, 0 à 3 (Veo accepte 3 références au plus)
+  objet: boolean;                   // l'objet du film est-il à l'image ?
+  replique?: { personnage: string; texte: string };  // dite dans le plan, en français
+  fichier?: string;                 // cinema/<id>.mp4, posé par GEN MOTION
   decoupe?: { debut: number; fin: number; coupe?: [number, number] };
 };
+type Scene = { id: string; decor: string; plans: PlanDeCinema[] };   // 1 à 6 plans
+type Episode = { id: string; titre: string; scenes: Scene[] };      // 1 à 4 scènes
 type CinemaDuFilm = {
-  personnage?: string;             // exigé dès qu'un plan le montre
-  objet?: string;                  // exigé par un plan geste ou objet
-  plans: PlanDeCinema[];           // 1 à 4
-  qualite?: "fast" | "lite";       // absente : fast
-  budget?: number;                 // plans payés au plus, 1 à 24 ; absent : 6
+  personnages: Personnage[];        // 0 à 4
+  objet?: string;                   // le produit, décrit une fois
+  episodes: Episode[];
+  budget?: number;                  // plans payés au plus ; absent : 20
 };
 ```
 
-Hors fiche, dans `~/.webgen-motion/films/<id>/cinema.json` (jamais rendu) :
-les opérations Veo en cours (nom d'opération, pour reprendre après un
-rechargement **sans relancer ni repayer**) et le compteur de budget.
+Ce qui change par rapport au lot 1 : les plans quittent la liste plate pour
+**épisode → scène → plan** ; le `role` (scene/geste/objet) disparaît, remplacé
+par ce qui est réellement à l'image (`personnages`, `objet`) ; la `qualite`
+n'est plus un réglage, elle se déduit du plan. Aucune fiche n'utilise encore
+le format du lot 1 : on le remplace sans migration.
 
-## Côté serveur
+**Le choix du modèle** : un plan qui cite au moins un personnage → Veo Fast
+avec ses portraits en référence ; sinon → Veo Lite (un tiers moins cher).
 
-- `src/lib/cinema/prompt.ts` : compose le prompt et le négatif (pur, testé).
-- `src/lib/cinema/veo.ts` : lance `predictLongRunning`, relit l'opération,
-  télécharge (Veo 3.1 Fast par défaut, Lite en option).
-- `src/lib/cinema/registre.ts` : réserve, note, rend ou clôt (verrou de
-  fichier, éprouvé par huit processus en parallèle).
-- `src/lib/cinema/couleurs.ts` : nomme les couleurs de la marque pour Veo.
-- `src/lib/cinema/generation.ts` : un pas à la fois (lancer, ou relire
-  l'opération une fois), reprise après rechargement, vidéo expirée (48 h).
-- `src/lib/cinema/decoupe.ts` (lot 2) : planche contact, détection de scène.
-- Route `api/motion/film/[id]/cinema/[plan]` : POST lance, GET suit.
-- Clé : `veo.apiKey` dans `config.json` (masquée en lecture), repli sur
-  `GEMINI_API_KEY`. Réservé à **Studio Edition**, comme le rendu.
+**Le prompt d'un plan** = cadrage + décor de la scène + consigne + chaque
+personnage (nom + description, ET son portrait en référence) + l'objet s'il
+est à l'image + la réplique (« she says softly in French: « … » ») + ambiance
+de la direction + palette nommée + interdits (pas de texte, pas de logo).
 
-## Le coût, chiffré
+## Le parcours dans l'assistant (lot 3)
 
-| Modèle | 1 plan (8 s, 1080p) | Reel de 3 plans |
+Une étape **« Série »** dans `film/[id]/creer`, après « Marque » :
+
+1. **Le casting** : chaque personnage = un nom, une phrase de description,
+   un bouton « Générer son portrait » (quelques centimes). On regénère tant
+   qu'il ne plaît pas ; une fois validé, il ne bouge plus.
+2. **L'épisode** : titre, puis les scènes (un décor chacune), puis les plans
+   (consigne, qui est à l'image, l'objet, une réplique).
+3. **Générer** : par plan ou toute la scène d'un coup, coût total affiché
+   avant, état en direct (en cours ~1 à 3 min, prêt, refusé).
+4. **Découper** : planche contact, début, fin, une coupe au milieu.
+5. **Regarder l'épisode** monté, puis le rendre (lot 4).
+
+États : aucun personnage (« commence par ton casting »), portrait en cours,
+plan en cours, refus de Google (raison + « rien n'a été facturé »), clé
+absente, budget atteint, réplique non dite (lot 4).
+
+## Le coût, chiffré (barème Google 09/2026, 8 s en 1080p)
+
+| Ce qu'on génère | Modèle | Coût |
 |---|---|---|
-| Veo 3.1 Fast | ~0,96 $ | ~2,90 $ |
-| Veo 3.1 Lite | ~0,64 $ | ~1,90 $ |
+| Un portrait de personnage | Gemini 3.1 Flash Image | ~0,05 $ |
+| Un plan avec personnage | Veo 3.1 Fast | ~0,96 $ |
+| Un plan sans personnage | Veo 3.1 Lite | ~0,64 $ |
+| Reel de 15 s (2 plans) | — | ~1,60 à 1,90 $ |
+| Épisode de 1 min (~8 plans) | — | ~7 $ |
+| Épisode de 2 min (~15 plans) | — | ~13 à 15 $ |
 
-Google ne facture pas un plan refusé. Budget par film réglable, 6 plans
-par défaut.
+Compter **+30 à 50 %** pour les prises refaites. Google ne facture pas un plan
+refusé. **La durée a un coût** : seul un décor de fond peut boucler sans
+payer plus ; un épisode, ce sont des plans tous différents.
 
 ## Les lots
 
 | Lot | Contenu | Prouvé par |
 |---|---|---|
-| 1 | Modèle de fiche + validateur, prompt, budget, génération Veo, reprise | Unitaires (prompt, budget sous concurrence, validateur, reprise d'opération) |
-| 2 | Étape « Cinéma » de l'assistant, découpe, états | Tests de composants + E2E du parcours |
-| 3 | Composition Remotion « Reel cinéma », incrustations, fin sur le logo | Rendu réel d'un Reel, planche contrôlée image par image |
-| 4 | Image-to-video depuis la photo du vrai produit ; Claude écrit le casting depuis le site | Unitaires + un plan réel |
+| 1 ✅ | Moteur : prompt, budget sous verrou, génération Veo, reprise, clé | 519 tests + recette réelle |
+| 2 | Format série (personnages, épisodes, scènes), portraits générés, références dans Veo, choix Fast/Lite, répliques | Unitaires + faux Google + recette réelle d'une scène (~3 $) |
+| 3 | Étape « Série » de l'assistant : casting, épisode, génération, découpe, états | Tests de composants + E2E du parcours |
+| 4 | Rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
+| 5 | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
 
-Lot 3 réutilise `PLogoConstruit`, `BandeSon` et le placement sur le tempo.
-Un appel réel à Veo n'est fait qu'en recette manuelle (il coûte) ; les tests
-automatiques tournent sur les fonctions pures et sur un serveur Veo local
-qui rejoue les réponses enregistrées le 14/10.
+Les appels réels à Google ne se font qu'en recette (ils coûtent) ; les tests
+automatiques tournent sur un faux Google local qui rejoue la forme exacte des
+réponses relevées le 14/10, refus de Lite compris.
