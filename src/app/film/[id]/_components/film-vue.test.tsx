@@ -16,7 +16,7 @@ function resume(surcharge: Partial<ResumeDuFilm> = {}): ResumeDuFilm {
     erreurs: [],
     exemple: false,
     langues: ["fr"],
-    declinaisons: [{ ...DECLINAISON, problemes: [], rendu: null }],
+    declinaisons: [{ ...DECLINAISON, episodes: [], problemes: [], rendu: null }],
     rendus: 0,
     medias: {
       dossierPublic: "/home/ben/.webgen-motion/films/kotizo/public",
@@ -82,16 +82,38 @@ describe("page film : les trois états", () => {
   });
 
   it("une déclinaison bloquée dit pourquoi et ne propose pas un rendu impossible", () => {
-    const declinaisons = [{ ...DECLINAISON, problemes: ["capture absente : /x/ecrans/a.png"], rendu: null }];
+    const declinaisons = [{ ...DECLINAISON, episodes: [], problemes: ["capture absente : /x/ecrans/a.png"], rendu: null }];
     render(<FilmVue id="kotizo" resume={resume({ statut: "medias-manquants", declinaisons })} studio />);
     expect(screen.getByText("capture absente : /x/ecrans/a.png")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rendre" })).toBeDisabled();
   });
 });
 
+describe("la série sur la page du film", () => {
+  it("chaque épisode a sa carte : vertical, sa vidéo s'il est rendu, ce qui bloque sinon", () => {
+    const episodes = [
+      { id: "ep1", titre: "L'héritage", problemes: [], rendu: { url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR&rendu=episode&episode=ep1", octets: 48_500_000, modifieLe: 1 } },
+      { id: "ep2", titre: "La visite", problemes: ["scène 1, plan 2 : pas encore généré"], rendu: null },
+    ];
+    const declinaisons = [{ ...DECLINAISON, episodes, problemes: [], rendu: null }];
+    const { container } = render(<FilmVue id="kotizo" resume={resume({ declinaisons })} studio />);
+    expect(screen.getByRole("heading", { name: "La série" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "L'héritage" })).toBeInTheDocument();
+    expect(screen.getAllByText("FR · 9:16 · 1080 × 1920").length).toBeGreaterThanOrEqual(2);
+    const sources = [...container.querySelectorAll("video")].map((video) => video.getAttribute("src") ?? "");
+    expect(sources.some((src) => src.includes("rendu=episode&episode=ep1"))).toBe(true);
+    expect(screen.getByText("scène 1, plan 2 : pas encore généré")).toBeInTheDocument();
+  });
+
+  it("sans série, pas de section « La série »", () => {
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
+    expect(screen.queryByRole("heading", { name: "La série" })).not.toBeInTheDocument();
+  });
+});
+
 describe("édition Community", () => {
   it("le rendu est verrouillé, l'activation Studio est proposée, les rendus faits restent lisibles", () => {
-    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: { url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR", octets: 5_000_000, modifieLe: 1 } }];
+    const declinaisons = [{ ...DECLINAISON, episodes: [], problemes: [], rendu: { url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR", octets: 5_000_000, modifieLe: 1 } }];
     const { container } = render(<FilmVue id="kotizo" resume={resume({ statut: "rendu", declinaisons })} studio={false} />);
     expect(screen.getByText("Le rendu des films de marque fait partie de Studio Edition.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Activer une licence Studio" })).toHaveAttribute("href", "/setup");
@@ -154,7 +176,7 @@ describe("bibliothèque de plans", () => {
     const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       fluxNdjson([{ type: "done", ok: true, url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR&rendu=bibliotheque", sizeBytes: 2_000_000 }]),
     );
-    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: null, bibliotheque: { problemes: [], rendu: null } }];
+    const declinaisons = [{ ...DECLINAISON, episodes: [], problemes: [], rendu: null, bibliotheque: { problemes: [], rendu: null } }];
     const { container } = render(<FilmVue id="kotizo" resume={resume({ declinaisons })} studio />);
     expect(screen.getByRole("heading", { name: "Bibliothèque de plans" })).toBeInTheDocument();
 
@@ -172,7 +194,7 @@ describe("bibliothèque de plans", () => {
 
   it("une bibliothèque bloquée dit pourquoi, sans bloquer le film", () => {
     const manque = "capture absente : /x/ecrans/site.png";
-    const declinaisons = [{ ...DECLINAISON, problemes: [], rendu: null, bibliotheque: { problemes: [manque], rendu: null } }];
+    const declinaisons = [{ ...DECLINAISON, episodes: [], problemes: [], rendu: null, bibliotheque: { problemes: [manque], rendu: null } }];
     render(<FilmVue id="kotizo" resume={resume({ declinaisons })} studio />);
     expect(screen.getByText(manque)).toBeInTheDocument();
     const [film, bibliotheque] = screen.getAllByRole("button", { name: "Rendre" });

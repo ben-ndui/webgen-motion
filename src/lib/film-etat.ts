@@ -27,10 +27,16 @@ export type EtatDuRenduSurDisque = {
   rendu: RenduExistant | null;
 };
 
+export type EtatDUnEpisode = EtatDuRenduSurDisque & { id: string; titre: string };
+
 export type EtatDeDeclinaison = DeclinaisonDuFilm &
   EtatDuRenduSurDisque & {
     // Le rendu de la bibliothèque de plans ; null quand la fiche n'en a pas.
     bibliotheque: EtatDuRenduSurDisque | null;
+    // Les épisodes de la série dans la langue de cette déclinaison. Un épisode
+    // est toujours vertical : une seule déclinaison par langue les porte
+    // (la première courte), les autres ont une liste vide.
+    episodes: EtatDUnEpisode[];
   };
 
 export type ResumeDuFilm = {
@@ -66,12 +72,12 @@ function nomDuFilm(spec: FilmSpec, id: string): string {
   return id;
 }
 
-function renduExistant(id: string, nom: string, sortie: string, type: TypeDeRendu): RenduExistant | null {
-  const chemin = fichiersDuRendu(sortie, nom, type).livrable;
+function renduExistant(id: string, nom: string, sortie: string, type: TypeDeRendu, episode?: string): RenduExistant | null {
+  const chemin = fichiersDuRendu(sortie, nom, type, episode).livrable;
   if (!existsSync(chemin)) return null;
   const infos = statSync(chemin);
   if (!infos.isFile() || infos.size < POIDS_MINIMUM_D_UN_RENDU) return null;
-  return { url: urlDuRendu(id, nom, Math.round(infos.mtimeMs), type), octets: infos.size, modifieLe: infos.mtimeMs };
+  return { url: urlDuRendu(id, nom, Math.round(infos.mtimeMs), type, episode), octets: infos.size, modifieLe: infos.mtimeMs };
 }
 
 export const MESSAGE_FICHE_D_EXEMPLE = "fiche encore marquée « exemple: true » : la remplir, puis passer à false";
@@ -127,6 +133,10 @@ export function resumerFilm(fiche: FicheDeFilm, dossiers: DossiersDuFilm = dossi
   const { spec } = fiche;
   const langues = [...new Set(spec.declinaisons.map((declinaison) => declinaison.langue))];
   const medias = etatDesMedias(spec, dossiers.public, langues);
+  // La déclinaison qui porte les épisodes de chaque langue : la première courte, sinon la première.
+  const porteuses = new Set(
+    langues.map((langue) => (spec.declinaisons.find((d) => d.langue === langue && d.version === "court") ?? spec.declinaisons.find((d) => d.langue === langue))?.nom),
+  );
   const declinaisons = spec.declinaisons.map((declinaison) => ({
     ...declinaison,
     problemes: problemesDeLaDeclinaison(spec, medias, declinaison.langue),
@@ -137,6 +147,14 @@ export function resumerFilm(fiche: FicheDeFilm, dossiers: DossiersDuFilm = dossi
           rendu: renduExistant(fiche.id, declinaison.nom, dossiers.sortie, "bibliotheque"),
         }
       : null,
+    episodes: porteuses.has(declinaison.nom)
+      ? (spec.cinema?.episodes ?? []).map((episode) => ({
+          id: episode.id,
+          titre: episode.titre,
+          problemes: problemesDeLaDeclinaison(spec, medias, declinaison.langue, "episode", episode.id),
+          rendu: renduExistant(fiche.id, declinaison.nom, dossiers.sortie, "episode", episode.id),
+        }))
+      : [],
   }));
   const rendus = declinaisons.filter((declinaison) => declinaison.rendu !== null).length;
   return {

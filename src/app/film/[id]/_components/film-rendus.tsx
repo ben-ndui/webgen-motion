@@ -21,6 +21,8 @@ function etatAffiche(surDisque: EtatDuRenduSurDisque, etat: EtatDuRendu | undefi
 
 type PropsCarte = {
   declinaison: EtatDeDeclinaison;
+  // Un épisode : son titre à la place du nom de déclinaison, et toujours vertical.
+  episode?: { titre: string };
   // Ce que le disque dit de CE rendu : le film, ou la bibliothèque.
   surDisque: EtatDuRenduSurDisque;
   studio: boolean;
@@ -30,8 +32,10 @@ type PropsCarte = {
   onAnnuler: () => void;
 };
 
-function CarteDeDeclinaison({ declinaison, surDisque, studio, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
+function CarteDeDeclinaison({ declinaison, episode, surDisque, studio, etat, occupe, onLancer, onAnnuler }: PropsCarte) {
   const bloquee = surDisque.problemes.length > 0;
+  const titre = episode ? episode.titre : declinaison.nom;
+  const version = episode ? "court" : declinaison.version;
   const enCours = etat.type === "en-cours";
   const pourcentage = enCours && etat.total > 0 ? Math.round((etat.frames / etat.total) * 100) : null;
 
@@ -39,10 +43,10 @@ function CarteDeDeclinaison({ declinaison, surDisque, studio, etat, occupe, onLa
     <li className="film-block film-rendu" data-wm-id="film.rendu">
       <div className="film-rendu-head">
         <div>
-          <h3 className="film-h3">{declinaison.nom}</h3>
+          <h3 className="film-h3">{titre}</h3>
           <p className="film-muted">
-            {declinaison.langue.toUpperCase()} · {FORMAT[declinaison.version]} ·{" "}
-            {declinaison.avecContact ? "avec contact" : "sans contact"}
+            {declinaison.langue.toUpperCase()} · {FORMAT[version]}
+            {episode ? "" : ` · ${declinaison.avecContact ? "avec contact" : "sans contact"}`}
           </p>
         </div>
         {enCours ? (
@@ -57,7 +61,7 @@ function CarteDeDeclinaison({ declinaison, surDisque, studio, etat, occupe, onLa
       </div>
 
       {bloquee && (
-        <ul className="film-list film-warning" aria-label={`Ce qui bloque ${declinaison.nom}`}>
+        <ul className="film-list film-warning" aria-label={`Ce qui bloque ${titre}`}>
           {surDisque.problemes.map((probleme) => (
             <li key={probleme}>
               <code>{probleme}</code>
@@ -90,7 +94,7 @@ function CarteDeDeclinaison({ declinaison, surDisque, studio, etat, occupe, onLa
 
       {etat.type === "fait" && (
         <>
-          <video className={`film-player film-player-${declinaison.version}`} controls preload="metadata" src={etat.url} />
+          <video className={`film-player film-player-${version}`} controls preload="metadata" src={etat.url} />
           <p className="film-muted">{megaOctets(etat.octets)}</p>
         </>
       )}
@@ -130,6 +134,29 @@ function ListeDeRendus({ declinaisons, type, studio, rendus }: PropsListe) {
   );
 }
 
+// Les épisodes de la série : une carte par épisode et par langue (la déclinaison porteuse).
+function ListeDEpisodes({ declinaisons, studio, rendus }: Omit<PropsListe, "type">) {
+  return (
+    <ul className="film-rendus">
+      {declinaisons.flatMap((declinaison) =>
+        declinaison.episodes.map((episode) => (
+          <CarteDeDeclinaison
+            key={`${declinaison.nom}-${episode.id}`}
+            declinaison={declinaison}
+            episode={episode}
+            surDisque={episode}
+            studio={studio}
+            etat={etatAffiche(episode, rendus.etats[cleDuRendu("episode", declinaison.nom, episode.id)])}
+            occupe={rendus.enCours !== null}
+            onLancer={() => void rendus.lancer(declinaison.nom, "episode", episode.id)}
+            onAnnuler={rendus.annuler}
+          />
+        )),
+      )}
+    </ul>
+  );
+}
+
 /**
  * Un bouton de rendu par déclinaison, sa progression, et le lecteur du rendu.
  * Si la fiche a une bibliothèque, ses plans se rendent dans une seconde liste.
@@ -139,6 +166,7 @@ type PropsRendus = { filmId: string; declinaisons: EtatDeDeclinaison[]; studio: 
 export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus) {
   const rendus = useRenduDeFilm(filmId);
   const avecBibliotheque = declinaisons.some((declinaison) => declinaison.bibliotheque !== null);
+  const avecEpisodes = declinaisons.some((declinaison) => declinaison.episodes.length > 0);
 
   return (
     <>
@@ -179,6 +207,22 @@ export default function FilmRendus({ filmId, declinaisons, studio }: PropsRendus
             </p>
           </div>
           <ListeDeRendus declinaisons={declinaisons} type="bibliotheque" studio={studio} rendus={rendus} />
+        </section>
+      )}
+
+      {avecEpisodes && (
+        <section aria-labelledby="film-serie-titre" className="film-section" data-wm-id="film.serie">
+          <div className="film-section-head">
+            <span className="kicker">Générée par IA</span>
+            <h2 id="film-serie-titre" className="film-h2">
+              La série
+            </h2>
+            <p className="film-muted">
+              Chaque épisode monté, en vertical. Un épisode se rend quand tous ses plans sont générés (étape « Ta série »). À la publication, coche
+              l&apos;étiquette « contenu généré par IA » de la plateforme.
+            </p>
+          </div>
+          <ListeDEpisodes declinaisons={declinaisons} studio={studio} rendus={rendus} />
         </section>
       )}
     </>
