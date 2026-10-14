@@ -78,6 +78,11 @@ export interface MotionConfig {
     /** Modèle utilisé. Default Anthropic : claude-sonnet-4-6. */
     model?: string;
   };
+  /** Veo (vidéo IA du cinéma des films de marque). Clé Gemini du user :
+   *  il paie ses plans directement à Google, GEN MOTION ne proxifie rien. */
+  veo?: {
+    apiKey?: string;
+  };
   /** Télémétrie anonyme d'activation (opt-out). Un seul event anonyme
    *  'activated' à la 1ère compose réussie — jamais de contenu ni d'email.
    *  cf. src/lib/telemetry.ts. */
@@ -137,6 +142,10 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
       ...current.telemetry,
       ...partial.telemetry,
     },
+    veo: {
+      ...current.veo,
+      ...partial.veo,
+    },
   };
   // Drop empty sub-objects so the JSON file stays clean.
   if (
@@ -157,6 +166,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
   }
   if (!next.agent?.apiKey && !next.agent?.provider && !next.agent?.model) {
     delete next.agent;
+  }
+  if (!next.veo?.apiKey) {
+    delete next.veo;
   }
   if (next.telemetry && Object.keys(next.telemetry).length === 0) {
     delete next.telemetry;

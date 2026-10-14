@@ -171,3 +171,12 @@ export function resolveAgent(): ResolvedAgent | null {
     model: cfg.agent?.model ?? defaultModel,
   };
 }
+
+/**
+ * La clé Gemini qui paie les plans Veo. Config d'abord, puis
+ * `GEMINI_API_KEY` (même ordre que l'agent). null : pas de cinéma IA.
+ */
+export function resolveVeoKey(): string | null {
+  const cle = getConfig().veo?.apiKey ?? process.env.GEMINI_API_KEY;
+  return cle && cle.trim() ? cle.trim() : null;
+}

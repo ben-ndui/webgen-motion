@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import type { FilmSpec } from "../../remotion/film/spec";
 import { erreursDeLaBibliotheque } from "../../remotion/film/bibliotheque/validerBibliotheque";
+import { erreursDuCinema } from "../../remotion/film/cinema/validerCinema";
 import { erreursDeLaSpec } from "../../remotion/film/validerSpec";
 import { estNomSur } from "./film-store";
 
@@ -27,12 +28,13 @@ export function getFilmsDir(): string {
 }
 
 /**
- * Toutes les erreurs d'une fiche. La bibliothèque se valide ici aussi : une
- * fiche qui en a une mal remplie le dit à l'écran, pas seulement au rendu.
+ * Toutes les erreurs d'une fiche. La bibliothèque et le cinéma se valident
+ * ici aussi : une fiche qui en a un mal rempli le dit à l'écran, pas
+ * seulement au rendu.
  */
 export function erreursDeLaFiche(entree: unknown): string[] {
   const erreurs = erreursDeLaSpec(entree);
-  if (erreurs.length === 0) erreurs.push(...erreursDeLaBibliotheque(entree));
+  if (erreurs.length === 0) erreurs.push(...erreursDeLaBibliotheque(entree), ...erreursDuCinema(entree));
   return erreurs;
 }
 

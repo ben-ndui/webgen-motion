@@ -43,6 +43,12 @@ export interface PublicConfig {
     apiKeyMasked: string | null;
     model: string;
   };
+  veo: {
+    hasApiKey: boolean;
+    apiKeyMasked: string | null;
+    /** true si GEMINI_API_KEY prend le relais quand la config est vide. */
+    hasEnvKey: boolean;
+  };
   envFallback: {
     hasApiKey: boolean;
     hasVoiceId: boolean;
@@ -62,6 +68,7 @@ export function getPublicConfig(): PublicConfig {
   const defaultBackend = cfg.defaultBackend ?? "elevenlabs";
   const agentProvider = cfg.agent?.provider ?? "anthropic";
   const agentKey = cfg.agent?.apiKey;
+  const veoKey = cfg.veo?.apiKey;
   const agentDefaultModel =
     agentProvider === "anthropic"
       ? "claude-sonnet-4-6"
@@ -96,6 +103,11 @@ export function getPublicConfig(): PublicConfig {
       hasApiKey: !!agentKey,
       apiKeyMasked: agentKey ? mask(agentKey) : null,
       model: cfg.agent?.model ?? agentDefaultModel,
+    },
+    veo: {
+      hasApiKey: !!veoKey,
+      apiKeyMasked: veoKey ? mask(veoKey) : null,
+      hasEnvKey: !!process.env.GEMINI_API_KEY,
     },
     envFallback: {
       hasApiKey: !!process.env.ELEVENLABS_API_KEY,

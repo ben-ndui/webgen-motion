@@ -83,6 +83,9 @@ export async function PUT(req: NextRequest) {
       sanitized.agent.model = body.agent.model.trim() || undefined;
     }
   }
+  if (body.veo && typeof body.veo.apiKey === "string") {
+    sanitized.veo = { apiKey: body.veo.apiKey.trim() || undefined };
+  }
   if (body.telemetry && typeof body.telemetry.enabled === "boolean") {
     sanitized.telemetry = { enabled: body.telemetry.enabled };
   }

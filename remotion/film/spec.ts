@@ -8,9 +8,10 @@
 // passe par `validerSpec` (validerSpec.ts) avant le premier plan.
 //
 // Ce fichier n'importe que des types : Node le lit tel quel (avant-rendu.mjs).
+import type { CinemaDuFilm } from "./cinema/types";
 import type { Langue, TextesDeLaBibliotheque, TextesDuFilm } from "./textes/types";
 
-export type { Langue, TextesDeLaBibliotheque, TextesDuFilm };
+export type { CinemaDuFilm, Langue, TextesDeLaBibliotheque, TextesDuFilm };
 
 /**
  * Le logo animé, sous l'une de ses trois formes :
@@ -175,6 +176,8 @@ export type FilmSpec = {
   direction?: DirectionDuFilm;
   // Voix off, plan par plan. Absente : le film n'a que sa musique.
   voix?: VoixDuFilm;
+  // Plans générés par IA (cinema/types.ts). Absent : pas de Reel cinéma.
+  cinema?: CinemaDuFilm;
 };
 
 export const DIRECTIONS = ["marque", "editorial", "nocturne"] as const;

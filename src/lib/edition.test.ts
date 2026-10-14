@@ -158,6 +158,7 @@ describe("isFeatureEnabled — gating Studio", () => {
     "watermark-removal",
     "otio-export",
     "film-de-marque",
+    "cinema-ia",
   ] as const;
   const COMMUNITY = [
     "compose-sober",
