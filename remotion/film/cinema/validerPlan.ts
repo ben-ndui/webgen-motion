@@ -60,7 +60,8 @@ function verifierReplique(erreurs: Erreurs, chemin: string, replique: unknown, p
   }
 }
 
-export type ContexteDuPlan = { personnagesConnus: Set<string>; objetDecrit: boolean };
+// objetEnPhoto : la photo du produit part aussi en référence, elle compte dans la limite de Veo.
+export type ContexteDuPlan = { personnagesConnus: Set<string>; objetDecrit: boolean; objetEnPhoto: boolean };
 
 export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, contexte: ContexteDuPlan): void {
   if (!estObjet(plan)) {
@@ -76,9 +77,14 @@ export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, co
   if (typeof plan.objet !== "boolean") erreurs.push(`${chemin}.objet : vrai ou faux`);
   // Un objet à l'image sans description : Veo en inventerait un différent à chaque plan.
   if (plan.objet === true && !contexte.objetDecrit) erreurs.push(`${chemin}.objet : décris d'abord l'objet du film (cinema.objet)`);
+  const references = (Array.isArray(plan.personnages) ? plan.personnages.length : 0) + (plan.objet === true && contexte.objetEnPhoto ? 1 : 0);
+  if (Array.isArray(plan.personnages) && plan.personnages.length <= PERSONNAGES_PAR_PLAN_MAX && references > PERSONNAGES_PAR_PLAN_MAX) {
+    erreurs.push(`${chemin} : ${references} images de référence (personnages + photo du produit), ${PERSONNAGES_PAR_PLAN_MAX} au plus pour Veo`);
+  }
   verifierReplique(erreurs, `${chemin}.replique`, plan.replique, plan.personnages);
   if (plan.fichier !== undefined && (typeof plan.fichier !== "string" || !FICHIER_SUR.test(plan.fichier))) {
     erreurs.push(`${chemin}.fichier : cinema/<plan>.mp4 (posé par GEN MOTION)`);
   }
+  if (plan.produitReel !== undefined && plan.produitReel !== true) erreurs.push(`${chemin}.produitReel : vrai ou absent (posé par GEN MOTION)`);
   verifierDecoupe(erreurs, `${chemin}.decoupe`, plan.decoupe);
 }

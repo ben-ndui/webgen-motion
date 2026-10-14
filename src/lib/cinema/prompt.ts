@@ -1,7 +1,7 @@
 import type { PlanDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
 import { paletteEnMots } from "./couleurs";
-import { personnagesDuPlan } from "./plans";
+import { personnagesDuPlan, photoDuProduitDansLePlan } from "./plans";
 
 /**
  * Le prompt envoyé à Veo pour un plan : la consigne, plus ce qui doit rester
@@ -44,14 +44,19 @@ export function composerLePrompt(
   presents.forEach((personnage, index) => {
     morceaux.push(`${personnage.nom} (reference image ${index + 1}): ${enPhrase(personnage.description)}`);
   });
-  if (plan.objet && cinema.objet) morceaux.push(`The object: ${enPhrase(cinema.objet)} It has no label and no text.`);
+  if (plan.objet && cinema.objet && photoDuProduitDansLePlan(cinema, plan)) {
+    // La photo vient APRÈS les portraits dans les références envoyées.
+    morceaux.push(`The real product (reference image ${presents.length + 1}): ${enPhrase(cinema.objet)} Reproduce it exactly as in its reference image.`);
+  } else if (plan.objet && cinema.objet) {
+    morceaux.push(`The object: ${enPhrase(cinema.objet)} It has no label and no text.`);
+  }
   if (plan.replique) {
     const orateur = presents.find((personnage) => personnage.id === plan.replique?.personnage);
     if (orateur) morceaux.push(`${orateur.nom} says softly in French: « ${plan.replique.texte.trim()} » Natural lip movement.`);
   }
   // Recette du 14/10 : sans ce rappel, un gros plan a repris le fond et la pose
   // du portrait de référence au lieu du décor. Le décor revient donc à la fin.
-  if (presents.length > 0) {
+  if (presents.length > 0 || photoDuProduitDansLePlan(cinema, plan)) {
     morceaux.push(`Keep this setting all around the characters: ${decor} Never reuse the plain studio background or the pose of the reference images.`);
   }
   morceaux.push(AMBIANCE[spec.direction ?? "marque"]);

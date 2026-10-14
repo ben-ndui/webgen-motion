@@ -9,7 +9,7 @@ import { enregistrerFilm } from "../film-ecriture";
 import { chargerFilm } from "../film-loader";
 import { portraitsPourVeo } from "./generation-portrait";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } from "./lieux";
-import { choisirLeModele, personnagesDuPlan, trouverLePlan } from "./plans";
+import { choisirLeModele, personnagesDuPlan, photoDuProduitDansLePlan, trouverLePlan } from "./plans";
 import { composerLePrompt } from "./prompt";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "./registre";
 import { COUT_D_UN_PLAN_USD } from "./couts";
@@ -89,7 +89,8 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   if (!client) return SANS_CLE;
   const texteDExemple = texteEncoreDExemple(contexte);
   if (texteDExemple) return { ok: false, statut: 400, raison: texteDExemple };
-  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id));
+  const photo = photoDuProduitDansLePlan(contexte.cinema, contexte.plan) ? contexte.cinema.photoDeLObjet : undefined;
+  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), photo);
   if (!portraits.ok) return portraits;
 
   const dossier = lieux.dossier(id);
@@ -104,7 +105,7 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
     annulerSansFrais(dossier, planId);
     return { ok: false, statut: 502, raison: `${lancement.raison} Rien n'a été facturé.` };
   }
-  noterLeLancement(dossier, planId, lancement.operation);
+  noterLeLancement(dossier, planId, lancement.operation, photo !== undefined);
   return repondre(id, contexte, { etat: "en-cours" }, lieux);
 }
 
@@ -136,7 +137,7 @@ export async function suivreLePlan(id: string, planId: string, partiel: Partial<
     // L'opération reste notée : le prochain passage retente le téléchargement.
     return repondre(id, contexte, { etat: "injoignable", raison: "La vidéo est prête chez Google mais le téléchargement a échoué : nouvel essai au prochain passage." }, lieux);
   }
-  if (!poserLeFichier(id, planId, fichier, lieux)) {
+  if (!poserLeFichier(id, planId, fichier, operation.avecLaPhotoDuProduit === true, lieux)) {
     // L'opération reste notée : elle se re-télécharge (gratuitement) au
     // prochain passage, une fois la fiche réparée. Sinon ce plan payé
     // s'afficherait « vide ».
@@ -151,12 +152,14 @@ export async function suivreLePlan(id: string, planId: string, partiel: Partial<
  * personne a pu la modifier pendant la génération (deux minutes), et seul ce
  * plan doit changer. Sa découpe tombe : elle visait l'ancienne vidéo.
  */
-function poserLeFichier(id: string, planId: string, fichier: string, lieux: Lieux): boolean {
+function poserLeFichier(id: string, planId: string, fichier: string, avecLaPhotoDuProduit: boolean, lieux: Lieux): boolean {
   const fiche = chargerFilm(id, lieux.fiches);
   if (!fiche || fiche.etat === "invalide" || !fiche.spec.cinema) return false;
   const situe = trouverLePlan(fiche.spec.cinema, planId);
   if (!situe) return false;
   situe.plan.fichier = fichier;
+  if (avecLaPhotoDuProduit) situe.plan.produitReel = true;
+  else delete situe.plan.produitReel;
   delete situe.plan.decoupe;
   return enregistrerFilm(id, fiche.spec, lieux.fiches).ok;
 }

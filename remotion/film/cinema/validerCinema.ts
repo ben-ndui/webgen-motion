@@ -13,6 +13,7 @@ export const BUDGET_PAR_DEFAUT = 20;
 // Garde-fou contre une faute de frappe (600 au lieu de 60) : ~58 $ en Fast.
 export const BUDGET_MAX = 60;
 const PORTRAIT_SUR = /^cinema\/personnages\/[\w-]+\.(jpg|png)$/;
+const PHOTO_DE_L_OBJET_SURE = /^cinema\/objet\.(jpg|png)$/;
 
 function verifierDescription(erreurs: Erreurs, chemin: string, valeur: unknown): void {
   texte(erreurs, chemin, valeur);
@@ -59,6 +60,9 @@ export function erreursDuCinema(spec: unknown): string[] {
   const erreurs: Erreurs = [];
   const personnagesConnus = verifierPersonnages(erreurs, cinema.personnages);
   if (cinema.objet !== undefined) verifierDescription(erreurs, "cinema.objet", cinema.objet);
+  if (cinema.photoDeLObjet !== undefined && (typeof cinema.photoDeLObjet !== "string" || !PHOTO_DE_L_OBJET_SURE.test(cinema.photoDeLObjet))) {
+    erreurs.push("cinema.photoDeLObjet : cinema/objet.jpg ou .png (posée par GEN MOTION)");
+  }
   const budget = cinema.budget;
   if (budget !== undefined && (typeof budget !== "number" || !Number.isInteger(budget) || budget < 1 || budget > BUDGET_MAX)) {
     erreurs.push(`cinema.budget : nombre entier de plans, de 1 à ${BUDGET_MAX}`);
@@ -69,7 +73,7 @@ export function erreursDuCinema(spec: unknown): string[] {
   }
   borner(erreurs, "cinema.episodes", cinema.episodes, { min: 1, max: EPISODES_MAX }, "épisodes");
 
-  const contexte = { personnagesConnus, objetDecrit: estTexte(cinema.objet) };
+  const contexte = { personnagesConnus, objetDecrit: estTexte(cinema.objet), objetEnPhoto: cinema.photoDeLObjet !== undefined };
   // Un plan donne son nom à son fichier : son id est unique dans TOUT le film.
   const idsDePlans = new Set<unknown>();
   cinema.episodes.forEach((episode: unknown, e: number) => {

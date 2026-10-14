@@ -3,9 +3,12 @@
 import type { Budget } from "@/lib/cinema/generation";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import { BUDGET_MAX, BUDGET_PAR_DEFAUT } from "../../../../../../../remotion/film/cinema/validerCinema";
+import PhotoDuProduit from "./photo-du-produit";
 
 type Props = {
+  filmId: string;
   cinema: CinemaDuFilm;
+  enregistrer: () => Promise<boolean>;
   // null tant que le serveur n'a répondu pour aucun plan.
   budget: Budget | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
@@ -16,7 +19,7 @@ type Props = {
  * plans on s'autorise à payer pour ce film. L'objet imaginé passe la vidéo en
  * « APERÇU » tant que la photo du vrai produit ne le remplace pas.
  */
-export default function ObjetEtBudget({ cinema, budget, modifierLaSerie }: Props) {
+export default function ObjetEtBudget({ filmId, cinema, enregistrer, budget, modifierLaSerie }: Props) {
   const plafond = cinema.budget ?? BUDGET_PAR_DEFAUT;
 
   return (
@@ -25,7 +28,7 @@ export default function ObjetEtBudget({ cinema, budget, modifierLaSerie }: Props
       <label className="champ">
         <span className="champ-question">Le produit, s&apos;il apparaît (facultatif)</span>
         <span className="champ-aide">
-          En une phrase, en anglais, sans marque ni texte. Il est imaginé par l&apos;IA : avant de diffuser, remplace-le par la photo du vrai produit.
+          En une phrase, en anglais, sans marque ni texte. Sans photo, il est imaginé par l&apos;IA et l&apos;épisode porte « APERÇU ».
         </span>
         <textarea
           className="champ-saisie zone"
@@ -46,6 +49,19 @@ export default function ObjetEtBudget({ cinema, budget, modifierLaSerie }: Props
           }
         />
       </label>
+
+      <PhotoDuProduit
+        filmId={filmId}
+        photo={cinema.photoDeLObjet}
+        objetDecrit={Boolean(cinema.objet?.trim())}
+        avantDeDeposer={enregistrer}
+        quandChange={(photo) =>
+          modifierLaSerie((c) => {
+            if (photo) c.photoDeLObjet = photo;
+            else delete c.photoDeLObjet;
+          })
+        }
+      />
 
       <h3 className="bloc-titre">Le budget</h3>
       <p className="champ-aide">

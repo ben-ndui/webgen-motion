@@ -45,6 +45,9 @@ export type PlanDeCinema = {
   // Dite par un personnage du plan, en français.
   replique?: RepliqueDuPlan;
   fichier?: string;
+  // Posé par GEN MOTION : la vidéo a été générée AVEC la photo du vrai produit.
+  // Un plan généré avant le dépôt de la photo montre un objet imaginé.
+  produitReel?: true;
   decoupe?: DecoupeDuPlan;
 };
 
@@ -65,6 +68,9 @@ export type CinemaDuFilm = {
   personnages: Personnage[];
   // Le produit, décrit une fois.
   objet?: string;
+  // La photo du VRAI produit (cinema/objet.jpg ou .png), posée par GEN MOTION
+  // au dépôt. Envoyée à Veo en référence : le produit n'est plus imaginé.
+  photoDeLObjet?: string;
   episodes: EpisodeDeCinema[];
   // Plans payés au plus pour ce film, refus de Google non comptés. Absent : 20.
   budget?: number;

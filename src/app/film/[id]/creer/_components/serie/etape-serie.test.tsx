@@ -55,7 +55,7 @@ describe("étape « Série »", () => {
   it("sans série : on explique, et un clic crée une série de départ valide", () => {
     serveur({});
     render(<Banc />);
-    fireEvent.click(screen.getByRole("button", { name: "Commencer la série" }));
+    fireEvent.click(screen.getByRole("button", { name: "Commencer la série à la main" }));
     expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
     expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
   });

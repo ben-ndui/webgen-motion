@@ -9,16 +9,18 @@ import { getFilmPublicDir } from "./film-store";
 import { languesDuFilm } from "./film-fiche-depart";
 
 /**
- * Les fichiers que la série du film cite : portraits et plans générés. Leurs
- * chemins sont déjà bornés par le validateur (cinema/<id>.mp4,
- * cinema/personnages/<id>.jpg|png) : aucun ne sort de cinema/.
+ * Les fichiers que la série du film cite : portraits, plans générés, photo
+ * du produit. Leurs chemins sont déjà bornés par le validateur
+ * (cinema/<id>.mp4, cinema/personnages/<id>.jpg|png, cinema/objet.jpg|png) :
+ * aucun ne sort de cinema/.
  */
 function fichiersDuCinema(fiche: FilmSpec): string[] {
   const cinema = fiche.cinema;
   if (!cinema) return [];
   const portraits = cinema.personnages.flatMap((p) => (p.portrait ? [p.portrait] : []));
   const plans = cinema.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans.flatMap((p) => (p.fichier ? [p.fichier] : []))));
-  return [...portraits, ...plans];
+  const photo = cinema.photoDeLObjet ? [cinema.photoDeLObjet] : [];
+  return [...portraits, ...plans, ...photo];
 }
 
 type Dossiers = { fiches: string; public: (id: string) => string };

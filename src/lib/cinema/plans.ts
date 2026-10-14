@@ -25,12 +25,20 @@ export function personnagesDuPlan(cinema: CinemaDuFilm, plan: PlanDeCinema): Per
 
 export type ChoixDuModele = { qualite: QualiteDeCinema; pourquoi: string };
 
+/** La photo du vrai produit part en référence dans ce plan. */
+export function photoDuProduitDansLePlan(cinema: CinemaDuFilm, plan: PlanDeCinema): boolean {
+  return plan.objet && cinema.photoDeLObjet !== undefined;
+}
+
 /**
- * Lite refuse les portraits en référence (recette réelle du 14/10) : dès
- * qu'un personnage est à l'image, seul Fast le garde identique.
+ * Lite refuse les images de référence (recette réelle du 14/10) : dès qu'un
+ * personnage ou la photo du produit est à l'image, seul Fast les respecte.
  */
 export function choisirLeModele(cinema: CinemaDuFilm, plan: PlanDeCinema): ChoixDuModele {
   const presents = personnagesDuPlan(cinema, plan);
+  if (presents.length === 0 && photoDuProduitDansLePlan(cinema, plan)) {
+    return { qualite: "fast", pourquoi: "La photo du vrai produit est envoyée : Fast la respecte." };
+  }
   if (presents.length === 0) return { qualite: "lite", pourquoi: "Aucun personnage à l'image : le modèle Lite suffit." };
   const noms = presents.map((personnage) => personnage.nom).join(" et ");
   return { qualite: "fast", pourquoi: `${noms} ${presents.length > 1 ? "sont" : "est"} à l'image : Fast garde le même visage.` };

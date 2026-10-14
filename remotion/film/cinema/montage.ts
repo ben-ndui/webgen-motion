@@ -30,7 +30,7 @@ export type MontageDeLEpisode = {
   // Images où commence le logo, et durée totale de l'épisode.
   debutDuLogo: number;
   duree: number;
-  // Un plan montre l'objet imaginé : le rendu porte « APERÇU ».
+  // Un plan montre l'objet imaginé (sans photo réelle) : le rendu porte « APERÇU ».
   objetImagine: boolean;
 };
 
@@ -50,7 +50,8 @@ export function monterLEpisode(cinema: CinemaDuFilm, episodeId: string, tempo: n
   episode.scenes.forEach((scene, indexDeScene) => {
     scene.plans.forEach((plan, indexDePlan) => {
       if (!plan.fichier) throw new Error(`Le plan « ${plan.id} » n'a pas encore de vidéo : génère-le avant de rendre l'épisode.`);
-      if (plan.objet) objetImagine = true;
+      // Seul un plan GÉNÉRÉ avec la photo du vrai produit montre le vrai produit.
+      if (plan.objet && !plan.produitReel) objetImagine = true;
       passagesGardes(plan).forEach(([depuis, jusqua], indexDePassage) => {
         // Seul le PREMIER morceau d'une scène (hors première scène) entre en fondu.
         const fondu = indexDeScene > 0 && indexDePlan === 0 && indexDePassage === 0 ? FONDU_ENTRE_SCENES : 0;

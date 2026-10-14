@@ -15,6 +15,8 @@ export type OperationEnCours = {
   // Nom de l'opération chez Google ; null entre la réservation et la réponse.
   nom: string | null;
   depuis: string;
+  // La photo du vrai produit est partie avec ce lancement.
+  avecLaPhotoDuProduit?: boolean;
 };
 export type Registre = { utilises: number; operations: Record<string, OperationEnCours> };
 
@@ -106,10 +108,12 @@ export function reserver(dossier: string, planId: string, plafond: number, maint
 }
 
 /** Google a accepté le lancement : on garde le nom pour reprendre plus tard. */
-export function noterLeLancement(dossier: string, planId: string, nom: string): void {
+export function noterLeLancement(dossier: string, planId: string, nom: string, avecLaPhotoDuProduit = false): void {
   modifier(dossier, (registre) => {
     const enCours = registre.operations[planId];
-    if (enCours) enCours.nom = nom;
+    if (!enCours) return;
+    enCours.nom = nom;
+    if (avecLaPhotoDuProduit) enCours.avecLaPhotoDuProduit = true;
   });
 }
 

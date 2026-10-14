@@ -10,7 +10,7 @@ export function motsDe(texte: string): string[] {
   return texte
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     // Les apostrophes (droite ou typographique) séparent « c'est » en « c » et « est ».
     .replace(/[^a-z0-9]+/g, " ")
     .trim()

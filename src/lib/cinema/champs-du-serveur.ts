@@ -1,10 +1,12 @@
 /**
- * Le serveur écrit seul deux champs de la série : la vidéo d'un plan
- * (`fichier`) et le portrait d'un personnage (`portrait`). L'écran renvoie la
- * fiche ENTIÈRE à chaque frappe ; une sauvegarde partie au mauvais moment
- * effacerait la vidéo d'un plan déjà payé, qui s'afficherait « vide ».
+ * Le serveur écrit seul les champs qui disent ce qui a été généré : la vidéo
+ * d'un plan (`fichier`) et si elle l'a été avec le vrai produit
+ * (`produitReel`), le portrait d'un personnage (`portrait`), la photo du
+ * produit (`photoDeLObjet`). L'écran renvoie la fiche ENTIÈRE à chaque
+ * frappe ; une sauvegarde partie au mauvais moment effacerait la vidéo d'un
+ * plan déjà payé, qui s'afficherait « vide ».
  *
- * À chaque enregistrement, ces deux champs sont donc repris de la fiche du
+ * À chaque enregistrement, ces champs sont donc repris de la fiche du
  * DISQUE, quoi que le navigateur envoie : il ne peut ni les effacer, ni les
  * poser. Les plans et personnages se reconnaissent par leur id.
  */
@@ -25,11 +27,11 @@ function personnagesDe(cinema: unknown): Objet[] {
   return estObjet(cinema) ? liste(cinema.personnages).filter(estObjet) : [];
 }
 
-function reprendre(entrants: Objet[], actuels: Objet[], champ: "fichier" | "portrait"): void {
+function reprendre(entrants: Objet[], actuels: Objet[], champ: "fichier" | "portrait" | "produitReel"): void {
   const parId = new Map(actuels.map((element) => [element.id, element[champ]]));
   for (const element of entrants) {
     const valeur = parId.get(element.id);
-    if (typeof valeur === "string") element[champ] = valeur;
+    if (valeur !== undefined) element[champ] = valeur;
     else delete element[champ];
   }
 }
@@ -39,6 +41,10 @@ export function garderLesChampsDuServeur(entrante: unknown, actuelle: unknown): 
   if (!estObjet(entrante) || !estObjet(entrante.cinema)) return entrante;
   const cinemaActuel = estObjet(actuelle) ? actuelle.cinema : undefined;
   reprendre(plansDe(entrante.cinema), plansDe(cinemaActuel), "fichier");
+  reprendre(plansDe(entrante.cinema), plansDe(cinemaActuel), "produitReel");
   reprendre(personnagesDe(entrante.cinema), personnagesDe(cinemaActuel), "portrait");
+  const photo = estObjet(cinemaActuel) ? cinemaActuel.photoDeLObjet : undefined;
+  if (typeof photo === "string") entrante.cinema.photoDeLObjet = photo;
+  else delete entrante.cinema.photoDeLObjet;
   return entrante;
 }

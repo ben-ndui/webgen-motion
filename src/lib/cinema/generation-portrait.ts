@@ -46,8 +46,11 @@ export async function genererLePortrait(id: string, personnageId: string, partie
 
 export type PortraitsDuPlan = { ok: true; references: ImageDeReference[] } | Refus;
 
-/** Les portraits des personnages à l'image, lus sur le DISQUE, dans l'ordre du plan. */
-export function portraitsPourVeo(presents: Personnage[], dossierPublic: string): PortraitsDuPlan {
+/**
+ * Les images de référence du plan, lues sur le DISQUE : les portraits des
+ * personnages à l'image, dans l'ordre du plan, puis la photo du produit.
+ */
+export function portraitsPourVeo(presents: Personnage[], dossierPublic: string, photoDuProduit?: string): PortraitsDuPlan {
   const references: ImageDeReference[] = [];
   for (const personnage of presents) {
     const chemin = personnage.portrait ? join(dossierPublic, personnage.portrait) : null;
@@ -55,6 +58,12 @@ export function portraitsPourVeo(presents: Personnage[], dossierPublic: string):
     if (!chemin || !existsSync(chemin)) {
       return { ok: false, statut: 409, raison: `${personnage.nom} n'a pas encore de portrait : génère-le d'abord, sinon son visage changerait d'un plan à l'autre.` };
     }
+    references.push({ octets: new Uint8Array(readFileSync(chemin)), mimeType: chemin.endsWith(".png") ? "image/png" : "image/jpeg" });
+  }
+  if (photoDuProduit) {
+    const chemin = join(dossierPublic, photoDuProduit);
+    // Citée mais absente : le produit serait réinventé, on refuse plutôt que payer un plan faux.
+    if (!existsSync(chemin)) return { ok: false, statut: 409, raison: "La photo du produit est citée mais absente : dépose-la de nouveau." };
     references.push({ octets: new Uint8Array(readFileSync(chemin)), mimeType: chemin.endsWith(".png") ? "image/png" : "image/jpeg" });
   }
   return { ok: true, references };

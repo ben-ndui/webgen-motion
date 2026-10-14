@@ -1,10 +1,11 @@
 # Fiche — Cinéma IA : du Reel à la mini-série
 
 > Statut : direction **B** validée par Ben le 14/10/2026 (« pensé série dès le
-> lot 2 »), fiche validée le même jour. **Lots 1 à 4 livrés** : moteur,
+> lot 2 »), fiche validée le même jour. **Lots 1 à 5 livrés** (le 5 le 15/10) : moteur,
 > format série, portraits, références, répliques (`src/lib/cinema/`), l'étape
 > « Ta série » de l'assistant (`film/[id]/creer/_components/serie/`), la
-> découpe, le rendu de l'épisode monté et le contrôle des répliques.
+> découpe, le rendu de l'épisode monté, le contrôle des répliques, l'écriture
+> d'un épisode par Claude depuis un brief et la photo du vrai produit.
 
 ## Ce que la fonctionnalité promet
 
@@ -34,9 +35,10 @@ finit sur son vrai logo. Un Reel publicitaire n'est qu'un épisode d'une scène.
    portrait déposé (photo d'une vraie personne) exige la case « j'ai son
    accord écrit », conservée dans la fiche ; sans elle, rien ne se génère.
 3. **Objet imaginé** (flacon inventé) : autorisé, mais tant qu'un plan en
-   montre un, le rendu porte « APERÇU » et l'écran dit de le remplacer par la
-   photo du vrai produit avant diffusion. Ce n'est pas un champ qu'on remplit :
-   c'est déduit du plan.
+   montre un, le rendu porte « APERÇU ». La photo du vrai produit (déposée,
+   envoyée à Veo en référence) le lève, **plan par plan** : seul un plan
+   GÉNÉRÉ avec la photo est marqué `produitReel` (champ serveur) ; un plan
+   d'avant reste imaginé tant qu'on ne le refait pas.
 4. **Le coût s'affiche avant chaque clic**, au plan près, avec le modèle que
    GEN MOTION a choisi et pourquoi (« Fast : Awa apparaît dans ce plan »).
 5. **Une réplique non dite n'est pas un succès** : si la transcription locale
@@ -137,7 +139,7 @@ payer plus ; un épisode, ce sont des plans tous différents.
 | 2 ✅ | Format série (personnages, épisodes, scènes), portraits générés, références dans Veo, choix Fast/Lite, répliques | Unitaires + faux Google + recette réelle d'une scène (~3 $) |
 | 3 ✅ | Étape « Ta série » de l'assistant : casting, épisodes, scènes, pellicule, génération, états | Tests de composants + vérification réelle à 1440 et 390 px (pas d'outil E2E dans le dépôt) |
 | 4 ✅ | Découpe des plans + rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
-| 5 | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
+| 5 ✅ | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
 
 Les appels réels à Google ne se font qu'en recette (ils coûtent) ; les tests
 automatiques tournent sur un faux Google local qui rejoue la forme exacte des

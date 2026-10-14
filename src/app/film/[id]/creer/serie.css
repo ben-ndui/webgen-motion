@@ -73,3 +73,9 @@
 .gm-film .decoupe-lecteur { width: min(100%, 240px); aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
 .gm-film .decoupe-planche { width: 100%; border-radius: var(--r-sm); cursor: pointer; background: var(--pellicule); }
 .gm-film .decoupe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+/* La photo du vrai produit, Claude */
+.gm-film .photo-du-produit-apercu { width: 120px; aspect-ratio: 1; object-fit: contain; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line); }
+.gm-film .photo-du-produit .film-btn { cursor: pointer; }
+.gm-film .photo-du-produit .film-btn.desactive { opacity: .45; cursor: not-allowed; }
+.gm-film .ecrire-avec-claude .film-btn { align-self: flex-start; }

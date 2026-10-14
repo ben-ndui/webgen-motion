@@ -20,11 +20,13 @@ type Props = {
   onGenerer: (planId: string) => void;
   declinaisons: DeclinaisonDuFilm[];
   enregistrer: () => Promise<boolean>;
+  // L'épisode ouvert au départ (celui que Claude vient d'écrire), sinon le premier.
+  episodeOuvert: string | null;
 };
 
 /** Les épisodes : on en choisit un, on écrit son titre, puis ses scènes. */
-export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer, declinaisons, enregistrer }: Props) {
-  const [choisi, setChoisi] = useState(cinema.episodes[0]?.id ?? "");
+export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer, declinaisons, enregistrer, episodeOuvert }: Props) {
+  const [choisi, setChoisi] = useState(episodeOuvert ?? cinema.episodes[0]?.id ?? "");
   const episode = cinema.episodes.find((e) => e.id === choisi) ?? cinema.episodes[0];
   if (!episode) return null;
 
