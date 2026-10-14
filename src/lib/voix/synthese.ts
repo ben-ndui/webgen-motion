@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { ResolvedVoiceBackend } from "../config";
+import type { ResolvedVoiceBackend } from "../config-resolve";
 import { applyPronunciation } from "../pronunciation";
 import { fetchElevenLabsTts, fetchGoogleTts, fetchVoiceboxTts } from "./moteurs";
 import { DEFAULT_VOICE_SETTINGS, type EffectiveVoiceSettings, type ElevenLabsAlignment } from "./types";

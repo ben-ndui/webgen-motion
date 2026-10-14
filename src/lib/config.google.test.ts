@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { resolveVoiceBackend } from "./config";
+import { resolveVoiceBackend } from "./config-resolve";
 
 const ORIG = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 

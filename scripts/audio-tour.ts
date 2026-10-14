@@ -60,7 +60,7 @@ import { getVoCacheDir } from "../src/lib/motion-tour-store";
 import {
   resolveVoiceBackend,
   type ResolvedVoiceBackend,
-} from "../src/lib/config";
+} from "../src/lib/config-resolve";
 
 
 function arg(flag: string, fallback?: string): string | undefined {

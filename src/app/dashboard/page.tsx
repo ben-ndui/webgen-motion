@@ -6,7 +6,7 @@ import { getCategory } from "@/lib/motion-categories";
 import { formatDuration } from "@/lib/format-duration";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveEdition } from "@/lib/edition";
-import { getPublicConfig } from "@/lib/config";
+import { getPublicConfig } from "@/lib/config-public";
 import { listerFilms } from "@/lib/film-loader";
 import { resumerFilm } from "@/lib/film-etat";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";

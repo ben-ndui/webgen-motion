@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 import { getAvailableFonts } from "@remotion/google-fonts";
 
-import { resolveAgent } from "../src/lib/config";
+import { resolveAgent } from "../src/lib/config-resolve";
 import { enregistrerFilm } from "../src/lib/film-ecriture";
 import { ecrireAtomiquement, nomDeFichierSur } from "../src/lib/film-fichiers-deposes";
 import { languesDuFilm } from "../src/lib/film-fiche-depart";

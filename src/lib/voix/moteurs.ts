@@ -1,5 +1,5 @@
 import { marksToCharAlignment } from "../google-alignment";
-import type { ResolvedVoiceBackend } from "../config";
+import type { ResolvedVoiceBackend } from "../config-resolve";
 import type { EffectiveVoiceSettings, ElevenLabsAlignment } from "./types";
 
 /** Les trois fournisseurs de voix (voir synthese.ts pour le cache). SERVEUR SEULEMENT. */

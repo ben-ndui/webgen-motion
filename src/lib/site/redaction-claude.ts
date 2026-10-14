@@ -1,5 +1,5 @@
 import type { Langue } from "../../../remotion/film/spec";
-import type { ResolvedAgent } from "../config";
+import type { ResolvedAgent } from "../config-resolve";
 import { API_URL, API_VERSION, extractJsonBlock } from "../llm-providers/anthropic";
 import type { LectureDuSite } from "./lecture-du-site";
 import { type LectureDeLaReponse, demandeDeRedaction, lireLaReponse } from "./redaction-proposee";

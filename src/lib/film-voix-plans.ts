@@ -2,7 +2,7 @@ import { imageDuTemps, IMAGES_PAR_SECONDE, placerLesPlans } from "../../remotion
 import { MONTAGES } from "../../remotion/film/montages";
 import { type Repere, reperesDuFilm } from "../../remotion/film/reperes";
 import type { DirectionDuFilm, FilmSpec, GenreDeVoix, Langue, LigneDeVoix } from "../../remotion/film/spec";
-import type { ResolvedVoiceBackend } from "./config";
+import type { ResolvedVoiceBackend } from "./config-resolve";
 
 /**
  * La voix off d'un film, sans rien générer : quelles répliques, à quels

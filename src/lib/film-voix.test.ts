@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import type { ResolvedVoiceBackend } from "./config";
+import type { ResolvedVoiceBackend } from "./config-resolve";
 import { creerFilm, lireFicheBrute } from "./film-ecriture";
 import { ficheDeDepart } from "./film-fiche-depart";
 import { dossierJetable } from "./film-fixtures.test-utils";

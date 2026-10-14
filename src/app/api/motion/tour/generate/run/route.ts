@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import { resolveRunnerSpawn } from "@/lib/runner-spawn";
-import { resolveAgent } from "@/lib/config";
+import { resolveAgent } from "@/lib/config-resolve";
 
 /**
  * Spawns `scripts/agent-generate-tour.ts` and streams its NDJSON

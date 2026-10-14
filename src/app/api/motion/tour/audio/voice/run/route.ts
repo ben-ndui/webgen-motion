@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
-import { resolveVoiceBackend } from "@/lib/config";
+import { resolveVoiceBackend } from "@/lib/config-resolve";
 import { resolveRunnerSpawn } from "@/lib/runner-spawn";
 import { getTour } from "@/lib/tour-loader";
 

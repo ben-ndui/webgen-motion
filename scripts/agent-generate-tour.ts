@@ -38,7 +38,7 @@ import {
   realignScrollsToSnapshot,
 } from "../src/lib/llm-providers/base";
 import { createProvider } from "../src/lib/llm-providers";
-import { resolveAgent } from "../src/lib/config";
+import { resolveAgent } from "../src/lib/config-resolve";
 
 // ── CLI parsing ───────────────────────────────────────────────────
 function arg(flag: string, fallback?: string): string | undefined {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { ResolvedVoiceBackend } from "./config";
+import type { ResolvedVoiceBackend } from "./config-resolve";
 import { ficheDeDepart } from "./film-fiche-depart";
 import { ligneTropLongue, lignesDeDepart, moteurPourLeFilm, phraseDeDepart, reperesMontes, tempsDeParole } from "./film-voix-plans";
 

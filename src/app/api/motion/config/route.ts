@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublicConfig, saveConfig, type MotionConfig } from "@/lib/config";
+import { saveConfig, type MotionConfig } from "@/lib/config";
+import { getPublicConfig } from "@/lib/config-public";
 
 /**
  * GET  → public view of the current config (masked secrets, env fallback flags).

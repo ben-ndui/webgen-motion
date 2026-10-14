@@ -3,7 +3,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 
 import type { FilmSpec } from "../../remotion/film/spec";
-import { type ResolvedVoiceBackend, resolveVoiceBackend } from "./config";
+import { type ResolvedVoiceBackend, resolveVoiceBackend } from "./config-resolve";
 import { enregistrerFilm } from "./film-ecriture";
 import { languesDuFilm } from "./film-fiche-depart";
 import { chargerFilm, getFilmsDir } from "./film-loader";
