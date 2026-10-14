@@ -13,6 +13,19 @@ export const MODELES_VEO: Record<QualiteDeCinema, string> = {
   lite: "veo-3.1-lite-generate-preview",
 };
 
+// Lite refuse le paramètre `negativePrompt` (« isn't supported by this
+// model », recette réelle du 14/10) : ses interdits passent dans le prompt.
+const ACCEPTE_UN_NEGATIF: Record<QualiteDeCinema, boolean> = { fast: true, lite: false };
+
+/** Le corps de la requête de lancement, selon ce que le modèle accepte. */
+export function corpsDuLancement(demande: { qualite: QualiteDeCinema; prompt: string; negatif: string }): unknown {
+  const parametres = { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 };
+  if (ACCEPTE_UN_NEGATIF[demande.qualite]) {
+    return { instances: [{ prompt: demande.prompt }], parameters: { ...parametres, negativePrompt: demande.negatif } };
+  }
+  return { instances: [{ prompt: `${demande.prompt} Avoid: ${demande.negatif}.` }], parameters: parametres };
+}
+
 // Barème relevé sur ai.google.dev/gemini-api/docs/pricing (09/2026) : 8 s en
 // 1080p, audio compris. Google ne facture pas un plan qui n'aboutit pas.
 export const COUT_D_UN_PLAN_USD: Record<QualiteDeCinema, number> = { fast: 0.96, lite: 0.64 };
@@ -56,10 +69,7 @@ export async function lancerUnPlan(
     reponse = await fetch(`${client.base}/models/${MODELES_VEO[demande.qualite]}:predictLongRunning`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": client.cle },
-      body: JSON.stringify({
-        instances: [{ prompt: demande.prompt }],
-        parameters: { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8, negativePrompt: demande.negatif },
-      }),
+      body: JSON.stringify(corpsDuLancement(demande)),
     });
   } catch {
     return { ok: false, statut: 0, raison: "Google injoignable : vérifie ta connexion." };

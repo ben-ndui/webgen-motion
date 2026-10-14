@@ -29,10 +29,14 @@ describe("lancerUnPlan", () => {
     });
   });
 
-  it("vise le modèle Lite quand la fiche le demande", async () => {
+  it("Lite : vise son modèle, et ses interdits passent dans le prompt (il refuse negativePrompt)", async () => {
     google.repondre(lancementAccepte());
     await lancerUnPlan(client(), { ...demande, qualite: "lite" });
     expect(google.appels[0].chemin).toContain("veo-3.1-lite-generate-preview");
+    expect(JSON.parse(google.appels[0].corps)).toEqual({
+      instances: [{ prompt: "A night garden. Avoid: text." }],
+      parameters: { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 },
+    });
   });
 
   it("traduit les refus de Google en phrases qui disent quoi faire", async () => {
