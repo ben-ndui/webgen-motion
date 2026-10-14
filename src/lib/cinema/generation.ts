@@ -2,18 +2,19 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { BUDGET_PAR_DEFAUT } from "../../../remotion/film/cinema/validerCinema";
-import type { PlanDeCinema, QualiteDeCinema } from "../../../remotion/film/cinema/types";
+import type { CinemaDuFilm, PlanDeCinema, QualiteDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
-import { resolveVeoKey } from "../config-resolve";
 import { enregistrerFilm } from "../film-ecriture";
-import { chargerFilm, getFilmsDir } from "../film-loader";
-import { getFilmDir, getFilmPublicDir } from "../film-store";
+import { chargerFilm } from "../film-loader";
+import { portraitsPourVeo } from "./generation-portrait";
+import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } from "./lieux";
+import { choisirLeModele, personnagesDuPlan, trouverLePlan } from "./plans";
 import { composerLePrompt } from "./prompt";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "./registre";
-import { API_VEO, COUT_D_UN_PLAN_USD, type ClientVeo, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
+import { COUT_D_UN_PLAN_USD, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
 
 /**
- * Générer un plan de cinéma, et le suivre jusqu'à son fichier. Chaque appel
+ * Générer un plan de la série, et le suivre jusqu'à son fichier. Chaque appel
  * fait UN pas (lancer, ou relire l'opération une fois) : la page interroge
  * toutes les quelques secondes, et un rechargement reprend la même opération
  * chez Google au lieu d'en payer une nouvelle. SERVEUR SEULEMENT.
@@ -25,51 +26,40 @@ export type EtatDuPlan =
   | { etat: "refuse"; raison: string }
   | { etat: "injoignable"; raison: string };
 
-export type Budget = { utilises: number; plafond: number; qualite: QualiteDeCinema; coutParPlanUsd: number };
+export type Budget = { utilises: number; plafond: number };
+// Le modèle que GEN MOTION a choisi pour CE plan, et ce qu'il coûte : affiché avant le clic.
+export type ModeleDuPlan = { qualite: QualiteDeCinema; pourquoi: string; coutUsd: number };
 
-export type ReponseDuPlan =
-  | { ok: true; plan: EtatDuPlan; budget: Budget }
-  | { ok: false; statut: 400 | 404 | 409 | 412 | 502; raison: string };
+export type ReponseDuPlan = { ok: true; plan: EtatDuPlan; budget: Budget; modele: ModeleDuPlan } | Refus;
 
-type Lieux = {
-  fiches: string;
-  dossier: (id: string) => string;
-  public: (id: string) => string;
-  // Le client Veo (réel par défaut ; un faux Google local dans les tests).
-  veo: () => ClientVeo | null;
-};
-const LIEUX_PAR_DEFAUT: Lieux = {
-  fiches: getFilmsDir(),
-  dossier: getFilmDir,
-  public: getFilmPublicDir,
-  veo: () => {
-    const cle = resolveVeoKey();
-    return cle ? { base: API_VEO, cle } : null;
-  },
-};
+// Google garde la vidéo d'un plan 48 h. Au-delà, le téléchargement ne peut
+// plus réussir : on clôt l'opération au lieu de la retenter pour toujours.
+export const VIDEO_GARDEE_PAR_GOOGLE_MS = 47 * 3_600_000;
 
-type Contexte = { spec: FilmSpec; plan: PlanDeCinema; budget: Budget };
+type Contexte = { spec: FilmSpec; cinema: CinemaDuFilm; scene: SceneDeCinema; plan: PlanDeCinema; modele: ModeleDuPlan; plafond: number };
 
-function lireLeContexte(id: string, planId: string, lieux: Lieux): { ok: true; contexte: Contexte } | (ReponseDuPlan & { ok: false }) {
-  const fiche = chargerFilm(id, lieux.fiches);
-  if (!fiche) return { ok: false, statut: 404, raison: "Film introuvable" };
-  if (fiche.etat === "invalide") return { ok: false, statut: 409, raison: "La fiche du film a des erreurs : corrige-les d'abord." };
-  const cinema = fiche.spec.cinema;
-  if (!cinema) return { ok: false, statut: 400, raison: "Ce film n'a pas encore de plans de cinéma." };
-  const plan = cinema.plans.find((candidat) => candidat.id === planId);
-  if (!plan) return { ok: false, statut: 404, raison: `Le plan « ${planId} » n'existe pas dans ce film.` };
-  const qualite = cinema.qualite ?? "fast";
-  const budget: Budget = {
-    utilises: lireLeRegistre(lieux.dossier(id)).utilises,
-    plafond: cinema.budget ?? BUDGET_PAR_DEFAUT,
-    qualite,
-    coutParPlanUsd: COUT_D_UN_PLAN_USD[qualite],
+function lireLeContexte(id: string, planId: string, lieux: Lieux): { ok: true; contexte: Contexte } | Refus {
+  const lecture = ficheAvecCinema(id, lieux);
+  if (!lecture.ok) return lecture;
+  const situe = trouverLePlan(lecture.cinema, planId);
+  if (!situe) return { ok: false, statut: 404, raison: `Le plan « ${planId} » n'existe pas dans ce film.` };
+  const choix = choisirLeModele(lecture.cinema, situe.plan);
+  return {
+    ok: true,
+    contexte: {
+      spec: lecture.spec,
+      cinema: lecture.cinema,
+      scene: situe.scene,
+      plan: situe.plan,
+      modele: { ...choix, coutUsd: COUT_D_UN_PLAN_USD[choix.qualite] },
+      plafond: lecture.cinema.budget ?? BUDGET_PAR_DEFAUT,
+    },
   };
-  return { ok: true, contexte: { spec: fiche.spec, plan, budget } };
 }
 
-function avecBudgetAJour(id: string, budget: Budget, plan: EtatDuPlan, lieux: Lieux): ReponseDuPlan {
-  return { ok: true, plan, budget: { ...budget, utilises: lireLeRegistre(lieux.dossier(id)).utilises } };
+function repondre(id: string, contexte: Contexte, plan: EtatDuPlan, lieux: Lieux): ReponseDuPlan {
+  const budget = { utilises: lireLeRegistre(lieux.dossier(id)).utilises, plafond: contexte.plafond };
+  return { ok: true, plan, budget, modele: contexte.modele };
 }
 
 // « Prêt » se juge sur le DISQUE : une fiche peut citer une vidéo effacée ou
@@ -79,65 +69,59 @@ function etatDuFichier(plan: PlanDeCinema, dossierPublic: string): EtatDuPlan {
   return { etat: "vide" };
 }
 
-// Google garde la vidéo d'un plan 48 h. Au-delà, le téléchargement ne peut
-// plus réussir : on clôt l'opération au lieu de la retenter pour toujours.
-export const VIDEO_GARDEE_PAR_GOOGLE_MS = 47 * 3_600_000;
-
 export async function genererUnPlan(id: string, planId: string, partiel: Partial<Lieux> = {}): Promise<ReponseDuPlan> {
   const lieux: Lieux = { ...LIEUX_PAR_DEFAUT, ...partiel };
   const lecture = lireLeContexte(id, planId, lieux);
   if (!lecture.ok) return lecture;
-  const { spec, plan, budget } = lecture.contexte;
+  const contexte = lecture.contexte;
   const client = lieux.veo();
-  if (!client) return { ok: false, statut: 412, raison: "Aucune clé Gemini : ajoute-la dans les Réglages pour générer des plans." };
+  if (!client) return SANS_CLE;
+  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id));
+  if (!portraits.ok) return portraits;
 
   const dossier = lieux.dossier(id);
-  const reservation = reserver(dossier, planId, budget.plafond);
-  if (!reservation.ok && reservation.raison === "en-cours") return avecBudgetAJour(id, budget, { etat: "en-cours" }, lieux);
+  const reservation = reserver(dossier, planId, contexte.plafond);
+  if (!reservation.ok && reservation.raison === "en-cours") return repondre(id, contexte, { etat: "en-cours" }, lieux);
   if (!reservation.ok) {
-    return { ok: false, statut: 409, raison: `Budget atteint : ${reservation.utilises} plans sur ${budget.plafond}. Augmente le budget du film pour continuer.` };
+    return { ok: false, statut: 409, raison: `Budget atteint : ${reservation.utilises} plans sur ${contexte.plafond}. Augmente le budget du film pour continuer.` };
   }
-  const lancement = await lancerUnPlan(client, { qualite: budget.qualite, ...composerLePrompt(spec, plan) });
+  const prompt = composerLePrompt(contexte.spec, contexte.scene, contexte.plan);
+  const lancement = await lancerUnPlan(client, { qualite: contexte.modele.qualite, ...prompt, references: portraits.references });
   if (!lancement.ok) {
     annulerSansFrais(dossier, planId);
     return { ok: false, statut: 502, raison: `${lancement.raison} Rien n'a été facturé.` };
   }
   noterLeLancement(dossier, planId, lancement.operation);
-  return avecBudgetAJour(id, budget, { etat: "en-cours" }, lieux);
+  return repondre(id, contexte, { etat: "en-cours" }, lieux);
 }
 
-export async function suivreLePlan(
-  id: string,
-  planId: string,
-  partiel: Partial<Lieux> = {},
-  maintenant: number = Date.now(),
-): Promise<ReponseDuPlan> {
+export async function suivreLePlan(id: string, planId: string, partiel: Partial<Lieux> = {}, maintenant: number = Date.now()): Promise<ReponseDuPlan> {
   const lieux: Lieux = { ...LIEUX_PAR_DEFAUT, ...partiel };
   const lecture = lireLeContexte(id, planId, lieux);
   if (!lecture.ok) return lecture;
-  const { plan, budget } = lecture.contexte;
+  const contexte = lecture.contexte;
   const dossier = lieux.dossier(id);
   const operation = lireLeRegistre(dossier).operations[planId];
-  if (!operation) return avecBudgetAJour(id, budget, etatDuFichier(plan, lieux.public(id)), lieux);
+  if (!operation) return repondre(id, contexte, etatDuFichier(contexte.plan, lieux.public(id)), lieux);
   // Réservé mais pas encore accepté par Google : le lancement est en vol.
-  if (operation.nom === null) return avecBudgetAJour(id, budget, { etat: "en-cours" }, lieux);
+  if (operation.nom === null) return repondre(id, contexte, { etat: "en-cours" }, lieux);
   const client = lieux.veo();
-  if (!client) return { ok: false, statut: 412, raison: "Aucune clé Gemini : ajoute-la dans les Réglages pour suivre ce plan." };
+  if (!client) return SANS_CLE;
 
   const suivi = await suivreUnPlan(client, operation.nom);
-  if (suivi.etat === "en-cours" || suivi.etat === "injoignable") return avecBudgetAJour(id, budget, suivi, lieux);
+  if (suivi.etat === "en-cours" || suivi.etat === "injoignable") return repondre(id, contexte, suivi, lieux);
   if (suivi.etat === "refuse") {
     annulerSansFrais(dossier, planId);
-    return avecBudgetAJour(id, budget, { etat: "refuse", raison: `${suivi.raison} Rien n'a été facturé.` }, lieux);
+    return repondre(id, contexte, { etat: "refuse", raison: `${suivi.raison} Rien n'a été facturé.` }, lieux);
   }
   const fichier = `cinema/${planId}.mp4`;
   if (!(await telechargerLePlan(client, suivi.uri, join(lieux.public(id), fichier)))) {
     if (maintenant - Date.parse(operation.depuis) > VIDEO_GARDEE_PAR_GOOGLE_MS) {
       terminer(dossier, planId);
-      return avecBudgetAJour(id, budget, { etat: "refuse", raison: "La vidéo a expiré chez Google (gardée 48 h) avant d'être téléchargée. Ce plan a été facturé : relance-le pour en obtenir un nouveau." }, lieux);
+      return repondre(id, contexte, { etat: "refuse", raison: "La vidéo a expiré chez Google (gardée 48 h) avant d'être téléchargée. Ce plan a été facturé : relance-le pour en obtenir un nouveau." }, lieux);
     }
     // L'opération reste notée : le prochain passage retente le téléchargement.
-    return avecBudgetAJour(id, budget, { etat: "injoignable", raison: "La vidéo est prête chez Google mais le téléchargement a échoué : nouvel essai au prochain passage." }, lieux);
+    return repondre(id, contexte, { etat: "injoignable", raison: "La vidéo est prête chez Google mais le téléchargement a échoué : nouvel essai au prochain passage." }, lieux);
   }
   if (!poserLeFichier(id, planId, fichier, lieux)) {
     // L'opération reste notée : elle se re-télécharge (gratuitement) au
@@ -146,7 +130,7 @@ export async function suivreLePlan(
     return { ok: false, statut: 409, raison: `La vidéo est arrivée (${fichier}) mais la fiche n'a pas pu la citer : corrige ses erreurs, le plan se rattachera tout seul.` };
   }
   terminer(dossier, planId);
-  return avecBudgetAJour(id, budget, { etat: "pret", fichier }, lieux);
+  return repondre(id, contexte, { etat: "pret", fichier }, lieux);
 }
 
 /**
@@ -156,10 +140,10 @@ export async function suivreLePlan(
  */
 function poserLeFichier(id: string, planId: string, fichier: string, lieux: Lieux): boolean {
   const fiche = chargerFilm(id, lieux.fiches);
-  if (!fiche || fiche.etat === "invalide") return false;
-  const plan = fiche.spec.cinema?.plans.find((candidat) => candidat.id === planId);
-  if (!plan) return false;
-  plan.fichier = fichier;
-  delete plan.decoupe;
+  if (!fiche || fiche.etat === "invalide" || !fiche.spec.cinema) return false;
+  const situe = trouverLePlan(fiche.spec.cinema, planId);
+  if (!situe) return false;
+  situe.plan.fichier = fichier;
+  delete situe.plan.decoupe;
   return enregistrerFilm(id, fiche.spec, lieux.fiches).ok;
 }

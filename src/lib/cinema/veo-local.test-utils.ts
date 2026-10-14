@@ -33,6 +33,23 @@ export function videoMp4(): Buffer {
   return videoDeTest;
 }
 
+let portraitDeTest: Buffer | null = null;
+
+/** Une vraie image JPEG, fabriquée une fois par ffmpeg (sert de portrait). */
+export function portraitJpeg(): Buffer {
+  if (portraitDeTest) return portraitDeTest;
+  const chemin = join(dossierJetable("veo-portrait"), "portrait.jpg");
+  spawnSync("ffmpeg", ["-v", "error", "-y", "-f", "lavfi", "-i", "color=c=navy:s=72x128", "-frames:v", "1", chemin]);
+  portraitDeTest = readFileSync(chemin);
+  return portraitDeTest;
+}
+
+/** La réponse de Gemini image : le portrait en base64 dans `inlineData`. */
+export const portraitRendu = (octets: Buffer = portraitJpeg()): ReponseLocale => ({
+  statut: 200,
+  corps: { candidates: [{ content: { parts: [{ inlineData: { mimeType: "image/jpeg", data: octets.toString("base64") } }] } }] },
+});
+
 export const OPERATION = "models/veo-3.1-fast-generate-preview/operations/ab12cd34";
 
 export const lancementAccepte = (): ReponseLocale => ({ statut: 200, corps: { name: OPERATION } });

@@ -1,8 +1,8 @@
 # Fiche — Cinéma IA : du Reel à la mini-série
 
 > Statut : direction **B** validée par Ben le 14/10/2026 (« pensé série dès le
-> lot 2 »). **Lot 1 livré et mergé** (moteur de génération, `src/lib/cinema/`).
-> Cette version de la fiche est **à valider avant de coder le lot 2**.
+> lot 2 »), fiche validée le même jour. **Lots 1 et 2 livrés** (moteur, format
+> série, portraits, références, répliques : `src/lib/cinema/`).
 
 ## Ce que la fonctionnalité promet
 
@@ -47,8 +47,9 @@ type Personnage = {
   id: string;                       // "awa"
   nom: string;                      // "Awa", tel qu'on l'appelle dans les consignes
   description: string;              // physique et tenue, en une phrase
-  portrait?: string;                // cinema/personnages/<id>.jpg, généré ou déposé
-  portraitReel?: { consentement: true };   // présent seulement pour une vraie personne
+  portrait?: string;                // cinema/personnages/<id>.jpg, généré (lot 2)
+  // Lot 3, avec l'écran de dépôt : portraitReel?: { consentement: true } pour la
+  // photo d'une vraie personne. D'ici là, un portrait ne peut être que GÉNÉRÉ.
 };
 type PlanDeCinema = {
   id: string;
@@ -121,7 +122,7 @@ payer plus ; un épisode, ce sont des plans tous différents.
 | Lot | Contenu | Prouvé par |
 |---|---|---|
 | 1 ✅ | Moteur : prompt, budget sous verrou, génération Veo, reprise, clé | 519 tests + recette réelle |
-| 2 | Format série (personnages, épisodes, scènes), portraits générés, références dans Veo, choix Fast/Lite, répliques | Unitaires + faux Google + recette réelle d'une scène (~3 $) |
+| 2 ✅ | Format série (personnages, épisodes, scènes), portraits générés, références dans Veo, choix Fast/Lite, répliques | Unitaires + faux Google + recette réelle d'une scène (~3 $) |
 | 3 | Étape « Série » de l'assistant : casting, épisode, génération, découpe, états | Tests de composants + E2E du parcours |
 | 4 | Rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
 | 5 | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |

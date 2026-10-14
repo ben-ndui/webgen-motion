@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { dossierJetable } from "../film-fixtures.test-utils";
 import { OPERATION, type GoogleLocal, demarrerGoogleLocal, enCours, lancementAccepte, termine, videoMp4 } from "./veo-local.test-utils";
-import { lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
+import { corpsDuLancement, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
 
 let google: GoogleLocal;
 beforeEach(async () => {
@@ -37,6 +37,28 @@ describe("lancerUnPlan", () => {
       instances: [{ prompt: "A night garden. Avoid: text." }],
       parameters: { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 },
     });
+  });
+
+  it("Fast : les portraits partent en référence « asset », encodés en base64, dans l'ordre", async () => {
+    google.repondre(lancementAccepte());
+    const portraits = [
+      { octets: new Uint8Array([1, 2, 3]), mimeType: "image/jpeg" as const },
+      { octets: new Uint8Array([4, 5]), mimeType: "image/png" as const },
+    ];
+    await lancerUnPlan(client(), { ...demande, references: portraits });
+    const corps = JSON.parse(google.appels[0].corps);
+    expect(corps.instances[0].referenceImages).toEqual([
+      { image: { bytesBase64Encoded: "AQID", mimeType: "image/jpeg" }, referenceType: "asset" },
+      { image: { bytesBase64Encoded: "BAU=", mimeType: "image/png" }, referenceType: "asset" },
+    ]);
+    // Fast + portrait refuse negativePrompt (recette réelle du 14/10) : interdits dans le prompt.
+    expect(corps.parameters.negativePrompt).toBeUndefined();
+    expect(corps.instances[0].prompt).toBe("A night garden. Avoid: text.");
+  });
+
+  it("Lite avec un portrait est refusé AVANT d'appeler Google (Google le refuserait)", () => {
+    const portrait = { octets: new Uint8Array([1]), mimeType: "image/jpeg" as const };
+    expect(() => corpsDuLancement({ ...demande, qualite: "lite", references: [portrait] })).toThrow("doit passer en Fast");
   });
 
   it("traduit les refus de Google en phrases qui disent quoi faire", async () => {

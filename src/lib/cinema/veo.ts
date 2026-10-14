@@ -13,17 +13,38 @@ export const MODELES_VEO: Record<QualiteDeCinema, string> = {
   lite: "veo-3.1-lite-generate-preview",
 };
 
-// Lite refuse le paramètre `negativePrompt` (« isn't supported by this
-// model », recette réelle du 14/10) : ses interdits passent dans le prompt.
-const ACCEPTE_UN_NEGATIF: Record<QualiteDeCinema, boolean> = { fast: true, lite: false };
+// Relevé en réel le 14/10 : Lite refuse `negativePrompt` et `referenceImages` ;
+// Fast refuse `negativePrompt` dès qu'il reçoit un portrait en référence
+// (« not supported in your use case »). Seul Fast sans portrait prend le
+// paramètre ; partout ailleurs, les interdits passent dans le prompt.
+function accepteUnNegatif(qualite: QualiteDeCinema, avecPortraits: boolean): boolean {
+  return qualite === "fast" && !avecPortraits;
+}
+
+/** Un portrait de personnage envoyé en référence, pour garder son visage. */
+export type ImageDeReference = { octets: Uint8Array; mimeType: "image/jpeg" | "image/png" };
+
+export type DemandeDePlan = { qualite: QualiteDeCinema; prompt: string; negatif: string; references?: ImageDeReference[] };
 
 /** Le corps de la requête de lancement, selon ce que le modèle accepte. */
-export function corpsDuLancement(demande: { qualite: QualiteDeCinema; prompt: string; negatif: string }): unknown {
-  const parametres = { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 };
-  if (ACCEPTE_UN_NEGATIF[demande.qualite]) {
-    return { instances: [{ prompt: demande.prompt }], parameters: { ...parametres, negativePrompt: demande.negatif } };
+export function corpsDuLancement(demande: DemandeDePlan): unknown {
+  const references = demande.references ?? [];
+  // Lite refuse aussi `referenceImages` : choisirLeModele ne l'y envoie jamais.
+  if (references.length > 0 && demande.qualite === "lite") {
+    throw new Error("Veo Lite n'accepte pas de portrait en référence : ce plan doit passer en Fast.");
   }
-  return { instances: [{ prompt: `${demande.prompt} Avoid: ${demande.negatif}.` }], parameters: parametres };
+  const parametres = { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 };
+  const instance: Record<string, unknown> = { prompt: demande.prompt };
+  if (references.length > 0) {
+    instance.referenceImages = references.map((reference) => ({
+      image: { bytesBase64Encoded: Buffer.from(reference.octets).toString("base64"), mimeType: reference.mimeType },
+      referenceType: "asset",
+    }));
+  }
+  if (accepteUnNegatif(demande.qualite, references.length > 0)) {
+    return { instances: [instance], parameters: { ...parametres, negativePrompt: demande.negatif } };
+  }
+  return { instances: [{ ...instance, prompt: `${demande.prompt} Avoid: ${demande.negatif}.` }], parameters: parametres };
 }
 
 // Barème relevé sur ai.google.dev/gemini-api/docs/pricing (09/2026) : 8 s en
@@ -60,10 +81,7 @@ async function lireJson(reponse: Response): Promise<unknown> {
   }
 }
 
-export async function lancerUnPlan(
-  client: ClientVeo,
-  demande: { qualite: QualiteDeCinema; prompt: string; negatif: string },
-): Promise<Lancement> {
+export async function lancerUnPlan(client: ClientVeo, demande: DemandeDePlan): Promise<Lancement> {
   let reponse: Response;
   try {
     reponse = await fetch(`${client.base}/models/${MODELES_VEO[demande.qualite]}:predictLongRunning`, {

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { CinemaDuFilm, PlanDeCinema } from "../../../remotion/film/cinema/types";
+import { serieSaya } from "../../../remotion/film/cinema/serie-exemple.test-utils";
+import type { CinemaDuFilm } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
+import { choisirLeModele, trouverLePlan } from "./plans";
 import { composerLePrompt } from "./prompt";
 
-const PERSONNAGE = "A Black woman with an elegant braided updo, in a midnight navy silk gown embroidered with gold";
-const OBJET = "An amber faceted glass perfume bottle with a gold hibiscus-shaped stopper.";
-
-function saya(cinema: Partial<CinemaDuFilm> = {}): Pick<FilmSpec, "marque" | "direction" | "cinema"> {
+function saya(cinema: CinemaDuFilm = serieSaya()): Pick<FilmSpec, "marque" | "direction" | "cinema"> {
   return {
     direction: "nocturne",
     marque: {
@@ -17,60 +16,81 @@ function saya(cinema: Partial<CinemaDuFilm> = {}): Pick<FilmSpec, "marque" | "di
       ombreTelephone: "none",
       contact: "",
     },
-    cinema: { personnage: PERSONNAGE, objet: OBJET, plans: [], ...cinema },
+    cinema,
   };
 }
 
-const plan = (role: PlanDeCinema["role"], consigne = "She picks a red hibiscus"): PlanDeCinema => ({ id: "p", role, consigne });
+function promptDe(planId: string, spec = saya()) {
+  const situe = trouverLePlan(spec.cinema!, planId);
+  if (!situe) throw new Error(`plan ${planId} introuvable`);
+  return composerLePrompt(spec, situe.scene, situe.plan);
+}
 
-describe("composerLePrompt", () => {
-  it("une scène : personnage, ambiance de nuit et palette de la marque, sans l'objet", () => {
-    const { prompt, negatif } = composerLePrompt(saya(), plan("scene"));
+describe("composerLePrompt — série", () => {
+  it("un plan avec Awa : décor de la scène, consigne, Awa liée à son portrait n°1, objet, ambiance et palette", () => {
+    const { prompt, negatif } = promptDe("rangement");
+    const awa = serieSaya().personnages[0];
     expect(prompt).toBe(
-      "Cinematic vertical shot for a high-end brand film. She picks a red hibiscus. " +
-        `The character: ${PERSONNAGE}. ` +
+      "Cinematic vertical shot of a short drama series. " +
+        "Setting: A small elegant perfume boutique with warm lights and wooden shelves. " +
+        "Awa places the bottle on a shelf, then turns toward the camera with a gentle smile. " +
+        `Awa (reference image 1): ${awa.description} ` +
+        `The object: ${serieSaya().objet} It has no label and no text. ` +
         "Night atmosphere, deep shadows with warm glowing highlights, moody and elegant. " +
         "Color palette: midnight navy blue, gold and ivory. " +
         "Shallow depth of field, slow camera movement, 35mm film look.",
     );
-    expect(prompt).not.toContain("perfume");
+    expect(negatif).not.toContain("bottle");
+    expect(negatif).toContain("subtitles");
+  });
+
+  it("la réplique est dite en français, entre guillemets, par le personnage nommé", () => {
+    const { prompt, negatif } = promptDe("confidence");
+    expect(prompt).toContain("Awa says softly in French: « Ce parfum, c'est l'histoire de ma grand-mère. » Natural lip movement.");
+    expect(prompt).not.toContain("The object");
+    // Pas d'objet à l'image : Veo ne doit pas en poser un.
     expect(negatif).toContain("bottle");
   });
 
-  it("un geste : le personnage ET l'objet, mot pour mot, sans texte sur l'objet", () => {
-    const { prompt, negatif } = composerLePrompt(saya(), plan("geste", "She sprays it on her neck."));
-    expect(prompt).toContain(`The character: ${PERSONNAGE}.`);
-    expect(prompt).toContain(`The object: ${OBJET} It has no label and no text.`);
-    expect(negatif).not.toContain("bottle");
-    expect(negatif).toContain("letters");
+  it("un plan sans personnage n'en décrit aucun et garde un cadrage de film de marque", () => {
+    const { prompt } = promptDe("flacon");
+    expect(prompt).toContain("high-end brand film");
+    expect(prompt).not.toContain("reference image");
   });
 
-  it("un objet seul : pas de personnage", () => {
-    const { prompt } = composerLePrompt(saya(), plan("objet", "On navy velvet, petals falling!"));
-    expect(prompt).toContain("product shot");
-    expect(prompt).toContain("petals falling!");
-    expect(prompt).not.toContain("The character");
+  it("deux personnages : numérotés dans l'ordre du plan (l'ordre des portraits envoyés)", () => {
+    const serie = serieSaya();
+    serie.personnages.push({ id: "kofi", nom: "Kofi", description: "A tall man in a linen suit." });
+    serie.episodes[0].scenes[1].plans[0].personnages = ["kofi", "awa"];
+    const { prompt } = promptDe("confidence", saya(serie));
+    expect(prompt.indexOf("Kofi (reference image 1)")).toBeGreaterThan(-1);
+    expect(prompt.indexOf("Awa (reference image 2)")).toBeGreaterThan(prompt.indexOf("Kofi (reference image 1)"));
   });
 
-  it("le même objet est décrit à l'identique dans deux plans différents", () => {
-    const a = composerLePrompt(saya(), plan("geste", "A")).prompt;
-    const b = composerLePrompt(saya(), plan("objet", "B")).prompt;
-    const extraire = (texte: string) => texte.slice(texte.indexOf("The object:"), texte.indexOf("no text.") + 8);
-    expect(extraire(a)).toBe(extraire(b));
-  });
-
-  it("sans direction, l'ambiance par défaut ; sans personnage, rien d'inventé", () => {
-    const spec = saya({ personnage: undefined });
-    delete spec.direction;
-    const { prompt } = composerLePrompt(spec, plan("scene"));
-    expect(prompt).toContain("Soft natural light");
-    expect(prompt).not.toContain("The character");
+  it("la même description d'Awa revient mot pour mot dans tous ses plans", () => {
+    const description = serieSaya().personnages[0].description;
+    expect(promptDe("rangement").prompt).toContain(description);
+    expect(promptDe("confidence").prompt).toContain(description);
   });
 
   it("refuse une fiche sans cinéma", () => {
     const spec = saya();
+    const situe = trouverLePlan(spec.cinema!, "flacon")!;
     delete spec.cinema;
-    expect(() => composerLePrompt(spec, plan("scene"))).toThrow("pas de « cinema »");
+    expect(() => composerLePrompt(spec, situe.scene, situe.plan)).toThrow("pas de « cinema »");
   });
 });
 
+describe("choisirLeModele", () => {
+  it("Fast dès qu'un personnage est à l'image (Lite refuse les portraits), en disant pourquoi", () => {
+    const serie = serieSaya();
+    expect(choisirLeModele(serie, trouverLePlan(serie, "rangement")!.plan)).toEqual({ qualite: "fast", pourquoi: "Awa est à l'image : Fast garde le même visage." });
+    expect(choisirLeModele(serie, trouverLePlan(serie, "flacon")!.plan)).toEqual({ qualite: "lite", pourquoi: "Aucun personnage à l'image : le modèle Lite suffit." });
+  });
+
+  it("trouverLePlan cherche dans toutes les scènes et rend null pour un plan inconnu", () => {
+    const serie = serieSaya();
+    expect(trouverLePlan(serie, "confidence")?.scene.id).toBe("terrasse");
+    expect(trouverLePlan(serie, "fenetre")).toBeNull();
+  });
+});
