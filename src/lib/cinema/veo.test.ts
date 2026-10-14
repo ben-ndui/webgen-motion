@@ -68,7 +68,7 @@ describe("lancerUnPlan", () => {
       { statut: 400, corps: { error: { message: "`allow_adult` for personGeneration is currently not supported." } } },
       { statut: 200, corps: {} },
     );
-    expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 429, raison: expect.stringContaining("facturation") });
+    expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 429, raison: expect.stringContaining("Détail de Google : RESOURCE_EXHAUSTED") });
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 403, raison: expect.stringContaining("clé Gemini") });
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, raison: expect.stringContaining("allow_adult") });
     // Un 200 sans nom d'opération n'est PAS un lancement : rien à suivre.

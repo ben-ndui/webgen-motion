@@ -32,10 +32,12 @@ describe("composerLePrompt — série", () => {
     const awa = serieSaya().personnages[0];
     expect(prompt).toBe(
       "Cinematic vertical shot of a short drama series. " +
-        "Setting: A small elegant perfume boutique with warm lights and wooden shelves. " +
+        "The scene takes place in this setting: A small elegant perfume boutique with warm lights and wooden shelves. " +
         "Awa places the bottle on a shelf, then turns toward the camera with a gentle smile. " +
         `Awa (reference image 1): ${awa.description} ` +
         `The object: ${serieSaya().objet} It has no label and no text. ` +
+        "Keep this setting all around the characters: A small elegant perfume boutique with warm lights and wooden shelves. " +
+        "Never reuse the plain studio background or the pose of the reference images. " +
         "Night atmosphere, deep shadows with warm glowing highlights, moody and elegant. " +
         "Color palette: midnight navy blue, gold and ivory. " +
         "Shallow depth of field, slow camera movement, 35mm film look.",
@@ -56,6 +58,8 @@ describe("composerLePrompt — série", () => {
     const { prompt } = promptDe("flacon");
     expect(prompt).toContain("high-end brand film");
     expect(prompt).not.toContain("reference image");
+    // Sans personnage, pas de portrait à ne pas recopier : pas de rappel.
+    expect(prompt).not.toContain("Keep this setting");
   });
 
   it("deux personnages : numérotés dans l'ordre du plan (l'ordre des portraits envoyés)", () => {

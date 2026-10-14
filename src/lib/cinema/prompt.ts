@@ -39,7 +39,8 @@ export function composerLePrompt(
   const { encre, accent, clair } = spec.marque.couleurs;
   const presents = personnagesDuPlan(cinema, plan);
   const cadrage = presents.length > 0 ? "Cinematic vertical shot of a short drama series." : "Cinematic vertical shot for a high-end brand film.";
-  const morceaux = [cadrage, `Setting: ${enPhrase(scene.decor)}`, enPhrase(plan.consigne)];
+  const decor = enPhrase(scene.decor);
+  const morceaux = [cadrage, `The scene takes place in this setting: ${decor}`, enPhrase(plan.consigne)];
   presents.forEach((personnage, index) => {
     morceaux.push(`${personnage.nom} (reference image ${index + 1}): ${enPhrase(personnage.description)}`);
   });
@@ -47,6 +48,11 @@ export function composerLePrompt(
   if (plan.replique) {
     const orateur = presents.find((personnage) => personnage.id === plan.replique?.personnage);
     if (orateur) morceaux.push(`${orateur.nom} says softly in French: « ${plan.replique.texte.trim()} » Natural lip movement.`);
+  }
+  // Recette du 14/10 : sans ce rappel, un gros plan a repris le fond et la pose
+  // du portrait de référence au lieu du décor. Le décor revient donc à la fin.
+  if (presents.length > 0) {
+    morceaux.push(`Keep this setting all around the characters: ${decor} Never reuse the plain studio background or the pose of the reference images.`);
   }
   morceaux.push(AMBIANCE[spec.direction ?? "marque"]);
   morceaux.push(`Color palette: ${paletteEnMots([encre, accent, clair])}.`);

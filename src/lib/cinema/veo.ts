@@ -66,9 +66,14 @@ export type Suivi =
 type ErreurGoogle = { error?: { message?: string } };
 
 export function raisonDuRefus(statut: number, corps: unknown): string {
-  if (statut === 401 || statut === 403) return "Google refuse la clé Gemini : vérifie-la dans les Réglages.";
-  if (statut === 429) return "Quota Google atteint ou facturation coupée : vérifie la facturation de ton projet Google AI Studio.";
   const message = (corps as ErreurGoogle | null)?.error?.message;
+  if (statut === 401 || statut === 403) return "Google refuse la clé Gemini : vérifie-la dans les Réglages.";
+  // Le détail de Google dit si c'est la limite par minute (attendre) ou le
+  // crédit (recharger) : la même phrase pour les deux ferait chercher au mauvais endroit.
+  if (statut === 429) {
+    const detail = message ? ` Détail de Google : ${message}` : "";
+    return `Quota Google atteint ou facturation coupée : attends une minute, sinon vérifie le crédit de ton projet Google AI Studio.${detail}`;
+  }
   if (statut === 400 && message) return `Google refuse la demande : ${message}`;
   return `Google ne répond pas comme prévu (${statut}).`;
 }

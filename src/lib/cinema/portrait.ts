@@ -1,6 +1,5 @@
 import type { Personnage } from "../../../remotion/film/cinema/types";
 import { genreDImage } from "../film-fichiers-deposes";
-import { nomDeCouleur } from "./couleurs";
 import { type ClientVeo, raisonDuRefus } from "./veo";
 
 /**
@@ -15,11 +14,15 @@ export const COUT_D_UN_PORTRAIT_USD = 0.05;
 
 export type Portrait = { ok: true; octets: Uint8Array; extension: "jpg" | "png" } | { ok: false; statut: number; raison: string };
 
-export function promptDuPortrait(personnage: Pick<Personnage, "description">, couleurDeFond: string): string {
+// Recette du 14/10 : un portrait assis sur un fond coloré, Veo l'a recopié tel
+// quel dans un gros plan (pose et fond) au lieu du décor demandé. Le portrait
+// est donc une fiche de personnage neutre : en pied, debout, fond studio gris
+// clair, qui ne ressemble à aucun décor.
+export function promptDuPortrait(personnage: Pick<Personnage, "description">): string {
   return (
-    "Photorealistic character reference portrait, vertical, upper body, neutral soft studio light, " +
-    `plain ${nomDeCouleur(couleurDeFond)} background. ${personnage.description.trim()} ` +
-    "Calm, confident expression, looking at the camera. Natural skin texture. No text, no logo."
+    "Photorealistic full-body character reference, standing, front view, arms relaxed, " +
+    `even soft studio light, plain light grey seamless studio background. ${personnage.description.trim()} ` +
+    "Neutral calm expression, looking at the camera. Natural skin texture. No props, no text, no logo."
   );
 }
 

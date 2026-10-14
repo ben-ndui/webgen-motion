@@ -18,7 +18,7 @@ afterEach(() => google.fermer());
 const cheminDuPortrait = () => join(film.lieux.public("saya"), "cinema", "personnages", "awa.jpg");
 
 describe("genererLePortrait", () => {
-  it("demande à Gemini image un portrait fidèle à la description, sur le fond de la marque, puis le cite", async () => {
+  it("demande à Gemini image une fiche de personnage neutre (en pied, fond studio gris), fidèle à la description, puis la cite", async () => {
     film.creer();
     google.repondre(portraitRendu());
     expect(await genererLePortrait("saya", "awa", film.lieux)).toEqual({ ok: true, portrait: "cinema/personnages/awa.jpg" });
@@ -27,7 +27,8 @@ describe("genererLePortrait", () => {
     const corps = JSON.parse(google.appels[0].corps);
     expect(corps.generationConfig).toEqual({ responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "9:16" } });
     const prompt = corps.contents[0].parts[0].text as string;
-    expect(prompt).toContain("plain midnight navy blue background");
+    expect(prompt).toContain("full-body");
+    expect(prompt).toContain("plain light grey seamless studio background");
     expect(prompt).toContain("elegant braided updo");
     expect(readFileSync(cheminDuPortrait()).equals(portraitJpeg())).toBe(true);
     expect(film.fiche().cinema?.personnages[0].portrait).toBe("cinema/personnages/awa.jpg");

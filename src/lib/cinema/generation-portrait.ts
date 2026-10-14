@@ -24,7 +24,7 @@ export async function genererLePortrait(id: string, personnageId: string, partie
   const client = lieux.veo();
   if (!client) return SANS_CLE;
 
-  const resultat = await genererUnPortraitChezGoogle(client, promptDuPortrait(personnage, lecture.spec.marque.couleurs.encre));
+  const resultat = await genererUnPortraitChezGoogle(client, promptDuPortrait(personnage));
   if (!resultat.ok) return { ok: false, statut: 502, raison: resultat.raison };
   const portrait = `cinema/personnages/${personnageId}.${resultat.extension}`;
   ecrireAtomiquement(join(lieux.public(id), portrait), resultat.octets);
