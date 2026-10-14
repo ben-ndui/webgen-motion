@@ -16,7 +16,7 @@ describe("Secondary pages (handoff shell)", () => {
     const { container } = render(<Download />);
     expect(screen.getByText(/Installez GEN MOTION/i)).toBeInTheDocument();
     expect(screen.getByText("Configuration requise")).toBeInTheDocument();
-    expect(screen.getByText(/Débloquez les outils pro/i)).toBeInTheDocument();
+    expect(screen.getByText(/Le film et la série de ta marque/i)).toBeInTheDocument();
     expect(container.querySelector('[data-wm-id="download.studio"]')).not.toBeNull();
   });
 

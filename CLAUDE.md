@@ -31,7 +31,7 @@ Pas de cloud requis pour le pipeline core. Outputs dans `~/.webgen-motion/`.
 
 C'est un produit **Smooth & Design** sous licence **FSL-1.1-MIT** (Functional Source License — source-available, usage concurrent interdit, chaque version devient MIT 2 ans après publication ; les versions ≤ 0.2.3 publiées sous mention MIT restent MIT) :
 - **Community Edition** gratuite (pipeline complet, presets Sober + Energetic, formats 16:9 + 9:16, Agent IA BYOK)
-- **Studio Edition** $49 paiement unique perpétuel (frames 3D, presets Cinematic & Glitch, multi-format export, music library, watermark removal) — license `.license` Ed25519 signée, vérifiée offline
+- **Studio Edition** 199 € à vie, ou 15 €/mois / 120 €/an (film de marque, série IA, frames 3D, export OTIO Resolve/Premiere : ce que `isFeatureEnabled` réserve VRAIMENT ; les prix vivent dans `studio-offer.tsx`) — license `.license` Ed25519 signée, vérifiée offline
 - **Enterprise** sur devis (white-label, API headless, SSO)
 
 ## Stack
@@ -46,7 +46,7 @@ C'est un produit **Smooth & Design** sous licence **FSL-1.1-MIT** (Functional So
 - **Remotion 4 + @remotion/three** — compositor final.mp4 frame-accurate (intro/outro + Ken Burns + 5 transitions par catégorie + 3D R3F Beta)
 - **ElevenLabs** — TTS via REST API (`scripts/audio-tour.ts`) ou Voicebox local
 - **Tauri 2** — coque desktop natif macOS / Windows / Linux (Rust shell + WebView, sidecars Node + ffmpeg + ffprobe bundlés)
-- **Stripe** v22 — checkout one-time $49 Studio Edition (`/api/stripe/checkout` + `/api/stripe/webhook`)
+- **Stripe** v22 — checkout Studio Edition (à vie, mensuel, annuel) (`/api/stripe/checkout` + `/api/stripe/webhook`)
 - **Ed25519 (`node:crypto`)** — license offline-first signée + vérifiée localement
 
 ## Structure
@@ -72,7 +72,7 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   └── desktop-{prepare,fetch}-*.mjs # Tauri build helpers
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx                  # Landing slides carrousel 5 slides (Sprint 13)
+│   │   ├── page.tsx                  # Accueil (direction B 15/10/2026) : sections dans _components/accueil/
 │   │   ├── dashboard/page.tsx        # Hub tours (route app, ex-/)
 │   │   ├── tour/[id]/                # Éditeur (5 tabs Script/Capture/Audio/Voice/Compose)
 │   │   │   └── _components/console/  # Director's Console — chat IA BYOK (dock ⌘J, prises, diffs, runs réels)

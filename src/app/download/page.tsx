@@ -94,10 +94,10 @@ export default function Download() {
         <section className="studio-band" data-wm-id="download.studio" style={{ display: "block" }}>
           <div style={{ maxWidth: 640 }}>
             <span className="kicker nr">Studio Edition</span>
-            <h3 style={{ marginTop: 10 }}>Débloquez les outils pro.</h3>
+            <h3 style={{ marginTop: 10 }}>Le film et la série de ta marque.</h3>
             <p>
-              Frames 3D iPhone &amp; MacBook, presets Cinematic &amp; Glitch, export multi-format,
-              music library managée, watermark removal. Possède-le à vie, ou prends-le au mois.
+              Le film de marque depuis l&apos;adresse de ton site, la série IA, les cadres 3D iPhone &amp;
+              MacBook et l&apos;export vers DaVinci Resolve et Premiere. Possède-le à vie, ou prends-le au mois.
             </p>
           </div>
           <div style={{ marginTop: 20 }}>

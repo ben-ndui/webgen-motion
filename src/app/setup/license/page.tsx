@@ -101,8 +101,8 @@ export default async function LicensePage() {
           ) : (
             <p className="mt-6 text-sm text-muted max-w-2xl">
               Aucune license installée. Tu utilises la Community Edition.{" "}
-              Pour débloquer Studio (frames 3D, presets Cinematic/Glitch,
-              multi-format export, music library…) installe une license
+              Pour débloquer Studio (film de marque, série IA, cadres 3D,
+              export vers Resolve et Premiere) installe une license
               ci-dessous.
             </p>
           )}

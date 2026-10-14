@@ -1,0 +1,164 @@
+/* GEN MOTION — accueil (refonte 15/10/2026, direction B).
+   Complète landing.css (nav, boutons, offres, fin de page) avec les blocs
+   propres à la nouvelle page : le film en preuve, les trois usages, les
+   étapes et les garanties. Mêmes tokens, donc clair et sombre gratuits. */
+
+.gm-landing .accueil-titre {
+  font-size: var(--t-3xl);
+  line-height: var(--lh-tight);
+  max-width: 24ch;
+  text-wrap: balance;
+}
+.gm-landing .accueil-note { font-size: var(--t-sm); color: var(--muted); max-width: 70ch; line-height: 1.55; }
+.gm-landing .accueil-note a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------------- HERO : la phrase, puis le film ---------------- */
+.gm-landing .accueil-hero-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--s-7);
+  align-items: center;
+}
+.gm-landing .accueil-hero .hero-title { font-size: clamp(2.25rem, 4.6vw, 4rem); line-height: 1.04; text-wrap: balance; }
+.gm-landing .accueil-hero-film { margin: 0; display: grid; gap: var(--s-3); }
+.gm-landing .accueil-hero-film figcaption { font-size: var(--t-xs); color: var(--muted); }
+.gm-landing .accueil-hero-film figcaption b { color: var(--ink); font-weight: 600; }
+@media (max-width: 960px) {
+  .gm-landing .accueil-hero-grille { grid-template-columns: 1fr; gap: var(--s-6); }
+}
+
+/* ---------------- La vidéo de vitrine ---------------- */
+.gm-landing .vitrine-video {
+  position: relative;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: #000;
+  box-shadow: var(--shadow-pop);
+}
+.gm-landing .vitrine-video video { display: block; width: 100%; height: auto; }
+.gm-landing .vitrine-son {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-full);
+  border: 1px solid color-mix(in oklch, #fff 30%, transparent);
+  background: color-mix(in oklch, #000 62%, transparent);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: var(--t-xs);
+  font-weight: 500;
+  cursor: pointer;
+}
+.gm-landing .vitrine-son:hover { background: color-mix(in oklch, #000 78%, transparent); }
+.gm-landing .vitrine-son:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------------- Ce qu'il fabrique ---------------- */
+.gm-landing .accueil-fabrique .wrap { display: grid; gap: var(--s-7); }
+.gm-landing .accueil-usages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-6);
+  align-items: start;
+}
+@media (max-width: 960px) { .gm-landing .accueil-usages { grid-template-columns: 1fr; } }
+.gm-landing .accueil-usage { display: grid; gap: var(--s-3); }
+.gm-landing .accueil-usage h3 { font-size: var(--t-xl); display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.gm-landing .accueil-usage p { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; }
+.gm-landing .accueil-usage-preuve {
+  height: 340px;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--s-2);
+}
+.gm-landing .accueil-usage-preuve > .vitrine-video { width: 100%; }
+.gm-landing .accueil-telephone > .vitrine-video { width: auto; height: 100%; border-radius: 28px; }
+.gm-landing .accueil-telephone video { height: 100%; width: auto; }
+.gm-landing .accueil-badge {
+  font-size: var(--t-xs);
+  font-weight: 500;
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-full);
+  padding: 2px 10px;
+}
+
+/* Le scénario : une page de script, pas une vidéo. */
+.gm-landing .accueil-scenario {
+  width: 100%;
+  height: 100%;
+  /* Le scénario dépasse la hauteur des deux vidéos voisines : il défile
+     dans sa carte, et le fondu du bas dit qu'il y a une suite. */
+  overflow-y: auto;
+  mask-image: linear-gradient(to bottom, #000 82%, transparent);
+  padding: var(--s-5) var(--s-5) var(--s-7);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  display: grid;
+  align-content: start;
+  gap: var(--s-3);
+  font-size: var(--t-xs);
+  line-height: 1.5;
+}
+.gm-landing .accueil-scenario:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gm-landing .accueil-scenario-tete { display: grid; gap: 2px; }
+.gm-landing .accueil-scenario-tete b { font-size: var(--t-sm); color: var(--ink); }
+.gm-landing .accueil-scenario-tete span { color: var(--faint); }
+.gm-landing .accueil-scenario-decor { color: var(--muted); font-style: italic; }
+.gm-landing .accueil-scenario ol { display: grid; gap: var(--s-2); padding-left: 1.2em; list-style: decimal; color: var(--muted); }
+.gm-landing .accueil-scenario q { display: block; color: var(--ink); font-weight: 500; margin-top: 2px; }
+.gm-landing .accueil-scenario q::before { content: "«\00a0"; }
+.gm-landing .accueil-scenario q::after { content: "\00a0»"; }
+
+/* ---------------- Comment ça marche ---------------- */
+.gm-landing .accueil-comment .wrap { display: grid; gap: var(--s-7); }
+.gm-landing .accueil-etapes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-6);
+  list-style: none;
+  padding: 0;
+  counter-reset: none;
+}
+@media (max-width: 880px) { .gm-landing .accueil-etapes { grid-template-columns: 1fr; } }
+.gm-landing .accueil-etapes li { display: grid; gap: var(--s-3); align-content: start; }
+.gm-landing .accueil-etapes h3 { font-size: var(--t-xl); }
+.gm-landing .accueil-etapes p { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; max-width: 38ch; }
+.gm-landing .accueil-etape-numero {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+  font-size: var(--t-sm);
+}
+
+/* ---------------- Ce que tu gardes ---------------- */
+.gm-landing .accueil-confiance { min-height: auto; padding-block: var(--s-8, 96px); }
+.gm-landing .accueil-garanties {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-6);
+  border-top: 1px solid var(--line);
+  padding-top: var(--s-6);
+}
+@media (max-width: 880px) { .gm-landing .accueil-garanties { grid-template-columns: 1fr; } }
+.gm-landing .accueil-garanties h3 { font-size: var(--t-lg); margin-bottom: var(--s-2); }
+.gm-landing .accueil-garanties p { font-size: var(--t-sm); color: var(--muted); line-height: 1.55; }
+
+/* ---------------- Prix ---------------- */
+.gm-landing .pricing-head { display: grid; gap: var(--s-3); }
+
+/* ---------------- Téléphone : gouttière de 16 px ---------------- */
+@media (max-width: 640px) {
+  .gm-landing .section { padding-inline: 16px; }
+  .gm-landing .nav { padding-inline: 16px; }
+  .gm-landing .accueil-titre { font-size: var(--t-2xl); }
+  .gm-landing .accueil-usage-preuve { height: 300px; }
+}
