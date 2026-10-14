@@ -9,6 +9,8 @@ export type ResumeDuRemplissage = {
   moments: number;
   logo: boolean;
   redaction: string;
+  // Ce qui a été fait pour la série (épisode proposé, ou pourquoi rien).
+  serie?: string;
   textesProposes: number;
   aEcrire: string[];
   suggestionsEnAttente: number;

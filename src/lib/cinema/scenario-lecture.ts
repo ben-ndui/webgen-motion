@@ -29,7 +29,7 @@ function idDe(nom: string, pris: Set<string>): string {
 const numeroLibre = (ids: string[], prefixe: string) => Math.max(0, ...ids.map((id) => Number(id.replace(prefixe, ""))).filter(Number.isFinite)) + 1;
 
 // L'épisode d'exemple de « Commencer la série », jamais touché : il n'a rien à faire devant l'épisode écrit.
-function estLEpisodeDeDepartVierge(episode: EpisodeDeCinema): boolean {
+export function estLEpisodeDeDepartVierge(episode: EpisodeDeCinema): boolean {
   const plans = episode.scenes.flatMap((s) => s.plans);
   return (
     episode.titre === EXEMPLES_DE_SERIE.titre &&

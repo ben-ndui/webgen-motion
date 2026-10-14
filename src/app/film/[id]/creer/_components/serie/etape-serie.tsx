@@ -17,6 +17,8 @@ type Props = {
   fiche: FilmSpec;
   modifier: (changement: (copie: FilmSpec) => void) => void;
   enregistrer: () => Promise<boolean>;
+  // Le remplissage depuis le site a écrit un premier épisode : à relire avant de générer.
+  proposeeDepuisLeSite?: boolean;
 };
 
 /**
@@ -24,7 +26,7 @@ type Props = {
  * scènes et leurs plans, générés un par un avec le coût affiché avant le
  * clic. Le serveur reste la vérité de chaque plan (prêt, en cours, refusé).
  */
-export default function EtapeSerie({ id, fiche, modifier, enregistrer }: Props) {
+export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeDepuisLeSite = false }: Props) {
   // L'épisode à ouvrir après une écriture par Claude (sinon le premier).
   const [episodeOuvert, setEpisodeOuvert] = useState<string | null>(null);
   const quandEcrit = (cinema: CinemaDuFilm, episodeId: string) => {
@@ -34,7 +36,16 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer }: Props) 
   const cinema = fiche.cinema;
   const ecrire = <EcrireAvecClaude filmId={id} premierEpisode={!cinema} avantDEcrire={enregistrer} quandEcrit={quandEcrit} />;
   if (!cinema) return <SerieAbsente ecrire={ecrire} onCommencer={() => modifier((copie) => void (copie.cinema = serieDeDepart()))} />;
-  return <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifier={modifier} enregistrer={enregistrer} ecrire={ecrire} episodeOuvert={episodeOuvert} />;
+  return (
+    <>
+      {proposeeDepuisLeSite && (
+        <p className="champ-aide serie-proposee" role="status">
+          Un premier épisode a été proposé depuis ton site : relis les consignes, les répliques et le casting avant de générer quoi que ce soit.
+        </p>
+      )}
+      <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifier={modifier} enregistrer={enregistrer} ecrire={ecrire} episodeOuvert={episodeOuvert} />
+    </>
+  );
 }
 
 function SerieAbsente({ onCommencer, ecrire }: { onCommencer: () => void; ecrire: ReactNode }) {

@@ -24,6 +24,7 @@ function Resume({ etat }: { etat: Extract<EtatDuRemplissage, { type: "fait" }> }
       {resume.capturesGardees > 0 && <p className="champ-aide">{resume.capturesGardees} captures déjà présentes ont été gardées telles quelles.</p>}
       <p className="champ-aide">Tout ce qui vient du site porte « Proposé, à vérifier » : relis-le, change ce qui ne te ressemble pas.</p>
       {resume.textesProposes === 0 && <p className="champ-aide">Textes : {resume.redaction}.</p>}
+      {resume.serie && <p className="champ-aide">Série : {resume.serie}.</p>}
       {aEcrire.length > 0 && <p className="champ-aide">À écrire toi-même : {aEcrire.join(", ")}.</p>}
       {resume.marque.map((note) => <p key={note} className="champ-aide">{note.charAt(0).toUpperCase() + note.slice(1)}.</p>)}
     </div>

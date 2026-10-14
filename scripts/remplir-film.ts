@@ -31,6 +31,8 @@ import { adresseLisible, choisirLesPages, normaliserLAdresse } from "../src/lib/
 import { ecrirePropositions, ecrireSuggestions, lirePropositions } from "../src/lib/site/propositions-store";
 import { redigerAvecClaude } from "../src/lib/site/redaction-claude";
 import { remplirLaFiche } from "../src/lib/site/remplissage";
+import { ecrireUnEpisodePourLaFiche } from "../src/lib/cinema/scenario-claude";
+import { briefDepuisLeSite, serieVierge } from "../src/lib/site/serie-du-site";
 
 function emettre(evenement: Record<string, unknown>): void {
   process.stdout.write(`${JSON.stringify(evenement)}\n`);
@@ -122,6 +124,24 @@ async function principal(): Promise<void> {
       remplie.marque.logo = { type: "image", fichier: relatif, rapport: logo.rapport, inverser: false };
       propositions["marque.logo"] = relatif;
     }
+    // La série : un premier épisode proposé, seulement si elle n'a jamais été touchée.
+    // Une série déjà commencée n'est jamais remplacée : on ne réécrit pas ce que la personne a écrit.
+    let serie = "série déjà commencée : rien changé";
+    if (serieVierge(remplie) && !agent) {
+      serie = "sans clé Claude : pas d'épisode proposé";
+    } else if (serieVierge(remplie) && agent) {
+      phase("Claude écrit un premier épisode de série…");
+      const episode = await ecrireUnEpisodePourLaFiche(remplie, briefDepuisLeSite(lecture), agent);
+      if (episode.ok) {
+        remplie.cinema = episode.cinema;
+        const plans = episode.cinema.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans)).length;
+        propositions["cinema"] = episode.episodeId;
+        serie = `un premier épisode proposé (${plans} plans), à relire dans « Ta série »`;
+      } else {
+        serie = `pas d'épisode proposé : ${episode.raison}`;
+      }
+    }
+
     const ecriture = enregistrerFilm(id, remplie);
     if (!ecriture.ok) arreter(ecriture.raison);
     ecrirePropositions(id, propositions);
@@ -142,6 +162,7 @@ async function principal(): Promise<void> {
         aEcrire: rejetes,
         suggestionsEnAttente: enAttente,
         marque: marque.sources,
+        serie,
       },
     });
   } finally {
