@@ -55,6 +55,16 @@ describe("genererLePortrait", () => {
     expect(await genererLePortrait("saya", "awa", film.lieux)).toMatchObject({ ok: false, statut: 502, raison: expect.stringContaining("clé Gemini") });
   });
 
+  it("une description encore à l'exemple : 400, sans appel à Google", async () => {
+    const { serieSaya } = await import("../../../remotion/film/cinema/serie-exemple.test-utils");
+    const { EXEMPLES_DE_SERIE } = await import("../../../remotion/film/cinema/exemples");
+    const serie = serieSaya();
+    serie.personnages[0].description = EXEMPLES_DE_SERIE.description;
+    film.creer(serie);
+    expect(await genererLePortrait("saya", "awa", film.lieux)).toMatchObject({ ok: false, statut: 400, raison: "Décris d'abord Awa : sa description est encore l'exemple." });
+    expect(google.appels).toHaveLength(0);
+  });
+
   it("personnage inconnu : 404 ; pas de clé : 412 ; sans appel à Google", async () => {
     film.creer();
     expect(await genererLePortrait("saya", "kofi", film.lieux)).toMatchObject({ ok: false, statut: 404 });

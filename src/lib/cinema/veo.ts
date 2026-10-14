@@ -47,9 +47,6 @@ export function corpsDuLancement(demande: DemandeDePlan): unknown {
   return { instances: [{ ...instance, prompt: `${demande.prompt} Avoid: ${demande.negatif}.` }], parameters: parametres };
 }
 
-// Barème relevé sur ai.google.dev/gemini-api/docs/pricing (09/2026) : 8 s en
-// 1080p, audio compris. Google ne facture pas un plan qui n'aboutit pas.
-export const COUT_D_UN_PLAN_USD: Record<QualiteDeCinema, number> = { fast: 0.96, lite: 0.64 };
 
 const POIDS_MAX = 80 * 1024 * 1024;
 

@@ -9,8 +9,6 @@ import { type ClientVeo, raisonDuRefus } from "./veo";
  * Même clé et même serveur que Veo. SERVEUR SEULEMENT.
  */
 export const MODELE_DE_PORTRAIT = "gemini-3.1-flash-image";
-// Relevé sur ai.google.dev (09/2026), une image ~1 Mpx.
-export const COUT_D_UN_PORTRAIT_USD = 0.05;
 
 export type Portrait = { ok: true; octets: Uint8Array; extension: "jpg" | "png" } | { ok: false; statut: number; raison: string };
 

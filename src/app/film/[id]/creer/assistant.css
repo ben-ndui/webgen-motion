@@ -6,6 +6,8 @@
 
 .gm-film .assistant { display: flex; flex-direction: column; gap: var(--s-5); container-type: inline-size; }
 .gm-film .assistant-barre { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
+/* Six onglets ne tiennent pas sur un téléphone : la barre défile seule, la page ne déborde pas. */
+.gm-film .assistant-onglets { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .gm-film .onglet-reste { font-family: var(--font-mono); font-size: 10px; min-width: 18px; padding: 1px 6px; border-radius: var(--r-full); background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
 
 /* Le conteneur est l'assistant : une requête de conteneur ne peut pas

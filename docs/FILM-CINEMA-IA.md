@@ -1,8 +1,10 @@
 # Fiche — Cinéma IA : du Reel à la mini-série
 
 > Statut : direction **B** validée par Ben le 14/10/2026 (« pensé série dès le
-> lot 2 »), fiche validée le même jour. **Lots 1 et 2 livrés** (moteur, format
-> série, portraits, références, répliques : `src/lib/cinema/`).
+> lot 2 »), fiche validée le même jour. **Lots 1, 2 et 3 livrés** : moteur,
+> format série, portraits, références, répliques (`src/lib/cinema/`), et
+> l'étape « Ta série » de l'assistant (`film/[id]/creer/_components/serie/`).
+> La découpe d'un plan passe au lot 4, avec le rendu qui s'en sert.
 
 ## Ce que la fonctionnalité promet
 
@@ -95,8 +97,12 @@ Une étape **« Série »** dans `film/[id]/creer`, après « Marque » :
    (consigne, qui est à l'image, l'objet, une réplique).
 3. **Générer** : par plan ou toute la scène d'un coup, coût total affiché
    avant, état en direct (en cours ~1 à 3 min, prêt, refusé).
-4. **Découper** : planche contact, début, fin, une coupe au milieu.
+4. **Découper** (lot 4) : planche contact, début, fin, une coupe au milieu.
 5. **Regarder l'épisode** monté, puis le rendre (lot 4).
+
+Livré au lot 3 : chaque scène a sa **pellicule**, ses plans en images 9:16
+(la vidéo joue quand le plan est prêt) ; un clic ouvre le plan dessous. Les
+textes de départ sont des exemples grisés, que le serveur refuse de payer.
 
 États : aucun personnage (« commence par ton casting »), portrait en cours,
 plan en cours, refus de Google (raison + « rien n'a été facturé »), clé
@@ -123,8 +129,8 @@ payer plus ; un épisode, ce sont des plans tous différents.
 |---|---|---|
 | 1 ✅ | Moteur : prompt, budget sous verrou, génération Veo, reprise, clé | 519 tests + recette réelle |
 | 2 ✅ | Format série (personnages, épisodes, scènes), portraits générés, références dans Veo, choix Fast/Lite, répliques | Unitaires + faux Google + recette réelle d'une scène (~3 $) |
-| 3 | Étape « Série » de l'assistant : casting, épisode, génération, découpe, états | Tests de composants + E2E du parcours |
-| 4 | Rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
+| 3 ✅ | Étape « Ta série » de l'assistant : casting, épisodes, scènes, pellicule, génération, états | Tests de composants + vérification réelle à 1440 et 390 px (pas d'outil E2E dans le dépôt) |
+| 4 | Découpe des plans + rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
 | 5 | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
 
 Les appels réels à Google ne se font qu'en recette (ils coûtent) ; les tests

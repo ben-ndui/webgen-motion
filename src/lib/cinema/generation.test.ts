@@ -68,6 +68,22 @@ describe("plans avec personnage", () => {
   });
 });
 
+describe("textes d'exemple", () => {
+  it("un plan dont la consigne, le décor ou la description d'Awa est encore l'exemple est refusé AVANT de payer", async () => {
+    const { EXEMPLES_DE_SERIE } = await import("../../../remotion/film/cinema/exemples");
+    const serie = film.donnerUnPortraitAAwa();
+    serie.episodes[0].scenes[0].plans[1].consigne = EXEMPLES_DE_SERIE.consigne;
+    serie.episodes[0].scenes[1].decor = EXEMPLES_DE_SERIE.decor;
+    serie.personnages[0].description = EXEMPLES_DE_SERIE.description;
+    film.creer(serie);
+    expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: false, statut: 400, raison: expect.stringContaining("ce qui se passe dans ce plan") });
+    expect(await genererUnPlan("saya", "confidence", film.lieux)).toMatchObject({ ok: false, statut: 400, raison: expect.stringContaining("décor de la scène") });
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: false, statut: 400, raison: expect.stringContaining("Décris d'abord Awa") });
+    expect(google.appels).toHaveLength(0);
+    expect(film.registre().utilises).toBe(0);
+  });
+});
+
 describe("plans sans personnage", () => {
   it("Lite, sans portrait ni negativePrompt (Lite les refuse), interdits dans le prompt", async () => {
     film.creer();

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { estUnExemple } from "../../../remotion/film/cinema/exemples";
 import type { Personnage } from "../../../remotion/film/cinema/types";
 import { enregistrerFilm } from "../film-ecriture";
 import { ecrireAtomiquement } from "../film-fichiers-deposes";
@@ -21,6 +22,9 @@ export async function genererLePortrait(id: string, personnageId: string, partie
   if (!lecture.ok) return lecture;
   const personnage = lecture.cinema.personnages.find((candidat) => candidat.id === personnageId);
   if (!personnage) return { ok: false, statut: 404, raison: `Le personnage « ${personnageId} » n'existe pas dans ce film.` };
+  if (estUnExemple("description", personnage.description)) {
+    return { ok: false, statut: 400, raison: `Décris d'abord ${personnage.nom} : sa description est encore l'exemple.` };
+  }
   const client = lieux.veo();
   if (!client) return SANS_CLE;
 

@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
+import { estUnExemple } from "../../../remotion/film/cinema/exemples";
 import { BUDGET_PAR_DEFAUT } from "../../../remotion/film/cinema/validerCinema";
 import type { CinemaDuFilm, PlanDeCinema, QualiteDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
@@ -11,7 +12,8 @@ import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } f
 import { choisirLeModele, personnagesDuPlan, trouverLePlan } from "./plans";
 import { composerLePrompt } from "./prompt";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "./registre";
-import { COUT_D_UN_PLAN_USD, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
+import { COUT_D_UN_PLAN_USD } from "./couts";
+import { lancerUnPlan, suivreUnPlan, telechargerLePlan } from "./veo";
 
 /**
  * Générer un plan de la série, et le suivre jusqu'à son fichier. Chaque appel
@@ -62,6 +64,15 @@ function repondre(id: string, contexte: Contexte, plan: EtatDuPlan, lieux: Lieux
   return { ok: true, plan, budget, modele: contexte.modele };
 }
 
+// Un plan généré sur un texte d'exemple serait payé pour rien : on le dit
+// AVANT de réserver le budget.
+function texteEncoreDExemple(contexte: Contexte): string | null {
+  if (estUnExemple("decor", contexte.scene.decor)) return "Décris d'abord le décor de la scène : c'est encore l'exemple.";
+  if (estUnExemple("consigne", contexte.plan.consigne)) return "Écris d'abord ce qui se passe dans ce plan : c'est encore l'exemple.";
+  const flou = personnagesDuPlan(contexte.cinema, contexte.plan).find((p) => estUnExemple("description", p.description));
+  return flou ? `Décris d'abord ${flou.nom} : sa description est encore l'exemple.` : null;
+}
+
 // « Prêt » se juge sur le DISQUE : une fiche peut citer une vidéo effacée ou
 // jamais arrivée, et l'écran annoncerait un plan qui n'existe pas.
 function etatDuFichier(plan: PlanDeCinema, dossierPublic: string): EtatDuPlan {
@@ -76,6 +87,8 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   const contexte = lecture.contexte;
   const client = lieux.veo();
   if (!client) return SANS_CLE;
+  const texteDExemple = texteEncoreDExemple(contexte);
+  if (texteDExemple) return { ok: false, statut: 400, raison: texteDExemple };
   const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id));
   if (!portraits.ok) return portraits;
 

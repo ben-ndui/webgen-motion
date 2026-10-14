@@ -5,6 +5,7 @@ import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import CadreDuFilm, { EnTeteDuFilm } from "../_components/cadre-du-film";
 import AssistantDuFilm from "./_components/assistant-du-film";
 import "./assistant.css";
+import "./serie.css";
 
 /**
  * L'assistant de création d'un film. La fiche se lit sur le disque ici, côté
@@ -34,7 +35,7 @@ export default async function CreerUnFilmPage({
   const nom = etat.fiche.marque?.logo?.type === "motSymbole" ? etat.fiche.marque.logo.texte : id;
   return (
     <CadreDuFilm nom={nom}>
-      <EnTeteDuFilm id={id} titre={`Créer le film de ${nom}`} sousTitre="Cinq étapes, dans l'ordre que tu veux. Tout s'enregistre au fur et à mesure." />
+      <EnTeteDuFilm id={id} titre={`Créer le film de ${nom}`} sousTitre="Six étapes, dans l'ordre que tu veux. Tout s'enregistre au fur et à mesure." />
       <AssistantDuFilm etatInitial={etat} adresseAuDepart={typeof site === "string" ? site : undefined} />
     </CadreDuFilm>
   );

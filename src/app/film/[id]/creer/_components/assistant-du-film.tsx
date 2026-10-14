@@ -13,12 +13,14 @@ import EtapeMusique from "./etape-musique";
 import EtapePret from "./etape-pret";
 import IndicateurDEnregistrement from "./indicateur-d-enregistrement";
 import RemplirDepuisLeSite from "./remplir-depuis-le-site";
+import EtapeSerie from "./serie/etape-serie";
 import { useFicheDuFilm } from "./use-fiche-du-film";
 
-export type Etape = "marque" | "musique" | "ecrans" | "histoire" | "pret";
-const ORDRE: Etape[] = ["marque", "musique", "ecrans", "histoire", "pret"];
+export type Etape = "marque" | "serie" | "musique" | "ecrans" | "histoire" | "pret";
+const ORDRE: Etape[] = ["marque", "serie", "musique", "ecrans", "histoire", "pret"];
 const TITRES: Record<Etape, string> = {
   marque: "Ta marque",
+  serie: "Ta série",
   musique: "Le son",
   ecrans: "Tes écrans",
   histoire: "Ton histoire",
@@ -26,9 +28,10 @@ const TITRES: Record<Etape, string> = {
 };
 
 /**
- * L'assistant de création d'un film : cinq étapes dans l'ordre où on a les
- * choses sous la main (logo et couleurs, musique, captures, textes). Tout
- * s'enregistre seul ; on peut revenir à n'importe quelle étape.
+ * L'assistant de création d'un film : six étapes dans l'ordre où on a les
+ * choses sous la main (logo et couleurs, série générée par IA, musique,
+ * captures, textes). Tout s'enregistre seul ; on peut revenir à n'importe
+ * quelle étape.
  */
 type Props = { etatInitial: EtatDeLEditeur; adresseAuDepart?: string };
 
@@ -54,7 +57,7 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
   return (
     <div className="assistant">
       <div className="assistant-barre">
-        <Tabs<Etape> tabs={onglets} value={etape} onValueChange={setEtape} />
+        <Tabs<Etape> tabs={onglets} value={etape} onValueChange={setEtape} className="assistant-onglets" />
         <IndicateurDEnregistrement etat={enregistrement} onReessayer={() => void enregistrer()} />
       </div>
 
@@ -82,6 +85,7 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
 
       <fieldset className="assistant-etapes" disabled={occupe} aria-busy={occupe}>
       {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} medias={etat.medias} />}
+      {etape === "serie" && <EtapeSerie id={etat.id} fiche={fiche} modifier={modifier} enregistrer={enregistrer} />}
       {etape === "musique" && (
         <EtapeMusique id={etat.id} fiche={fiche} langues={langues} musiquePresente={present("musique")} deposer={deposer} modifier={modifier} enregistrer={enregistrer} recharger={recharger} />
       )}
