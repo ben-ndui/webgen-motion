@@ -10,6 +10,7 @@ import {
   ajouterUnPlan,
   ajouterUneScene,
   basculerUnPersonnage,
+  poserLaDecoupe,
   retirerUnPersonnage,
   retirerUnPlan,
   serieDeDepart,
@@ -77,5 +78,40 @@ describe("gestes d'édition de la série", () => {
     retirerUnPlan(serie, "flacon");
     expect(ids(serie)).toEqual(["plan-1"]);
     expect(valide(serie)).toEqual([]);
+  });
+});
+
+describe("poserLaDecoupe", () => {
+  const plan = () => serieSaya().episodes[0].scenes[0].plans[0];
+
+  it("pose début, fin et coupe au dixième", () => {
+    const p = plan();
+    poserLaDecoupe(p, { debut: 0.04, fin: 7.83, coupe: [4.01, 5.04] });
+    expect(p.decoupe).toEqual({ debut: 0, fin: 7.8, coupe: [4, 5] });
+  });
+
+  it("ramène les bornes dans les 8 s et garde au moins une demi-seconde", () => {
+    const p = plan();
+    poserLaDecoupe(p, { debut: -2, fin: 12 });
+    expect(p.decoupe).toBeUndefined();
+    poserLaDecoupe(p, { debut: 6, fin: 6.1 });
+    expect(p.decoupe).toEqual({ debut: 6, fin: 6.5 });
+  });
+
+  it("une coupe qui ne tient plus dans le morceau gardé tombe ; une coupe à l'envers est remise dans l'ordre", () => {
+    const p = plan();
+    poserLaDecoupe(p, { debut: 2, fin: 6, coupe: [1, 3] });
+    expect(p.decoupe).toEqual({ debut: 2, fin: 6 });
+    poserLaDecoupe(p, { debut: 0, fin: 8, coupe: [5, 4] });
+    expect(p.decoupe).toEqual({ debut: 0, fin: 8, coupe: [4, 5] });
+  });
+
+  it("tout garder retire la découpe, et chaque résultat garde la série valide", () => {
+    const serie = serieSaya();
+    const p = serie.episodes[0].scenes[0].plans[0];
+    poserLaDecoupe(p, { debut: 1, fin: 7, coupe: [3, 4] });
+    expect(valide(serie)).toEqual([]);
+    poserLaDecoupe(p, { debut: 0, fin: 8 });
+    expect(p.decoupe).toBeUndefined();
   });
 });

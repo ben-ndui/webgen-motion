@@ -17,8 +17,17 @@ export const INTERVALLE_DE_SUIVI_MS = 6000;
 
 type ReponseDuServeur = { plan?: EtatDuPlan; budget?: Budget; erreur?: string };
 
-export function useSuiviDesPlans(filmId: string, planIds: string[], avantDeGenerer: () => Promise<boolean>) {
+export function useSuiviDesPlans(
+  filmId: string,
+  planIds: string[],
+  avantDeGenerer: () => Promise<boolean>,
+  // Appelé quand un plan PASSE à prêt sous nos yeux (pas à l'ouverture) : sa découpe visait l'ancienne vidéo.
+  quandUnPlanArrive: (planId: string) => void,
+) {
   const [suivis, setSuivis] = useState<Record<string, SuiviDUnPlan>>({});
+  // Change quand un plan arrive : même adresse, nouvelle vidéo, le navigateur doit la recharger.
+  const [versions, setVersions] = useState<Record<string, number>>({});
+  const etaitEnCours = useRef(new Set<string>());
   const [budget, setBudget] = useState<Budget | null>(null);
   const [blocage, setBlocage] = useState<string | null>(null);
   const cle = planIds.join("|");
@@ -49,9 +58,14 @@ export function useSuiviDesPlans(filmId: string, planIds: string[], avantDeGener
         setSuivis((avant) => ({ ...avant, [planId]: { etat: "erreur", raison: corps.erreur ?? "Réponse illisible." } }));
         return;
       }
+      if (corps.plan.etat === "en-cours") etaitEnCours.current.add(planId);
+      if (corps.plan.etat === "pret" && etaitEnCours.current.delete(planId)) {
+        setVersions((avant) => ({ ...avant, [planId]: Date.now() }));
+        quandUnPlanArrive(planId);
+      }
       setSuivis((avant) => ({ ...avant, [planId]: corps.plan! }));
     },
-    [filmId],
+    [filmId, quandUnPlanArrive],
   );
 
   // À l'ouverture et quand la liste des plans change : l'état de chacun.
@@ -87,5 +101,5 @@ export function useSuiviDesPlans(filmId: string, planIds: string[], avantDeGener
     [avantDeGenerer, lire],
   );
 
-  return { suivis, budget, blocage, generer };
+  return { suivis, versions, budget, blocage, generer };
 }

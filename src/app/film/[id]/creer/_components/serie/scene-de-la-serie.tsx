@@ -17,6 +17,7 @@ type Props = {
   scene: SceneDeCinema;
   numero: number;
   suivis: Record<string, SuiviDUnPlan>;
+  versionsDesPlans: Record<string, number>;
   blocage: string | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (planId: string) => void;
@@ -26,7 +27,7 @@ type Props = {
  * Une scène : son décor, puis sa pellicule, les plans en images 9:16 dans
  * l'ordre où ils passeront. Un clic sur un plan l'ouvre en dessous.
  */
-export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, blocage, modifierLaSerie, onGenerer }: Props) {
+export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer }: Props) {
   const [choisi, setChoisi] = useState(scene.plans[0]?.id ?? "");
   const plan = scene.plans.find((p) => p.id === choisi) ?? scene.plans[0];
   const numeroDuPlan = plan ? scene.plans.indexOf(plan) + 1 : 0;
@@ -56,7 +57,7 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
       />
       <ol className="pellicule" aria-label={`Plans de la scène ${numero}`}>
         {scene.plans.map((p, index) => (
-          <VignetteDuPlan key={p.id} filmId={filmId} numero={index + 1} plan={p} suivi={suivis[p.id]} noms={nomsDe(p)} choisi={p.id === plan?.id} onChoisir={() => setChoisi(p.id)} />
+          <VignetteDuPlan key={p.id} filmId={filmId} numero={index + 1} plan={p} suivi={suivis[p.id]} version={versionsDesPlans[p.id] ?? 0} noms={nomsDe(p)} choisi={p.id === plan?.id} onChoisir={() => setChoisi(p.id)} />
         ))}
         {scene.plans.length < PLANS_PAR_SCENE.max && (
           <li>
@@ -85,6 +86,8 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
           plan={plan}
           numero={numeroDuPlan}
           suivi={suivis[plan.id]}
+          version={versionsDesPlans[plan.id] ?? 0}
+          filmId={filmId}
           blocage={blocage}
           modifierLePlan={modifierLePlan(plan.id)}
           onGenerer={() => onGenerer(plan.id)}

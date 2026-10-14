@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { ajouterUnEpisode, ajouterUneScene } from "@/lib/cinema/edition-serie";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
+import type { DeclinaisonDuFilm } from "../../../../../../../remotion/film/spec";
+import RenduDeLEpisode from "./rendu-de-l-episode";
 import { EPISODES_MAX, SCENES_PAR_EPISODE } from "../../../../../../../remotion/film/cinema/validerCinema";
 import SceneDeLaSerie from "./scene-de-la-serie";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
@@ -12,13 +14,16 @@ type Props = {
   filmId: string;
   cinema: CinemaDuFilm;
   suivis: Record<string, SuiviDUnPlan>;
+  versionsDesPlans: Record<string, number>;
   blocage: string | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (planId: string) => void;
+  declinaisons: DeclinaisonDuFilm[];
+  enregistrer: () => Promise<boolean>;
 };
 
 /** Les épisodes : on en choisit un, on écrit son titre, puis ses scènes. */
-export default function EpisodesDeLaSerie({ filmId, cinema, suivis, blocage, modifierLaSerie, onGenerer }: Props) {
+export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer, declinaisons, enregistrer }: Props) {
   const [choisi, setChoisi] = useState(cinema.episodes[0]?.id ?? "");
   const episode = cinema.episodes.find((e) => e.id === choisi) ?? cinema.episodes[0];
   if (!episode) return null;
@@ -61,6 +66,7 @@ export default function EpisodesDeLaSerie({ filmId, cinema, suivis, blocage, mod
           scene={scene}
           numero={index + 1}
           suivis={suivis}
+          versionsDesPlans={versionsDesPlans}
           blocage={blocage}
           modifierLaSerie={modifierLaSerie}
           onGenerer={onGenerer}
@@ -71,6 +77,7 @@ export default function EpisodesDeLaSerie({ filmId, cinema, suivis, blocage, mod
           Ajouter une scène
         </button>
       )}
+      <RenduDeLEpisode key={episode.id} filmId={filmId} episodeId={episode.id} titre={episode.titre} declinaisons={declinaisons} avantDeRendre={enregistrer} />
     </div>
   );
 }

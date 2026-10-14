@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   }
   const lecture = lireRequeteDeRendu(corps);
   if (!lecture.ok) return NextResponse.json({ error: lecture.erreur }, { status: 400 });
-  const { filmId, declinaison, rendu } = lecture.requete;
+  const { filmId, declinaison, rendu, episode } = lecture.requete;
 
   if (!isFeatureEnabled("film-de-marque")) {
     return NextResponse.json(
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const preparation = preparerRendu(filmId, declinaison, { type: rendu });
+  const preparation = preparerRendu(filmId, declinaison, { type: rendu, episode });
   if (!preparation.ok) {
     return NextResponse.json(
       { error: "Rendu refusé", erreurs: preparation.erreurs },
@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
 
   const argumentsDuRunner = ["--film-id", filmId, "--declinaison", declinaison];
   if (rendu === "bibliotheque") argumentsDuRunner.push("--bibliotheque");
+  if (rendu === "episode" && episode) argumentsDuRunner.push("--episode", episode);
   const spawnSpec = resolveRunnerSpawn("render-film", argumentsDuRunner);
   const debut = Date.now();
 
@@ -153,7 +154,7 @@ export async function POST(req: NextRequest) {
           filmId,
           declinaison,
           rendu,
-          url: urlDuRendu(filmId, declinaison, Math.round(infos.mtimeMs), rendu),
+          url: urlDuRendu(filmId, declinaison, Math.round(infos.mtimeMs), rendu, episode),
           sizeBytes: infos.size,
           wallSec,
         });

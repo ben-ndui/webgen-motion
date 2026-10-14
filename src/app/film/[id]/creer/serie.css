@@ -60,3 +60,16 @@
 .gm-film .replique .champ-saisie:not(.petit) { flex: 1; }
 .gm-film .generer { display: flex; flex-direction: column; gap: 6px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
 .gm-film .generer .film-btn { align-self: flex-start; }
+
+/* L'épisode monté */
+.gm-film .rendu-episode { margin-bottom: 0; }
+.gm-film .rendu-ligne { display: flex; flex-direction: column; gap: var(--s-2); }
+.gm-film .rendu-ligne .film-btn { align-self: flex-start; }
+.gm-film .rendu-ligne ul { margin: 4px 0 0; padding-left: 18px; }
+.gm-film .rendu-video { width: min(100%, 320px); aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
+
+/* La découpe d'un plan prêt */
+.gm-film .decoupe { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .decoupe-lecteur { width: min(100%, 240px); aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
+.gm-film .decoupe-planche { width: 100%; border-radius: var(--r-sm); cursor: pointer; background: var(--pellicule); }
+.gm-film .decoupe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }

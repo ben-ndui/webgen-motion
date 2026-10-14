@@ -8,14 +8,19 @@ import { type CinemaDuFilm, PERSONNAGES_PAR_PLAN_MAX, type PlanDeCinema, type Sc
 import { raisonDeNePasGenerer } from "./raison-de-ne-pas-generer";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 import ChampReplique from "./champ-replique";
+import ControleDeLaReplique from "./controle-de-la-replique";
+import DecoupeDuPlan from "./decoupe-du-plan";
 import ZoneTexte from "./zone-texte";
 
 type Props = {
+  filmId: string;
   cinema: CinemaDuFilm;
   scene: SceneDeCinema;
   plan: PlanDeCinema;
   numero: number;
   suivi: SuiviDUnPlan | undefined;
+  // Change quand une nouvelle vidéo du plan arrive.
+  version: number;
   blocage: string | null;
   modifierLePlan: (changement: (plan: PlanDeCinema) => void) => void;
   onGenerer: () => void;
@@ -28,7 +33,7 @@ const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
 };
 
 /** Le plan choisi sur la pellicule : ce qui s'y passe, qui est à l'image, qui parle, et le bouton qui le génère. */
-export default function EditeurDuPlan({ cinema, scene, plan, numero, suivi, blocage, modifierLePlan, onGenerer, onRetirer }: Props) {
+export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, modifierLePlan, onGenerer, onRetirer }: Props) {
   const choix = choisirLeModele(cinema, plan);
   const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage);
   const presents = cinema.personnages.filter((p) => plan.personnages.includes(p.id));
@@ -69,6 +74,11 @@ export default function EditeurDuPlan({ cinema, scene, plan, numero, suivi, bloc
       </label>
 
       {presents.length > 0 && <ChampReplique presents={presents} replique={plan.replique} modifierLePlan={modifierLePlan} />}
+
+      {suivi?.etat === "pret" && plan.replique && <ControleDeLaReplique key={`${version}-${plan.replique.texte}`} filmId={filmId} planId={plan.id} />}
+      {suivi?.etat === "pret" && (
+        <DecoupeDuPlan key={version} filmId={filmId} plan={plan} fichier={suivi.fichier} version={version} modifierLePlan={modifierLePlan} />
+      )}
 
       <div className="generer">
         <button type="button" className="film-btn" disabled={raison !== null} onClick={onGenerer}>

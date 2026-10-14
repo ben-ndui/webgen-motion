@@ -1,5 +1,5 @@
 import { EXEMPLES_DE_SERIE } from "../../../remotion/film/cinema/exemples";
-import type { CinemaDuFilm, PlanDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
+import { type CinemaDuFilm, DUREE_D_UN_PLAN, type PlanDeCinema, type SceneDeCinema } from "../../../remotion/film/cinema/types";
 
 /**
  * Les gestes d'édition de la série, sur une COPIE de la fiche (l'assistant
@@ -81,4 +81,23 @@ export function basculerUnPersonnage(plan: PlanDeCinema, personnageId: string): 
   } else {
     plan.personnages.push(personnageId);
   }
+}
+
+const auDixieme = (secondes: number) => Math.round(secondes * 10) / 10;
+
+/**
+ * Pose la découpe d'un plan en la gardant VALIDE : bornes ramenées dans les
+ * 8 s, au dixième, au moins une demi-seconde gardée ; une coupe qui ne tient
+ * plus dans le morceau gardé tombe. Tout garder = pas de découpe.
+ */
+export function poserLaDecoupe(plan: PlanDeCinema, voulue: { debut: number; fin: number; coupe?: [number, number] }): void {
+  const debut = Math.min(Math.max(0, auDixieme(voulue.debut)), DUREE_D_UN_PLAN - 0.5);
+  const fin = Math.max(Math.min(DUREE_D_UN_PLAN, auDixieme(voulue.fin)), debut + 0.5);
+  const coupe = voulue.coupe ? ([auDixieme(Math.min(...voulue.coupe)), auDixieme(Math.max(...voulue.coupe))] as [number, number]) : undefined;
+  const coupeTient = coupe !== undefined && coupe[0] > debut && coupe[1] < fin && coupe[0] < coupe[1];
+  if (debut === 0 && fin === DUREE_D_UN_PLAN && !coupeTient) {
+    delete plan.decoupe;
+    return;
+  }
+  plan.decoupe = coupeTient ? { debut, fin, coupe } : { debut, fin };
 }

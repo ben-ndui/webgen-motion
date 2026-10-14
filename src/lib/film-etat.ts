@@ -4,6 +4,7 @@ import { DIRECTION_PAR_DEFAUT } from "../../remotion/film/marque/direction";
 import type { DeclinaisonDuFilm, DirectionDuFilm, FilmSpec, Langue, MarqueDuFilm } from "../../remotion/film/spec";
 import type { FicheDeFilm } from "./film-loader";
 import { reperesMontes } from "./film-voix-plans";
+import { problemesDeLEpisode } from "./cinema/pret-a-rendre";
 import { type EtatDesMedias, etatDesMedias, problemesDeMedias } from "./film-medias";
 import { type TypeDeRendu, fichiersDuRendu, getFilmOutDir, getFilmPublicDir, urlDuRendu } from "./film-store";
 
@@ -83,9 +84,11 @@ export function problemesDeLaDeclinaison(
   medias: EtatDesMedias,
   langue: Langue,
   type: TypeDeRendu = "film",
+  episode?: string,
 ): string[] {
   if (type === "bibliotheque" && !spec.bibliotheque) return [MESSAGE_SANS_BIBLIOTHEQUE];
   const problemes = spec.exemple ? [MESSAGE_FICHE_D_EXEMPLE] : [];
+  if (type === "episode") problemes.push(...problemesDeLEpisode(spec, episode, medias.dossierPublic));
   // Une voix écrite mais pas générée ne serait pas jouée : le film sortirait
   // muet là où la personne attend sa phrase.
   if (type === "film") {

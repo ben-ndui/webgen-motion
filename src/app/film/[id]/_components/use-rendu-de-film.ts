@@ -11,9 +11,9 @@ import type { TypeDeRendu } from "@/lib/film-store";
  * bibliothèque d'une même déclinaison ont chacun leur état (`cleDuRendu`).
  */
 
-/** La clé d'état d'un rendu : « film:Court-FR », « bibliotheque:Court-FR ». */
-export function cleDuRendu(type: TypeDeRendu, nom: string): string {
-  return `${type}:${nom}`;
+/** La clé d'état d'un rendu : « film:Court-FR », « bibliotheque:Court-FR », « episode:Court-FR:ep1 ». */
+export function cleDuRendu(type: TypeDeRendu, nom: string, episode?: string): string {
+  return episode ? `${type}:${nom}:${episode}` : `${type}:${nom}`;
 }
 
 export type EtatDuRendu =
@@ -55,9 +55,9 @@ export function useRenduDeFilm(filmId: string) {
   const poser = (cle: string, etat: EtatDuRendu) => setEtats((avant) => ({ ...avant, [cle]: etat }));
 
   const lancer = useCallback(
-    async (declinaison: string, type: TypeDeRendu = "film") => {
+    async (declinaison: string, type: TypeDeRendu = "film", episode?: string) => {
       if (annulation.current) return;
-      const cle = cleDuRendu(type, declinaison);
+      const cle = cleDuRendu(type, declinaison, episode);
       const controleur = new AbortController();
       annulation.current = controleur;
       setEnCours(cle);
@@ -68,7 +68,7 @@ export function useRenduDeFilm(filmId: string) {
         const reponse = await fetch("/api/motion/film/render", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filmId, declinaison, rendu: type }),
+          body: JSON.stringify({ filmId, declinaison, rendu: type, ...(episode ? { episode } : {}) }),
           signal: controleur.signal,
         });
         if (!reponse.ok || !reponse.body) {

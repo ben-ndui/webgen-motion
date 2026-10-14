@@ -26,7 +26,7 @@ type Props = {
 export default function EtapeSerie({ id, fiche, modifier, enregistrer }: Props) {
   const cinema = fiche.cinema;
   if (!cinema) return <SerieAbsente onCommencer={() => modifier((copie) => void (copie.cinema = serieDeDepart()))} />;
-  return <SerieDuFilm id={id} cinema={cinema} modifier={modifier} enregistrer={enregistrer} />;
+  return <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifier={modifier} enregistrer={enregistrer} />;
 }
 
 function SerieAbsente({ onCommencer }: { onCommencer: () => void }) {
@@ -44,9 +44,15 @@ function SerieAbsente({ onCommencer }: { onCommencer: () => void }) {
   );
 }
 
-type PropsDeLaSerie = { id: string; cinema: CinemaDuFilm; modifier: Props["modifier"]; enregistrer: Props["enregistrer"] };
+type PropsDeLaSerie = {
+  id: string;
+  cinema: CinemaDuFilm;
+  declinaisons: FilmSpec["declinaisons"];
+  modifier: Props["modifier"];
+  enregistrer: Props["enregistrer"];
+};
 
-function SerieDuFilm({ id, cinema, modifier, enregistrer }: PropsDeLaSerie) {
+function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer }: PropsDeLaSerie) {
   const modifierLaSerie = useCallback(
     (changement: (cinema: CinemaDuFilm) => void) =>
       modifier((copie) => {
@@ -55,7 +61,15 @@ function SerieDuFilm({ id, cinema, modifier, enregistrer }: PropsDeLaSerie) {
     [modifier],
   );
   const planIds = cinema.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans.map((p) => p.id)));
-  const { suivis, budget, blocage, generer } = useSuiviDesPlans(id, planIds, enregistrer);
+  const quandUnPlanArrive = useCallback(
+    (planId: string) =>
+      modifierLaSerie((c) => {
+        const plan = c.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans)).find((p) => p.id === planId);
+        if (plan) delete plan.decoupe;
+      }),
+    [modifierLaSerie],
+  );
+  const { suivis, versions: versionsDesPlans, budget, blocage, generer } = useSuiviDesPlans(id, planIds, enregistrer, quandUnPlanArrive);
   const [versions, setVersions] = useState<Record<string, number>>({});
   const quandLePortraitEstPret = useCallback(
     (personnageId: string, portrait: string) => {
@@ -89,7 +103,17 @@ function SerieDuFilm({ id, cinema, modifier, enregistrer }: PropsDeLaSerie) {
         />
         <ObjetEtBudget cinema={cinema} budget={budget} modifierLaSerie={modifierLaSerie} />
       </div>
-      <EpisodesDeLaSerie filmId={id} cinema={cinema} suivis={suivis} blocage={blocage} modifierLaSerie={modifierLaSerie} onGenerer={(planId) => void generer(planId)} />
+      <EpisodesDeLaSerie
+        filmId={id}
+        cinema={cinema}
+        suivis={suivis}
+        versionsDesPlans={versionsDesPlans}
+        blocage={blocage}
+        modifierLaSerie={modifierLaSerie}
+        onGenerer={(planId) => void generer(planId)}
+        declinaisons={declinaisons}
+        enregistrer={enregistrer}
+      />
     </div>
   );
 }

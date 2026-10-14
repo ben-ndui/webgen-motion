@@ -51,7 +51,7 @@ export function getFilmOutDir(filmId: string): string {
  * Deux rendus possibles par déclinaison : le film lui-même, et la
  * bibliothèque de plans (composition `Bibliotheque`) quand la fiche en a une.
  */
-export const TYPES_DE_RENDU = ["film", "bibliotheque"] as const;
+export const TYPES_DE_RENDU = ["film", "bibliotheque", "episode"] as const;
 export type TypeDeRendu = (typeof TYPES_DE_RENDU)[number];
 
 export function estTypeDeRendu(valeur: unknown): valeur is TypeDeRendu {
@@ -70,9 +70,13 @@ export function estTypeDeRendu(valeur: unknown): valeur is TypeDeRendu {
 // La bibliothèque prend le suffixe `.bibliotheque` : un point ne peut pas
 // figurer dans un nom de déclinaison (nom sûr), donc aucune déclinaison ne
 // peut écraser le rendu de bibliothèque d'une autre.
-export function fichiersDuRendu(dossierDeSortie: string, declinaison: string, type: TypeDeRendu = "film") {
+export function fichiersDuRendu(dossierDeSortie: string, declinaison: string, type: TypeDeRendu = "film", episode?: string) {
   const sur = exigerNomSur(declinaison, "Nom de déclinaison");
-  const nom = type === "bibliotheque" ? `${sur}.bibliotheque` : sur;
+  // Le point rend toute collision avec un nom de déclinaison impossible.
+  const nom =
+    type === "bibliotheque" ? `${sur}.bibliotheque`
+    : type === "episode" ? `${sur}.episode-${exigerNomSur(episode ?? "", "Id d'épisode")}`
+    : sur;
   return {
     livrable: join(dossierDeSortie, `${nom}.mp4`),
     partiel: join(dossierDeSortie, `.${nom}.en-cours.mp4`),
@@ -81,8 +85,11 @@ export function fichiersDuRendu(dossierDeSortie: string, declinaison: string, ty
 }
 
 /** URL qui sert le rendu d'une déclinaison au lecteur de la page film. */
-export function urlDuRendu(filmId: string, declinaison: string, version?: number, type: TypeDeRendu = "film"): string {
+export function urlDuRendu(filmId: string, declinaison: string, version?: number, type: TypeDeRendu = "film", episode?: string): string {
   const base = `/api/motion/film/video?id=${encodeURIComponent(filmId)}&declinaison=${encodeURIComponent(declinaison)}`;
-  const avecType = type === "bibliotheque" ? `${base}&rendu=bibliotheque` : base;
+  const avecType =
+    type === "bibliotheque" ? `${base}&rendu=bibliotheque`
+    : type === "episode" ? `${base}&rendu=episode&episode=${encodeURIComponent(episode ?? "")}`
+    : base;
   return version === undefined ? avecType : `${avecType}&t=${version}`;
 }

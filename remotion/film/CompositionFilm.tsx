@@ -3,6 +3,9 @@ import { type CalculateMetadataFunction, Composition } from "remotion";
 import { Bibliotheque } from "./bibliotheque/Bibliotheque";
 import { dureeDeLaBibliotheque } from "./bibliotheque/montage";
 import { erreursDeLaBibliotheque } from "./bibliotheque/validerBibliotheque";
+import { Episode, type ProprietesDeLEpisode } from "./cinema/Episode";
+import { monterLEpisode } from "./cinema/montage";
+import { erreursDuCinema } from "./cinema/validerCinema";
 import { FILM } from "./film";
 import { FilmPrincipal, type ProprietesDuFilm } from "./FilmPrincipal";
 import { IMAGES_PAR_SECONDE } from "./lib/tempo";
@@ -47,6 +50,18 @@ export const metadonneesDeLaBibliotheque: CalculateMetadataFunction<ProprietesDu
   };
 };
 
+// Un épisode de la série : toujours vertical (Veo rend du 9:16), sa durée
+// suit ses plans et leur découpe. Plan sans vidéo ou série mal remplie :
+// échec ici, avec la liste.
+export const metadonneesDeLEpisode: CalculateMetadataFunction<ProprietesDeLEpisode> = ({ props }) => {
+  const spec = validerSpec(props.spec);
+  const erreurs = erreursDuCinema(spec);
+  if (!spec.cinema) erreurs.push("la fiche n'a pas de série (« cinema »)");
+  if (erreurs.length > 0) throw new Error(`Série invalide (${erreurs.length}) :\n  - ${erreurs.join("\n  - ")}`);
+  const montage = monterLEpisode(spec.cinema!, props.episode, spec.musique.tempo, IMAGES_PAR_SECONDE);
+  return { ...CADRES.court, durationInFrames: montage.duree };
+};
+
 /**
  * Point d'entrée du mode « Film de marque » : inputProps = { spec, declinaison }.
  * Les props par défaut (la fiche d'exemple du gabarit) ne servent qu'au
@@ -75,6 +90,16 @@ export function CompositionFilm() {
         durationInFrames={1}
         defaultProps={{ spec: FILM, declinaison: premiere }}
         calculateMetadata={metadonneesDeLaBibliotheque}
+      />
+      {/* Un épisode de la série (render-film.ts --episode <id>). */}
+      <Composition
+        id="Episode"
+        component={Episode}
+        {...CADRES.court}
+        fps={IMAGES_PAR_SECONDE}
+        durationInFrames={1}
+        defaultProps={{ spec: FILM, declinaison: premiere, episode: "" }}
+        calculateMetadata={metadonneesDeLEpisode}
       />
     </>
   );

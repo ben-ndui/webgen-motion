@@ -108,13 +108,15 @@ export function etatDesMedias(
 ): EtatDesMedias {
   const medias: MediaAttendu[] = [];
   const bibliotheque = spec.bibliotheque;
-  // La musique et le logo servent aux deux rendus (la bibliothèque a sa bande
-  // son, et son dernier plan construit le logo).
-  const lesDeux: TypeDeRendu[] = bibliotheque ? ["film", "bibliotheque"] : ["film"];
+  // La musique et le logo servent à tous les rendus (la bibliothèque et
+  // l'épisode ont leur bande son, et finissent sur le logo qui se construit).
+  const rendusQuiLesUtilisent: TypeDeRendu[] = ["film"];
+  if (bibliotheque) rendusQuiLesUtilisent.push("bibliotheque");
+  if (spec.cinema) rendusQuiLesUtilisent.push("episode");
   const logo = spec.marque.logo;
   for (const langue of langues) {
-    ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: lesDeux }, dossierPublic);
-    if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: lesDeux }, dossierPublic);
+    ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: rendusQuiLesUtilisent }, dossierPublic);
+    if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: rendusQuiLesUtilisent }, dossierPublic);
   }
   // Les voix GÉNÉRÉES (une ligne sans fichier n'a rien à chercher sur le disque).
   for (const langue of langues) {

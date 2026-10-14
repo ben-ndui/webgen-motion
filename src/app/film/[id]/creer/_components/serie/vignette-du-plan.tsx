@@ -9,6 +9,7 @@ type Props = {
   numero: number;
   plan: PlanDeCinema;
   suivi: SuiviDUnPlan | undefined;
+  version: number;
   noms: string[];
   choisi: boolean;
   onChoisir: () => void;
@@ -27,7 +28,7 @@ const ETIQUETTES: Partial<Record<SuiviDUnPlan["etat"] | "lecture", string>> = {
  * Un plan sur la pellicule de sa scène : l'image 9:16 telle qu'elle sortira.
  * Prêt, il joue sa vidéo ; sinon il montre ce qui doit s'y passer.
  */
-export default function VignetteDuPlan({ filmId, numero, plan, suivi, noms, choisi, onChoisir }: Props) {
+export default function VignetteDuPlan({ filmId, numero, plan, suivi, version, noms, choisi, onChoisir }: Props) {
   // Pas encore de réponse du serveur : on lit, on n'envoie rien.
   const etat = suivi?.etat ?? "lecture";
   const pret = suivi?.etat === "pret" ? suivi : null;
@@ -39,7 +40,7 @@ export default function VignetteDuPlan({ filmId, numero, plan, suivi, noms, choi
       <button type="button" className={`vignette${choisi ? " choisie" : ""}`} aria-pressed={choisi} onClick={onChoisir}>
         <span className={`vignette-image etat-${etat}`}>
           {pret ? (
-            <video src={`/api/motion/film/${filmId}/media?relatif=${encodeURIComponent(pret.fichier)}`} muted loop playsInline autoPlay aria-hidden />
+            <video src={`/api/motion/film/${filmId}/media?relatif=${encodeURIComponent(pret.fichier)}&v=${version}`} muted loop playsInline autoPlay aria-hidden />
           ) : (
             <span className="vignette-consigne">{consigne}</span>
           )}

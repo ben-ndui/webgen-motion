@@ -100,7 +100,7 @@ function argumentsRemotion(rendu: RenduPrepare, cheminNavigateur: string | undef
     rendu.composition,
     rendu.partiel,
     "--props",
-    JSON.stringify({ spec: rendu.spec, declinaison: rendu.declinaison }),
+    JSON.stringify({ spec: rendu.spec, declinaison: rendu.declinaison, ...(rendu.episode ? { episode: rendu.episode } : {}) }),
     "--public-dir",
     rendu.dossierPublic,
     // « angle » partout, JAMAIS « swangle » : le rasterizer logiciel tuile
@@ -156,7 +156,7 @@ function rendre(rendu: RenduPrepare, cheminNavigateur: string | undefined): Prom
   // Reste d'une tentative interrompue : jamais repris pour un livrable.
   rmSync(rendu.partiel, { force: true });
 
-  const quoi = rendu.type === "bibliotheque" ? " · bibliothèque" : "";
+  const quoi = rendu.type === "bibliotheque" ? " · bibliothèque" : rendu.type === "episode" ? ` · épisode ${rendu.episode}` : "";
   console.log(`▶ Film ${nom}${quoi} (${rendu.declinaison.langue}, ${rendu.declinaison.version})`);
   console.log(`  Public dir : ${rendu.dossierPublic}`);
   console.log(`  Sortie     : ${rendu.sortie}`);
@@ -199,8 +199,10 @@ function rendre(rendu: RenduPrepare, cheminNavigateur: string | undefined): Prom
 
 async function principal(): Promise<void> {
   const filmId = argument("--film-id");
-  if (!estNomSur(filmId)) arreter("Usage : render-film.ts --film-id <id> [--declinaison <nom>] [--bibliotheque]");
-  const type = process.argv.includes("--bibliotheque") ? "bibliotheque" : "film";
+  if (!estNomSur(filmId)) arreter("Usage : render-film.ts --film-id <id> [--declinaison <nom>] [--bibliotheque | --episode <id>]");
+  const episode = argument("--episode");
+  if (episode !== undefined && !estNomSur(episode)) arreter("--episode : lettres, chiffres, _ et - seulement");
+  const type = episode !== undefined ? "episode" : process.argv.includes("--bibliotheque") ? "bibliotheque" : "film";
   if (!isFeatureEnabled("film-de-marque")) {
     arreter(
       "Le rendu des films de marque est une feature Studio Edition. Active ta license (.license) ou, en dev : WEBGEN_MOTION_EDITION=studio",
@@ -219,7 +221,7 @@ async function principal(): Promise<void> {
   // livrable qu'une capture anglaise manque.
   const rendus: RenduPrepare[] = [];
   for (const nom of noms) {
-    const preparation = preparerRendu(filmId, nom, { type });
+    const preparation = preparerRendu(filmId, nom, { type, episode });
     if (!preparation.ok) {
       arreter(`Rendu refusé (${filmId} · ${nom}) :\n  - ${preparation.erreurs.join("\n  - ")}`);
     }
