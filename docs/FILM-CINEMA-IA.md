@@ -141,6 +141,7 @@ payer plus ; un épisode, ce sont des plans tous différents.
 | 4 ✅ | Découpe des plans + rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
 | 5 ✅ | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
 | 6 🟡 | Export de l'épisode en timeline `.otio` (DaVinci Resolve ; Premiere pas testé) : plans et découpes, fondus enchaînés, son des plans, musique repérée sous les répliques, logo repris du rendu | Unitaires + mutations + épisode réel relu par la lib officielle OpenTimelineIO ; **import réel dans Resolve à faire** |
+| 7 🟡 | Assistant de la série : Claude propose à chaque niveau (action, réplique, dialogues d'une scène, plan suivant, épisode suivant), on garde ou non | Unitaires + faux Claude + recette réelle (6 gestes, 3 défauts de consigne corrigés) ; **test de Ben à faire** |
 
 Les appels réels à Google ne se font qu'en recette (ils coûtent) ; les tests
 automatiques tournent sur un faux Google local qui rejoue la forme exacte des

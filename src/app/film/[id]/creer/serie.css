@@ -79,3 +79,9 @@
 .gm-film .photo-du-produit .film-btn { cursor: pointer; }
 .gm-film .photo-du-produit .film-btn.desactive { opacity: .45; cursor: not-allowed; }
 .gm-film .ecrire-avec-claude .film-btn { align-self: flex-start; }
+
+/* L'aide de Claude : ses gestes, puis sa proposition à garder ou non. */
+.gm-film .aide-claude { display: flex; flex-direction: column; gap: var(--s-2); }
+.gm-film .aide-claude-gestes { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.gm-film .aide-claude-proposition { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-3) var(--s-4); border: 1px solid var(--accent-line); border-radius: var(--r-md); background: var(--surface); }
+.gm-film .aide-claude-proposition ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }

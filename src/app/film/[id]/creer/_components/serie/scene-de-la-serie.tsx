@@ -6,7 +6,9 @@ import { ajouterUnPlan, retirerUnPlan } from "@/lib/cinema/edition-serie";
 import { EXEMPLES_DE_SERIE } from "../../../../../../../remotion/film/cinema/exemples";
 import type { CinemaDuFilm, PlanDeCinema, SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
 import { PLANS_PAR_SCENE } from "../../../../../../../remotion/film/cinema/validerCinema";
+import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import EditeurDuPlan from "./editeur-du-plan";
+import { episodeDeLaScene, useAssistant } from "./use-assistant";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 import VignetteDuPlan from "./vignette-du-plan";
 import ZoneTexte from "./zone-texte";
@@ -42,6 +44,13 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
       const copie = s.plans.find((p) => p.id === planId);
       if (copie) changement(copie);
     });
+  const assistant = useAssistant(filmId, cinema, modifierLaSerie);
+  const episode = episodeDeLaScene(cinema, scene.id);
+  const gestes: GesteDeClaude[] = [];
+  if (scene.plans.some((p) => p.personnages.length > 0)) gestes.push({ libelle: "Écrire les dialogues de la scène", demande: { type: "dialogues", episode, scene: scene.id } });
+  if (scene.plans.length < PLANS_PAR_SCENE.max) gestes.push({ libelle: "Proposer le plan suivant", demande: { type: "plan-suivant", episode, scene: scene.id } });
+  // Le plan suivant gardé s'ouvre tout de suite dans l'éditeur.
+  const garder = () => assistant.garder((c) => setChoisi(c.episodes.flatMap((e) => e.scenes).find((s) => s.id === scene.id)?.plans.at(-1)?.id ?? choisi));
   const nomsDe = (p: PlanDeCinema) => cinema.personnages.filter((personnage) => p.personnages.includes(personnage.id)).map((personnage) => personnage.nom);
 
   return (
@@ -78,6 +87,7 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
           </li>
         )}
       </ol>
+      <AideDeClaude cinema={cinema} gestes={gestes} etat={assistant.etat} demander={(d) => void assistant.demander(d)} garder={garder} refuser={assistant.refuser} autre={assistant.autre} />
       {plan && (
         <EditeurDuPlan
           key={plan.id}
@@ -90,6 +100,7 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
           filmId={filmId}
           blocage={blocage}
           modifierLePlan={modifierLePlan(plan.id)}
+          modifierLaSerie={modifierLaSerie}
           onGenerer={() => onGenerer(plan.id)}
           onRetirer={() => modifierLaSerie((c) => retirerUnPlan(c, plan.id))}
         />

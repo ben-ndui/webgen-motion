@@ -3,13 +3,15 @@
 import { COUT_D_UN_PLAN_USD, enDollars } from "@/lib/cinema/couts";
 import { basculerUnPersonnage } from "@/lib/cinema/edition-serie";
 import { choisirLeModele } from "@/lib/cinema/plans";
-import { EXEMPLES_DE_SERIE } from "../../../../../../../remotion/film/cinema/exemples";
+import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
 import { type CinemaDuFilm, PERSONNAGES_PAR_PLAN_MAX, type PlanDeCinema, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
 import { raisonDeNePasGenerer } from "./raison-de-ne-pas-generer";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
+import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import ChampReplique from "./champ-replique";
 import ControleDeLaReplique from "./controle-de-la-replique";
 import DecoupeDuPlan from "./decoupe-du-plan";
+import { episodeDeLaScene, useAssistant } from "./use-assistant";
 import ZoneTexte from "./zone-texte";
 
 type Props = {
@@ -23,6 +25,8 @@ type Props = {
   version: number;
   blocage: string | null;
   modifierLePlan: (changement: (plan: PlanDeCinema) => void) => void;
+  // Pour poser une proposition de Claude gardée.
+  modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: () => void;
   onRetirer: () => void;
 };
@@ -33,12 +37,20 @@ const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
 };
 
 /** Le plan choisi sur la pellicule : ce qui s'y passe, qui est à l'image, qui parle, et le bouton qui le génère. */
-export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, modifierLePlan, onGenerer, onRetirer }: Props) {
+export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, modifierLePlan, modifierLaSerie, onGenerer, onRetirer }: Props) {
   const choix = choisirLeModele(cinema, plan);
   const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage);
   const presents = cinema.personnages.filter((p) => plan.personnages.includes(p.id));
   const message = suivi && "raison" in suivi ? suivi.raison : suivi ? MESSAGES[suivi.etat] : undefined;
   const dejaGenere = suivi?.etat === "pret";
+  const assistant = useAssistant(filmId, cinema, modifierLaSerie);
+  const episode = episodeDeLaScene(cinema, scene.id);
+  const gestes: GesteDeClaude[] = [
+    { libelle: estUnExemple("consigne", plan.consigne) ? "Écrire l'action avec Claude" : "Réécrire l'action avec Claude", demande: { type: "consigne", episode, plan: plan.id } },
+  ];
+  if (presents.length > 0) {
+    gestes.push({ libelle: plan.replique ? "Autre réplique avec Claude" : "Écrire la réplique avec Claude", demande: { type: "replique", episode, plan: plan.id } });
+  }
 
   return (
     <section className="bloc editeur-plan" aria-label={`Plan ${numero}`}>
@@ -74,6 +86,8 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
       </label>
 
       {presents.length > 0 && <ChampReplique presents={presents} replique={plan.replique} modifierLePlan={modifierLePlan} />}
+
+      <AideDeClaude cinema={cinema} gestes={gestes} etat={assistant.etat} demander={(d) => void assistant.demander(d)} garder={() => assistant.garder()} refuser={assistant.refuser} autre={assistant.autre} />
 
       {suivi?.etat === "pret" && plan.replique && <ControleDeLaReplique key={`${version}-${plan.replique.texte}`} filmId={filmId} planId={plan.id} />}
       {suivi?.etat === "pret" && (

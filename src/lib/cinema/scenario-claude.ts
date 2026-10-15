@@ -18,7 +18,7 @@ export const LONGUEUR_MAX_DU_BRIEF = 2000;
 // Envoie la demande et rend le texte de Claude (remplacé par un faux dans les tests).
 export type AppelerClaude = (agent: ResolvedAgent, systeme: string, message: string) => Promise<{ ok: true; texte: string } | { ok: false; raison: string }>;
 
-const appelerClaude: AppelerClaude = async (agent, systeme, message) => {
+export const appelerClaude: AppelerClaude = async (agent, systeme, message) => {
   let reponse: Response;
   try {
     reponse = await fetch(API_URL, {

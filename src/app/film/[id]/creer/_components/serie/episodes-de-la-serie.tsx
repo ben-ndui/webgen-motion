@@ -5,9 +5,11 @@ import { useState } from "react";
 import { ajouterUnEpisode, ajouterUneScene } from "@/lib/cinema/edition-serie";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import type { DeclinaisonDuFilm } from "../../../../../../../remotion/film/spec";
+import AideDeClaude from "./aide-de-claude";
 import RenduDeLEpisode from "./rendu-de-l-episode";
 import { EPISODES_MAX, SCENES_PAR_EPISODE } from "../../../../../../../remotion/film/cinema/validerCinema";
 import SceneDeLaSerie from "./scene-de-la-serie";
+import { useAssistant } from "./use-assistant";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 
 type Props = {
@@ -28,7 +30,9 @@ type Props = {
 export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer, declinaisons, enregistrer, episodeOuvert }: Props) {
   const [choisi, setChoisi] = useState(episodeOuvert ?? cinema.episodes[0]?.id ?? "");
   const episode = cinema.episodes.find((e) => e.id === choisi) ?? cinema.episodes[0];
+  const assistant = useAssistant(filmId, cinema, modifierLaSerie);
   if (!episode) return null;
+  const gestes = cinema.episodes.length < EPISODES_MAX ? [{ libelle: "Écrire l'épisode suivant avec Claude", demande: { type: "episode-suivant" as const } }] : [];
 
   return (
     <div className="episodes">
@@ -44,6 +48,17 @@ export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesP
           </button>
         )}
       </div>
+
+      <AideDeClaude
+        cinema={cinema}
+        gestes={gestes}
+        etat={assistant.etat}
+        demander={(d) => void assistant.demander(d)}
+        garder={() => assistant.garder((c) => setChoisi(c.episodes.at(-1)?.id ?? episode.id))}
+        refuser={assistant.refuser}
+        autre={assistant.autre}
+        avecRappel
+      />
 
       <label className="champ titre-episode">
         <span className="champ-question">Titre de l&apos;épisode</span>
