@@ -20,7 +20,7 @@ import {
 const FFPROBE_BIN = process.env.WEBGEN_FFPROBE_BIN || "ffprobe";
 
 /** Durée d'un média en secondes — null si ffprobe échoue. */
-function probeDurationSec(absPath: string): number | null {
+export function probeDurationSec(absPath: string): number | null {
   const r = spawnSync(
     FFPROBE_BIN,
     [

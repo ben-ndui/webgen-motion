@@ -140,6 +140,7 @@ payer plus ; un épisode, ce sont des plans tous différents.
 | 3 ✅ | Étape « Ta série » de l'assistant : casting, épisodes, scènes, pellicule, génération, états | Tests de composants + vérification réelle à 1440 et 390 px (pas d'outil E2E dans le dépôt) |
 | 4 ✅ | Découpe des plans + rendu Remotion de l'épisode (coupes, fondus, musique, incrustations, fin sur le logo) + contrôle des répliques | Rendu réel d'un épisode, contrôle image par image |
 | 5 ✅ | Claude écrit le scénario depuis le brief de la cliente ; photo réelle du produit animée | Unitaires + un épisode réel |
+| 6 🟡 | Export de l'épisode en timeline `.otio` (DaVinci Resolve, Premiere) : plans et découpes, fondus enchaînés, son des plans, musique repérée sous les répliques, logo repris du rendu | Unitaires + mutations + épisode réel relu par la lib officielle OpenTimelineIO ; **import réel dans Resolve à faire** |
 
 Les appels réels à Google ne se font qu'en recette (ils coûtent) ; les tests
 automatiques tournent sur un faux Google local qui rejoue la forme exacte des

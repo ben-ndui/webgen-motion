@@ -7,13 +7,10 @@ import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "../marque/direction";
 import { FournisseurDeMarque } from "../marque/MarqueDuFilm";
 import { usePolice } from "../marque/police";
 import { CalquesDeVerite } from "./CalquesDeVerite";
-import { FONDU_VERS_LE_LOGO, type Morceau, monterLEpisode } from "./montage";
+import { FONDU_DE_LA_MUSIQUE, FONDU_VERS_LE_LOGO, MUSIQUE_SOUS_UNE_REPLIQUE, type Morceau, monterLEpisode } from "./montage";
 
 export type ProprietesDeLEpisode = ProprietesDuFilm & { episode: string };
 
-// La musique sous une réplique : assez basse pour qu'on comprenne chaque mot.
-const MUSIQUE_SOUS_UNE_REPLIQUE = 0.25;
-const FONDU_DE_LA_MUSIQUE = 45;
 
 function MorceauDePlan({ morceau }: { morceau: Morceau }) {
   const image = useCurrentFrame();

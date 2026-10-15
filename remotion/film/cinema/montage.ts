@@ -9,6 +9,10 @@ export const FONDU_ENTRE_SCENES = 12;
 export const FONDU_VERS_LE_LOGO = 15;
 // Le logo se construit sur deux mesures de la musique (comme dans la bibliothèque).
 export const MESURES_DU_LOGO = 2;
+// La musique sous une réplique : assez basse pour qu'on comprenne chaque mot.
+export const MUSIQUE_SOUS_UNE_REPLIQUE = 0.25;
+// Fondu de sortie de la musique, en images.
+export const FONDU_DE_LA_MUSIQUE = 45;
 
 /** Un morceau de plan posé sur la timeline de l'épisode. */
 export type Morceau = {

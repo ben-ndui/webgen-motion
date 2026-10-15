@@ -67,6 +67,8 @@
 .gm-film .rendu-ligne .film-btn { align-self: flex-start; }
 .gm-film .rendu-ligne ul { margin: 4px 0 0; padding-left: 18px; }
 .gm-film .rendu-video { width: min(100%, 320px); aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
+.gm-film .export-montage { display: flex; flex-direction: column; gap: var(--s-2); }
+.gm-film .export-montage code { word-break: break-all; font-size: 0.9em; }
 
 /* La découpe d'un plan prêt */
 .gm-film .decoupe { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
