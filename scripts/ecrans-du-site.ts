@@ -18,10 +18,10 @@ import { languesDuFilm } from "../src/lib/film-fiche-depart";
 import { chargerFilm } from "../src/lib/film-loader";
 import { estNomSur, getFilmPublicDir } from "../src/lib/film-store";
 import { extractJsonBlock } from "../src/lib/llm-providers/anthropic";
-import { GROUPES, type GroupeDEcrans, type PageDuSite, attentesDuGroupe, casesDuGroupe, demandeDeChoix, lireLeChoix } from "../src/lib/site/choix-des-pages";
+import { GROUPES, type GroupeDEcrans, type PageDuSite, attentesDuGroupe, casesDuGroupe, demandeDeChoix, lireLeChoix, pagesQuiDefilent, titresLisibles } from "../src/lib/site/choix-des-pages";
 import { filmerLesCases } from "../src/lib/site/filmer-les-cases";
 import { lireLaPage } from "../src/lib/site/lecture-du-site";
-import { lancerLeNavigateur, ouvrir } from "../src/lib/site/navigateur-du-site";
+import { ecransDisponibles, lancerLeNavigateur, ouvrir } from "../src/lib/site/navigateur-du-site";
 import { adresseLisible, liensUtiles, normaliserLAdresse } from "../src/lib/site/pages-du-site";
 import { ecrirePropositions, lirePropositions } from "../src/lib/site/propositions-store";
 
@@ -78,7 +78,22 @@ async function principal(): Promise<void> {
       const pages: PageDuSite[] = [];
       for (const page of [{ url, titre: "Accueil" }, ...liensUtiles(lecture.liens).map((l) => ({ url: l.url, titre: l.texte || new URL(l.url).pathname }))]) {
         // Le même lien deux fois (menu et pied de page) : une seule ligne pour Claude.
-        if (!pages.some((p) => p.url.replace(/\/$/, "") === page.url.replace(/\/$/, "")) && pages.length < 30) pages.push(page);
+        // Mesurer chaque page coûte quelques secondes : douze au plus pour le moment clé.
+        const plafond = groupe === "moments" ? 12 : 30;
+        if (!pages.some((p) => p.url.replace(/\/$/, "") === page.url.replace(/\/$/, "")) && pages.length < plafond) pages.push(page);
+      }
+      pages.splice(0, pages.length, ...titresLisibles(pages));
+      // Le moment clé a besoin d'une page qui défile : on mesure, et seules celles-là vont à Claude.
+      if (groupe === "moments") {
+        for (const [i, page] of pages.entries()) {
+          phase(`On mesure les pages au téléphone (${i + 1}/${pages.length})…`);
+          const ouverte = await ouvrir(navigateur, page.url, "telephone").catch(() => null);
+          page.ecrans = ouverte ? await ecransDisponibles(ouverte).catch(() => 0) : 0;
+          await ouverte?.close();
+        }
+        const defilent = pagesQuiDefilent(pages);
+        if (defilent.length === 0) refuser("Aucune page de ton site ne défile au téléphone : le moment clé resterait figé. Dépose ses captures à la main.");
+        pages.splice(0, pages.length, ...defilent);
       }
       phase("Claude choisit les pages…");
       const nombre = casesDuGroupe(spec, groupe);

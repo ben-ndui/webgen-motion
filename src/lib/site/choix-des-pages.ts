@@ -9,7 +9,9 @@ import type { FilmSpec, Langue } from "../../../remotion/film/spec";
 export const GROUPES = ["parcours", "moments", "preuve"] as const;
 export type GroupeDEcrans = (typeof GROUPES)[number];
 
-export type PageDuSite = { url: string; titre: string };
+// `ecrans` : la hauteur de la page au téléphone, en écrans de défilement
+// (mesurée pour le moment clé, qui a besoin d'une page qui bouge).
+export type PageDuSite = { url: string; titre: string; ecrans?: number };
 export type CaseChoisie = { case: number; url: string; titre: string; raison: string };
 export type ChoixDesPages = { groupe: GroupeDEcrans; cases: CaseChoisie[]; pages: PageDuSite[] };
 
@@ -36,7 +38,8 @@ export function demandeDeChoix(
     "- The reason is one short sentence in FRENCH, addressed to the site owner (tutoiement).",
     'Answer with ONE JSON object and nothing else: {"cases": [{"case": slot number, "page": page number, "raison": string}]}',
   ].join("\n");
-  const liste = pages.map((p, i) => `${i + 1}. ${p.titre} — ${p.url}`).join("\n");
+  const hauteur = (p: PageDuSite) => (p.ecrans === undefined ? "" : ` (${p.ecrans + 1} screens tall on a phone)`);
+  const liste = pages.map((p, i) => `${i + 1}. ${p.titre} — ${p.url}${hauteur(p)}`).join("\n");
   const cases = attentes.map((a, i) => `Slot ${i + 1}: ${a}`).join("\n");
   const ecartees = aEviter.length > 0 ? `\n\nAlready proposed and rejected by the user, choose differently where you can:\n${aEviter.map((u) => `- ${u}`).join("\n")}` : "";
   return { systeme, message: `Brand: ${marque}\n\nPages of the site:\n${liste}\n\nSlots to fill:\n${cases}${ecartees}` };
@@ -63,4 +66,27 @@ export function lireLeChoix(groupe: GroupeDEcrans, pages: PageDuSite[], nombreDe
 /** Le nombre de pages à choisir : une par case du parcours, une seule sinon. */
 export function casesDuGroupe(fiche: FilmSpec, groupe: GroupeDEcrans): number {
   return groupe === "parcours" ? fiche.ecrans.parcours.length : 1;
+}
+
+/**
+ * Le moment clé est filmé en faisant défiler UNE page : seules celles qui
+ * défilent au téléphone peuvent le porter. Recette du 15/10 : Claude avait
+ * choisi un accueil plein écran (0 défilement) et le filmage échouait.
+ */
+export function pagesQuiDefilent(pages: PageDuSite[]): PageDuSite[] {
+  return pages.filter((page) => (page.ecrans ?? 0) >= 1);
+}
+
+/**
+ * Un titre qui se répète (« En savoir plus » sur cinq liens) ne dit rien :
+ * on y ajoute le nom de la page tiré de l'adresse (« En savoir plus (chef) »).
+ */
+export function titresLisibles(pages: PageDuSite[]): PageDuSite[] {
+  const compte = new Map<string, number>();
+  for (const page of pages) compte.set(page.titre, (compte.get(page.titre) ?? 0) + 1);
+  return pages.map((page) => {
+    if ((compte.get(page.titre) ?? 0) < 2) return page;
+    const segment = new URL(page.url).pathname.split("/").filter(Boolean).at(-1)?.replace(/\.html?$/, "") ?? "";
+    return segment ? { ...page, titre: `${page.titre} (${decodeURIComponent(segment).replace(/[-_]/g, " ")})` } : page;
+  });
 }

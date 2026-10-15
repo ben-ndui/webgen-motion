@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ficheValide } from "../film-fixtures.test-utils";
-import { attentesDuGroupe, casesDuGroupe, demandeDeChoix, lireLeChoix, type PageDuSite } from "./choix-des-pages";
+import { attentesDuGroupe, casesDuGroupe, demandeDeChoix, lireLeChoix, type PageDuSite, pagesQuiDefilent, titresLisibles } from "./choix-des-pages";
 
 const PAGES: PageDuSite[] = [
   { url: "https://maison.fr/", titre: "Accueil" },
@@ -55,5 +55,26 @@ describe("choix des pages par Claude", () => {
     expect(casesDuGroupe(fiche, "parcours")).toBe(fiche.ecrans.parcours.length);
     expect(casesDuGroupe(fiche, "moments")).toBe(1);
     expect(casesDuGroupe(fiche, "preuve")).toBe(1);
+  });
+
+  it("le moment clé : seules les pages qui défilent au téléphone, et Claude voit leur hauteur", () => {
+    // Recette du 15/10 sur restaurant-epicentre.com : l'accueil plein écran ne défile pas.
+    const mesurees: PageDuSite[] = [
+      { url: "https://epicentre.com/", titre: "Accueil", ecrans: 0 },
+      { url: "https://epicentre.com/chef.html", titre: "Chef", ecrans: 2 },
+      { url: "https://epicentre.com/presse.html", titre: "Presse", ecrans: 9 },
+    ];
+    const defilent = pagesQuiDefilent(mesurees);
+    expect(defilent.map((p) => p.titre)).toEqual(["Chef", "Presse"]);
+    expect(demandeDeChoix("Épicentre", defilent, ["x"]).message).toContain("1. Chef — https://epicentre.com/chef.html (3 screens tall on a phone)");
+  });
+
+  it("un titre répété reçoit le nom de sa page, un titre unique ne bouge pas", () => {
+    const pages = titresLisibles([
+      { url: "https://epicentre.com/", titre: "Accueil" },
+      { url: "https://epicentre.com/chef.html", titre: "En savoir plus" },
+      { url: "https://epicentre.com/nos-producteurs/", titre: "En savoir plus" },
+    ]);
+    expect(pages.map((p) => p.titre)).toEqual(["Accueil", "En savoir plus (chef)", "En savoir plus (nos producteurs)"]);
   });
 });
