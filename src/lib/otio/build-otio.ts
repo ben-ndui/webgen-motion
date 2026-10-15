@@ -14,9 +14,7 @@
  * (/api/motion/tour/export/otio) lisent les artefacts et écrivent le
  * fichier.
  *
- * Couverture schéma (vérifiée contre la sérialisation OTIO 0.15+) :
- *   Timeline.1 / Stack.1 / Track.1 / Clip.2 / Gap.1 /
- *   ExternalReference.1 / TimeRange.1 / RationalTime.1 / Marker.2
+ * Les briques OTIO (types, clip, gap, marker…) vivent dans elements.ts.
  *
  * Ce qui transfère : cuts, positions, trims, pistes audio, markers.
  * Ce qui reste côté Remotion (documenté via markers GAP) : intro /
@@ -24,90 +22,19 @@
  * frames, sous-titres — les NLE ne peuvent pas rejouer du React.
  */
 
-// ── Types OTIO (sous-ensemble utilisé) ────────────────────────────
+import {
+  type OtioMarker,
+  type OtioTimeline,
+  type OtioTrack,
+  type OtioTrackChild,
+  clip,
+  gap,
+  marker,
+  timeline,
+  track,
+} from "./elements";
 
-interface OtioRationalTime {
-  OTIO_SCHEMA: "RationalTime.1";
-  rate: number;
-  value: number;
-}
-
-interface OtioTimeRange {
-  OTIO_SCHEMA: "TimeRange.1";
-  duration: OtioRationalTime;
-  start_time: OtioRationalTime;
-}
-
-interface OtioMarker {
-  OTIO_SCHEMA: "Marker.2";
-  metadata: Record<string, unknown>;
-  name: string;
-  color: string;
-  marked_range: OtioTimeRange;
-  comment: string;
-}
-
-interface OtioExternalReference {
-  OTIO_SCHEMA: "ExternalReference.1";
-  metadata: Record<string, unknown>;
-  name: string;
-  available_range: OtioTimeRange | null;
-  available_image_bounds: null;
-  target_url: string;
-}
-
-interface OtioClip {
-  OTIO_SCHEMA: "Clip.2";
-  metadata: Record<string, unknown>;
-  name: string;
-  source_range: OtioTimeRange;
-  effects: unknown[];
-  markers: OtioMarker[];
-  enabled: boolean;
-  media_references: Record<string, OtioExternalReference>;
-  active_media_reference_key: string;
-}
-
-interface OtioGap {
-  OTIO_SCHEMA: "Gap.1";
-  metadata: Record<string, unknown>;
-  name: string;
-  source_range: OtioTimeRange;
-  effects: unknown[];
-  markers: OtioMarker[];
-  enabled: boolean;
-}
-
-type OtioTrackChild = OtioClip | OtioGap;
-
-interface OtioTrack {
-  OTIO_SCHEMA: "Track.1";
-  metadata: Record<string, unknown>;
-  name: string;
-  source_range: null;
-  effects: unknown[];
-  markers: OtioMarker[];
-  enabled: boolean;
-  children: OtioTrackChild[];
-  kind: "Video" | "Audio";
-}
-
-export interface OtioTimeline {
-  OTIO_SCHEMA: "Timeline.1";
-  metadata: Record<string, unknown>;
-  name: string;
-  global_start_time: OtioRationalTime;
-  tracks: {
-    OTIO_SCHEMA: "Stack.1";
-    metadata: Record<string, unknown>;
-    name: string;
-    source_range: null;
-    effects: unknown[];
-    markers: OtioMarker[];
-    enabled: boolean;
-    children: OtioTrack[];
-  };
-}
+export type { OtioTimeline } from "./elements";
 
 // ── Inputs du builder ─────────────────────────────────────────────
 
@@ -151,105 +78,6 @@ export interface OtioExportInputs {
   voiceoverDurationSec: number | null;
   bgMusicPathAbs: string | null;
   bgMusicDurationSec: number | null;
-}
-
-// ── Helpers ───────────────────────────────────────────────────────
-
-function rt(fps: number, sec: number): OtioRationalTime {
-  return { OTIO_SCHEMA: "RationalTime.1", rate: fps, value: Math.round(sec * fps) };
-}
-
-function range(fps: number, startSec: number, durSec: number): OtioTimeRange {
-  return {
-    OTIO_SCHEMA: "TimeRange.1",
-    start_time: rt(fps, startSec),
-    duration: rt(fps, Math.max(0, durSec)),
-  };
-}
-
-function marker(
-  fps: number,
-  name: string,
-  atSec: number,
-  color: string,
-  comment = "",
-): OtioMarker {
-  return {
-    OTIO_SCHEMA: "Marker.2",
-    metadata: {},
-    name,
-    color,
-    marked_range: range(fps, atSec, 0),
-    comment,
-  };
-}
-
-function gap(fps: number, durSec: number, name: string, markers: OtioMarker[] = []): OtioGap {
-  return {
-    OTIO_SCHEMA: "Gap.1",
-    metadata: {},
-    name,
-    source_range: range(fps, 0, durSec),
-    effects: [],
-    markers,
-    enabled: true,
-  };
-}
-
-function fileUrl(absPath: string): string {
-  // encodeURI préserve les "/" mais encode espaces / accents — le
-  // format attendu par Resolve pour les target_url file://.
-  return "file://" + encodeURI(absPath);
-}
-
-function clip(
-  fps: number,
-  name: string,
-  mediaPathAbs: string,
-  srcInSec: number,
-  durSec: number,
-  mediaDurationSec: number | null,
-  markers: OtioMarker[] = [],
-): OtioClip {
-  return {
-    OTIO_SCHEMA: "Clip.2",
-    metadata: {},
-    name,
-    source_range: range(fps, srcInSec, durSec),
-    effects: [],
-    markers,
-    enabled: true,
-    media_references: {
-      DEFAULT_MEDIA: {
-        OTIO_SCHEMA: "ExternalReference.1",
-        metadata: {},
-        name: mediaPathAbs.split("/").pop() ?? name,
-        available_range:
-          mediaDurationSec !== null ? range(fps, 0, mediaDurationSec) : null,
-        available_image_bounds: null,
-        target_url: fileUrl(mediaPathAbs),
-      },
-    },
-    active_media_reference_key: "DEFAULT_MEDIA",
-  };
-}
-
-function track(
-  kind: "Video" | "Audio",
-  name: string,
-  children: OtioTrackChild[],
-): OtioTrack {
-  return {
-    OTIO_SCHEMA: "Track.1",
-    metadata: {},
-    name,
-    source_range: null,
-    effects: [],
-    markers: [],
-    enabled: true,
-    children,
-    kind,
-  };
 }
 
 // ── Builder ───────────────────────────────────────────────────────
@@ -395,25 +223,5 @@ export function buildOtioTimeline(inputs: OtioExportInputs): OtioTimeline {
   if (voChildren.length > 0) tracks.push(track("Audio", "Voix off", voChildren));
   if (musicChildren.length > 0) tracks.push(track("Audio", "Musique", musicChildren));
 
-  return {
-    OTIO_SCHEMA: "Timeline.1",
-    metadata: {
-      "gen-motion": {
-        generator: "GEN MOTION (webgen-motion) — Studio Edition",
-        tour: inputs.tourName,
-      },
-    },
-    name: inputs.tourName,
-    global_start_time: rt(fps, 0),
-    tracks: {
-      OTIO_SCHEMA: "Stack.1",
-      metadata: {},
-      name: "tracks",
-      source_range: null,
-      effects: [],
-      markers: [],
-      enabled: true,
-      children: tracks,
-    },
-  };
+  return timeline(fps, inputs.tourName, { tour: inputs.tourName }, tracks);
 }

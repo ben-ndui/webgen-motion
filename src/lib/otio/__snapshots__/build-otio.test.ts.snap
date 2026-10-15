@@ -1,0 +1,484 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildOtioTimeline — vidéos produit > produit exactement la même timeline qu'avant le découpage 1`] = `
+{
+  "OTIO_SCHEMA": "Timeline.1",
+  "global_start_time": {
+    "OTIO_SCHEMA": "RationalTime.1",
+    "rate": 30,
+    "value": 0,
+  },
+  "metadata": {
+    "gen-motion": {
+      "generator": "GEN MOTION (webgen-motion) — Studio Edition",
+      "tour": "Démo produit",
+    },
+  },
+  "name": "Démo produit",
+  "tracks": {
+    "OTIO_SCHEMA": "Stack.1",
+    "children": [
+      {
+        "OTIO_SCHEMA": "Track.1",
+        "children": [
+          {
+            "OTIO_SCHEMA": "Gap.1",
+            "effects": [],
+            "enabled": true,
+            "markers": [
+              {
+                "OTIO_SCHEMA": "Marker.2",
+                "color": "PURPLE",
+                "comment": "",
+                "marked_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "Intro card — rendue par GEN MOTION (Remotion)",
+              },
+            ],
+            "metadata": {},
+            "name": "Intro",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 66,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Clip.2",
+            "active_media_reference_key": "DEFAULT_MEDIA",
+            "effects": [],
+            "enabled": true,
+            "markers": [
+              {
+                "OTIO_SCHEMA": "Marker.2",
+                "color": "GREEN",
+                "comment": "Frontière calée par l'Edit Engine sur la musique",
+                "marked_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 194,
+                  },
+                },
+                "metadata": {},
+                "name": "Cut snappé sur un beat",
+              },
+            ],
+            "media_references": {
+              "DEFAULT_MEDIA": {
+                "OTIO_SCHEMA": "ExternalReference.1",
+                "available_image_bounds": null,
+                "available_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 210,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "section 01.mp4",
+                "target_url": "file:///tmp/tours/demo/section%2001.mp4",
+              },
+            },
+            "metadata": {},
+            "name": "Accueil",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 180,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 15,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Gap.1",
+            "effects": [],
+            "enabled": true,
+            "markers": [
+              {
+                "OTIO_SCHEMA": "Marker.2",
+                "color": "PURPLE",
+                "comment": "",
+                "marked_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "Splash card "Panier" — rendue par GEN MOTION",
+              },
+            ],
+            "metadata": {},
+            "name": "Splash — Panier",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 45,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Clip.2",
+            "active_media_reference_key": "DEFAULT_MEDIA",
+            "effects": [],
+            "enabled": true,
+            "markers": [],
+            "media_references": {
+              "DEFAULT_MEDIA": {
+                "OTIO_SCHEMA": "ExternalReference.1",
+                "available_image_bounds": null,
+                "available_range": null,
+                "metadata": {},
+                "name": "section-02.mp4",
+                "target_url": "file:///tmp/tours/demo/section-02.mp4",
+              },
+            },
+            "metadata": {},
+            "name": "Panier",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 120,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Gap.1",
+            "effects": [],
+            "enabled": true,
+            "markers": [
+              {
+                "OTIO_SCHEMA": "Marker.2",
+                "color": "YELLOW",
+                "comment": "",
+                "marked_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "Extension freeze "Panier" — dernier frame gelé par GEN MOTION pour loger la narration",
+              },
+            ],
+            "metadata": {},
+            "name": "Freeze — Panier",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 60,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Gap.1",
+            "effects": [],
+            "enabled": true,
+            "markers": [
+              {
+                "OTIO_SCHEMA": "Marker.2",
+                "color": "PURPLE",
+                "comment": "",
+                "marked_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "Outro card — rendue par GEN MOTION (Remotion)",
+              },
+            ],
+            "metadata": {},
+            "name": "Outro",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 66,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+        ],
+        "effects": [],
+        "enabled": true,
+        "kind": "Video",
+        "markers": [],
+        "metadata": {},
+        "name": "Sections",
+        "source_range": null,
+      },
+      {
+        "OTIO_SCHEMA": "Track.1",
+        "children": [
+          {
+            "OTIO_SCHEMA": "Gap.1",
+            "effects": [],
+            "enabled": true,
+            "markers": [],
+            "metadata": {},
+            "name": "‧",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 60,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Clip.2",
+            "active_media_reference_key": "DEFAULT_MEDIA",
+            "effects": [],
+            "enabled": true,
+            "markers": [],
+            "media_references": {
+              "DEFAULT_MEDIA": {
+                "OTIO_SCHEMA": "ExternalReference.1",
+                "available_image_bounds": null,
+                "available_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 180,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "voiceover.mp3",
+                "target_url": "file:///tmp/tours/demo/voiceover.mp3",
+              },
+            },
+            "metadata": {},
+            "name": "Voix off",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 90,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+          {
+            "OTIO_SCHEMA": "Clip.2",
+            "active_media_reference_key": "DEFAULT_MEDIA",
+            "effects": [],
+            "enabled": true,
+            "markers": [],
+            "media_references": {
+              "DEFAULT_MEDIA": {
+                "OTIO_SCHEMA": "ExternalReference.1",
+                "available_image_bounds": null,
+                "available_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 180,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "voiceover.mp3",
+                "target_url": "file:///tmp/tours/demo/voiceover.mp3",
+              },
+            },
+            "metadata": {},
+            "name": "Voix off",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 60,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 105,
+              },
+            },
+          },
+        ],
+        "effects": [],
+        "enabled": true,
+        "kind": "Audio",
+        "markers": [],
+        "metadata": {},
+        "name": "Voix off",
+        "source_range": null,
+      },
+      {
+        "OTIO_SCHEMA": "Track.1",
+        "children": [
+          {
+            "OTIO_SCHEMA": "Clip.2",
+            "active_media_reference_key": "DEFAULT_MEDIA",
+            "effects": [],
+            "enabled": true,
+            "markers": [],
+            "media_references": {
+              "DEFAULT_MEDIA": {
+                "OTIO_SCHEMA": "ExternalReference.1",
+                "available_image_bounds": null,
+                "available_range": {
+                  "OTIO_SCHEMA": "TimeRange.1",
+                  "duration": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 3600,
+                  },
+                  "start_time": {
+                    "OTIO_SCHEMA": "RationalTime.1",
+                    "rate": 30,
+                    "value": 0,
+                  },
+                },
+                "metadata": {},
+                "name": "été.mp3",
+                "target_url": "file:///tmp/musique/%C3%A9t%C3%A9.mp3",
+              },
+            },
+            "metadata": {},
+            "name": "Musique",
+            "source_range": {
+              "OTIO_SCHEMA": "TimeRange.1",
+              "duration": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 537,
+              },
+              "start_time": {
+                "OTIO_SCHEMA": "RationalTime.1",
+                "rate": 30,
+                "value": 0,
+              },
+            },
+          },
+        ],
+        "effects": [],
+        "enabled": true,
+        "kind": "Audio",
+        "markers": [],
+        "metadata": {},
+        "name": "Musique",
+        "source_range": null,
+      },
+    ],
+    "effects": [],
+    "enabled": true,
+    "markers": [],
+    "metadata": {},
+    "name": "tracks",
+    "source_range": null,
+  },
+}
+`;
