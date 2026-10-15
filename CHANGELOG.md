@@ -7,6 +7,57 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-10-15
+
+**La release « Film de marque et série »** : GEN MOTION ne filme plus
+seulement ton produit, il fait le film de ta marque à partir de l'adresse
+de ton site, et ta série courte générée par IA, avec Claude à chaque étape.
+
+### Added
+
+- **Film de marque** (Studio) : colle l'adresse de ton site, GEN MOTION le
+  filme, repère ton logo, tes couleurs et ta police, et Claude propose les
+  textes. Le film sort en 16:9 et en 9:16, en français et en anglais, calé
+  sur ta musique, avec une voix off féminine ou masculine. Trois directions
+  artistiques, des écrans « vivants » (ton vrai site qui défile dans le
+  téléphone) et une bibliothèque de plans pour tes Reels.
+- **Série IA** (Studio) : un casting dont les visages restent les mêmes
+  d'un plan à l'autre, des épisodes, des scènes et des répliques en
+  français, générés plan par plan chez Google (Veo 3.1, avec ta clé, prix
+  affiché avant chaque clic). Claude écrit l'épisode depuis ton brief ou
+  ton site, la photo de ton vrai produit peut être animée, chaque plan se
+  découpe, et l'épisode se monte tout seul (fondus, musique baissée sous les
+  répliques, ton logo pour finir).
+- **Claude à chaque étape** : dans la série, une réplique, l'action d'un
+  plan, les dialogues d'une scène, le plan suivant, l'épisode suivant ; dans
+  « Tes écrans », la page de ton site à filmer pour chaque case. Claude
+  propose, tu gardes ou non, rien n'est remplacé sans ton clic.
+- **Ouvrir le montage dans DaVinci Resolve** (Studio) : la vidéo produit, le
+  film et chaque épisode s'exportent en timeline `.otio`, plans découpés,
+  voix off et musique sur leurs pistes.
+
+### Changed
+
+- **Les quatre styles de montage sont gratuits** : Cinematic et Glitch
+  passent dans Community.
+- **Studio** : 199 € à vie, ou 15 € par mois, ou 120 € par an. Ce que Studio
+  réserve : le film de marque, la série IA, les cadres 3D et l'export vers
+  DaVinci Resolve.
+
+### Fixed
+
+- Un rendu ne dépend plus de ta connexion : la police de ta marque est
+  téléchargée une fois et gardée sur ton ordinateur.
+- Dans l'app installée, tes films sont rangés dans `~/.webgen-motion/fiches`,
+  hors de l'app : ils survivent aux mises à jour.
+
+### Notes
+
+- Les générations IA (vidéos chez Google, textes chez Claude) se paient
+  directement chez eux, avec tes clés, au prix coûtant.
+- Premiere Pro : son import `.otio` est récent et n'a pas été testé ;
+  GEN MOTION ne l'annonce pas encore.
+
 ## [0.6.0] — 2026-09-05
 
 **La release « GEN MOTION »** : l'application s'appelle enfin par son nom de

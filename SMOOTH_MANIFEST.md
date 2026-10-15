@@ -8,7 +8,7 @@ Studio local-first de génération de vidéos motion design : Puppeteer filme un
 - **Repo slug** : `webgen-motion` (préservé rétro-compat git/npm) — GitHub `ben-ndui/webgen-motion`
 - **Branche** : défaut = `main` (Film de marque, directions, assistant « Nouveau film » fusionnés)
 - **Stack** : Next.js 16 (App Router + Turbopack) · React 19 · Tailwind v4 · TypeScript strict · Remotion 4 + `@remotion/three` · Puppeteer 24 · FFmpeg (système) · Tauri 2 (Rust shell) · Stripe v22 · Ed25519 (`node:crypto`) · framer-motion · Geist Sans/Mono · lucide-react
-- **Version** : `package.json` 0.6.0 · licence **FSL-1.1-MIT** (source-available, MIT 2 ans après release)
+- **Version** : `package.json` 0.7.0 · licence **FSL-1.1-MIT** (source-available, MIT 2 ans après release)
 - **Backend cloud** : AUCUN pour le pipeline core (tout local). Vercel ne sert que la vitrine + Stripe. Pas de Firebase/Supabase.
 - **Package local lié** : `smoothandesign-tts` (`file:../smoothandesign_tts`)
 
