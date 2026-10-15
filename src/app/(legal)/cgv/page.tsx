@@ -34,7 +34,7 @@ export default function CGV() {
         {LEGAL.product.editions.studio.scope}.
       </p>
       <p>
-        Le tarif est exprimé en dollars US (USD), toutes taxes incluses pour
+        Le tarif est exprimé en euros (EUR), toutes taxes incluses pour
         les clients européens (TVA collectée par Stripe en mode marketplace
         si applicable). En tant qu&apos;auto-entrepreneur soumis à la
         franchise en base de TVA (art. 293B CGI), {p.tradeName} ne facture

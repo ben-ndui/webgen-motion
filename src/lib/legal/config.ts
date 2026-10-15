@@ -102,7 +102,7 @@ export const LEGAL = {
   },
 
   product: {
-    license: "Open-core MIT",
+    license: "FSL-1.1-MIT (source disponible, chaque version passe sous licence MIT deux ans après sa publication)",
     repo: "https://github.com/ben-ndui/webgen-motion",
     editions: {
       community: {
@@ -110,8 +110,8 @@ export const LEGAL = {
         scope: "Capture E2E, voix off, compose Sober & Energetic, frames 2D, formats 16:9 + 9:16",
       },
       studio: {
-        price: "49 USD (paiement unique, perpétuel)",
-        scope: "Toutes les features Community + frames 3D iPhone/MacBook, presets Cinematic & Glitch, multi-format export, music library, watermark removal",
+        price: "199 € (paiement unique, licence à vie)",
+        scope: "Toutes les fonctionnalités Community, plus les cadres 3D iPhone et MacBook et l'export du montage vers DaVinci Resolve et Premiere ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
       },
       enterprise: {
         price: "Sur devis",
@@ -120,7 +120,7 @@ export const LEGAL = {
     },
   },
 
-  lastUpdated: "17/05/2026",
+  lastUpdated: "15/10/2026",
 } as const;
 
 export type LegalConfig = typeof LEGAL;
