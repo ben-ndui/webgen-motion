@@ -9,6 +9,9 @@
  *   ExternalReference.1 / TimeRange.1 / RationalTime.1 / Marker.2
  */
 
+/** Un fichier sur le disque et sa durée (null si on n'a pas pu la mesurer). */
+export type MediaSurLeDisque = { chemin: string; dureeSec: number | null };
+
 export interface OtioRationalTime {
   OTIO_SCHEMA: "RationalTime.1";
   rate: number;

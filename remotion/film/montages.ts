@@ -6,6 +6,9 @@ export type IdDePlan = "ouverture" | "probleme" | "bascule" | "parcours" | "even
 
 export type PlanDuFilm = Plan & { id: IdDePlan };
 
+// La musique s'éteint sur la dernière mesure : fondu de sortie, en images.
+export const FONDU_FINAL = 60;
+
 // Les deux montages du film, en MESURES de la musique. Un plan a le même
 // contenu dans les deux ; seule sa mise en page suit le cadre (lib/format.ts).
 export type Version = "long" | "court";

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { urlDuRendu } from "@/lib/film-store";
 import type { DeclinaisonDuFilm } from "../../../../../../../remotion/film/spec";
 import { cleDuRendu, useRenduDeFilm } from "../../../_components/use-rendu-de-film";
-import ExportVersLeMontage from "./export-vers-le-montage";
+import ExportVersLeMontage from "../../../_components/export-vers-le-montage";
 
 type Props = {
   filmId: string;
@@ -83,7 +83,12 @@ export default function RenduDeLEpisode({ filmId, episodeId, titre, declinaisons
               </div>
             )}
             {video && <video className="rendu-video" src={video} controls playsInline aria-label={`${titre}, ${LANGUES[declinaison.langue]}`} />}
-            <ExportVersLeMontage filmId={filmId} episodeId={episodeId} declinaison={declinaison.nom} avantDExporter={avantDeRendre} />
+            <ExportVersLeMontage
+              url={`/api/motion/film/${encodeURIComponent(filmId)}/cinema/episodes/${encodeURIComponent(episodeId)}/otio`}
+              declinaison={declinaison.nom}
+              nomDuFichier={`${declinaison.nom}.episode-${episodeId}.otio`}
+              avantDExporter={avantDeRendre}
+            />
           </div>
         );
       })}

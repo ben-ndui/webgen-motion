@@ -8,7 +8,14 @@ function reponse(statut: number, corps: unknown, entetes: Record<string, string>
 }
 
 function afficher(avantDExporter = async () => true) {
-  render(<ExportVersLeMontage filmId="saya" episodeId="ep1" declinaison="Court-FR" avantDExporter={avantDExporter} />);
+  render(
+    <ExportVersLeMontage
+      url="/api/motion/film/saya/cinema/episodes/ep1/otio"
+      declinaison="Court-FR"
+      nomDuFichier="Court-FR.episode-ep1.otio"
+      avantDExporter={avantDExporter}
+    />,
+  );
   fireEvent.click(screen.getByRole("button", { name: /DaVinci Resolve/ }));
 }
 
@@ -30,6 +37,15 @@ describe("ExportVersLeMontage", () => {
     expect(statut).toHaveTextContent("/films/saya/out/Court-FR.episode-ep1.otio");
     expect(statut).not.toHaveTextContent("logo");
     expect(appel).toHaveBeenCalledWith("/api/motion/film/saya/cinema/episodes/ep1/otio", expect.objectContaining({ method: "POST", body: JSON.stringify({ declinaison: "Court-FR" }) }));
+  });
+
+  it("sans précision sur le logo (export du film), ne parle pas de logo", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => reponse(200, "{}")));
+    render(<ExportVersLeMontage url="/api/motion/film/sd/otio" declinaison="Film-FR" nomDuFichier="Film-FR.otio" />);
+    fireEvent.click(screen.getByRole("button", { name: /DaVinci Resolve/ }));
+    const statut = await screen.findByRole("status");
+    expect(statut).toHaveTextContent("Film-FR.otio téléchargé");
+    expect(statut).not.toHaveTextContent("logo");
   });
 
   it("prévient quand le logo manque (épisode pas encore rendu)", async () => {

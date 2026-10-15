@@ -4,6 +4,7 @@ import {
   MUSIQUE_SOUS_UNE_REPLIQUE,
 } from "../../../remotion/film/cinema/montage";
 import {
+  type MediaSurLeDisque,
   type OtioMarker,
   type OtioTimeline,
   type OtioTrackChild,
@@ -30,8 +31,7 @@ import {
  *   l'épisode ; sans rendu, un emplacement repéré le remplace.
  */
 
-/** Un fichier sur le disque et sa durée (null si on n'a pas pu la mesurer). */
-export type MediaSurLeDisque = { chemin: string; dureeSec: number | null };
+export type { MediaSurLeDisque } from "./elements";
 
 export type EntreeDeLEpisode = {
   nom: string;

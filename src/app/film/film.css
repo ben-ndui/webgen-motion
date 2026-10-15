@@ -63,3 +63,8 @@
 .gm-film .film-player { width: 100%; border-radius: var(--r-md); background: #000; }
 .gm-film .film-player-court { max-height: 480px; object-fit: contain; }
 .gm-film a.film-btn { display: inline-flex; align-items: center; text-decoration: none; width: fit-content; }
+
+/* Export vers DaVinci Resolve (.otio), sous un rendu de film ou d'épisode. */
+.gm-film .export-montage { display: flex; flex-direction: column; gap: var(--s-2); }
+.gm-film .export-montage .film-btn { align-self: flex-start; }
+.gm-film .export-montage code { word-break: break-all; font-size: 0.9em; }

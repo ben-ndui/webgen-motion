@@ -9,7 +9,7 @@ import { FournisseurDeMarque } from "./marque/MarqueDuFilm";
 import { DIRECTION_PAR_DEFAUT, fondDuFilm } from "./marque/direction";
 import { usePolice } from "./marque/police";
 import { IMAGES_PAR_SECONDE, imageDuTemps, placerLesPlans } from "./lib/tempo";
-import { type IdDePlan, MONTAGES } from "./montages";
+import { FONDU_FINAL, type IdDePlan, MONTAGES } from "./montages";
 import { P1Ouverture } from "./plans/P1Ouverture";
 import { P2Probleme } from "./plans/P2Probleme";
 import { P3Bascule } from "./plans/P3Bascule";
@@ -28,8 +28,6 @@ export type ProprietesDuFilm = {
 
 // Durée d'un glissement, en temps de la musique : deux temps, environ 1 s.
 const TEMPS_DE_GLISSEMENT = 2;
-// La musique s'éteint sur la dernière mesure.
-const FONDU_FINAL = 60;
 
 export function FilmPrincipal({ spec, declinaison }: ProprietesDuFilm) {
   const police = usePolice(spec.marque.police);
