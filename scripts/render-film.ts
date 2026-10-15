@@ -29,6 +29,7 @@ import { POIDS_MINIMUM_D_UN_RENDU } from "../src/lib/film-etat";
 import { chargerFilm } from "../src/lib/film-loader";
 import { type RenduPrepare, preparerRendu } from "../src/lib/film-rendu";
 import { estNomSur } from "../src/lib/film-store";
+import { garderLaPolice } from "../src/lib/polices-locales";
 import { descendantsDe } from "../src/lib/process-tree";
 
 function argument(drapeau: string): string | undefined {
@@ -227,6 +228,13 @@ async function principal(): Promise<void> {
     }
     rendus.push(preparation);
   }
+
+  // La police de la marque, gardée sur l'ordinateur : le rendu ne dépend plus
+  // de la connexion (15/10/2026 : une coupure faisait échouer tout le film).
+  const famille = fiche.spec.marque.police;
+  const police = await garderLaPolice(famille, rendus[0]!.dossierPublic);
+  if (!police.ok && police.horsLigne) arreter(police.raison);
+  console.log(police.ok ? `  Police : ${famille}, sur l'ordinateur${police.telecharges > 0 ? " (téléchargée)" : ""}` : `  Police : ${police.raison}`);
 
   const cheminNavigateur = await navigateur();
   console.log(`  Navigateur du rendu : ${cheminNavigateur ?? "chrome-headless-shell (Remotion)"}`);

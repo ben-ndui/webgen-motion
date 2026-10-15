@@ -113,6 +113,7 @@ npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]   # san
 ```
 
 ## Pièges
+- **Police du film HORS LIGNE** (15/10/2026) : le rendu chargeait la police depuis Google Fonts À CHAQUE rendu → une coupure = « Rendu Remotion en échec ». Désormais `scripts/render-film.ts` appelle `garderLaPolice` (`src/lib/polices-locales.ts`) : fichiers woff2 téléchargés UNE fois dans `~/.webgen-motion/polices/`, copiés dans `public/polices/<famille>/` + `police.json` ; `usePolice` (`remotion/film/marque/police.ts`) lit d'abord cette copie, Google seulement en secours (aperçu, Studio). Jamais téléchargée + hors ligne → refus clair avant le rendu.
 
 - **`npm run build` avant push** : vitest/lint ne type-checkent pas ; un build rouge fige la prod Vercel en silence. Vérifier les routes par curl.
 - **Tests au fur et à mesure** (convention S&D) : Vitest+RTL posés, tester phase par phase, `npm test` avant push. Rien poussé sans OK explicite de Ben sur les chantiers UI/exploratoires.

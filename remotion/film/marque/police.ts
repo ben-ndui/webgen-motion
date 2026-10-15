@@ -1,54 +1,61 @@
 import { useEffect, useState } from "react";
-import { cancelRender, continueRender, delayRender } from "remotion";
+import { cancelRender, continueRender, delayRender, staticFile } from "remotion";
 import { getAvailableFonts } from "@remotion/google-fonts";
 
-// 300 pour un logotype léger (glyphe), 400 et 500 pour les phrases du film,
-// 600 pour un mot-symbole ; 200 et 800 pour les directions artistiques
-// (nocturne fin, éditorial gras). Une police qui n'a pas une graisse s'en passe.
-const GRAISSES = ["200", "300", "400", "500", "600", "800"];
+import { type FichiersDeLaPolice, GRAISSES, type ManifesteDePolice, jeuxDeCaracteres, manifesteDeLaPolice } from "./police-locale";
+
+export { jeuxDeCaracteres } from "./police-locale";
 
 /**
- * Charge une police Google Fonts PAR SON NOM (celui de la fiche du film), et
- * retient le rendu tant qu'elle n'est pas prête : sans `delayRender`, les
- * premières images partiraient dans la police de secours du navigateur.
+ * La police gardée sur l'ordinateur (posée dans public/ par le script de
+ * rendu) : déclarée face par face, sans toucher au réseau. Rend faux si elle
+ * n'a jamais été téléchargée.
+ */
+async function chargerLaPoliceLocale(famille: string): Promise<boolean> {
+  const reponse = await fetch(staticFile(manifesteDeLaPolice(famille))).catch(() => null);
+  if (!reponse?.ok) return false;
+  const manifeste = (await reponse.json()) as ManifesteDePolice;
+  if (manifeste.famille !== famille || manifeste.faces.length === 0) return false;
+  await Promise.all(
+    manifeste.faces.map(async (face) => {
+      const police = new FontFace(famille, `url(${staticFile(face.fichier)}) format("woff2")`, { weight: face.graisse, unicodeRange: face.plage || undefined });
+      document.fonts.add(await police.load());
+    }),
+  );
+  return true;
+}
+
+/** Le secours : Google Fonts, qui demande une connexion pendant le rendu. */
+async function chargerDepuisGoogle(famille: string): Promise<void> {
+  const trouvee = getAvailableFonts().find((police) => police.fontFamily === famille);
+  if (!trouvee) throw new Error(`Police « ${famille} » absente de Google Fonts : corriger marque.police.`);
+  const police = await trouvee.load();
+  const info = police.getInfo();
+  const fichiers = (info.fonts.normal ?? {}) as FichiersDeLaPolice;
+  const graisses = GRAISSES.filter((graisse) => graisse in fichiers);
+  const subsets = jeuxDeCaracteres(fichiers, graisses, info.subsets);
+  await police.loadFont("normal", { weights: graisses, subsets }).waitUntilDone();
+}
+
+/**
+ * Charge la police du film PAR SON NOM (celui de la fiche), et retient le
+ * rendu tant qu'elle n'est pas prête : sans `delayRender`, les premières
+ * images partiraient dans la police de secours du navigateur.
  *
+ * D'abord la copie gardée sur l'ordinateur : une coupure de connexion en
+ * plein rendu faisait échouer tout le film (15/10/2026). Google Fonts ne
+ * sert que si la police n'a jamais été téléchargée (aperçu, Remotion Studio).
  * Le chargement est dynamique parce que la police est une DONNÉE : un import
  * statique (`@remotion/google-fonts/Jost`) figerait la marque dans le code.
  */
-// Ce qu'on voudrait charger : le latin, et le latin étendu (œ, ł, ő…).
-const JEUX_VOULUS = ["latin", "latin-ext"];
-
-type FichiersDeLaPolice = Record<string, Record<string, string> | undefined>;
-
-/**
- * Les jeux de caractères à demander : ceux que la police a pour TOUTES les
- * graisses chargées. Italiana n'a pas de latin étendu : le demander faisait
- * échouer tout le rendu (« subset: latin-ext is not available », 11/10/2026).
- * Une police sans latin du tout (cyrillique seul…) garde ses propres jeux.
- */
-export function jeuxDeCaracteres(fichiers: FichiersDeLaPolice, graisses: string[], jeuxDeLaPolice: string[]): string[] {
-  const presents = JEUX_VOULUS.filter((jeu) => graisses.every((graisse) => Boolean(fichiers[graisse]?.[jeu])));
-  return presents.length > 0 ? presents : jeuxDeLaPolice.slice(0, 1);
-}
-
 export function usePolice(famille: string): string {
   const [attente] = useState(() => delayRender(`Police « ${famille} »`));
 
   useEffect(() => {
-    const trouvee = getAvailableFonts().find((police) => police.fontFamily === famille);
-    if (!trouvee) {
-      cancelRender(new Error(`Police « ${famille} » absente de Google Fonts : corriger marque.police.`));
-      return;
-    }
-    trouvee
-      .load()
-      .then((police) => {
-        const info = police.getInfo();
-        const fichiers = (info.fonts.normal ?? {}) as FichiersDeLaPolice;
-        const graisses = GRAISSES.filter((graisse) => graisse in fichiers);
-        const subsets = jeuxDeCaracteres(fichiers, graisses, info.subsets);
-        return police.loadFont("normal", { weights: graisses, subsets }).waitUntilDone();
-      })
+    // Une copie locale abîmée ne doit pas bloquer le film : on retombe sur Google.
+    chargerLaPoliceLocale(famille)
+      .catch(() => false)
+      .then((locale) => (locale ? undefined : chargerDepuisGoogle(famille)))
       .then(() => continueRender(attente))
       .catch((erreur: unknown) => cancelRender(erreur));
   }, [famille, attente]);
