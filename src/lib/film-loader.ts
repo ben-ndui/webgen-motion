@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
 import type { FilmSpec } from "../../remotion/film/spec";
@@ -8,8 +9,8 @@ import { erreursDeLaSpec } from "../../remotion/film/validerSpec";
 import { estNomSur } from "./film-store";
 
 /**
- * Chargeur des fiches du mode « Film de marque » : `films/<id>.json` à la
- * racine du repo, au format `FilmSpec` (remotion/film/spec.ts).
+ * Chargeur des fiches du mode « Film de marque » : `<id>.json` dans le
+ * dossier des fiches (getFilmsDir), au format `FilmSpec` (remotion/film/spec.ts).
  *
  * SERVEUR SEULEMENT (node:fs) : comme tour-loader, ne jamais l'importer dans
  * un client component. La page lit côté serveur et passe les données en props.
@@ -23,7 +24,17 @@ export type FicheDeFilm =
   | { id: string; etat: "valide"; spec: FilmSpec }
   | { id: string; etat: "invalide"; erreurs: string[] };
 
-export function getFilmsDir(): string {
+/**
+ * Où vivent les fiches. En développement : `films/` à la racine du repo.
+ * Dans l'app installée (la coque pose WEBGEN_RUNNERS_DIR, transmise aux
+ * runners) : `~/.webgen-motion/fiches/`. Le serveur et les runners y ont
+ * chacun leur dossier courant DANS l'app (standalone/ et runners/) : avec
+ * le dossier courant, le serveur écrivait une fiche que le rendu ne trouvait
+ * pas, dans une app signée, effacée à chaque mise à jour (15/10/2026).
+ */
+export function getFilmsDir(env: Record<string, string | undefined> = process.env): string {
+  if (env.WEBGEN_FILMS_DIR) return env.WEBGEN_FILMS_DIR;
+  if (env.WEBGEN_RUNNERS_DIR) return join(homedir(), ".webgen-motion", "fiches");
   return join(process.cwd(), "films");
 }
 

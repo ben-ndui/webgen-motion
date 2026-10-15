@@ -1,6 +1,8 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { chargerFilm, listerFilms } from "./film-loader";
+import { chargerFilm, getFilmsDir, listerFilms } from "./film-loader";
 import { dossierJetable, ecrireFiche, ficheValide } from "./film-fixtures.test-utils";
 
 describe("film-loader", () => {
@@ -54,5 +56,22 @@ describe("film-loader", () => {
     const dossier = dossierJetable("fiches");
     expect(chargerFilm("../etc/passwd", dossier)).toBeNull();
     expect(chargerFilm("absent", dossier)).toBeNull();
+  });
+});
+
+describe("getFilmsDir — où vivent les fiches", () => {
+  it("en développement : films/ à la racine du repo", () => {
+    expect(getFilmsDir({})).toBe(join(process.cwd(), "films"));
+  });
+
+  it("dans l'app installée : ~/.webgen-motion/fiches, le MÊME pour le serveur et les runners", () => {
+    // Le serveur (cwd standalone/) et les runners (cwd runners/) reçoivent tous deux WEBGEN_RUNNERS_DIR.
+    const app = { WEBGEN_RUNNERS_DIR: "/Applications/GEN MOTION.app/Contents/Resources/runners" };
+    expect(getFilmsDir(app)).toBe(join(homedir(), ".webgen-motion", "fiches"));
+    expect(getFilmsDir(app)).not.toContain(".app");
+  });
+
+  it("WEBGEN_FILMS_DIR l'emporte, pour les tests et les cas particuliers", () => {
+    expect(getFilmsDir({ WEBGEN_FILMS_DIR: "/tmp/fiches", WEBGEN_RUNNERS_DIR: "/x" })).toBe("/tmp/fiches");
   });
 });

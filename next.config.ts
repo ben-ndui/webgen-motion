@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
       "src-tauri/standalone/**/*",
       "tests/**/*",
       "scripts/**/*",
+      // Les fiches de film sont des DONNÉES de la personne (clients compris) :
+      // jamais embarquées dans l'app. L'app installée les lit dans
+      // ~/.webgen-motion/fiches (film-loader.ts).
+      "films/**/*",
     ],
   },
   // These packages are referenced via API routes but should NEVER
