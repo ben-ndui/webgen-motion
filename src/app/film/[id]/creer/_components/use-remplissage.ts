@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { lireLeFlux } from "./lire-le-flux";
+
 export type ResumeDuRemplissage = {
   captures: number;
   capturesGardees: number;
@@ -47,26 +49,15 @@ export function useRemplissage(id: string, onFini: () => Promise<void>) {
           setEtat({ type: "erreur", message: corps.erreur ?? "Lancement impossible." });
           return;
         }
-        const lecteur = reponse.body.getReader();
-        const decodeur = new TextDecoder();
-        let reste = "";
-        for (;;) {
-          const { done, value } = await lecteur.read();
-          if (done) break;
-          reste += decodeur.decode(value, { stream: true });
-          const lignes = reste.split("\n");
-          reste = lignes.pop() ?? "";
-          for (const ligne of lignes) {
-            if (!ligne.trim()) continue;
-            const evenement = JSON.parse(ligne) as { type: string; label?: string; message?: string; resume?: ResumeDuRemplissage };
-            if (evenement.type === "phase" && evenement.label) {
-              etapes.push(evenement.label);
-              setEtat({ type: "en-cours", etapes: [...etapes] });
-            }
-            if (evenement.type === "done" && evenement.resume) final = { type: "fait", resume: evenement.resume };
-            if (evenement.type === "error") final = { type: "erreur", message: evenement.message ?? "Erreur inconnue." };
+        await lireLeFlux(reponse, (brut) => {
+          const evenement = brut as { type: string; label?: string; message?: string; resume?: ResumeDuRemplissage };
+          if (evenement.type === "phase" && evenement.label) {
+            etapes.push(evenement.label);
+            setEtat({ type: "en-cours", etapes: [...etapes] });
           }
-        }
+          if (evenement.type === "done" && evenement.resume) final = { type: "fait", resume: evenement.resume };
+          if (evenement.type === "error") final = { type: "erreur", message: evenement.message ?? "Erreur inconnue." };
+        });
       } catch {
         final = controleur.signal.aborted ? { type: "erreur", message: "Arrêté." } : { type: "erreur", message: "GEN MOTION ne répond pas." };
       }
