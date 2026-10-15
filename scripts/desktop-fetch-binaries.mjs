@@ -92,20 +92,24 @@ function nodeUrlFor(triple) {
 }
 
 // ─── ffmpeg URLs per triple ────────────────────────────────────────
-// Static builds. macOS via evermeet, Linux via johnvansickle,
-// Windows via BtbN's release archive (gyan.dev redirects + tarballs
+// Static builds. macOS via Martin Riedl (arm64 NATIF et Intel), Linux
+// et Windows via BtbN's release archive (gyan.dev redirects + tarballs
 // are messier to parse).
+//
+// evermeet.cx répond « 410 Gone » depuis octobre 2026 (constaté en
+// préparant la 0.7.0) ; il ne publiait d'ailleurs que de l'Intel, qui
+// tournait sous Rosetta sur Apple Silicon. Les builds Martin Riedl sont
+// statiques (seulement les bibliothèques système) et ont libx264, aac,
+// libmp3lame et les filtres audio utilisés (vérifié le 15/10/2026).
+const MARTIN_RIEDL = "https://ffmpeg.martin-riedl.de/redirect/latest/macos";
+const ARCHITECTURE_MAC = { "aarch64-apple-darwin": "arm64", "x86_64-apple-darwin": "amd64" };
+
 function ffmpegUrlFor(triple) {
   switch (triple) {
     case "aarch64-apple-darwin":
-      return {
-        url: "https://evermeet.cx/ffmpeg/getrelease/zip",
-        archive: "zip",
-        extractPath: "ffmpeg",
-      };
     case "x86_64-apple-darwin":
       return {
-        url: "https://evermeet.cx/ffmpeg/getrelease/zip",
+        url: `${MARTIN_RIEDL}/${ARCHITECTURE_MAC[triple]}/release/ffmpeg.zip`,
         archive: "zip",
         extractPath: "ffmpeg",
       };
@@ -131,15 +135,15 @@ function ffmpegUrlFor(triple) {
 }
 
 // ─── ffprobe URLs per triple ───────────────────────────────────────
-// Same vendors as ffmpeg — bundled separately because evermeet ships
-// ffmpeg as a single binary (no ffprobe symlink), and we need ffprobe
+// Same vendors as ffmpeg — bundled separately because the macOS builds
+// ship ffmpeg as a single binary (no ffprobe symlink), and we need ffprobe
 // to read media durations in compose-tour + analyze-audio.
 function ffprobeUrlFor(triple) {
   switch (triple) {
     case "aarch64-apple-darwin":
     case "x86_64-apple-darwin":
       return {
-        url: "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip",
+        url: `${MARTIN_RIEDL}/${ARCHITECTURE_MAC[triple]}/release/ffprobe.zip`,
         archive: "zip",
         extractPath: "ffprobe",
       };
