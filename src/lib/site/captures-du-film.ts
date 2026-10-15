@@ -20,7 +20,7 @@ export type CapturesDuFilm = {
 
 const MOMENTS_VOULUS = 3;
 
-async function premierEcran(navigateur: Browser, url: string): Promise<Uint8Array> {
+export async function premierEcran(navigateur: Browser, url: string): Promise<Uint8Array> {
   const page = await ouvrir(navigateur, url, "telephone");
   try {
     return await capturer(page, 0);
@@ -30,7 +30,7 @@ async function premierEcran(navigateur: Browser, url: string): Promise<Uint8Arra
 }
 
 /** Ajoute l'image si elle diffère de toutes les précédentes. */
-function ajouterSiNouvelle(liste: Uint8Array[], image: Uint8Array): boolean {
+export function ajouterSiNouvelle(liste: Uint8Array[], image: Uint8Array): boolean {
   const cle = empreinte(image);
   if (liste.some((deja) => empreinte(deja) === cle)) return false;
   liste.push(image);

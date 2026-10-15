@@ -89,7 +89,20 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
       {etape === "musique" && (
         <EtapeMusique id={etat.id} fiche={fiche} langues={langues} musiquePresente={present("musique")} deposer={deposer} modifier={modifier} enregistrer={enregistrer} recharger={recharger} />
       )}
-      {etape === "ecrans" && <EtapeEcrans id={etat.id} fiche={fiche} langues={langues} medias={etat.medias} doublons={etat.doublons} deposer={deposer} modifier={modifier} />}
+      {etape === "ecrans" && (
+        <EtapeEcrans
+          id={etat.id}
+          fiche={fiche}
+          langues={langues}
+          medias={etat.medias}
+          doublons={etat.doublons}
+          deposer={deposer}
+          modifier={modifier}
+          adresseAuDepart={adresseAuDepart}
+          enregistrer={enregistrer}
+          recharger={recharger}
+        />
+      )}
       {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} />}
       {etape === "pret" && <EtapePret id={etat.id} etat={etat} fiche={fiche} modifier={modifier} enregistrer={enregistrer} onAller={(e) => setEtape(e)} />}
 

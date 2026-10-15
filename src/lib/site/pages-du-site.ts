@@ -10,9 +10,14 @@ const PREUVE = /(panier|cart|checkout|commande|order|reserv|booking|rendez-vous|
 
 export type PagesChoisies = { parcours: string[]; preuve: string | null };
 
-export function choisirLesPages(liens: LienLu[], nombre = 3): PagesChoisies {
+/** Les liens qui apprennent quelque chose sur le produit, ceux du menu d'abord. */
+export function liensUtiles(liens: LienLu[]): LienLu[] {
   const utiles = liens.filter((lien) => !SANS_INTERET.test(lien.url) && !SANS_INTERET.test(lien.texte));
-  const ordonnes = [...utiles.filter((l) => l.dansLeMenu), ...utiles.filter((l) => !l.dansLeMenu)];
+  return [...utiles.filter((l) => l.dansLeMenu), ...utiles.filter((l) => !l.dansLeMenu)];
+}
+
+export function choisirLesPages(liens: LienLu[], nombre = 3): PagesChoisies {
+  const ordonnes = liensUtiles(liens);
   const preuve = ordonnes.find((l) => PREUVE.test(l.url) || PREUVE.test(l.texte))?.url ?? null;
   const parcours = ordonnes.filter((l) => l.url !== preuve).slice(0, nombre).map((l) => l.url);
   return { parcours, preuve };
