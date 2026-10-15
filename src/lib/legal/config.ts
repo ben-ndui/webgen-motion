@@ -107,11 +107,11 @@ export const LEGAL = {
     editions: {
       community: {
         price: "Gratuit",
-        scope: "Capture E2E, voix off, compose Sober & Energetic, frames 2D, formats 16:9 + 9:16",
+        scope: "Capture E2E web et mobile, voix off, montage sur la musique avec les quatre styles (Sober, Energetic, Cinematic, Glitch), cadres 2D, formats 16:9 et 9:16",
       },
       studio: {
         price: "199 € (paiement unique, licence à vie)",
-        scope: "Toutes les fonctionnalités Community, plus les cadres 3D iPhone et MacBook et l'export du montage des vidéos produit vers DaVinci Resolve ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
+        scope: "Toutes les fonctionnalités Community, plus le film de marque depuis l'adresse d'un site, la série générée par IA (les générations restent payées par l'utilisateur au fournisseur, avec ses propres clés), les cadres 3D iPhone et MacBook, et l'export du montage (vidéo produit, film, série) vers DaVinci Resolve ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
       },
       enterprise: {
         price: "Sur devis",
