@@ -17,8 +17,8 @@ import {
 } from "./elements";
 
 /**
- * L'épisode d'une série en timeline OTIO, à ouvrir dans DaVinci Resolve ou
- * Premiere. Module pur : il traduit le montage que GEN MOTION a déjà décidé
+ * L'épisode d'une série en timeline OTIO, à ouvrir dans DaVinci Resolve.
+ * Module pur : il traduit le montage que GEN MOTION a déjà décidé
  * (montage.ts), il n'en prend aucune décision.
  *
  * Ce qui se retrouve dans le logiciel de montage :

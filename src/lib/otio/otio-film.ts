@@ -11,8 +11,8 @@ import {
 } from "./elements";
 
 /**
- * Le film de marque en timeline OTIO, à ouvrir dans DaVinci Resolve ou
- * Premiere. Module pur : il traduit le montage que GEN MOTION a décidé.
+ * Le film de marque en timeline OTIO, à ouvrir dans DaVinci Resolve.
+ * Module pur : il traduit le montage que GEN MOTION a décidé.
  *
  * Le film n'a pas de vidéo source : chaque plan est une animation que
  * GEN MOTION dessine (textes, logo, écrans). La piste « Plans » découpe donc

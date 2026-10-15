@@ -139,7 +139,7 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
             GEN MOTION est <strong className="text-ink font-medium">fair-code
             FSL</strong> · Community Edition gratuite. La Studio Edition
             débloque le film de marque, la série IA, les cadres 3D et
-            l&apos;export vers Resolve et Premiere, à vie
+            l&apos;export vers DaVinci Resolve, à vie
             <strong className="text-ink font-medium"> (199&nbsp;€ une fois)</strong>{" "}
             ou en abonnement dès 15&nbsp;€/mois.
           </p>

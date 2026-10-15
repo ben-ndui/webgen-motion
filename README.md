@@ -177,7 +177,7 @@ iPhone) marche pareil. Prérequis : `brew install mobile-dev-inc/tap/maestro`.
 Pas satisfait du montage auto ? Le bouton **Timeline .otio** du tab
 Compose exporte la timeline — sections déjà découpées, voix off et
 musique déjà posées, markers sur les beats — à ouvrir dans **DaVinci
-Resolve** (File → Import Timeline) ou **Premiere Pro** (File → Import).
+Resolve** (File → Import Timeline). Premiere Pro n'est pas encore testé.
 
 ---
 
@@ -329,7 +329,7 @@ fois (download Chromium ~150 Mo) et pour la voix off ElevenLabs.
 | Edition | Prix | Cible | Inclus |
 |---|---|---|---|
 | 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 4 presets compose (Sober / Energetic / Cinematic / Glitch) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
-| 🟣 **Studio** | **[199 € à vie, ou 15 €/mois, ou 120 €/an](https://genmotion.app/download)** | Marques, agences | Tout Community + Film de marque depuis l'adresse du site · Série IA (casting, épisodes, répliques) · Frames 3D iPhone/MacBook (R3F) · Export OTIO vers DaVinci Resolve / Premiere |
+| 🟣 **Studio** | **[199 € à vie, ou 15 €/mois, ou 120 €/an](https://genmotion.app/download)** | Marques, agences | Tout Community + Film de marque depuis l'adresse du site · Série IA (casting, épisodes, répliques) · Frames 3D iPhone/MacBook (R3F) · Export du montage vers DaVinci Resolve (vidéo produit, film, série) |
 | ⚫ **Enterprise** | Sur devis | Agences digitales, plateformes | Tout Studio + White-label · API headless (CI/CD) · SSO · Support dédié + SLA · [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr) |
 
 **À vie ou au mois** : licence à vie (Davinci-style, sans SaaS lock-in) ou abonnement mensuel / annuel. La license est un fichier `.license` signé Ed25519 que tu télécharges après paiement, à installer dans Settings → License de l'app. Vérification 100% locale, aucun appel serveur.

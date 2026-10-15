@@ -97,7 +97,7 @@ export default function Download() {
             <h3 style={{ marginTop: 10 }}>Le film et la série de ta marque.</h3>
             <p>
               Le film de marque depuis l&apos;adresse de ton site, la série IA, les cadres 3D iPhone &amp;
-              MacBook et l&apos;export vers DaVinci Resolve et Premiere. Possède-le à vie, ou prends-le au mois.
+              MacBook et l&apos;export du montage vers DaVinci Resolve. Possède-le à vie, ou prends-le au mois.
             </p>
           </div>
           <div style={{ marginTop: 20 }}>

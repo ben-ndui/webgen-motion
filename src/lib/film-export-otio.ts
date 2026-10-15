@@ -29,7 +29,7 @@ const NOMS_DES_PLANS: Record<IdDePlan, string> = {
 
 /**
  * Écrit `out/<déclinaison>.otio` : le film de marque découpé par plans, sa
- * voix off et sa musique, à ouvrir dans DaVinci Resolve ou Premiere. Le film
+ * voix off et sa musique, à ouvrir dans DaVinci Resolve. Le film
  * doit avoir été rendu : sa piste image découpe ce rendu.
  */
 export function exporterLeFilmEnOtio(

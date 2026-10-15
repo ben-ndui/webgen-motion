@@ -2,8 +2,8 @@
  * Sprint E — export OpenTimelineIO (Studio Edition).
  *
  * Génère une timeline .otio (JSON pur, AUCUNE dépendance Python) que
- * DaVinci Resolve importe nativement (File → Import Timeline) et
- * Premiere Pro via File → Import (support OTIO natif). Le pitch :
+ * DaVinci Resolve importe nativement (File → Import Timeline). Premiere
+ * (File → Import) a un import OTIO récent, jamais testé ici. Le pitch :
  * « Pas satisfait du montage auto ? Ouvre ton tour dans Resolve —
  * sections déjà découpées, voix off et musique déjà posées sur la
  * timeline, cuts calés sur les beats. »

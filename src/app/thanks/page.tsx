@@ -118,7 +118,7 @@ export default async function ThanksPage({
               <Step
                 n="03"
                 title="Tu colles le contenu du `.license` et clique Installer"
-                detail="L'app vérifie la signature Ed25519 localement, débloque immédiatement le film de marque, la série IA, les cadres 3D et l'export vers Resolve et Premiere."
+                detail="L'app vérifie la signature Ed25519 localement, débloque immédiatement le film de marque, la série IA, les cadres 3D et l'export du montage vers DaVinci Resolve."
               />
             </ol>
           </div>

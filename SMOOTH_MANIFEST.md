@@ -26,7 +26,7 @@ scripts/                  # Runners CLI (spawnés par les routes API)
   analyze-audio.ts        # ffmpeg silencedetect + beats RMS
   agent-generate-tour.ts  # Agent IA (Claude) génère un tour depuis une URL
   lib/edit-plan.ts        # Edit Engine (EDL : trims, beat-snap, J-cuts, VO, sous-titres)
-  export-otio.ts          # Export .otio → DaVinci/Premiere (Studio)
+  export-otio.ts          # Export .otio → DaVinci Resolve (Studio)
   issue-license.mjs / generate-license-keypair.mjs  # backoffice Ed25519 (Ben)
   notarize-and-staple.mjs # pipeline Apple Notary
 src/app/                  # Next : page.tsx (landing), dashboard/ (hub tours), tour/[id]/ (éditeur 5 tabs),

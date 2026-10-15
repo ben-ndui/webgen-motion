@@ -4,8 +4,8 @@
  */
 const ETAPES = [
   { titre: "Colle ton site", texte: "GEN MOTION l'ouvre, le filme écran par écran et repère ta marque (logo, couleurs, police), que tu ajustes si besoin." },
-  { titre: "Relis", texte: "Claude propose les textes du film et un premier épisode de série. Tu gardes, tu changes, tu écris." },
-  { titre: "Rends et publie", texte: "Le film sort en 16:9 et en 9:16, en français et en anglais, prêt pour ton site et tes réseaux." },
+  { titre: "Relis", texte: "Claude propose les textes, les pages à filmer et un premier épisode. Tu gardes, tu changes, ou tu lui redemandes." },
+  { titre: "Rends et publie", texte: "Le film sort en 16:9 et en 9:16, en français et en anglais, prêt pour tes réseaux. Ou ouvre son montage dans DaVinci Resolve." },
 ];
 
 const GARANTIES = [

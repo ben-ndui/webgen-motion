@@ -31,7 +31,7 @@ Pas de cloud requis pour le pipeline core. Outputs dans `~/.webgen-motion/`.
 
 C'est un produit **Smooth & Design** sous licence **FSL-1.1-MIT** (Functional Source License — source-available, usage concurrent interdit, chaque version devient MIT 2 ans après publication ; les versions ≤ 0.2.3 publiées sous mention MIT restent MIT) :
 - **Community Edition** gratuite (pipeline complet, les 4 presets Sober/Energetic/Cinematic/Glitch, formats 16:9 + 9:16, Agent IA BYOK)
-- **Studio Edition** 199 € à vie, ou 15 €/mois / 120 €/an (film de marque, série IA, frames 3D, export OTIO Resolve/Premiere : ce que `isFeatureEnabled` réserve VRAIMENT ; les prix vivent dans `studio-offer.tsx`) — license `.license` Ed25519 signée, vérifiée offline
+- **Studio Edition** 199 € à vie, ou 15 €/mois / 120 €/an (film de marque, série IA, frames 3D, export OTIO vers DaVinci Resolve : ce que `isFeatureEnabled` réserve VRAIMENT ; les prix vivent dans `studio-offer.tsx`) — license `.license` Ed25519 signée, vérifiée offline
 - **Enterprise** sur devis (white-label, API headless, SSO)
 
 ## Stack
@@ -63,7 +63,7 @@ webgen-motion/                   # slug repo (rétro-compat)
 │   ├── audio-tour.ts            # TTS + timeline audio (ElevenLabs / Voicebox)
 │   ├── compose-tour.ts          # Compose runner — edit plan + spawn `remotion render`
 │   ├── lib/edit-plan.ts         # Edit Engine — EDL : trims, beat snap, J-cuts, VO segments, subtitles
-│   ├── export-otio.ts           # Export timeline .otio → DaVinci Resolve / Premiere (Studio) — Sprint E
+│   ├── export-otio.ts           # Export timeline .otio → DaVinci Resolve (Studio) — Sprint E
 │   ├── analyze-audio.ts         # ffmpeg silencedetect + beats RMS
 │   ├── agent-generate-tour.ts   # Agent IA Claude génère tour depuis URL
 │   ├── notarize-and-staple.mjs  # Pipeline Apple Notary end-to-end

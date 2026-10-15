@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       {
         error: "studio-required",
         message:
-          "L'export OTIO (DaVinci Resolve / Premiere) est une feature Studio Edition.",
+          "L'export vers DaVinci Resolve est une fonctionnalité Studio Edition.",
       },
       { status: 403 },
     );

@@ -32,8 +32,8 @@ export default function CeQuIlFabrique() {
             </h3>
             <p>
               Des épisodes courts générés par IA, avec des personnages qui gardent le même visage d&apos;un plan à l&apos;autre et parlent
-              français. Claude écrit l&apos;épisode, tu le relis, puis chaque plan se génère chez Google, environ 1&nbsp;$ les 8 secondes, prix
-              affiché avant chaque clic.
+              français. Claude écrit l&apos;épisode et t&apos;aide plan par plan (une réplique, les dialogues d&apos;une scène, la suite), puis
+              chaque plan se génère chez Google, environ 1&nbsp;$ les 8 secondes, prix affiché avant chaque clic.
             </p>
           </article>
 

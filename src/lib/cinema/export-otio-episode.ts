@@ -14,7 +14,7 @@ type Sonde = (chemin: string) => number | null;
 
 /**
  * Écrit `out/<déclinaison>.episode-<id>.otio` : l'épisode tel que GEN MOTION
- * l'a monté, à ouvrir dans DaVinci Resolve ou Premiere. Refuse tant qu'un
+ * l'a monté, à ouvrir dans DaVinci Resolve. Refuse tant qu'un
  * plan n'a pas sa vidéo sur le disque (le monteur ouvrirait des médias
  * hors ligne). Le logo n'y est que si l'épisode a déjà été rendu.
  */

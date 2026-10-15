@@ -71,7 +71,7 @@ export default function ComposeTab({
   const activeStyle = tour.composeStyle ?? "energetic";
 
   // Sprint E — export OTIO (Studio). Télécharge <tourId>.otio prêt à
-  // importer dans DaVinci Resolve / Premiere Pro.
+  // importer dans DaVinci Resolve (Premiere : pas encore testé).
   const [otioState, setOtioState] = useState<
     { kind: "idle" } | { kind: "busy" } | { kind: "error"; message: string }
   >({ kind: "idle" });
@@ -90,7 +90,7 @@ export default function ComposeTab({
         setOtioState({
           kind: "error",
           message:
-            "Export OTIO = Studio Edition. Finis ton montage dans DaVinci Resolve / Premiere — sections, voix off et musique déjà posées sur la timeline.",
+            "Export OTIO = Studio Edition. Finis ton montage dans DaVinci Resolve — sections, voix off et musique déjà posées sur la timeline.",
         });
         return;
       }
@@ -207,7 +207,7 @@ export default function ComposeTab({
                     <button
                       onClick={handleOtioExport}
                       disabled={otioState.kind === "busy"}
-                      title="Exporter la timeline pour DaVinci Resolve / Premiere Pro (Studio Edition)"
+                      title="Exporter la timeline pour DaVinci Resolve (Studio Edition)"
                       className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-line bg-surface text-ink text-xs font-medium hover:bg-surface-2 disabled:opacity-60"
                       data-wm-id="editor.compose.export-otio"
                     >

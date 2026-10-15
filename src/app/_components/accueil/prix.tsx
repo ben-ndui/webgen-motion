@@ -29,7 +29,7 @@ const STUDIO = [
   "Le film de ta marque depuis l'adresse de ton site",
   "La série IA : casting, épisodes, répliques en français",
   "Cadres 3D iPhone et MacBook",
-  "Export du montage vers DaVinci Resolve et Premiere",
+  "Export du montage vers DaVinci Resolve : vidéo produit, film et série",
 ];
 
 export default function Prix() {
