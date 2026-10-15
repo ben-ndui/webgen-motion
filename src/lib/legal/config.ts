@@ -111,7 +111,7 @@ export const LEGAL = {
       },
       studio: {
         price: "199 € (paiement unique, licence à vie)",
-        scope: "Toutes les fonctionnalités Community, plus les cadres 3D iPhone et MacBook et l'export du montage vers DaVinci Resolve et Premiere ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
+        scope: "Toutes les fonctionnalités Community, plus les cadres 3D iPhone et MacBook et l'export du montage des vidéos produit vers DaVinci Resolve et Premiere ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
       },
       enterprise: {
         price: "Sur devis",
