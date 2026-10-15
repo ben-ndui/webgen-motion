@@ -150,8 +150,6 @@ describe("getEdition — résolution", () => {
 
 describe("isFeatureEnabled — gating Studio", () => {
   const STUDIO_ONLY = [
-    "compose-cinematic",
-    "compose-glitch",
     "frames-3d",
     "multi-format-export",
     "music-library",
@@ -163,6 +161,8 @@ describe("isFeatureEnabled — gating Studio", () => {
   const COMMUNITY = [
     "compose-sober",
     "compose-energetic",
+    "compose-cinematic",
+    "compose-glitch",
     "format-16-9",
     "format-9-16",
     "agent-ia-byok",

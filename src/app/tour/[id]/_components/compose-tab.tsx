@@ -14,12 +14,12 @@ import type { TourEntry } from "@/lib/types/tour";
 import { formatDuration } from "@/lib/format-duration";
 
 /** Mirror of the Remotion style preset list. cls drives the gradient
- *  preview; studio gates Cinematic/Glitch (visual lock badge). */
+ *  preview. All four styles are in Community (no lock badge). */
 const COMPOSE_STYLES = [
-  { id: "sober", label: "Sober", cls: "pp-sober", studio: false, hint: "Mouvement minimal — corporate / documentary" },
-  { id: "energetic", label: "Energetic", cls: "pp-energetic", studio: false, hint: "Look produit / SaaS punchy (défaut)" },
-  { id: "cinematic", label: "Cinematic", cls: "pp-cinematic", studio: true, hint: "Storytelling lent, fades + wipes, halo subtil" },
-  { id: "glitch", label: "Glitch", cls: "pp-glitch", studio: true, hint: "Esthétique tech / AI — glitch sur chaque transition" },
+  { id: "sober", label: "Sober", cls: "pp-sober", hint: "Mouvement minimal — corporate / documentary" },
+  { id: "energetic", label: "Energetic", cls: "pp-energetic", hint: "Look produit / SaaS punchy (défaut)" },
+  { id: "cinematic", label: "Cinematic", cls: "pp-cinematic", hint: "Storytelling lent, fades + wipes, halo subtil" },
+  { id: "glitch", label: "Glitch", cls: "pp-glitch", hint: "Esthétique tech / AI — glitch sur chaque transition" },
 ] as const;
 
 export type ComposeState =
@@ -154,7 +154,6 @@ export default function ComposeTab({
                   <div className={"preset-prev " + p.cls}><div className="chip-frame" /></div>
                   <div className="preset-foot">
                     <span className="pn">{p.label}</span>
-                    {p.studio && <span className="lock">Studio</span>}
                   </div>
                 </button>
               ))}

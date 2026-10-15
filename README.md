@@ -12,7 +12,7 @@
 [![Remotion](https://img.shields.io/badge/Remotion-4-0B84FF?logo=remotion)](https://remotion.dev/)
 [![by Smooth & Design](https://img.shields.io/badge/by-Smooth%20%26%20Design-EC4899)](https://www.smoothandesign.fr)
 
-**[⬇ Télécharger pour macOS](https://genmotion.app/download)** &nbsp;·&nbsp; **[💎 Acheter Studio $49](https://genmotion.app/download)** &nbsp;·&nbsp; [Démo live](#-démo) &nbsp;·&nbsp; [Site](https://genmotion.app)
+**[⬇ Télécharger pour macOS](https://genmotion.app/download)** &nbsp;·&nbsp; **[💎 Studio dès 15 €/mois](https://genmotion.app/download)** &nbsp;·&nbsp; [Démo live](#-démo) &nbsp;·&nbsp; [Site](https://genmotion.app)
 
 </div>
 
@@ -324,17 +324,17 @@ fois (download Chromium ~150 Mo) et pour la voix off ElevenLabs.
 
 ## 💎 Editions
 
-**Source-available · FSL · made in Nice.** GEN MOTION est sur [GitHub](https://github.com/ben-ndui/webgen-motion) — code lisible, auditable, forkable pour tout usage non-concurrent, et **chaque version devient MIT 2 ans après sa publication**. La Studio Edition débloque les outils pro.
+**Source-available · FSL · fait sur la Côte d'Azur.** GEN MOTION est sur [GitHub](https://github.com/ben-ndui/webgen-motion) — code lisible, auditable, forkable pour tout usage non-concurrent, et **chaque version devient MIT 2 ans après sa publication**. La Studio Edition débloque le film de marque et la série.
 
 | Edition | Prix | Cible | Inclus |
 |---|---|---|---|
-| 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 2 presets compose (Sober / Energetic) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
-| 🟣 **Studio** | **[$49 one-time perpétuel](https://genmotion.app/download)** | Créateurs pro, agences | Tout Community + Frames 3D iPhone/MacBook (R3F) · Presets Cinematic & Glitch · Music library managée · Multi-format export simultané · Watermark removal · Mises à jour incluses à vie |
+| 🟢 **Community** | **Gratuit** perpétuel | Indie hackers, dev curieux, side projects | Pipeline complet · 4 presets compose (Sober / Energetic / Cinematic / Glitch) · 16:9 + 9:16 · Agent IA BYOK · Sprint UX (recapture, reorder, trim, upload) · Scaffold projet · Local-first total |
+| 🟣 **Studio** | **[199 € à vie, ou 15 €/mois, ou 120 €/an](https://genmotion.app/download)** | Marques, agences | Tout Community + Film de marque depuis l'adresse du site · Série IA (casting, épisodes, répliques) · Frames 3D iPhone/MacBook (R3F) · Export OTIO vers DaVinci Resolve / Premiere |
 | ⚫ **Enterprise** | Sur devis | Agences digitales, plateformes | Tout Studio + White-label · API headless (CI/CD) · SSO · Support dédié + SLA · [contact@smoothandesign.fr](mailto:contact@smoothandesign.fr) |
 
-**Achat one-time perpétuel** (Davinci-style) : pas d'abonnement, pas de SaaS lock-in, mises à jour à vie. La license est un fichier `.license` signé Ed25519 que tu télécharges après paiement, à installer dans Settings → License de l'app. Vérification 100% locale, aucun appel serveur.
+**À vie ou au mois** : licence à vie (Davinci-style, sans SaaS lock-in) ou abonnement mensuel / annuel. La license est un fichier `.license` signé Ed25519 que tu télécharges après paiement, à installer dans Settings → License de l'app. Vérification 100% locale, aucun appel serveur.
 
-Voir `src/lib/edition.ts` pour la liste des 23 feature flags définis (10 actifs en Community, 8 unlock en Studio, 5 en Enterprise).
+Voir `src/lib/edition.ts` pour la liste des feature flags et ce que chaque édition débloque.
 
 ---
 
@@ -358,7 +358,7 @@ MIT restent MIT.
 
 <div align="center">
 
-**[genmotion.app](https://genmotion.app)** &nbsp;·&nbsp; **[Acheter Studio $49](https://genmotion.app/download)** &nbsp;·&nbsp; [Contact](mailto:contact@smoothandesign.fr)
+**[genmotion.app](https://genmotion.app)** &nbsp;·&nbsp; **[Studio](https://genmotion.app/download)** &nbsp;·&nbsp; [Contact](mailto:contact@smoothandesign.fr)
 
 Made in Nice by **[Smooth & Design](https://www.smoothandesign.fr)** · Fair-code FSL · Davinci-style perpetual
 

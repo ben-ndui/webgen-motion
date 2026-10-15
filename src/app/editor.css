@@ -136,7 +136,6 @@
 .gm-editor .pp-cinematic .chip-frame, .gm-editor .pp-glitch .chip-frame { background: color-mix(in oklch, white 14%, transparent); border-color: color-mix(in oklch, white 22%, transparent); }
 .gm-editor .preset-foot { padding: 11px 13px; display: flex; align-items: center; justify-content: space-between; }
 .gm-editor .preset-foot .pn { font-size: var(--t-sm); color: var(--ink); font-weight: 600; }
-.gm-editor .lock { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); border: 1px solid var(--accent-line); background: var(--accent-soft); padding: 2px 6px; border-radius: var(--r-sm); }
 
 /* readiness */
 .gm-editor .readiness { display: flex; flex-direction: column; gap: 2px; }

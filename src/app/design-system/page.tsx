@@ -183,7 +183,7 @@ export default function DesignSystemPage() {
               <h4 className="font-mono text-xs uppercase tracking-[0.06em] text-faint mb-4">Boutons</h4>
               <div className="flex flex-wrap gap-2.5 items-center">
                 <Button>Composer</Button>
-                <Button variant="ink">Acheter · $49</Button>
+                <Button variant="ink">Passer à Studio</Button>
                 <Button variant="ghost">Aperçu</Button>
                 <Button variant="soft">Annuler</Button>
                 <Button size="lg">Large</Button>

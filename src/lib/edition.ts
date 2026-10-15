@@ -43,9 +43,9 @@ export type FeatureFlag =
   | "trim-section"
   | "upload-section-mp4"
   | "scaffold-from-project"
-  // Studio (gated, viendront avec leur implémentation)
   | "compose-cinematic"
   | "compose-glitch"
+  // Studio (gated, viendront avec leur implémentation)
   | "frames-3d"
   | "multi-format-export"
   | "music-library"
@@ -71,12 +71,14 @@ const COMMUNITY_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([
   "trim-section",
   "upload-section-mp4",
   "scaffold-from-project",
+  // Les quatre styles de montage sont gratuits (décision du 15/10/2026) :
+  // rien ne les verrouillait dans le pipeline, l'offre le dit désormais.
+  "compose-cinematic",
+  "compose-glitch",
 ]);
 
 const STUDIO_FLAGS: ReadonlySet<FeatureFlag> = new Set<FeatureFlag>([
   ...COMMUNITY_FLAGS,
-  "compose-cinematic",
-  "compose-glitch",
   "frames-3d",
   "multi-format-export",
   "music-library",

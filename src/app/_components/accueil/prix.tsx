@@ -17,7 +17,12 @@ function Coche() {
   );
 }
 
-const COMMUNITY = ["Vidéo de ton produit : capture web et mobile, voix off, montage sur la musique", "16:9 et 9:16", "Gratuit, sans limite de durée"];
+const COMMUNITY = [
+  "Vidéo de ton produit : capture web et mobile, voix off, montage sur la musique",
+  "Quatre styles de montage, dont Cinematic et Glitch",
+  "16:9 et 9:16",
+  "Gratuit, sans limite de durée",
+];
 // Seulement ce que le code réserve VRAIMENT à Studio (isFeatureEnabled) : film-de-marque,
 // cinema-ia, frames-3d, otio-export. Le reste est déjà dans Community.
 const STUDIO = [

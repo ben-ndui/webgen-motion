@@ -30,7 +30,7 @@ Pas de cloud requis pour le pipeline core. Outputs dans `~/.webgen-motion/`.
 5. **Tout en local** : aucun cloud requis pour le pipeline. Vitrine `genmotion.app` (Next.js sur Vercel) sert juste de marketing + checkout Stripe.
 
 C'est un produit **Smooth & Design** sous licence **FSL-1.1-MIT** (Functional Source License — source-available, usage concurrent interdit, chaque version devient MIT 2 ans après publication ; les versions ≤ 0.2.3 publiées sous mention MIT restent MIT) :
-- **Community Edition** gratuite (pipeline complet, presets Sober + Energetic, formats 16:9 + 9:16, Agent IA BYOK)
+- **Community Edition** gratuite (pipeline complet, les 4 presets Sober/Energetic/Cinematic/Glitch, formats 16:9 + 9:16, Agent IA BYOK)
 - **Studio Edition** 199 € à vie, ou 15 €/mois / 120 €/an (film de marque, série IA, frames 3D, export OTIO Resolve/Premiere : ce que `isFeatureEnabled` réserve VRAIMENT ; les prix vivent dans `studio-offer.tsx`) — license `.license` Ed25519 signée, vérifiée offline
 - **Enterprise** sur devis (white-label, API headless, SSO)
 
