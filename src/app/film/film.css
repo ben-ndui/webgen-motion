@@ -68,3 +68,8 @@
 .gm-film .export-montage { display: flex; flex-direction: column; gap: var(--s-2); }
 .gm-film .export-montage .film-btn { align-self: flex-start; }
 .gm-film .export-montage code { word-break: break-all; font-size: 0.9em; }
+
+/* Page d'un projet de format (/format/[id]) : mêmes cartes que le film. */
+.gm-film .film-rendus-liste { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-4); }
+.gm-film .film-depot { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.gm-film label.film-btn { display: inline-flex; align-items: center; }

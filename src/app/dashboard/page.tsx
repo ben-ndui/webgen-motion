@@ -12,6 +12,11 @@ import { resumerFilm } from "@/lib/film-etat";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import HubApp, { type HubTour } from "../_components/hub-app";
 import type { HubFilm } from "../_components/hub-films";
+import type { HubFormat } from "../_components/hub-formats";
+import type { FormatProposable } from "../_components/nouveau-format-bouton";
+import { CATALOGUE, FORMATS } from "@/lib/formats/catalogue";
+import { resumerProjet } from "@/lib/formats/format-etat";
+import { listerProjets } from "@/lib/formats/format-loader";
 
 /**
  * Hub / Dashboard — Phase 4 portage (handoff: GEN MOTION Hub.html).
@@ -59,6 +64,29 @@ function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
   }
 }
 
+// Les projets de format, même règle que les films : une lecture ratée est une
+// ERREUR à l'écran ; sur la vitrine publique, pas de section (`null`).
+function formatsDuHub(): { projets: HubFormat[] | null; formats: FormatProposable[]; error: string | null } {
+  const formats = FORMATS.map((nom) => ({ nom, libelle: CATALOGUE[nom].libelle, pourQui: CATALOGUE[nom].pourQui }));
+  if (isPublicWebRuntime(process.env)) return { projets: null, formats, error: null };
+  try {
+    const projets = listerProjets().map((projet) => {
+      const resume = resumerProjet(projet);
+      const rendue = resume.declinaisons.find((d) => d.rendu);
+      return {
+        id: resume.id,
+        libelle: resume.libelle,
+        statut: resume.statut,
+        erreurs: resume.erreurs.length,
+        apercu: { video: rendue?.rendu?.url ?? null, portrait: (rendue ?? resume.declinaisons[0])?.version === "court" },
+      };
+    });
+    return { projets, formats, error: null };
+  } catch (erreur) {
+    return { projets: [], formats, error: (erreur as Error).message };
+  }
+}
+
 export default function DashboardPage() {
   const tours = getAllTours();
   const edition = resolveEdition().edition;
@@ -84,8 +112,9 @@ export default function DashboardPage() {
   });
 
   const { films, error } = filmsDuHub();
+  const formats = formatsDuHub();
 
   return (
-    <HubApp tours={cards} edition={edition} reglages={reglages} films={films} filmsError={error} />
+    <HubApp tours={cards} edition={edition} reglages={reglages} films={films} filmsError={error} formats={formats} />
   );
 }
