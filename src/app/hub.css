@@ -6,9 +6,6 @@
 .gm-hub {
   --card-min: 290px;
   --gap: var(--s-5);
-  /* La console du hub est ancrée tout en bas (40 px) : la barre de
-     navigation flotte au-dessus, et le contenu garde la place des deux. */
-  --reserve-sous-la-barre: 40px;
   height: 100dvh;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -24,7 +21,7 @@
 .gm-hub .brand-mark::before { content: ""; position: absolute; inset: 0; margin: auto; width: 0; height: 0; border-left: 9px solid var(--surface); border-top: 6px solid transparent; border-bottom: 6px solid transparent; transform: translateX(1px); }
 .gm-hub .brand-name { font-weight: 600; color: var(--ink); letter-spacing: .02em; font-size: var(--t-sm); }
 
-.gm-hub .main { overflow-y: auto; display: flex; flex-direction: column; padding-bottom: calc(var(--reserve-sous-la-barre) + 68px + 4px + 24px + env(safe-area-inset-bottom)); }
+.gm-hub .main { overflow-y: auto; display: flex; flex-direction: column; padding-bottom: calc(68px + 4px + 24px + env(safe-area-inset-bottom)); }
 /* L'édition (Studio / Community), qui vivait au pied de la barre latérale. */
 .gm-hub .edition { padding: 6px 10px; border-radius: var(--r-md); border: 1px solid var(--line); font-size: var(--t-xs); font-weight: 600; color: var(--muted); text-decoration: none; white-space: nowrap; }
 .gm-hub .edition:hover { color: var(--ink); border-color: var(--line-strong); }

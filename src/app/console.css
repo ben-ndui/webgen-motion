@@ -228,41 +228,34 @@
 .gm-console .hub-badge { font-family: var(--font-mono); font-size: 9px; letter-spacing: var(--tracking-mono); text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); border-radius: var(--r-sm); padding: 2px 7px; flex: none; }
 
 /* ============================================================
-   HUBCONSOLE — chrome du dashboard. 3 modes : drawer bas (style
-   « Développeurs » Stripe), flottant draggable, fenêtre séparée.
+   HUBCONSOLE — console du tableau de bord. Fermée : un onglet de la
+   barre de navigation. Ouverte : une feuille flottante en bas qui
+   REMPLACE la barre (famille des feuilles de la maison : marges 16/4,
+   rayon 28, ombre tout autour, 85 % de l'écran au plus). Elle peut
+   aussi flotter dans la page ou vivre dans une fenêtre séparée.
    z-index 50 — sous les modals du hub (z 60).
    ============================================================ */
 
-/* éléments partagés des trois chromes (barre / flottant / fenêtre) */
-.gm-hubconsole .hc-title, .gm-hubconsole-float .hc-title, .gm-console-window .hc-title { color: var(--ink); }
-.gm-hubconsole .hc-dot, .gm-hubconsole-float .hc-dot, .gm-console-window .hc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
-.gm-hubconsole .hc-dot.live, .gm-hubconsole-float .hc-dot.live, .gm-console-window .hc-dot.live { animation: gmConBlink 1.4s ease-in-out infinite; }
-.gm-hubconsole .hc-actions, .gm-hubconsole-float .hc-actions { margin-left: auto; display: flex; align-items: center; gap: 2px; }
-.gm-hubconsole .hc-btn, .gm-hubconsole-float .hc-btn { width: 26px; height: 26px; border-radius: 6px; border: 0; background: transparent; color: var(--faint); cursor: pointer; display: grid; place-items: center; flex: none; }
-.gm-hubconsole .hc-btn:hover, .gm-hubconsole-float .hc-btn:hover { background: var(--surface-2); color: var(--ink); }
-.gm-hubconsole .hc-btn.on, .gm-hubconsole-float .hc-btn.on { color: var(--accent); background: var(--accent-soft); }
-.gm-hubconsole .hc-btn svg, .gm-hubconsole-float .hc-btn svg { width: 14px; height: 14px; }
-.gm-hubconsole .hc-note, .gm-hubconsole-float .hc-note { font-family: var(--font-mono); font-size: 10px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gm-hubconsole .hc-link { font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); background: none; border: 0; border-bottom: 1px dashed var(--line-strong); cursor: pointer; padding: 0 0 1px; }
-.gm-hubconsole .hc-link:hover { color: var(--ink); border-bottom-style: solid; }
+/* éléments partagés des trois chromes (feuille / flottant / fenêtre) */
+.gm-hubconsole-feuille .hc-title, .gm-hubconsole-float .hc-title, .gm-console-window .hc-title { color: var(--ink); }
+.gm-hubconsole-feuille .hc-dot, .gm-hubconsole-float .hc-dot, .gm-console-window .hc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.gm-hubconsole-feuille .hc-dot.live, .gm-hubconsole-float .hc-dot.live, .gm-console-window .hc-dot.live { animation: gmConBlink 1.4s ease-in-out infinite; }
+.gm-hubconsole-feuille .hc-actions, .gm-hubconsole-float .hc-actions { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.gm-hubconsole-feuille .hc-btn, .gm-hubconsole-float .hc-btn { width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: grid; place-items: center; flex: none; }
+.gm-hubconsole-feuille .hc-btn:hover, .gm-hubconsole-float .hc-btn:hover { background: var(--surface-2); color: var(--ink); }
+.gm-hubconsole-feuille .hc-btn:focus-visible, .gm-hubconsole-float .hc-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.gm-hubconsole-feuille .hc-btn.on, .gm-hubconsole-float .hc-btn.on { color: var(--accent); background: var(--accent-soft); }
+.gm-hubconsole-feuille .hc-btn svg, .gm-hubconsole-float .hc-btn svg { width: 15px; height: 15px; }
+.gm-hubconsole-feuille .hc-note, .gm-hubconsole-float .hc-note { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
-/* barre fine 40px fixée en bas — toujours visible (fermée/ouverte) */
-.gm-hubconsole { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; flex-direction: column; }
-.gm-hubconsole .hc-bar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: var(--surface); border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); user-select: none; position: relative; }
-.gm-hubconsole .hc-bar-main { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; background: transparent; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; text-align: left; }
-.gm-hubconsole .hc-chev { color: var(--accent); flex: none; display: inline-block; transition: transform .2s ease; }
-.gm-hubconsole[data-mode="drawer"] .hc-chev { transform: rotate(90deg); }
-.gm-hubconsole .hc-dot.unseen { background: var(--accent); }
-.gm-hubconsole .hc-kbd { font-family: var(--font-mono); font-size: 10px; color: var(--faint); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 1px 6px; background: var(--surface-2); }
-.gm-hubconsole .hc-detached { color: var(--muted); }
-
-/* panneau drawer — monte du bas, hauteur persistée (220px–80vh) */
-.gm-hubconsole .hc-panel { overflow: hidden; background: var(--bg-sunken); }
-.gm-hubconsole .hc-panel-inner { height: 100%; display: flex; flex-direction: column; min-height: 0; }
-.gm-hubconsole .hc-resize-h { position: absolute; left: 0; right: 0; top: -3px; height: 7px; cursor: row-resize; z-index: 5; background: transparent; border: 0; padding: 0; }
-.gm-hubconsole .hc-resize-h:hover, .gm-hubconsole .hc-resize-h.dragging { background: color-mix(in oklch, var(--accent) 35%, transparent); }
-/* console hub plus large que le dock éditeur : colonne 860px centrée */
-.gm-hubconsole .hc-panel .con-surface { width: 100%; max-width: 860px; margin: 0 auto; }
+/* feuille flottante en bas — prend la place de la barre de navigation */
+.gm-hubconsole-feuille { position: fixed; left: 16px; right: 16px; bottom: calc(4px + env(safe-area-inset-bottom)); z-index: 50; max-width: 860px; max-height: 85dvh; margin: 0 auto; display: flex; flex-direction: column; background: var(--bg-sunken); border: 1px solid var(--line-strong); border-radius: 28px; box-shadow: var(--shadow-pop); overflow: hidden; }
+.gm-hubconsole-feuille .hc-poignee { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 96px; height: 16px; border: 0; padding: 0; background: transparent; cursor: row-resize; z-index: 5; touch-action: none; }
+.gm-hubconsole-feuille .hc-poignee::after { content: ""; position: absolute; top: 6px; left: 32px; width: 32px; height: 4px; border-radius: 4px; background: var(--line-strong); }
+.gm-hubconsole-feuille .hc-poignee:hover::after, .gm-hubconsole-feuille .hc-poignee.dragging::after { background: var(--accent); }
+.gm-hubconsole-feuille .hc-poignee:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 8px; }
+.gm-hubconsole-feuille .hc-feuille-head { height: 52px; flex: none; display: flex; align-items: center; gap: 9px; padding: 8px 12px 0 20px; background: var(--surface); border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: var(--t-mono); color: var(--muted); user-select: none; }
+.gm-hubconsole-feuille .hc-feuille-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* fenêtre flottante in-page — draggable, resizable coin bas-droit */
 .gm-hubconsole-float { position: fixed; z-index: 50; display: flex; flex-direction: column; min-width: 0; background: var(--bg-sunken); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-pop); overflow: hidden; }

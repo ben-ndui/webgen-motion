@@ -1,8 +1,8 @@
 /* Barre de navigation flottante en bas (DA 2026-2027 de la maison, valeurs de
    VaguaNavBar / micro-onboarding FloatingNavBar) : 68 de haut, rayon 32,
    onglets de 56, marges 16 sur les côtés et 4 au-dessus de la zone sûre.
-   `--reserve-sous-la-barre` : ce qui est déjà ancré tout en bas (la console
-   du hub), pour que la barre flotte AU-DESSUS au lieu de le recouvrir. */
+   `--reserve-sous-la-barre` : ce qui serait déjà ancré tout en bas, pour que
+   la barre flotte AU-DESSUS au lieu de le recouvrir. */
 .barre-flottante {
   position: fixed;
   left: 16px;
@@ -28,7 +28,8 @@
   box-shadow: var(--shadow-pop);
 }
 .barre-flottante li { flex: 1; display: flex; justify-content: center; }
-.barre-flottante a {
+.barre-flottante a,
+.barre-flottante button {
   width: 100%;
   height: 56px;
   display: flex;
@@ -41,9 +42,19 @@
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
   transition: background-color .15s, color .15s;
 }
-.barre-flottante a:hover { background: var(--surface-2); color: var(--ink); }
-.barre-flottante a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
-.barre-flottante a:focus-visible { outline: none; box-shadow: var(--ring); }
+.barre-flottante a:hover,
+.barre-flottante button:hover { background: var(--surface-2); color: var(--ink); }
+.barre-flottante a[aria-current="page"],
+.barre-flottante button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.barre-flottante a:focus-visible,
+.barre-flottante button:focus-visible { outline: none; box-shadow: var(--ring); }
+.barre-flottante .icone { position: relative; display: grid; place-items: center; }
 .barre-flottante svg { width: 20px; height: 20px; flex: none; }
+/* Une réponse est arrivée (ou arrive) pendant que la console était fermée. */
+.barre-flottante .pastille { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }

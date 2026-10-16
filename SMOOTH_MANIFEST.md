@@ -53,7 +53,7 @@ ROADMAP.md · CHANGELOG.md · README.md · CLAUDE.md
 - **Voice-over** : ElevenLabs TTS (voix clonée, cache disk sha1 + pronunciation map) OU Voicebox local offline OU Google TTS (branche courante) (`scripts/audio-tour.ts`, `POST /api/motion/tour/audio/voice/run`)
 - **Edit Engine** : trim temps morts, cuts snappés sur beats, J-cuts (VO 250ms avant visuel), crossfades adaptatifs, sous-titres karaoké word-synced → `edit-plan.json` (`scripts/lib/edit-plan.ts`)
 - **Compose Remotion** : device frames (Mac chrome 16:9 / iPhone 9:16), 4 style presets (Sober/Energetic/Cinematic/Glitch), Ken Burns dirigé, BeatsLayer audio-réactif, frames 3D R3F (Studio) (`scripts/compose-tour.ts`, `remotion/Tour.tsx`)
-- **Director's Console** : chat IA BYOK (provider Claude), dock ⌘J, prises + diffs + runs réels, fenêtre multi-écran (`src/app/tour/[id]/_components/console/`, `src/app/console/window/`)
+- **Director's Console** : chat IA BYOK (provider Claude), dock ⌘J, prises + diffs + runs réels, fenêtre multi-écran (`src/app/tour/[id]/_components/console/`, `src/app/console/window/`). Sur le tableau de bord : onglet « Console » de la barre du bas (ou ⌘J), la console s'ouvre en feuille flottante À LA PLACE de la barre, Échap/✕ la ramène ; aussi flottante ou en fenêtre séparée (`src/app/_components/hub-console.tsx` + `console-du-hub/`)
 - **Agent génération** : Claude génère un tour JSON depuis une URL (`scripts/agent-generate-tour.ts`)
 - **Desktop app** : Tauri 2 signé + notarisé Apple, `.dmg` macOS arm64, update checker (`src-tauri/`, `.github/workflows/desktop-release.yml`)
 - **Film de marque** (mode A) : film 16:9 + court 9:16, FR/EN, calé sur la musique, à partir d'UNE fiche `films/<id>.json` (`FilmSpec`). Moteur = `src/` du gabarit brain `gabarits/film-motion` (commit cab1252) copié dans `remotion/film/` (logique inchangée), composition générique `Film` (`remotion/film/CompositionFilm.tsx`). Médias hors repo dans `~/.webgen-motion/films/<id>/public/` (= `--public-dir`), rendus dans `.../out/<declinaison>.mp4`. Chaîne : `src/lib/film-{store,loader,medias,etat,rendu}.ts` → `scripts/render-film.ts` → `POST /api/motion/film/render` (NDJSON) + `GET /api/motion/film/video`. UI : section du hub (`src/app/_components/hub-films.tsx`) + page `/film/[id]` (`src/app/film/[id]/`). Ouvert à toutes les éditions (question Studio en suspens)
@@ -130,4 +130,4 @@ npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]   # san
 - **Film de marque — vitrine** : `/film/[id]` répond 404 et le hub masque la section quand `isPublicWebRuntime` (Vercel) : fiches = projets clients. Les films ne sont pas embarqués dans l'app desktop (seul `tours/` l'est).
 - **Push GitHub ben-ndui** : `env -u GITHUB_TOKEN git -c credential.helper='!gh auth git-credential' push` (sinon 403 write).
 
-> MAJ : 2026-10-15
+> MAJ : 2026-10-16

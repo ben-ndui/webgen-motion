@@ -10,7 +10,6 @@ import GenerateWithAiButton from "./generate-with-ai-button";
 import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
 import HubFilms, { type HubFilm } from "./hub-films";
-import NavigationDuStudio from "./navigation-du-studio";
 import TourCard, { type HubTour } from "./hub-tour-card";
 
 export type { HubTour };
@@ -219,10 +218,8 @@ export default function HubApp({
         {films !== null && <HubFilms films={films} error={filmsError} />}
       </main>
 
-      {/* Director's Console du hub — drawer bas / flottant / fenêtre
-          séparée (chrome fixed, ne touche pas la grille du hub) */}
-      <HubConsole />
-      <NavigationDuStudio actif="videos" />
+      {/* Le bas de l'écran : la barre de navigation, ou la console IA à sa place. */}
+      <HubConsole actif="videos" />
     </div>
   );
 }

@@ -3,7 +3,23 @@ import Link from "next/link";
 
 import "./barre-flottante.css";
 
-export type OngletDeLaBarre = { cle: string; libelle: string; icone: ReactNode; href: string; actif?: boolean };
+type OngletCommun = { cle: string; libelle: string; icone: ReactNode; pastille?: boolean; titre?: string };
+/** Un onglet mène à une page (`href`) ou ouvre quelque chose sur place (`action`). */
+export type OngletDeLaBarre =
+  | (OngletCommun & { href: string; actif?: boolean })
+  | (OngletCommun & { action: () => void; enfonce?: boolean });
+
+function Contenu({ onglet }: { onglet: OngletDeLaBarre }) {
+  return (
+    <>
+      <span className="icone">
+        {onglet.icone}
+        {onglet.pastille && <span className="pastille" aria-hidden />}
+      </span>
+      <span>{onglet.libelle}</span>
+    </>
+  );
+}
 
 /**
  * La navigation de la maison : une barre flottante en bas, jamais de barre
@@ -17,10 +33,15 @@ export default function BarreFlottante({ libelle, onglets }: { libelle: string; 
       <ul>
         {onglets.map((onglet) => (
           <li key={onglet.cle}>
-            <Link href={onglet.href} aria-current={onglet.actif ? "page" : undefined}>
-              {onglet.icone}
-              <span>{onglet.libelle}</span>
-            </Link>
+            {"href" in onglet ? (
+              <Link href={onglet.href} aria-current={onglet.actif ? "page" : undefined} title={onglet.titre}>
+                <Contenu onglet={onglet} />
+              </Link>
+            ) : (
+              <button type="button" onClick={onglet.action} aria-pressed={onglet.enfonce ?? false} title={onglet.titre} data-wm-id={`nav.${onglet.cle}`}>
+                <Contenu onglet={onglet} />
+              </button>
+            )}
           </li>
         ))}
       </ul>
