@@ -35,7 +35,9 @@ export default function NouveauFilmBouton() {
       });
       const corps = (await reponse.json().catch(() => ({}))) as { id?: string; erreurs?: string[] };
       if (!reponse.ok || !corps.id) {
-        setErreurs(corps.erreurs ?? ["La création a échoué, réessaie."]);
+        // 403 : la garde n'a pas reconnu cette fenêtre (jeton absent) ; « réessaie » n'y changerait rien.
+        const refus = reponse.status === 403 ? "GEN MOTION n'a pas reconnu cette fenêtre : ferme l'application et relance-la." : "La création a échoué, réessaie.";
+        setErreurs(corps.erreurs ?? [refus]);
         return;
       }
       const suite = site.trim() ? `?site=${encodeURIComponent(site.trim())}` : "";

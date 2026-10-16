@@ -12,7 +12,8 @@
  * SANS toucher aux dizaines d'appels `fetch` existants.
  *
  * Non-breaking :
- *   - En dev / web (pas de meta token) → no-op total, fetch intact.
+ *   - En dev / web (pas de meta token) : une seule demande à /api/desktop/jeton,
+ *     qui répond null, puis fetch intact.
  *   - Token lu paresseusement à chaque appel (timing d'injection du
  *     meta sans importance).
  *   - Patch idempotent + strictement limité à `/api/motion/`.
@@ -48,14 +49,27 @@ function isMotionRequest(input: RequestInfo | URL): boolean {
   }
 }
 
+// L'accueil est statique : sa balise de jeton est vide, et une navigation
+// interne ne recharge pas l'en-tête. Sans jeton dans la page, on le demande
+// une fois au serveur local (/api/desktop/jeton), puis on le garde.
+let jetonDemande: Promise<string | null> | null = null;
+function jetonDuServeur(original: typeof window.fetch): Promise<string | null> {
+  jetonDemande ??= original("/api/desktop/jeton", { cache: "no-store" })
+    .then((reponse) => (reponse.ok ? (reponse.json() as Promise<{ jeton?: string | null }>) : null))
+    .then((corps) => corps?.jeton ?? null)
+    .catch(() => null);
+  return jetonDemande;
+}
+
 if (typeof window !== "undefined") {
   const w = window as unknown as Record<string, unknown>;
   if (!w[PATCH_FLAG]) {
     const original = window.fetch.bind(window);
-    window.fetch = function patchedFetch(input, init) {
+    window.fetch = async function patchedFetch(input, init) {
+      if (!isMotionRequest(input)) return original(input, init);
       try {
-        const token = readToken();
-        if (token && isMotionRequest(input)) {
+        const token = readToken() ?? (await jetonDuServeur(original));
+        if (token) {
           const headers = new Headers(
             init?.headers ?? (input instanceof Request ? input.headers : undefined),
           );
