@@ -46,6 +46,11 @@ function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
         declinaisons: resume.declinaisons.length,
         rendus: resume.rendus,
         erreurs: resume.erreurs.length,
+        // Le premier rendu sert de vignette ; sans rendu, le format de la première déclinaison.
+        apercu: {
+          video: resume.declinaisons.find((d) => d.rendu)?.rendu?.url ?? null,
+          portrait: (resume.declinaisons.find((d) => d.rendu) ?? resume.declinaisons[0])?.version === "court",
+        },
       };
     });
     return { films, error: null };

@@ -11,6 +11,7 @@ const FILM: HubFilm = {
   declinaisons: 4,
   rendus: 2,
   erreurs: 0,
+  apercu: { video: "/api/motion/film/video?id=kotizo&declinaison=Court-FR", portrait: true },
 };
 
 describe("HubFilms", () => {
@@ -37,5 +38,18 @@ describe("HubFilms", () => {
     expect(screen.getByText("fiche invalide · 3 erreurs")).toBeInTheDocument();
     const liens = container.querySelectorAll('a[data-wm-id="hub.film.card"]');
     expect(liens[0]).toHaveAttribute("href", "/film/kotizo");
+  });
+
+  it("la carte montre l'image du premier rendu, dans un cadre de téléphone pour un film vertical", () => {
+    const { container } = render(<HubFilms films={[FILM]} error={null} />);
+    const video = container.querySelector("[data-wm-id='hub.film.card'] video");
+    expect(video?.getAttribute("src")).toBe("/api/motion/film/video?id=kotizo&declinaison=Court-FR#t=12");
+    expect(container.querySelector(".device.phone")).not.toBeNull();
+  });
+
+  it("sans rendu : le croquis, jamais une vidéo qui n'existe pas", () => {
+    const { container } = render(<HubFilms films={[{ ...FILM, apercu: { video: null, portrait: false } }]} error={null} />);
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector(".device.mac [class='dev-body']")).not.toBeNull();
   });
 });

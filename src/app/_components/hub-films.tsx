@@ -1,4 +1,6 @@
 import Link from "next/link";
+
+import ApercuDuCadre from "./apercu-du-cadre";
 import NouveauFilmBouton from "./nouveau-film-bouton";
 
 /**
@@ -18,7 +20,13 @@ export interface HubFilm {
   rendus: number;
   // Nombre d'erreurs de la fiche (0 = fiche valide).
   erreurs: number;
+  // La vignette : le premier rendu s'il y en a un, et le format du cadre.
+  apercu: { video: string | null; portrait: boolean };
 }
+
+// Un film de marque ouvre sur sa marque (aplat de couleur) ; vers 12 s, le
+// premier vrai écran (le problème, la conversation) est à l'image.
+const INSTANT_D_UN_FILM = 12;
 
 const STATUS_LABEL: Record<HubFilmStatus, string> = {
   brouillon: "Brouillon",
@@ -44,6 +52,7 @@ function detailDuStatut(film: HubFilm): string {
 function FilmCard({ film }: { film: HubFilm }) {
   return (
     <Link className="tcard fcard" href={`/film/${film.id}`} data-wm-id="hub.film.card">
+      <ApercuDuCadre portrait={film.apercu.portrait} video={film.apercu.video} badge={film.apercu.portrait ? "9:16" : "16:9"} instant={INSTANT_D_UN_FILM} />
       <div className="tbody">
         <div className="tbody-top">
           <h3 className="tname">{film.nom}</h3>

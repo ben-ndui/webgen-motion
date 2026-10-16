@@ -92,6 +92,9 @@
 .gm-hub .dev-bar i { width: 4px; height: 4px; border-radius: 50%; background: var(--line-strong); }
 .gm-hub .device.phone .dev-bar { display: none; }
 .gm-hub .dev-body { padding: 9px; display: flex; flex-direction: column; gap: 5px; }
+/* L'image de la vraie vidéo, dans le cadre (sous la barre du portable). */
+.gm-hub .dev-video { display: block; width: 100%; height: calc(100% - 13px); object-fit: cover; background: #000; }
+.gm-hub .device.phone .dev-video { height: 100%; border-radius: 9px; }
 .gm-hub .device.phone .dev-body { padding: 12px 7px 7px; gap: 4px; height: 100%; border-radius: 9px; background: var(--surface); }
 .gm-hub .dev-body .b { height: 6px; border-radius: 3px; background: var(--line); }
 .gm-hub .dev-body .b.lg { height: 11px; width: 58%; background: var(--line-strong); }

@@ -1,5 +1,6 @@
 // Carte d'un tour dans le hub (extraite de hub-app.tsx, qui dépassait 250 lignes).
 import Link from "next/link";
+import ApercuDuCadre, { secondes } from "./apercu-du-cadre";
 import TourCardMenu from "./tour-card-menu";
 
 export interface HubTour {
@@ -14,39 +15,17 @@ export interface HubTour {
 
 const STATUS_LABEL = { draft: "Brouillon", ready: "Prêt", rendered: "Rendu" } as const;
 
-function Thumb({ tour }: { tour: HubTour }) {
-  const phone = tour.fmt === "9:16";
-  const body = (
-    <div className="dev-body">
-      <div className="b lg" />
-      <div className="b w1" />
-      {!phone && <div className="dev-accent" />}
-      <div className="b w3" />
-      <div className="b w2" />
-      {phone && <div className="dev-accent" />}
-    </div>
-  );
-  return (
-    <div className="thumb" data-wm-id="hub.card.thumb">
-      <div className="thumb-tl"><span className="fbadge">{tour.fmt}</span></div>
-      <div className="thumb-br"><span className="dur">{tour.dur}</span></div>
-      {phone ? (
-        <div className="device phone">{body}</div>
-      ) : (
-        <div className="device mac">
-          <div className="dev-bar"><i /><i /><i /></div>
-          {body}
-        </div>
-      )}
-      <div className="thumb-play"><span /></div>
-    </div>
-  );
-}
-
 export default function TourCard({ tour }: { tour: HubTour }) {
   return (
     <Link className="tcard" href={`/tour/${tour.id}`} data-wm-id="hub.card">
-      <Thumb tour={tour} />
+      <ApercuDuCadre
+        portrait={tour.fmt === "9:16"}
+        video={tour.status === "rendered" ? `/api/motion/tour/preview/final?id=${encodeURIComponent(tour.id)}` : null}
+        badge={tour.fmt}
+        duree={tour.dur}
+        // À 40 % : passé le carton d'intro, au milieu d'une section.
+        instant={Math.round((secondes(tour.dur) ?? 10) * 0.4)}
+      />
       <div className="tbody">
         <div className="tbody-top">
           <h3 className="tname">{tour.name}</h3>
