@@ -37,6 +37,7 @@ const RUNNER_FILES: Record<string, string> = {
   "agent-generate-tour": "agent-generate-tour.ts",
   "scaffold-tours-from-project": "scaffold-tours-from-project.ts",
   "render-film": "render-film.ts",
+  "render-format": "render-format.ts",
   "remplir-film": "remplir-film.ts",
   "ecrans-du-site": "ecrans-du-site.ts",
 };

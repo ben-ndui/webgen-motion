@@ -1,6 +1,7 @@
 import { Composition } from "remotion";
 import { z } from "zod";
 import { CompositionFilm } from "./film/CompositionFilm";
+import { CompositionsDesFormats } from "./film/CompositionsDesFormats";
 import { HelloWorld } from "./HelloWorld";
 import { Tour } from "./Tour";
 import { computeDurationInFrames, type TourCompositionProps } from "./lib/types";
@@ -107,6 +108,8 @@ export function Root() {
       {/* Mode « Film de marque » : la fiche FilmSpec arrive en inputProps
           (scripts/render-film.ts). Moteur repris du gabarit film-motion. */}
       <CompositionFilm />
+      {/* Les formats du catalogue : explainer, conte à compteur, clip karaoké. */}
+      <CompositionsDesFormats />
     </>
   );
 }

@@ -115,7 +115,8 @@ export type EvenementDeRendu =
  */
 export function lireLigneDuRendu(ligne: string): EvenementDeRendu | null {
   if (!ligne) return null;
-  if (ligne.startsWith("▶ Film")) return { type: "phase", label: "Préparation du rendu…" };
+  // « ▶ Film … » ou « ▶ Explainer … » : la bannière de début des deux runners.
+  if (ligne.startsWith("▶ ")) return { type: "phase", label: "Préparation du rendu…" };
 
   let m = ligne.match(/^Bundling (\d+)%/);
   if (m) return { type: "phase", label: `Bundling de la composition · ${m[1]}%…` };

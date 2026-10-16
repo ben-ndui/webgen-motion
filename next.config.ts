@@ -50,6 +50,8 @@ const nextConfig: NextConfig = {
       // jamais embarquées dans l'app. L'app installée les lit dans
       // ~/.webgen-motion/fiches (film-loader.ts).
       "films/**/*",
+      // Idem pour les projets de format (src/lib/formats/format-store.ts).
+      "formats/**/*",
     ],
   },
   // These packages are referenced via API routes but should NEVER
