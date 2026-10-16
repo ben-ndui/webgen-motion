@@ -12,6 +12,9 @@ export type MessageDeLaConversation = {
   // « autre » : son interlocuteur, bulle grise à gauche.
   auteur: "moi" | "autre";
   texte: string;
+  // Boîte de réception (produit sur ordinateur) : qui écrit, à gauche de l'objet.
+  // Sans lui, « Moi » ou « Réponse automatique ».
+  expediteur?: string;
 };
 
 /** Ce qui se lit dans les plans de la bibliothèque (spec.bibliotheque). */
@@ -34,6 +37,8 @@ export type TextesDuFilm = {
   probleme: {
     // Heure affichée dans la barre de statut du téléphone.
     heure: string;
+    // Produit sur ordinateur : le titre de la boîte de réception, dans la langue du film.
+    titreDeLaBoite?: string;
     // La PREMIÈRE bulle revient à la fin : c'est la relance restée sans suite.
     messages: [MessageDeLaConversation, ...MessageDeLaConversation[]];
   };

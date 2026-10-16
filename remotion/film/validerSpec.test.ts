@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { FILM } from "./film";
 import { MONTAGES } from "./montages";
 import type { FilmSpec } from "./spec";
-import { erreursDeLaSpec, validerSpec, REPERE_DE_VOIX } from "./validerSpec";
+import { erreursDeLaSpec, validerSpec } from "./validerSpec";
+import { REPERE_DE_VOIX } from "./validerSpec";
 import { reperesDuFilm } from "./reperes";
 
 // Une copie modifiable de la fiche d'exemple, par un aller-retour JSON :
@@ -16,6 +17,23 @@ describe("validerSpec", () => {
   it("accepte la fiche d'exemple, y compris après un passage en JSON", () => {
     expect(erreursDeLaSpec(FILM)).toEqual([]);
     expect(validerSpec(copie())).toEqual(FILM);
+  });
+
+  it("accepte un ordinateur avec le rapport de ses captures, refuse un appareil inconnu", () => {
+    const ordinateur = copie();
+    ordinateur.marque.appareil = { type: "ordinateur", rapport: 820 / 900 };
+    for (const langue of ["fr", "en"] as const) {
+      ordinateur.textes[langue].probleme.titreDeLaBoite = "Boîte";
+      ordinateur.textes[langue].probleme.messages.forEach((m) => { m.expediteur = "Moi"; });
+    }
+    expect(erreursDeLaSpec(ordinateur)).toEqual([]);
+    const sansRapport = JSON.parse(JSON.stringify(ordinateur));
+    sansRapport.marque.appareil = { type: "ordinateur" };
+    expect(erreursDeLaSpec(sansRapport)).toContain(
+      "marque.appareil.rapport : nombre positif attendu (hauteur / largeur des captures)");
+    const inconnu = JSON.parse(JSON.stringify(ordinateur));
+    inconnu.marque.appareil = { type: "montre" };
+    expect(erreursDeLaSpec(inconnu)).toContain("marque.appareil.type : « telephone » ou « ordinateur »");
   });
 
   it("refuse ce qui n'est pas un objet", () => {
@@ -125,5 +143,15 @@ describe("voix off et volume de la musique", () => {
     expect(reperes.every((r) => REPERE_DE_VOIX.test(r.cle))).toBe(true);
     const ids = new Set([...MONTAGES.long.plans, ...MONTAGES.court.plans].map((p) => p.id));
     expect(new Set(reperes.map((r) => r.plan))).toEqual(ids);
+  });
+
+  it("exige, sur ordinateur, le titre de la boîte et chaque expéditeur dans la langue du film", () => {
+    const ordinateur = copie();
+    ordinateur.marque.appareil = { type: "ordinateur", rapport: 820 / 900 };
+    delete ordinateur.textes.en.probleme.titreDeLaBoite;
+    delete ordinateur.textes.fr.probleme.messages[0].expediteur;
+    const erreurs = erreursDeLaSpec(ordinateur);
+    expect(erreurs).toContain("textes.en.probleme.titreDeLaBoite : texte non vide attendu");
+    expect(erreurs).toContain("textes.fr.probleme.messages[0].expediteur : texte non vide attendu");
   });
 });

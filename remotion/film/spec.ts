@@ -68,7 +68,13 @@ export type MarqueDuFilm = {
   ombreTelephone: string;
   // Dernière ligne du film, dans les déclinaisons qui montrent un contact.
   contact: string;
+  // Sur quoi tourne le produit, donc le cadre des captures : un téléphone
+  // (défaut) ou une fenêtre d'ordinateur, dont `rapport` = hauteur / largeur
+  // des captures (Kandidate : 820 / 900).
+  appareil?: AppareilDuFilm;
 };
+
+export type AppareilDuFilm = { type: "telephone" } | { type: "ordinateur"; rapport: number };
 
 /** Les captures RÉELLES de l'app, dans public/<textes[langue].dossierDesEcrans>/. */
 export type EcransDuFilm = {
