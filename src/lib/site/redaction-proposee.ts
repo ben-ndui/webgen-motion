@@ -97,7 +97,8 @@ function listeValide(valeur: unknown, nombre: number, max: number): (string | un
 }
 
 /** Tous les nombres d'un texte sont-ils écrits quelque part sur le site ? */
-export function chiffreDuSite(chiffre: string, lecture: LectureDuSite): boolean {
+// Seuls la description et les textes comptent : la mémoire du site suffit (réécriture d'une section).
+export function chiffreDuSite(chiffre: string, lecture: Pick<LectureDuSite, "description" | "textes">): boolean {
   const nombres = chiffre.match(/\d+(?:[.,]\d+)?/g) ?? [];
   if (nombres.length === 0) return false;
   const site = [lecture.description, ...lecture.textes.titres, ...lecture.textes.paragraphes, ...lecture.textes.chiffres]

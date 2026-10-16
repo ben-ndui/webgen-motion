@@ -110,3 +110,10 @@
 .gm-film .voix-etat.trop-longue { color: var(--ink); border-color: var(--ink); }
 .gm-film input[type="range"] { width: 100%; accent-color: var(--accent); }
 .gm-film .assistant-pied { display: flex; justify-content: space-between; gap: var(--s-3); padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+
+/* « Écrire avec Claude » au pied d'une section de « Ton histoire » */
+.gm-film .ecrire-section { padding-top: var(--s-3); border-top: 1px dashed var(--line); }
+.gm-film .ecrire-section-consigne { flex: 1; min-width: 200px; }
+.gm-film .ecrire-section-champs { margin: 0; display: grid; gap: var(--s-2); }
+.gm-film .ecrire-section-champs dt { font-size: var(--t-xs); color: var(--muted); }
+.gm-film .ecrire-section-champs dd { margin: 0; font-size: var(--t-sm); color: var(--ink); }

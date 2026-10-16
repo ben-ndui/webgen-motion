@@ -109,7 +109,7 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
           recharger={recharger}
         />
       )}
-      {etape === "histoire" && <EtapeHistoire fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} />}
+      {etape === "histoire" && <EtapeHistoire id={etat.id} fiche={fiche} langue={langue} propositions={etat.propositions} suggestions={etat.suggestions} modifier={modifier} enregistrer={enregistrer} />}
       {etape === "pret" && <EtapePret id={etat.id} etat={etat} fiche={fiche} modifier={modifier} enregistrer={enregistrer} onAller={(e) => setEtape(e)} />}
 
       </fieldset>

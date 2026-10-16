@@ -30,6 +30,7 @@ import { filmerLeFilm, poserLesVideos } from "../src/lib/site/videos-du-film";
 import { lireLaPage } from "../src/lib/site/lecture-du-site";
 import { trouverLeLogo } from "../src/lib/site/logo-du-site";
 import { devinerLaMarque } from "../src/lib/site/marque-du-site";
+import { garderLaMemoire } from "../src/lib/site/memoire-du-site";
 import { lancerLeNavigateur, ouvrir } from "../src/lib/site/navigateur-du-site";
 import { adresseLisible, choisirLesPages, normaliserLAdresse } from "../src/lib/site/pages-du-site";
 import { ecrirePropositions, ecrireSuggestions, lirePropositions } from "../src/lib/site/propositions-store";
@@ -85,6 +86,12 @@ async function principal(): Promise<void> {
     const accueil = await ouvrir(navigateur, url, "ordinateur");
     const lecture = await lireLaPage(accueil);
     await accueil.close();
+    // Les faits du site, gardés pour « Écrire avec Claude » section par section.
+    try {
+      garderLaMemoire(id, lecture);
+    } catch {
+      // sans mémoire, la réécriture s'appuiera sur la fiche seule : rien ne s'arrête
+    }
 
     phaseDe("marque")("Lecture de tes couleurs, de ta police et de ton logo…");
     const catalogue = new Set(getAvailableFonts().map((police) => police.fontFamily));

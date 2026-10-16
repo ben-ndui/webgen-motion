@@ -22,6 +22,11 @@ de ton site, et ta série courte générée par IA, avec Claude à chaque étape
 - Réglages · Vidéo IA : la clé Google qui fabrique les plans de la série se
   saisit enfin dans l'app (elle ne pouvait venir que de l'environnement de
   développement).
+- « Écrire avec Claude » au pied de chaque section de « Ton histoire » : une
+  consigne facultative (« plus court », « parle des délais »), la
+  proposition champ par champ, « Garder », « Une autre » ou « Laisser ».
+  Claude s'appuie sur ce qui a été lu sur ton site ; un chiffre n'est gardé
+  que s'il y est écrit.
 - « Remplir depuis ton site » : une fenêtre suit les étapes et montre les
   captures au moment où elles sont prises, puis devient un récap qui mène
   à ce qu'il reste à faire. Elle se réduit dans le coin pendant le travail.
