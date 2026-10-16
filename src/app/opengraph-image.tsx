@@ -78,7 +78,7 @@ export default function OpenGraphImage() {
           }}
         >
           <div>genmotion.app</div>
-          <div>Smooth &amp; Design · Nice</div>
+          <div>Smooth &amp; Design · Côte d&apos;Azur</div>
         </div>
       </div>
     ),

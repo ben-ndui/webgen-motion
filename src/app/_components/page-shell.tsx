@@ -56,7 +56,7 @@ export default function PageShell({
             <Link href="/cgv">CGV</Link>
             <a href="https://github.com/ben-ndui/webgen-motion">GitHub</a>
           </div>
-          <span className="foot-meta">genmotion.app · Smooth &amp; Design · Nice</span>
+          <span className="foot-meta">genmotion.app · Smooth &amp; Design · Côte d&apos;Azur</span>
         </div>
       </footer>
     </div>

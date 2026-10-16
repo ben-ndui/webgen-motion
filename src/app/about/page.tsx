@@ -41,7 +41,7 @@ export default function About() {
     <PageShell active="about">
       <main className="wrap wrap-narrow">
         <section className="about-hero" data-wm-id="about.hero">
-          <span className="kicker">À propos · Smooth &amp; Design · Nice</span>
+          <span className="kicker">À propos · Smooth &amp; Design · Côte d&apos;Azur</span>
           <h1>Le motion design produit, sans le cloud.</h1>
           <p className="about-lead">
             GEN MOTION est né d&apos;une frustration simple : créer une démo vidéo propre
