@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { redirect } from "next/navigation";
 import "../hub.css";
 import { getAllTours } from "@/lib/tour-loader";
 import { getCategory } from "@/lib/motion-categories";
@@ -30,11 +31,8 @@ function statusFor(id: string): HubTour["status"] {
 }
 
 // Les films de marque, statut tiré du disque. Une lecture ratée du dossier
-// remonte comme une ERREUR à l'écran, jamais comme « aucun film ». Sur la
-// vitrine publique (Vercel), pas de section du tout (`null`) : ce sont des
-// projets clients, réservés à l'app locale.
+// remonte comme une ERREUR à l'écran, jamais comme « aucun film ».
 function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
-  if (isPublicWebRuntime(process.env)) return { films: null, error: null };
   try {
     const films = listerFilms().map((fiche) => {
       const resume = resumerFilm(fiche);
@@ -60,6 +58,11 @@ function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
 }
 
 export default function DashboardPage() {
+  // Le hub lit et écrit ~/.webgen-motion : il n'existe que dans l'app locale.
+  // Sur la vitrine (Vercel), ce dossier ne peut pas être créé et la page
+  // tombait en 500 ; le visiteur est envoyé vers le téléchargement de l'app.
+  if (isPublicWebRuntime(process.env)) redirect("/download");
+
   const tours = getAllTours();
   const edition = resolveEdition().edition;
   const reglages = lireLEtatDesReglages();
