@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { estNomSur } from "../film-store";
 import { CATALOGUE, type FicheDeFormat, type NomDeFormat, erreursDuProjet } from "./catalogue";
 import { getFormatsDir } from "./format-store";
+import { textesAEcrire } from "./textes-a-ecrire";
 
 /**
  * Lire et écrire les projets de format (`<id>.json` = { format, spec }).
@@ -91,6 +92,21 @@ export function creerProjet(id: string, fiche: unknown, dossier: string = getFor
   return { ok: true, erreurs: erreursDuProjet(fiche) };
 }
 
+/**
+ * `exemple` est un champ du SERVEUR : vrai tant qu'un texte est encore celui
+ * de l'exemple du format (textes-a-ecrire.ts). Ce que le navigateur envoie
+ * pour ce champ est ignoré. Un projet trop incomplet pour être lu reste « exemple ».
+ */
+function marquerLExemple(fiche: Record<string, unknown>): void {
+  const spec = fiche.spec as Record<string, unknown> | undefined;
+  if (typeof spec !== "object" || spec === null) return;
+  try {
+    spec.exemple = textesAEcrire(fiche as FicheDeFormat).length > 0;
+  } catch {
+    spec.exemple = true;
+  }
+}
+
 /** Remplace un projet EXISTANT, de façon atomique (temporaire puis renommage). */
 export function enregistrerProjet(id: string, fiche: unknown, dossier: string = getFormatsDir()): ResultatDEcriture {
   if (!estNomSur(id)) return { ok: false, statut: 400, raison: "Nom de projet invalide" };
@@ -101,6 +117,7 @@ export function enregistrerProjet(id: string, fiche: unknown, dossier: string = 
   if (actuel?.format !== undefined && actuel.format !== (fiche as { format?: unknown }).format) {
     return { ok: false, statut: 400, raison: "Le format d'un projet ne change pas" };
   }
+  marquerLExemple(fiche as Record<string, unknown>);
   const temporaire = `${chemin(id, dossier)}.${process.pid}.${Date.now()}.tmp`;
   writeFileSync(temporaire, `${JSON.stringify(fiche, null, 2)}\n`);
   renameSync(temporaire, chemin(id, dossier));

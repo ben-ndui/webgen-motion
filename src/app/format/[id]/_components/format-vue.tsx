@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import type { ResumeDuProjet, StatutDuProjet } from "@/lib/formats/format-etat";
@@ -45,7 +46,16 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
       kicker={`${resume.libelle} · formats/${resume.id}.json`}
       titre={resume.id}
       sousTitre={pourQui ?? "Format inconnu."}
-      statut={<span className={statut.classe} data-wm-id="format.statut">{statut.libelle}</span>}
+      statut={
+        <div className="film-actions">
+          <span className={statut.classe} data-wm-id="format.statut">{statut.libelle}</span>
+          {resume.statut !== "invalide" && (
+            <Link className="film-btn film-btn-ghost" href={`/format/${id}/editer`} data-wm-id="format.modifier">
+              Modifier le contenu
+            </Link>
+          )}
+        </div>
+      }
     >
       {resume.statut === "invalide" ? (
         <div className="film-block film-alert" role="alert">
