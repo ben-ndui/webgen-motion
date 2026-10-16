@@ -8,7 +8,9 @@
  *   tsx scripts/remplir-film.ts --film-id <id> --url <adresse> [--remplacer-captures]
  *
  * Progression en NDJSON sur stdout (même contrat que agent-generate-tour) :
- * { type: "phase", label } … puis { type: "done", resume } ou { type: "error", message }.
+ * { type: "phase", etape, label } et { type: "apercu", numero } (une capture
+ * qu'on peut montrer tout de suite) … puis { type: "done", resume } ou
+ * { type: "error", message }. Les étapes : src/lib/site/etapes-du-remplissage.ts.
  */
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -21,7 +23,9 @@ import { ecrireAtomiquement, nomDeFichierSur } from "../src/lib/film-fichiers-de
 import { languesDuFilm } from "../src/lib/film-fiche-depart";
 import { chargerFilm } from "../src/lib/film-loader";
 import { estNomSur, getFilmPublicDir } from "../src/lib/film-store";
+import { APERCUS_MAXIMUM, poserUnApercu, viderLesApercus } from "../src/lib/site/apercus-du-remplissage";
 import { capturerLeFilm, nommerLesCaptures } from "../src/lib/site/captures-du-film";
+import type { EtapeDuRemplissage } from "../src/lib/site/etapes-du-remplissage";
 import { filmerLeFilm, poserLesVideos } from "../src/lib/site/videos-du-film";
 import { lireLaPage } from "../src/lib/site/lecture-du-site";
 import { trouverLeLogo } from "../src/lib/site/logo-du-site";
@@ -37,7 +41,8 @@ import { briefDepuisLeSite, serieVierge } from "../src/lib/site/serie-du-site";
 function emettre(evenement: Record<string, unknown>): void {
   process.stdout.write(`${JSON.stringify(evenement)}\n`);
 }
-const phase = (label: string) => emettre({ type: "phase", label });
+// Chaque message dit à quelle grande étape il appartient : l'écran en fait une frise.
+const phaseDe = (etape: EtapeDuRemplissage) => (label: string) => emettre({ type: "phase", etape, label });
 
 function argument(drapeau: string): string | undefined {
   const i = process.argv.indexOf(drapeau);
@@ -60,20 +65,34 @@ async function principal(): Promise<void> {
   const langues = languesDuFilm(fiche.spec);
   const dossierPublic = getFilmPublicDir(id);
 
-  phase(`Ouverture de ${adresseLisible(url)}…`);
+  viderLesApercus(id);
+  let apercus = 0;
+  // Un aperçu n'est qu'un affichage : s'il ne s'écrit pas, le remplissage continue sans lui.
+  const montrer = (image: Uint8Array) => {
+    if (apercus >= APERCUS_MAXIMUM) return;
+    try {
+      poserUnApercu(id, apercus + 1, image);
+      apercus += 1;
+      emettre({ type: "apercu", numero: apercus });
+    } catch {
+      // rien : la capture elle-même est gardée en mémoire pour la fiche
+    }
+  };
+
+  phaseDe("ouverture")(`Ouverture de ${adresseLisible(url)}…`);
   const navigateur = await lancerLeNavigateur();
   try {
     const accueil = await ouvrir(navigateur, url, "ordinateur");
     const lecture = await lireLaPage(accueil);
     await accueil.close();
 
-    phase("Lecture de ta marque (couleurs, police, logo)…");
+    phaseDe("marque")("Lecture de tes couleurs, de ta police et de ton logo…");
     const catalogue = new Set(getAvailableFonts().map((police) => police.fontFamily));
     const marque = devinerLaMarque(lecture.couleurs, lecture.polices, catalogue);
     const logo = await trouverLeLogo(lecture.logos);
 
     const pages = choisirLesPages(lecture.liens);
-    const captures = await capturerLeFilm(navigateur, url, pages, phase);
+    const captures = await capturerLeFilm(navigateur, url, pages, phaseDe("captures"), montrer);
     const spec = structuredClone(fiche.spec);
     const fichiers = nommerLesCaptures(spec, captures);
     const dejaProposees = lirePropositions(id);
@@ -93,7 +112,7 @@ async function principal(): Promise<void> {
     }
     const nosCaptures = { ...dejaProposees, ...Object.fromEntries(capturesPosees.map((r) => [`capture:${r}`, r])) };
     const remplacerTout = process.argv.includes("--remplacer-captures");
-    const videos = poserLesVideos(spec, await filmerLeFilm(navigateur, spec, url, pages, phase), langues, dossierPublic, nosCaptures, remplacerTout);
+    const videos = poserLesVideos(spec, await filmerLeFilm(navigateur, spec, url, pages, phaseDe("videos")), langues, dossierPublic, nosCaptures, remplacerTout);
     capturesPosees.push(...videos.posees);
 
     let histoires = {};
@@ -101,7 +120,7 @@ async function principal(): Promise<void> {
     let redaction = "sans clé Claude : les textes restent à écrire";
     const agent = resolveAgent();
     if (agent) {
-      phase("Claude rédige ton histoire à partir du site…");
+      phaseDe("textes")("Claude rédige ton histoire à partir du site…");
       // Les écrans du parcours tels qu'ils sont filmés : l'accueil, puis les pages du menu.
       const ecrans = ["Accueil", ...pages.parcours.map((page) => lecture.liens.find((l) => l.url === page)?.texte || new URL(page).pathname)];
       const resultat = await redigerAvecClaude(lecture, langues, agent, ecrans.slice(0, spec.ecrans.parcours.length));
@@ -114,7 +133,7 @@ async function principal(): Promise<void> {
       }
     }
 
-    phase("Remplissage de la fiche…");
+    phaseDe("textes")("Remplissage de la fiche…");
     const { fiche: remplie, propositions, suggestions } = remplirLaFiche(spec, { marque, adresse: adresseLisible(url), histoires }, dejaProposees);
     // Les captures et vidéos posées par GEN MOTION : un prochain remplissage pourra les remplacer.
     for (const relatif of capturesPosees) propositions[`capture:${relatif}`] = relatif;
@@ -130,7 +149,7 @@ async function principal(): Promise<void> {
     if (serieVierge(remplie) && !agent) {
       serie = "sans clé Claude : pas d'épisode proposé";
     } else if (serieVierge(remplie) && agent) {
-      phase("Claude écrit un premier épisode de série…");
+      phaseDe("textes")("Claude écrit un premier épisode de série…");
       const episode = await ecrireUnEpisodePourLaFiche(remplie, briefDepuisLeSite(lecture), agent);
       if (episode.ok) {
         remplie.cinema = episode.cinema;

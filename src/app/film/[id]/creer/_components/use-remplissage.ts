@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 
+import { AVANCEMENT_DE_DEPART, type Avancement, avancer } from "@/lib/site/etapes-du-remplissage";
+
 import { lireLeFlux } from "./lire-le-flux";
 
 export type ResumeDuRemplissage = {
@@ -19,11 +21,12 @@ export type ResumeDuRemplissage = {
   marque: string[];
 };
 
+// L'avancement reste après la fin : le récap montre les captures, l'erreur dit à quelle étape.
 export type EtatDuRemplissage =
   | { type: "repos" }
-  | { type: "en-cours"; etapes: string[] }
-  | { type: "fait"; resume: ResumeDuRemplissage }
-  | { type: "erreur"; message: string };
+  | { type: "en-cours"; avancement: Avancement }
+  | { type: "fait"; resume: ResumeDuRemplissage; avancement: Avancement }
+  | { type: "erreur"; message: string; avancement: Avancement };
 
 /** Lance « Remplir depuis mon site » et suit sa progression (NDJSON). */
 export function useRemplissage(id: string, onFini: () => Promise<void>) {
@@ -34,9 +37,10 @@ export function useRemplissage(id: string, onFini: () => Promise<void>) {
     async (url: string, remplacerCaptures = false) => {
       const controleur = new AbortController();
       arret.current = controleur;
-      const etapes: string[] = [];
-      setEtat({ type: "en-cours", etapes: [] });
-      let final: EtatDuRemplissage = { type: "erreur", message: "La lecture du site s'est arrêtée sans résultat." };
+      let avancement = AVANCEMENT_DE_DEPART;
+      setEtat({ type: "en-cours", avancement });
+      let resume: ResumeDuRemplissage | null = null;
+      let message = "La lecture du site s'est arrêtée sans résultat.";
       try {
         const reponse = await fetch(`/api/motion/film/${id}/remplir`, {
           method: "POST",
@@ -46,24 +50,26 @@ export function useRemplissage(id: string, onFini: () => Promise<void>) {
         });
         if (!reponse.ok || !reponse.body) {
           const corps = (await reponse.json().catch(() => ({}))) as { erreur?: string };
-          setEtat({ type: "erreur", message: corps.erreur ?? "Lancement impossible." });
+          setEtat({ type: "erreur", message: corps.erreur ?? "Lancement impossible.", avancement });
           return;
         }
         await lireLeFlux(reponse, (brut) => {
-          const evenement = brut as { type: string; label?: string; message?: string; resume?: ResumeDuRemplissage };
-          if (evenement.type === "phase" && evenement.label) {
-            etapes.push(evenement.label);
-            setEtat({ type: "en-cours", etapes: [...etapes] });
+          const evenement = brut as { type: string; message?: string; resume?: ResumeDuRemplissage };
+          const suivant = avancer(avancement, evenement);
+          if (suivant !== avancement) {
+            avancement = suivant;
+            setEtat({ type: "en-cours", avancement });
           }
-          if (evenement.type === "done" && evenement.resume) final = { type: "fait", resume: evenement.resume };
-          if (evenement.type === "error") final = { type: "erreur", message: evenement.message ?? "Erreur inconnue." };
+          if (evenement.type === "done" && evenement.resume) resume = evenement.resume;
+          if (evenement.type === "error") message = evenement.message ?? "Erreur inconnue.";
         });
       } catch {
-        final = controleur.signal.aborted ? { type: "erreur", message: "Arrêté." } : { type: "erreur", message: "GEN MOTION ne répond pas." };
+        resume = null;
+        message = controleur.signal.aborted ? "Arrêté à ta demande." : "GEN MOTION ne répond pas.";
       }
       // La fiche a pu changer même sur une erreur tardive : on la relit toujours.
       await onFini();
-      setEtat(final);
+      setEtat(resume ? { type: "fait", resume, avancement } : { type: "erreur", message, avancement });
     },
     [id, onFini],
   );

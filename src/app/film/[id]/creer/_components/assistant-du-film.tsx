@@ -77,11 +77,17 @@ export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props)
         </p>
       )}
 
-      {/* Toujours monté : changer d'étape pendant un remplissage ne doit ni le
-          couper ni laisser le formulaire gelé. Visible à l'étape 1, ou tant qu'il tourne. */}
-      <div hidden={etape !== "marque" && !occupe}>
-        <RemplirDepuisLeSite id={etat.id} adresseAuDepart={adresseAuDepart} avantDeLancer={enregistrer} recharger={recharger} onOccupe={setOccupe} />
-      </div>
+      {/* Toujours monté : changer d'étape pendant un remplissage ne doit pas le
+          couper. Le bloc vit à l'étape 1 ; son suivi (fenêtre ou carte du coin), partout. */}
+      <RemplirDepuisLeSite
+        id={etat.id}
+        adresseAuDepart={adresseAuDepart}
+        blocVisible={etape === "marque"}
+        avantDeLancer={enregistrer}
+        recharger={recharger}
+        onOccupe={setOccupe}
+        onAller={setEtape}
+      />
 
       <fieldset className="assistant-etapes" disabled={occupe} aria-busy={occupe}>
       {etape === "marque" && <EtapeMarque id={etat.id} fiche={fiche} modifier={modifier} deposer={deposer} logoPresent={present("logo")} propositions={etat.propositions} medias={etat.medias} />}

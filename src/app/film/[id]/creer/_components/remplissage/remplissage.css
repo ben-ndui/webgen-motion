@@ -1,0 +1,87 @@
+/* « Remplir depuis ton site » : la fenêtre de suivi (étapes, captures en
+   direct, récap) et sa carte réduite dans le coin. Tokens de l'outil
+   seulement : clair et sombre suivent tout seuls. */
+
+/* ---------- fenêtre ---------- */
+.remplissage-fond { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: color-mix(in oklch, var(--ink) 40%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.remplissage-fenetre { position: relative; width: min(640px, 100%); max-height: 88dvh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-5); padding: 28px; border-radius: var(--r-xl); border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-pop); outline: none; }
+.remplissage-barre { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); transform-origin: left; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.remplissage-entete { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.remplissage-surtitre { margin: 0 0 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.remplissage-titre { margin: 0; font-size: var(--t-lg); font-weight: 600; color: var(--ink); }
+.remplissage-icone { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; color: var(--muted); cursor: pointer; }
+.remplissage-icone:hover { background: var(--surface-2); color: var(--ink); }
+.remplissage-icone:focus-visible { outline: none; box-shadow: var(--ring); }
+.remplissage-icone svg { width: 18px; height: 18px; }
+
+/* ---------- captures en direct ---------- */
+.remplissage-apercus { flex: none; display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+.remplissage-apercu { flex: none; width: 68px; height: 120px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); object-fit: cover; object-position: top; animation: remplissageArrivee .45s cubic-bezier(.2, .7, .2, 1) both; }
+.remplissage-apercu-attente { animation: remplissageAttente 1.4s ease-in-out infinite; }
+@keyframes remplissageArrivee { from { opacity: 0; transform: translateY(10px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes remplissageAttente { 50% { opacity: .45; } }
+
+/* ---------- frise des étapes ---------- */
+.remplissage-frise { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.remplissage-etape { position: relative; display: flex; gap: 14px; padding-bottom: 18px; }
+.remplissage-etape:last-child { padding-bottom: 0; }
+/* le trait qui relie une pastille à la suivante */
+.remplissage-etape:not(:last-child)::before { content: ""; position: absolute; left: 11px; top: 26px; bottom: 2px; width: 2px; border-radius: 2px; background: var(--line); transition: background-color .3s; }
+.remplissage-etape[data-etat="faite"]:not(:last-child)::before { background: var(--accent); }
+.remplissage-pastille { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface); color: var(--surface); transition: background-color .3s, border-color .3s; }
+.remplissage-pastille svg { width: 14px; height: 14px; stroke-width: 3; }
+.remplissage-etape[data-etat="faite"] .remplissage-pastille { border-color: var(--accent); background: var(--accent); animation: remplissageCoche .35s cubic-bezier(.2, .7, .2, 1); }
+.remplissage-etape[data-etat="en-cours"] .remplissage-pastille { border-color: var(--accent); animation: remplissageOnde 1.6s ease-out infinite; }
+.remplissage-etape[data-etat="echouee"] .remplissage-pastille { border-color: oklch(58% 0.19 25); background: oklch(58% 0.19 25); }
+@keyframes remplissageCoche { from { transform: scale(.6); } to { transform: none; } }
+@keyframes remplissageOnde { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 45%, transparent); } 100% { box-shadow: 0 0 0 10px transparent; } }
+.remplissage-etape-texte { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; min-width: 0; }
+.remplissage-etape-titre { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+.remplissage-etape[data-etat="a-venir"] .remplissage-etape-titre { color: var(--muted); font-weight: 500; }
+.remplissage-etape-detail { font-size: var(--t-xs); color: var(--muted); }
+
+/* ---------- récap ---------- */
+.remplissage-recap { display: flex; flex-direction: column; gap: var(--s-5); }
+.remplissage-chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.remplissage-chiffre { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface-2); }
+.remplissage-chiffre-valeur { font-size: 24px; font-weight: 600; color: var(--ink); line-height: 1.1; }
+.remplissage-chiffre-libelle { font-size: var(--t-xs); color: var(--muted); }
+.remplissage-sous-titre { margin: 0 0 6px; font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+.remplissage-a-faire { list-style: none; margin: 0; padding: 0; }
+.remplissage-a-faire li { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: 10px 0; border-bottom: 1px solid var(--line); font-size: var(--t-sm); color: var(--ink-soft, var(--ink)); }
+.remplissage-a-faire li:last-child { border-bottom: 0; }
+.remplissage-a-faire .film-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.remplissage-a-faire .film-btn svg { width: 14px; height: 14px; }
+.remplissage-notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: var(--t-xs); color: var(--muted); }
+
+/* ---------- pied ---------- */
+.remplissage-pied { display: flex; align-items: center; justify-content: flex-end; gap: var(--s-2); }
+.remplissage-astuce { margin: 0 auto 0 0; font-size: var(--t-xs); color: var(--muted); }
+
+/* ---------- carte réduite, dans le coin ---------- */
+.remplissage-carte { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60; width: min(340px, calc(100vw - 32px)); border-radius: 20px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-pop); overflow: hidden; animation: remplissageArrivee .3s cubic-bezier(.2, .7, .2, 1) both; }
+.remplissage-carte-corps { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 40px 14px 12px; border: 0; background: transparent; text-align: left; font: inherit; cursor: pointer; }
+.remplissage-carte-corps:hover { background: var(--surface-2); }
+.remplissage-carte-corps:focus-visible { outline: none; box-shadow: inset var(--ring); }
+.remplissage-carte-apercu { width: 36px; height: 60px; flex: none; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-2); object-fit: cover; object-position: top; }
+.remplissage-carte-textes { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.remplissage-carte-titre { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+.remplissage-carte-detail { font-size: var(--t-xs); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.remplissage-carte-icone { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.remplissage-carte[data-etat="en-cours"] .remplissage-carte-icone { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
+.remplissage-carte-fermer { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+.remplissage-carte-fermer:hover { background: var(--surface-2); color: var(--ink); }
+.remplissage-carte-fermer svg { width: 14px; height: 14px; }
+.remplissage-carte[data-etat="fait"] .remplissage-carte-icone, .remplissage-carte[data-etat="erreur"] .remplissage-carte-icone { display: none; }
+.remplissage-carte-barre { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); transform-origin: left; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.remplissage-carte[data-etat="erreur"] .remplissage-carte-barre { background: oklch(58% 0.19 25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .remplissage-apercu, .remplissage-carte, .remplissage-etape .remplissage-pastille { animation: none !important; }
+  .remplissage-barre, .remplissage-carte-barre { transition: none; }
+}
+@media (max-width: 520px) {
+  .remplissage-fenetre { padding: 22px 18px; }
+  .remplissage-pied { flex-wrap: wrap; }
+  .remplissage-astuce { flex-basis: 100%; }
+}

@@ -13,23 +13,63 @@ const RESUME = { captures: 9, capturesGardees: 0, videos: 4, suggestionsEnAttent
 afterEach(() => vi.restoreAllMocks());
 
 describe("Remplir depuis ton site", () => {
-  it("enregistre d'abord, suit les étapes, relit la fiche et résume ce qui reste à écrire", async () => {
+  it("enregistre d'abord, ouvre le suivi, coche les étapes, puis montre le récap et ce qui reste à faire", async () => {
     const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      fluxNdjson([{ type: "phase", label: "Ouverture de saya.com…" }, { type: "done", resume: RESUME }]),
+      fluxNdjson([
+        { type: "phase", etape: "ouverture", label: "Ouverture de saya.com…" },
+        { type: "phase", etape: "captures", label: "Capture de la page 2 du parcours…" },
+        { type: "apercu", numero: 1 },
+        { type: "done", resume: RESUME },
+      ]),
     );
     const avantDeLancer = vi.fn(async () => true);
     const recharger = vi.fn(async () => {});
     const onOccupe = vi.fn();
-    render(<RemplirDepuisLeSite id="saya" avantDeLancer={avantDeLancer} recharger={recharger} onOccupe={onOccupe} />);
+    const onAller = vi.fn();
+    render(<RemplirDepuisLeSite id="saya" avantDeLancer={avantDeLancer} recharger={recharger} onOccupe={onOccupe} onAller={onAller} />);
     fireEvent.change(screen.getByLabelText("Adresse de ton site"), { target: { value: "saya.com" } });
     fireEvent.click(screen.getByRole("button", { name: "Remplir" }));
-    expect(await screen.findByText(/9 captures, 4 écrans filmés, logo trouvé, 21 textes proposés/)).toBeInTheDocument();
-    expect(screen.getByText("À écrire toi-même : le moment clé.")).toBeInTheDocument();
+
+    const fenetre = await screen.findByRole("dialog", { name: "C'est rempli" });
+    expect(fenetre).toHaveTextContent("Remplir depuis saya.com");
+    expect(fenetre).toHaveTextContent("9captures");
+    expect(fenetre).toHaveTextContent("Trouvélogo");
+    expect(fenetre.querySelector('img[src="/api/motion/film/saya/remplir/apercu?n=1"]')).not.toBeNull();
+    expect(screen.getByText("Écrire toi-même le moment clé")).toBeInTheDocument();
+
+    // chaque chose à faire mène au bon onglet, et ferme la fenêtre
+    fireEvent.click(screen.getByRole("button", { name: "Écrire" }));
+    expect(onAller).toHaveBeenCalledWith("histoire");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent("C'est rempli. 9 captures, 21 textes proposés.");
+
     expect(avantDeLancer).toHaveBeenCalled();
     expect(recharger).toHaveBeenCalled();
     expect(JSON.parse(String(fetch.mock.calls[0]![1]!.body))).toEqual({ url: "saya.com", remplacerCaptures: false });
     expect(onOccupe).toHaveBeenCalledWith(true);
     expect(onOccupe).toHaveBeenLastCalledWith(false);
+  });
+
+  it("pendant le travail : les étapes se cochent, et la fenêtre se réduit dans le coin sans rien arrêter", async () => {
+    let finir: (r: Response) => void = () => {};
+    vi.spyOn(globalThis, "fetch").mockReturnValue(new Promise((r) => { finir = r; }));
+    render(<RemplirDepuisLeSite id="saya" adresseAuDepart="saya.com" avantDeLancer={async () => true} recharger={async () => {}} onOccupe={() => {}} />);
+    const fenetre = await screen.findByRole("dialog", { name: "GEN MOTION lit ton site" });
+    expect(fenetre).toHaveTextContent("Ouverture du site : en cours");
+    expect(fenetre).toHaveTextContent("Captures des pages : à venir");
+
+    fireEvent.click(screen.getByRole("button", { name: "Réduire" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    const carte = screen.getByRole("button", { name: /Étape 1 sur 5 · Ouverture du site\. Agrandir/ });
+    fireEvent.click(carte);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    // Échap réduit aussi, il n'arrête pas
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("button", { name: /Agrandir le suivi/ })).toBeInTheDocument();
+    finir(fluxNdjson([{ type: "done", resume: RESUME }]));
+    expect(await screen.findByRole("button", { name: /C'est rempli\. Agrandir/ })).toBeInTheDocument();
   });
 
   it("une erreur du site s'affiche, et la fiche est quand même relue", async () => {
