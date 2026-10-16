@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, getAppBaseUrl } from "@/lib/stripe";
 import { resolvePlan, isStudioPlan, type StudioPlan } from "@/lib/stripe-plans";
+import { parametresDeLaSession } from "@/lib/stripe-session";
 import { LEGAL } from "@/lib/legal/config";
 
 export const runtime = "nodejs";
@@ -52,28 +53,7 @@ export async function POST(req: NextRequest) {
   try {
     const stripe = getStripe();
     const base = getAppBaseUrl();
-    const session = await stripe.checkout.sessions.create({
-      mode: resolved.mode,
-      payment_method_types: ["card"],
-      line_items: [{ price: resolved.priceId, quantity: 1 }],
-      success_url: `${base}/thanks?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${base}/download`,
-      // `customer_creation` n'est valide qu'en mode payment ; en mode
-      // subscription Stripe crée toujours le customer.
-      ...(resolved.mode === "payment"
-        ? { customer_creation: "always" as const }
-        : {}),
-      metadata: {
-        product: "studio-edition",
-        plan,
-        source: "webgen-motion-landing",
-        ...consentement,
-      },
-      // Le plan voyage avec l'abo → disponible aux renouvellements.
-      ...(resolved.mode === "subscription"
-        ? { subscription_data: { metadata: { plan, edition: "studio", ...consentement } } }
-        : {}),
-    });
+    const session = await stripe.checkout.sessions.create(parametresDeLaSession({ resolved, plan, base, consentement }));
     return NextResponse.json({ url: session.url });
   } catch (e) {
     console.error("[stripe/checkout]", e);
