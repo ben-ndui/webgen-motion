@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
+import { reponseVideo } from "@/lib/servir-une-video";
 
 /**
- * streams the composed `final.mp4` for a tour.
+ * streams the composed `final.mp4` for a tour (byte ranges supported, so
+ * the browser can seek: the dashboard cards show a frame mid-video).
  * Separate route from `/preview` because the final clip uses a
  * fixed filename (no `?file=...` param) — easier to embed in the
  * dashboard's hero video player.
@@ -26,13 +28,5 @@ export async function GET(req: Request) {
     );
   }
 
-  const buf = readFileSync(path);
-  const size = statSync(path).size;
-  return new NextResponse(new Uint8Array(buf), {
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Length": String(size),
-      "Cache-Control": "no-store",
-    },
-  });
+  return reponseVideo(req, path);
 }

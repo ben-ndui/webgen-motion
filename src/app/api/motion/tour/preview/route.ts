@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
+import { reponseVideo } from "@/lib/servir-une-video";
 
 /**
  * Local — preview endpoint. Streams an MP4 produced by
@@ -39,14 +40,5 @@ export async function GET(req: Request) {
     );
   }
 
-  const buf = readFileSync(path);
-  const size = statSync(path).size;
-
-  return new NextResponse(new Uint8Array(buf), {
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Length": String(size),
-      "Cache-Control": "no-store",
-    },
-  });
+  return reponseVideo(req, path);
 }

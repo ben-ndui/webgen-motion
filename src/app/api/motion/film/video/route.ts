@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 
 import { estNomSur, estTypeDeRendu, fichiersDuRendu, getFilmOutDir } from "@/lib/film-store";
+import { reponseVideo } from "@/lib/servir-une-video";
 
 /**
  * Sert le mp4 rendu d'une déclinaison de film (sur le modèle de
@@ -41,12 +42,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Rendu introuvable : lancer le rendu d'abord" }, { status: 404 });
   }
 
-  const contenu = readFileSync(chemin);
-  return new NextResponse(new Uint8Array(contenu), {
-    headers: {
-      "Content-Type": "video/mp4",
-      "Content-Length": String(statSync(chemin).size),
-      "Cache-Control": "no-store",
-    },
-  });
+  return reponseVideo(req, chemin);
 }
