@@ -18,10 +18,12 @@
  *   node scripts/notarize-and-staple.mjs --dmg <path> # submit un .dmg spécifique
  */
 
-import { spawn, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, basename, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { nettoyerLesImagesDeTravail, terminerLeDmg } from "./lib/dmg-temporaires.mjs";
 
 const REPO_ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const BUNDLE_DMG_DIR = join(REPO_ROOT, "src-tauri/target/release/bundle/dmg");
@@ -86,51 +88,9 @@ if (!process.env.APPLE_SIGNING_IDENTITY) {
   );
 }
 
-// ─── Nettoyage des artefacts DMG fantômes ──────────────────────────
-// bundle_dmg.sh crée des `rw.<pid>.*.dmg` temporaires (~1,8 Go chacun) ;
-// un build DMG qui échoue les laisse traîner → ils s'accumulent, montés
-// ou pas, et finissent par remplir le disque (« No space left on device »,
-// le vrai tueur du bundle_dmg.sh). On les détache + supprime avant chaque
-// build pour que ça ne bloque plus jamais.
-function cleanStaleDmgArtifacts() {
-  // 1. Détacher les images rw.*webgen-motion encore montées (sinon verrou).
-  try {
-    const info = spawnSync("hdiutil", ["info"], { encoding: "utf-8" }).stdout ?? "";
-    for (const block of info.split(/=+/)) {
-      if (/rw\.\d+\.webgen-motion/.test(block)) {
-        const dev = block.match(/\/dev\/disk\d+\b/)?.[0];
-        if (dev) {
-          log(`détache image fantôme ${dev}`);
-          spawnSync("hdiutil", ["detach", dev, "-force"], { stdio: "ignore" });
-        }
-      }
-    }
-  } catch {
-    /* hdiutil indisponible (non-macOS) : on ignore */
-  }
-  // 2. Supprimer les `rw.*.dmg` temporaires des builds précédents.
-  let freedMb = 0;
-  for (const dir of [BUNDLE_APP_DIR, BUNDLE_DMG_DIR]) {
-    if (!existsSync(dir)) continue;
-    for (const f of readdirSync(dir)) {
-      if (/^rw\.\d+\..*\.dmg$/.test(f)) {
-        const p = join(dir, f);
-        try {
-          freedMb += Math.round((statSync(p).size || 0) / 1e6);
-          unlinkSync(p);
-          log(`supprimé DMG temp ${f}`);
-        } catch {
-          /* fichier verrouillé : tant pis */
-        }
-      }
-    }
-  }
-  if (freedMb > 0) log(`✓ ${freedMb} Mo de DMG temporaires libérés`);
-}
-
 // ─── 3. build (sauf --skip-build) ──────────────────────────────────
 if (!skipBuild) {
-  cleanStaleDmgArtifacts();
+  nettoyerLesImagesDeTravail([BUNDLE_APP_DIR, BUNDLE_DMG_DIR], log);
   log(`npm run tauri:build (5-15 min)…`);
   const build = spawnSync("npm", ["run", "tauri:build"], {
     cwd: REPO_ROOT,
@@ -138,9 +98,15 @@ if (!skipBuild) {
     env: process.env,
   });
   if (build.status !== 0) {
-    fail(`tauri:build a échoué (exit ${build.status})`);
+    // L'app est déjà signée et notarisée quand bundle_dmg.sh échoue au
+    // démontage du volume : on termine le DMG au lieu de tout jeter.
+    log(`tauri:build a échoué (exit ${build.status}) : reprise du DMG…`);
+    const repris = terminerLeDmg(BUNDLE_DMG_DIR, log);
+    if (!repris) fail(`tauri:build a échoué (exit ${build.status}) et le DMG n'a pas pu être repris`);
+    log(`✓ DMG repris : ${basename(repris)}`);
+  } else {
+    log(`✓ build terminé`);
   }
-  log(`✓ build terminé`);
 } else {
   log(`--skip-build : utilise le .dmg existant`);
 }
