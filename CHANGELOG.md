@@ -50,6 +50,12 @@ de ton site, et ta série courte générée par IA, avec Claude à chaque étape
   téléchargée une fois et gardée sur ton ordinateur.
 - Dans l'app installée, tes films sont rangés dans `~/.webgen-motion/fiches`,
   hors de l'app : ils survivent aux mises à jour.
+- Après une mise à jour, l'app ne se branche plus sur le serveur resté
+  ouvert par la version précédente (tout échouait, « La création a échoué »).
+  Quitter avec ⌘Q arrête désormais le serveur, et il s'arrête aussi de
+  lui-même si l'app se ferme brutalement.
+- Les vidéos de tes projets se lisent par morceaux : l'aperçu des cartes
+  s'affiche sans télécharger chaque vidéo en entier.
 
 ### Notes
 

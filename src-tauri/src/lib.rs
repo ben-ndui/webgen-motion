@@ -14,7 +14,9 @@
 /// le port 3030 réponde avant de naviguer la fenêtre, sinon on
 /// voit un écran blanc le temps que Node boote.
 ///
-/// Le child Node est tué automatiquement quand l'app se ferme.
+/// Le child Node est tué à toute sortie de l'app (fenêtre fermée, ⌘Q),
+/// et s'arrête de lui-même si l'app disparaît sans prévenir (cf.
+/// `src/lib/server/surveiller-le-parent.ts`).
 use std::net::TcpStream;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
@@ -23,6 +25,9 @@ use tauri::Manager;
 /// Port where the embedded Next.js server listens. Has to match
 /// the URL passed in `tauri.conf.json` window config.
 const SERVER_PORT: u16 = 3030;
+/// Si 3030 est déjà pris, on essaie les suivants (jusqu'à 3039 inclus).
+#[cfg(not(debug_assertions))]
+const SERVER_PORT_LAST: u16 = 3039;
 /// Max time we wait for the server to start before giving up
 /// and showing the window anyway (the user sees an error from
 /// the WebView in that case — better than a blank window forever).
@@ -58,16 +63,39 @@ pub fn run() {
         // a stray Node process on the user's machine.
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
-                let state = window.state::<SidecarState>();
-                let mut guard = state.0.lock().unwrap();
-                if let Some(mut child) = guard.take() {
-                    let _ = child.kill();
-                }
+                stop_sidecar(&window.state::<SidecarState>());
             }
         })
         .invoke_handler(tauri::generate_handler![])
-        .run(tauri::generate_context!())
-        .expect("error while running webgen-motion tauri app");
+        .build(tauri::generate_context!())
+        .expect("error while building webgen-motion tauri app")
+        // ⌘Q quitte sans fermer la fenêtre : sans ce filet, le serveur
+        // survivait et la version suivante se branchait dessus (16/10/2026).
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                stop_sidecar(&app.state::<SidecarState>());
+            }
+        });
+}
+
+fn stop_sidecar(state: &SidecarState) {
+    let mut guard = state.0.lock().unwrap();
+    if let Some(mut child) = guard.take() {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+}
+
+/// Le premier port libre entre SERVER_PORT et SERVER_PORT_LAST.
+/// Un port déjà occupé peut être un serveur orphelin d'une version
+/// précédente : s'y brancher, c'est parler à un serveur qui ne connaît
+/// pas le jeton de cette fenêtre (tout répond 403).
+#[cfg(not(debug_assertions))]
+fn free_port() -> u16 {
+    use std::net::TcpListener;
+    (SERVER_PORT..=SERVER_PORT_LAST)
+        .find(|port| TcpListener::bind(("127.0.0.1", *port)).is_ok())
+        .unwrap_or(SERVER_PORT)
 }
 
 /// Production mode only. Spawns the bundled Next.js standalone
@@ -115,6 +143,10 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     // l'exige (cf. src/lib/server/desktop-guard.ts) ; le webview le
     // renvoie via le header x-webgen-desktop-token (desktop-token-bridge).
     let desktop_token = uuid::Uuid::new_v4().to_string();
+    let port = free_port();
+    if port != SERVER_PORT {
+        eprintln!("[webgen-motion] port {SERVER_PORT} déjà pris, serveur sur {port}");
+    }
 
     eprintln!("[webgen-motion] spawning Node sidecar : {server_js:?}");
     eprintln!("[webgen-motion] runners dir : {runners_dir:?}");
@@ -138,7 +170,7 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
 
     let mut child = Command::new(&node_exe)
         .arg(&server_js)
-        .env("PORT", SERVER_PORT.to_string())
+        .env("PORT", port.to_string())
         .env("HOSTNAME", "127.0.0.1")
         .env("WEBGEN_RUNNERS_DIR", runners_dir.to_string_lossy().to_string())
         .env("WEBGEN_FFMPEG_BIN", ffmpeg_path.to_string_lossy().to_string())
@@ -174,7 +206,16 @@ fn spawn_next_sidecar(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::
     *state.0.lock().unwrap() = Some(child);
 
     // Block (with timeout) until the server actually listens.
-    wait_for_port(SERVER_PORT, SERVER_BOOT_TIMEOUT_SECS);
+    wait_for_port(port, SERVER_BOOT_TIMEOUT_SECS);
+
+    // La fenêtre est ouverte sur 3030 (tauri.conf.json) : on la renvoie
+    // sur le port réellement pris.
+    if port != SERVER_PORT {
+        if let Some(window) = app.get_webview_window("main") {
+            let url: tauri::Url = format!("http://localhost:{port}").parse()?;
+            window.navigate(url)?;
+        }
+    }
     Ok(())
 }
 
