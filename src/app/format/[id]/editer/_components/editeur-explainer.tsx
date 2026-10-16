@@ -6,16 +6,18 @@ import type { ExplainerSpec } from "../../../../../../remotion/film/explainer/sp
 import type { Langue } from "../../../../../../remotion/film/spec";
 import ChampTexte from "../../../../film/[id]/creer/_components/champ-texte";
 import CarteDeScene from "./carte-de-scene";
+import EcrireAvecClaude from "./ecrire-avec-claude";
 
-type Props = { spec: ExplainerSpec; langue: Langue; modifier: (changement: (spec: ExplainerSpec) => ExplainerSpec | void) => void };
+type Props = { id: string; spec: ExplainerSpec; langue: Langue; modifier: (changement: (spec: ExplainerSpec) => ExplainerSpec | void) => void };
 
 /**
  * Les scènes de l'explainer, dans l'ordre où elles passent, puis la signature
  * de fin. La phrase finale reste la dernière : une scène ajoutée se glisse avant.
  */
-export default function EditeurExplainer({ spec, langue, modifier }: Props) {
+export default function EditeurExplainer({ id, spec, langue, modifier }: Props) {
   return (
     <div className="blocs" data-wm-id="format.explainer">
+      <EcrireAvecClaude id={id} garder={(proposition) => modifier((s) => ({ ...s, scenes: proposition.scenes, textes: proposition.textes }))} />
       {spec.scenes.map((scene, index) => (
         <CarteDeScene key={scene.id} spec={spec} index={index} langue={langue} modifier={modifier} />
       ))}

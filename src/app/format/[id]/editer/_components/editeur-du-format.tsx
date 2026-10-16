@@ -63,7 +63,7 @@ export default function EditeurDuFormat({ id, initial }: { id: string; initial: 
       )}
 
       {projet.format === "explainer" ? (
-        <EditeurExplainer spec={projet.spec} langue={enCours}
+        <EditeurExplainer id={id} spec={projet.spec} langue={enCours}
           modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as ExplainerSpec) ?? copie.spec } as FicheDeFormat))} />
       ) : (
         <p className="film-muted" data-wm-id="format.editeur-a-venir">
