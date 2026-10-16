@@ -117,6 +117,8 @@ npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]   # san
 
 - **Écrire une section avec Claude** (16/10/2026) : `POST /api/motion/film/[id]/histoire/reecrire` → `src/lib/histoire/` (sections + demande/contrôle purs, `reecrire-une-section.ts`). Faits = `lecture-du-site.json` gardé au remplissage (`src/lib/site/memoire-du-site.ts`) ; sans lui, aucun chiffre accepté. Rien n'est enregistré côté serveur ; l'écran enregistre AVANT de demander et pose avec `poserUneSuggestion` (`_components/histoire/`).
 
+- **Vente Studio réservée aux pros** (16/10/2026) : case « achat professionnel » (`case-achat-professionnel.tsx`) exigée par `/api/stripe/checkout` (400 sinon), consentement + version des CGV dans les métadonnées Stripe. Prix : UNE source, `src/lib/offre-studio.ts` (page d'achat, licence, CGV). Résiliation : `/abonnement` (portail Stripe via `STRIPE_PORTAL_LOGIN_URL`, sinon par email).
+
 ## Pièges
 - **Police du film HORS LIGNE** (15/10/2026) : le rendu chargeait la police depuis Google Fonts À CHAQUE rendu → une coupure = « Rendu Remotion en échec ». Désormais `scripts/render-film.ts` appelle `garderLaPolice` (`src/lib/polices-locales.ts`) : fichiers woff2 téléchargés UNE fois dans `~/.webgen-motion/polices/`, copiés dans `public/polices/<famille>/` + `police.json` ; `usePolice` (`remotion/film/marque/police.ts`) lit d'abord cette copie, Google seulement en secours (aperçu, Studio). Jamais téléchargée + hors ligne → refus clair avant le rendu.
 

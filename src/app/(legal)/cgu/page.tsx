@@ -108,9 +108,9 @@ export default function CGU() {
 
       <h2>Article 8 — Droit applicable et juridiction</h2>
       <p>
-        Les présentes CGU sont régies par le {LEGAL.jurisdiction.law}. Tout
-        litige relèvera de la compétence exclusive des{" "}
-        {LEGAL.jurisdiction.court}.
+        Les présentes CGU sont régies par le {LEGAL.jurisdiction.law}. En cas de
+        litige, et à défaut d&apos;accord amiable, les{" "}
+        {LEGAL.jurisdiction.court} sont compétents.
       </p>
 
       <h2>Article 9 — Contact</h2>

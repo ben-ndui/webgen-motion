@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/confidentialite", label: "Confidentialité" },
   { href: "/cgu", label: "CGU" },
   { href: "/cgv", label: "CGV" },
+  { href: "/abonnement", label: "Mon abonnement" },
 ];
 
 /** Sticky TOC for the legal pages — highlights the current route. */

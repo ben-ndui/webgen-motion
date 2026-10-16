@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, getAppBaseUrl } from "@/lib/stripe";
 import { resolvePlan, isStudioPlan, type StudioPlan } from "@/lib/stripe-plans";
+import { LEGAL } from "@/lib/legal/config";
 
 export const runtime = "nodejs";
 
 /**
  * Crée une Stripe Checkout Session pour GEN MOTION Studio (B.2).
  *
- * Body : `{ plan?: "monthly" | "annual" | "lifetime" }` (défaut "lifetime"
- * pour la rétro-compat du CTA existant). Public — l'achat est l'auth.
+ * Body : `{ plan?: "monthly" | "annual" | "lifetime", achatProfessionnel: true }`
+ * (plan par défaut "lifetime"). Public — l'achat est l'auth.
+ *
+ * La Studio Edition est vendue aux professionnels seulement (CGV, décision
+ * du 16/10/2026) : sans la case cochée, pas de paiement. Le consentement et
+ * la version des CGV voyagent dans les métadonnées Stripe (la preuve).
  *
  *  - monthly / annual → `mode: "subscription"` (Stripe crée le customer)
  *  - lifetime         → `mode: "payment"` (one-time, customer forcé pour
@@ -20,12 +25,21 @@ export const runtime = "nodejs";
  */
 export async function POST(req: NextRequest) {
   let plan: StudioPlan = "lifetime";
+  let achatProfessionnel = false;
   try {
-    const body = (await req.json()) as { plan?: unknown };
+    const body = (await req.json()) as { plan?: unknown; achatProfessionnel?: unknown };
     if (isStudioPlan(body?.plan)) plan = body.plan;
+    achatProfessionnel = body?.achatProfessionnel === true;
   } catch {
-    // Pas de body / JSON invalide → on garde le défaut lifetime.
+    // Pas de body / JSON invalide : défaut lifetime, et pas de consentement.
   }
+  if (!achatProfessionnel) {
+    return NextResponse.json(
+      { error: "La Studio Edition est réservée aux professionnels : coche la case avant de payer." },
+      { status: 400 },
+    );
+  }
+  const consentement = { achat_professionnel: "oui", cgv_acceptees: LEGAL.lastUpdated };
 
   const resolved = resolvePlan(plan);
   if (!resolved) {
@@ -53,10 +67,11 @@ export async function POST(req: NextRequest) {
         product: "studio-edition",
         plan,
         source: "webgen-motion-landing",
+        ...consentement,
       },
       // Le plan voyage avec l'abo → disponible aux renouvellements.
       ...(resolved.mode === "subscription"
-        ? { subscription_data: { metadata: { plan, edition: "studio" } } }
+        ? { subscription_data: { metadata: { plan, edition: "studio", ...consentement } } }
         : {}),
     });
     return NextResponse.json({ url: session.url });

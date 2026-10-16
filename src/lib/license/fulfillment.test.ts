@@ -46,6 +46,15 @@ describe("resolveSigningKey", () => {
 describe("sendLicenseEmail", () => {
   const base = { to: "buyer@x.io", licenseContent: "LIC", edition: "studio" as const };
 
+  it("un abonné apprend où résilier ; une licence à vie n'en parle pas", async () => {
+    const env: FulfillmentEnv = { RESEND_API_KEY: "re_123" };
+    await sendLicenseEmail({ ...base, abonnement: true }, env);
+    await sendLicenseEmail(base, env);
+    const [abonne, aVie] = fetchMock.mock.calls.map((appel) => JSON.parse((appel[1] as RequestInit).body as string));
+    expect(abonne.text).toContain("https://genmotion.app/abonnement");
+    expect(aVie.text).not.toContain("abonnement");
+  });
+
   it("POST sur l'API Resend avec la licence en pièce jointe", async () => {
     const env: FulfillmentEnv = { RESEND_API_KEY: "re_123" };
     const r = await sendLicenseEmail(base, env);

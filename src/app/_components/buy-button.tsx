@@ -10,6 +10,9 @@ import type { StudioPlan } from "@/lib/stripe-plans";
  * Client component minimal : POST /api/stripe/checkout { plan }, récupère
  * l'URL Stripe-hosted, redirect window.location vers elle.
  *
+ * `achatProfessionnel` : la case cochée (CGV réservées aux professionnels) ;
+ * sans elle le bouton reste inactif, et le serveur refuse de toute façon.
+ *
  * `plan` défaut "lifetime" (rétro-compat du CTA d'origine). `rawClassName`
  * remplace le style Tailwind par défaut quand on veut câbler le bouton
  * dans le design CSS de la landing (classes .btn…).
@@ -20,12 +23,14 @@ export default function BuyButton({
   label = "Acheter Studio Edition",
   variant = "primary",
   plan = "lifetime",
+  achatProfessionnel,
 }: {
   className?: string;
   rawClassName?: string;
   label?: string;
   variant?: "primary" | "secondary";
   plan?: StudioPlan;
+  achatProfessionnel: boolean;
 }) {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -38,7 +43,7 @@ export default function BuyButton({
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, achatProfessionnel }),
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
@@ -66,7 +71,8 @@ export default function BuyButton({
       <button
         type="button"
         onClick={go}
-        disabled={loading}
+        disabled={loading || !achatProfessionnel}
+        title={achatProfessionnel ? undefined : "Coche d'abord la case « achat professionnel »"}
         className={isRaw ? rawClassName : `${baseCls} ${className ?? ""}`}
         data-wm-id={`buy.studio.${plan}`}
       >

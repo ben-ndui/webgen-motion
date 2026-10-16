@@ -1,129 +1,100 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+
 import { LEGAL } from "@/lib/legal/config";
+import { PRIX_STUDIO, euros } from "@/lib/offre-studio";
+
+import ArticlesDeLaSuite from "./articles-de-la-suite";
 
 export const metadata: Metadata = {
   title: "Conditions Générales de Vente",
-  description: "CGV de la Studio Edition GEN MOTION (paiement unique perpétuel).",
+  description: "CGV de la Studio Edition GEN MOTION, réservée aux professionnels : licence à vie, abonnement mensuel ou annuel.",
 };
 
+/**
+ * CGV de la Studio Edition, vendue aux PROFESSIONNELS seulement (décision du
+ * 16/10/2026) : la case « achat professionnel » précède tout paiement et le
+ * serveur refuse une commande sans elle. Identité, prix et juridiction
+ * viennent de `src/lib/legal/config.ts` et `src/lib/offre-studio.ts`.
+ */
 export default function CGV() {
   const p = LEGAL.publisher;
+  const a = p.address;
   return (
     <>
-      <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-faint mb-3">
-        Document légal · maj {LEGAL.lastUpdated}
-      </p>
+      <p className="text-[11px] font-mono uppercase tracking-[0.25em] text-faint mb-3">Document légal · mis à jour le {LEGAL.lastUpdated}</p>
       <h1>Conditions Générales de Vente</h1>
 
       <p>
-        Les présentes CGV régissent les ventes du produit{" "}
-        <strong>GEN MOTION Studio Edition</strong> par{" "}
-        <strong>{p.tradeName}</strong> (SIREN {p.siren}). Toute commande vaut
-        acceptation pleine et entière des présentes CGV.
+        Vendeur : <strong>{p.legalName}</strong>, {p.legalForm.toLowerCase()}, nom commercial <strong>{p.tradeName}</strong>,
+        SIREN {p.siren}, {p.registre.charAt(0).toLowerCase()}{p.registre.slice(1)}, {a.street}, {a.postalCode} {a.city}.
+        Contact : <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a>.
       </p>
 
-      <h2>Article 1 — Produits et tarif</h2>
+      <h2>Article 1. Objet et clients</h2>
       <p>
-        La <strong>Studio Edition</strong> de GEN MOTION est un produit
-        numérique sous licence d&apos;usage <strong>perpétuelle</strong>{" "}
-        (paiement unique, valable à vie). Tarif :{" "}
-        <strong>{LEGAL.product.editions.studio.price}</strong>.
+        Les présentes conditions régissent la vente de la <strong>Studio Edition</strong> de GEN MOTION. Elle est vendue
+        <strong> exclusivement aux professionnels</strong>{" "}(entreprises, indépendants, micro-entrepreneurs) qui
+        l&apos;achètent pour leur activité. Le client le déclare en cochant la case prévue avant le paiement ; sans elle,
+        aucune commande n&apos;est possible. Les règles du Code de la consommation propres aux consommateurs ne
+        s&apos;appliquent donc pas.
       </p>
       <p>
-        La license débloque les fonctionnalités suivantes :{" "}
-        {LEGAL.product.editions.studio.scope}.
-      </p>
-      <p>
-        Le tarif est exprimé en euros (EUR), toutes taxes incluses pour
-        les clients européens (TVA collectée par Stripe en mode marketplace
-        si applicable). En tant qu&apos;auto-entrepreneur soumis à la
-        franchise en base de TVA (art. 293B CGI), {p.tradeName} ne facture
-        pas la TVA française — voir mention sur la facture Stripe.
+        La <strong>Community Edition</strong> reste gratuite. Elle est régie par les <Link href="/cgu">CGU</Link> et par
+        la licence du logiciel ({LEGAL.product.license}).
       </p>
 
-      <h2>Article 2 — Commande et paiement</h2>
+      <h2>Article 2. Offres et prix</h2>
+      <ul>
+        <li><strong>Licence à vie</strong> : {euros(PRIX_STUDIO.aVie)}, payés une fois.</li>
+        <li><strong>Abonnement annuel</strong> : {euros(PRIX_STUDIO.annuel)} par an.</li>
+        <li><strong>Abonnement mensuel</strong> : {euros(PRIX_STUDIO.mensuel)} par mois.</li>
+      </ul>
+      <p>Les trois offres donnent accès aux mêmes fonctionnalités : {LEGAL.product.editions.studio.scope}.</p>
       <p>
-        La commande s&apos;effectue depuis le site <strong>genmotion.app</strong>{" "}
-        via Stripe Checkout (carte bancaire). Le paiement est sécurisé et
-        traité par <strong>Stripe Payments Europe Ltd.</strong> (Dublin,
-        Irlande). Aucune donnée bancaire n&apos;est conservée par {p.tradeName}.
+        Les prix sont en euros et nets : {p.vatStatus}. Le montant débité est celui affiché sur la page de paiement au
+        moment de la commande.
       </p>
 
-      <h2>Article 3 — Livraison de la license</h2>
+      <h2>Article 3. Commande et paiement</h2>
       <p>
-        À réception du paiement, vous recevrez votre license{" "}
-        <strong>par email sous 24 heures ouvrées</strong>. La license consiste
-        en un fichier <code>.license</code> signé cryptographiquement, à
-        installer dans l&apos;app desktop GEN MOTION via le menu{" "}
-        <strong>Settings → License</strong>.
-      </p>
-      <p>
-        En cas de non-réception après 48 heures, vérifiez votre dossier spam
-        puis contactez-nous à{" "}
-        <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a> en précisant
-        l&apos;email utilisé au moment du paiement.
+        La commande se passe sur <strong>{LEGAL.site.domain}</strong>. Le paiement par carte est traité par{" "}
+        <strong>Stripe Payments Europe Ltd.</strong> (Dublin, Irlande) ; {p.tradeName} ne voit ni ne conserve aucune
+        donnée de carte. Une facture est fournie sur simple demande à{" "}
+        <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a>.
       </p>
 
-      <h2>Article 4 — Droit de rétractation</h2>
+      <h2>Article 4. Licence et livraison</h2>
       <p>
-        <strong>Renonciation au droit de rétractation</strong> — conformément
-        à l&apos;article L221-28 13° du Code de la consommation, le droit de
-        rétractation ne peut être exercé pour la fourniture de contenu
-        numérique non fourni sur un support matériel dont l&apos;exécution a
-        commencé après accord préalable exprès du consommateur et renoncement
-        exprès à son droit de rétractation.
+        Une fois le paiement confirmé, la licence est envoyée par email à l&apos;adresse de la commande, en général dans
+        les minutes qui suivent. C&apos;est un fichier <code>.license</code> signé, à installer dans l&apos;application
+        (Réglages, Licence). Sans nouvelles après 24 heures, vérifie tes indésirables puis écris-nous en indiquant
+        l&apos;email utilisé pour payer.
       </p>
       <p>
-        En procédant au paiement, vous reconnaissez avoir été informé que la
-        license Studio Edition est délivrée immédiatement après confirmation
-        du paiement et renoncez expressément à votre droit de rétractation.
+        La licence est <strong>nominative</strong> : elle est liée à l&apos;email de la commande et sert l&apos;activité
+        du client. Elle ne se revend pas et ne se partage pas avec un tiers.
       </p>
 
-      <h2>Article 5 — Remboursement</h2>
+      <h2>Article 5. Abonnements</h2>
       <p>
-        Bien que le droit de rétractation ne s&apos;applique pas, {p.tradeName}
-        {" "}peut accepter un remboursement <strong>au cas par cas</strong> dans
-        les 14 jours suivant l&apos;achat si vous démontrez que le produit ne
-        fonctionne pas comme décrit. Contactez-nous à{" "}
-        <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a> avec les
-        détails de votre commande et la raison de votre demande.
+        L&apos;abonnement mensuel dure un mois, l&apos;annuel un an, à partir du paiement. Il se{" "}
+        <strong>renouvelle automatiquement</strong> pour la même durée, et la carte enregistrée est débitée à chaque
+        échéance. Un changement de prix ne s&apos;applique qu&apos;au renouvellement suivant, annoncé par email au moins
+        30 jours avant.
+      </p>
+      <p>
+        Le client <strong>résilie à tout moment</strong>, sans frais ni justification, depuis la page{" "}
+        <Link href="/abonnement">Gérer mon abonnement</Link>. La résiliation prend effet à la fin de la période déjà
+        payée : la licence Studio reste active jusqu&apos;à cette date, puis l&apos;application repasse en Community.
+        Aucune période entamée n&apos;est remboursée au prorata.
+      </p>
+      <p>
+        Si un paiement de renouvellement échoue, Stripe le retente. À défaut de paiement, l&apos;abonnement prend fin et
+        la licence expire à la fin de la dernière période payée.
       </p>
 
-      <h2>Article 6 — License et restrictions d&apos;usage</h2>
-      <p>
-        L&apos;achat de la Studio Edition confère un droit d&apos;usage
-        personnel <strong>perpétuel</strong> sur les fonctionnalités Studio.
-        Ce droit est <strong>nominatif</strong> et lié à l&apos;email
-        d&apos;achat. La revente, le partage ou la rediffusion de la license
-        à des tiers sont interdits.
-      </p>
-
-      <h2>Article 7 — Mises à jour</h2>
-      <p>
-        La license Studio Edition donne accès à toutes les mises à jour
-        futures du produit. Les évolutions majeures de format de license
-        (passage en v2 par exemple) garantiront la rétro-compatibilité avec
-        les licenses v1 émises sous les présentes CGV.
-      </p>
-
-      <h2>Article 8 — Support</h2>
-      <p>
-        Le support est assuré par email à{" "}
-        <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a> avec un
-        délai de réponse cible de 48 heures ouvrées. Pour les questions
-        techniques générales (non-license), privilégiez l&apos;ouverture
-        d&apos;une issue sur{" "}
-        <a href={`${LEGAL.product.repo}/issues`} target="_blank" rel="noreferrer">
-          GitHub
-        </a>.
-      </p>
-
-      <h2>Article 9 — Droit applicable et juridiction</h2>
-      <p>
-        Les présentes CGV sont régies par le {LEGAL.jurisdiction.law}. Tout
-        litige relèvera de la compétence exclusive des{" "}
-        {LEGAL.jurisdiction.court}.
-      </p>
+      <ArticlesDeLaSuite />
     </>
   );
 }

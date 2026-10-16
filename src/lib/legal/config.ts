@@ -1,8 +1,12 @@
+import { PRIX_STUDIO } from "../offre-studio";
+
 /**
  * Source unique des informations légales GEN MOTION.
  *
- * Édité par : NDUI Amadou Be-Ngally — Entrepreneur individuel — nom commercial SMOOTH & DESIGN
- * Extrait INPI : SIREN 904 264 223 — SIRET (siège) 904 264 223 000 10
+ * Édité par : NDUI Amadou Be-Ngally, entrepreneur individuel, nom commercial Smooth & Design.
+ * SIREN 904 264 223, immatriculé au RNE (activité libérale : pas de RCS).
+ * Pas de SIRET affiché : l'établissement de Nice est fermé et celui de
+ * Vallauris n'a pas encore le sien (transfert du 15/09/2026). Le SIREN suffit.
  *
  * Toute modification d'identité publisher / hébergeur / sous-traitants
  * passe par CE fichier — les pages /mentions-legales /confidentialite
@@ -21,14 +25,13 @@ export const LEGAL = {
     tradeName: "Smooth & Design",
     legalForm: "Entrepreneur individuel",
     siren: "904 264 223",
-    siret: "904 264 223 000 10",
     ape: "6201Z — Programmation informatique",
-    rneRegisteredAt: "11/10/2021",
+    registre: "Immatriculé au Registre national des entreprises (RNE)",
     vatStatus: "TVA non applicable, article 293 B du CGI",
     address: {
-      street: "1 rue Joseph Gazan",
-      postalCode: "06000",
-      city: "Nice",
+      street: "9 impasse Allègre",
+      postalCode: "06220",
+      city: "Vallauris",
       country: "France",
     },
     publicationDirector: "Amadou Be-Ngally NDUI",
@@ -96,9 +99,11 @@ export const LEGAL = {
     cnilUrl: "https://www.cnil.fr",
   },
 
+  // Pas de clause attribuant un tribunal : elle ne vaut qu'entre commerçants,
+  // et Smooth & Design est une activité libérale.
   jurisdiction: {
     law: "droit français",
-    court: "tribunaux compétents de Nice",
+    court: "tribunaux compétents selon les règles de droit commun",
   },
 
   product: {
@@ -110,7 +115,7 @@ export const LEGAL = {
         scope: "Capture E2E web et mobile, voix off, montage sur la musique avec les quatre styles (Sober, Energetic, Cinematic, Glitch), cadres 2D, formats 16:9 et 9:16",
       },
       studio: {
-        price: "199 € (paiement unique, licence à vie)",
+        price: `${PRIX_STUDIO.mensuel} € par mois, ${PRIX_STUDIO.annuel} € par an, ou ${PRIX_STUDIO.aVie} € en une fois (licence à vie)`,
         scope: "Toutes les fonctionnalités Community, plus le film de marque depuis l'adresse d'un site, la série générée par IA (les générations restent payées par l'utilisateur au fournisseur, avec ses propres clés), les cadres 3D iPhone et MacBook, et l'export du montage (vidéo produit, film, série) vers DaVinci Resolve ; les fonctionnalités Studio ajoutées par les mises à jour sont incluses",
       },
       enterprise: {
@@ -120,7 +125,7 @@ export const LEGAL = {
     },
   },
 
-  lastUpdated: "15/10/2026",
+  lastUpdated: "16/10/2026",
 } as const;
 
 export type LegalConfig = typeof LEGAL;

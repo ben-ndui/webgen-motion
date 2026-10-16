@@ -23,9 +23,9 @@ export default function MentionsLegales() {
       <ul>
         <li><strong>{p.legalName}</strong> — exploitant sous le nom commercial <strong>{p.tradeName}</strong></li>
         <li>Forme juridique : {p.legalForm}</li>
-        <li>SIREN : <code>{p.siren}</code> — SIRET (siège) : <code>{p.siret}</code></li>
+        <li>SIREN : <code>{p.siren}</code></li>
         <li>Code APE : {p.ape}</li>
-        <li>Immatriculé au RNE depuis le {p.rneRegisteredAt}</li>
+        <li>{p.registre}</li>
         <li>Régime fiscal : {p.vatStatus}</li>
         <li>Siège : {p.address.street}, {p.address.postalCode} {p.address.city}, {p.address.country}</li>
         <li>Contact : <a href={`mailto:${p.contactEmail}`}>{p.contactEmail}</a></li>
@@ -53,15 +53,15 @@ export default function MentionsLegales() {
 
       <h2>Crédits</h2>
       <p>
-        Conception, développement et hébergement : {p.tradeName} · Nice. Stack
-        technique open source — Next.js, Remotion, Puppeteer, FFmpeg, Tailwind,
-        Stripe, Vercel.
+        Conception et développement : {p.tradeName}. Le site est hébergé par
+        Vercel (voir « Hébergeur » ci-dessus). Outils libres utilisés : Next.js, Remotion,
+        Puppeteer, FFmpeg, Tailwind.
       </p>
 
       <h2>Droit applicable et juridiction</h2>
       <p>
         Le présent site est régi par le {LEGAL.jurisdiction.law}. En cas de
-        litige, compétence est attribuée aux {LEGAL.jurisdiction.court}.
+        litige, et à défaut d&apos;accord amiable, les {LEGAL.jurisdiction.court} sont compétents.
       </p>
     </>
   );

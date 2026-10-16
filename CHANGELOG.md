@@ -7,6 +7,16 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Les CGV décrivent ce qui est vraiment vendu : la licence à vie et les
+  abonnements mensuel et annuel (durée, renouvellement, résiliation à tout
+  moment). La Studio Edition est réservée aux professionnels : une case à
+  cocher précède le paiement.
+- Nouvelle page « Gérer mon abonnement » (genmotion.app/abonnement) pour
+  résilier ; l'email de licence d'un abonné y mène.
+- Mentions légales à jour : adresse de Vallauris, SIREN, hébergeur exact.
+
 ## [0.7.0] — 2026-10-15
 
 **La release « Film de marque et série »** : GEN MOTION ne filme plus

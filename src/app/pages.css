@@ -112,12 +112,19 @@
 .gm-page .legal-sec { padding-bottom: var(--s-8); border-bottom: 1px solid var(--line); margin-bottom: var(--s-8); }
 .gm-page .legal-sec:last-child { border-bottom: 0; }
 .gm-page .legal-sec h2 { font-size: var(--t-2xl); margin-bottom: var(--s-2); }
+/* Dans un document légal, le titre du document domine ses articles. */
+.gm-page .legal-body > h1 { font-size: var(--t-2xl); line-height: 1.15; margin: 0 0 var(--s-4); }
+.gm-page .legal-body > h2 { font-size: var(--t-lg); margin: var(--s-6) 0 var(--s-2); }
 .gm-page .legal-sec .upd { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-bottom: var(--s-5); display: block; }
 .gm-page .legal-sec h3 { font-size: var(--t-base); margin: var(--s-5) 0 8px; }
 .gm-page .legal-sec p { color: var(--muted); font-size: var(--t-sm); margin-bottom: 12px; }
 .gm-page .legal-sec ul { color: var(--muted); font-size: var(--t-sm); padding-left: 20px; margin: 0 0 12px; }
 .gm-page .legal-sec li { margin-bottom: 6px; }
 .gm-page .legal-sec a.inl { color: var(--accent); border-bottom: 1px solid var(--accent-line); }
+/* le geste d'une page légale (« Ouvrir mon espace d'abonnement ») */
+.gm-page .legal-bouton { display: inline-flex; align-items: center; padding: 12px 20px; border-radius: var(--r-full); background: var(--ink); color: var(--bg); font-size: var(--t-sm); font-weight: 600; text-decoration: none; }
+.gm-page .legal-bouton:hover { opacity: .9; }
+.gm-page .legal-bouton:focus-visible { outline: none; box-shadow: var(--ring); }
 
 /* setup wizard */
 .gm-page .wiz-stage { min-height: 100svh; display: grid; place-items: center; padding: var(--s-7); }

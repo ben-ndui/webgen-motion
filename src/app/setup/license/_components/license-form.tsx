@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 import BuyButton from "@/app/_components/buy-button";
+import CaseAchatProfessionnel from "@/app/_components/case-achat-professionnel";
+import { PRIX_STUDIO, euros } from "@/lib/offre-studio";
 
 interface Props {
   currentEdition: "community" | "studio" | "enterprise";
@@ -20,6 +22,7 @@ type Status =
 export default function LicenseForm({ currentEdition, hasLicense, envOverride }: Props) {
   const router = useRouter();
   const [content, setContent] = useState("");
+  const [achatPro, setAchatPro] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   async function install() {
@@ -140,10 +143,13 @@ export default function LicenseForm({ currentEdition, hasLicense, envOverride }:
             FSL</strong> · Community Edition gratuite. La Studio Edition
             débloque le film de marque, la série IA, les cadres 3D et
             l&apos;export vers DaVinci Resolve, à vie
-            <strong className="text-ink font-medium"> (199&nbsp;€ une fois)</strong>{" "}
-            ou en abonnement dès 15&nbsp;€/mois.
+            <strong className="text-ink font-medium"> ({euros(PRIX_STUDIO.aVie)} une fois)</strong>{" "}
+            ou en abonnement dès {euros(PRIX_STUDIO.mensuel)}/mois.
           </p>
-          <BuyButton plan="lifetime" label="Acheter à vie · 199 €" />
+          <div className="flex flex-col gap-3">
+            <CaseAchatProfessionnel coche={achatPro} changer={setAchatPro} />
+            <BuyButton plan="lifetime" achatProfessionnel={achatPro} label={`Acheter à vie · ${euros(PRIX_STUDIO.aVie)}`} />
+          </div>
         </div>
         <p className="text-xs text-muted">
           Une question ? Écris-nous à{" "}

@@ -85,7 +85,8 @@ const DEFAULT_FROM = "GEN MOTION <licenses@genmotion.app>";
  * Si `RESEND_API_KEY` est absente → skip propre (dev), pas d'erreur.
  */
 export async function sendLicenseEmail(
-  params: { to: string; licenseContent: string; edition: IssuableEdition },
+  // `abonnement` : l'email dit où gérer et résilier (une licence à vie n'a rien à résilier).
+  params: { to: string; licenseContent: string; edition: IssuableEdition; abonnement?: boolean },
   env: FulfillmentEnv,
 ): Promise<{ sent: boolean; skipped?: boolean; error?: string }> {
   const config = {
@@ -112,7 +113,11 @@ export async function sendLicenseEmail(
       " !\n\nTa licence est en pièce jointe (" +
       filename +
       "). Installe-la via /setup/license dans l'app, ou dépose-la dans " +
-      "~/.webgen-motion/.license\n\n— Smooth & Design";
+      "~/.webgen-motion/.license\n\n" +
+      (params.abonnement
+        ? "Ton abonnement se gère, et se résilie à tout moment, sur https://genmotion.app/abonnement\n\n"
+        : "") +
+      "Smooth & Design";
   try {
     const envoi = await envoyerEmail({
       de: from,
@@ -179,7 +184,7 @@ export async function fulfillCheckout(
   }
 
   const email = await sendLicenseEmail(
-    { to: input.email, licenseContent, edition: input.edition },
+    { to: input.email, licenseContent, edition: input.edition, abonnement: input.plan === "monthly" || input.plan === "annual" },
     env,
   );
 
