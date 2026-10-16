@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Résilier ou gérer un abonnement GEN MOTION Studio (mensuel ou annuel).",
 };
 
-// Lu à chaque visite : le lien du portail Stripe se pose sans redéployer.
+// Lu à chaque visite. Sur Vercel, une variable posée ne compte qu'au déploiement suivant : redéployer.
 export const dynamic = "force-dynamic";
 
 /**

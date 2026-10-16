@@ -49,7 +49,8 @@ CGV), `customer_creation` (sans client, pas d'email, donc pas de licence),
   Aucune clé dans le code ni dans le dépôt.
 - **À faire par Ben** : activer le **portail client** (Paramètres, Billing, Portail client,
   avec l'annulation d'abonnement autorisée) et poser son lien de connexion dans la variable
-  Vercel `STRIPE_PORTAL_LOGIN_URL`. Sans lui, la résiliation passe par email
+  Vercel `STRIPE_PORTAL_LOGIN_URL`, **puis redéployer** (une variable ne compte qu'au
+  déploiement suivant). Sans lui, la résiliation passe par email
   ([src/app/(legal)/abonnement/page.tsx](src/app/(legal)/abonnement/page.tsx)).
 - Le webhook existe déjà : [src/app/api/stripe/webhook/route.ts](src/app/api/stripe/webhook/route.ts)
   (`checkout.session.completed`, `invoice.paid`, `customer.subscription.deleted`).
