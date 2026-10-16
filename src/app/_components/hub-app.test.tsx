@@ -13,10 +13,21 @@ describe("HubApp", () => {
   it("renders shell + all tours with the live count", () => {
     render(<HubApp tours={TOURS} edition="studio" />);
     expect(screen.getByText("GEN MOTION")).toBeInTheDocument();
-    expect(screen.getByText("Studio Edition")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Studio" })).toHaveAttribute("href", "/setup/license");
     expect(screen.getByText("Onboarding SaaS")).toBeInTheDocument();
     expect(screen.getByText("App mobile teaser")).toBeInTheDocument();
     expect(screen.getByText("API Docs quickstart")).toBeInTheDocument();
+  });
+
+  it("navigation de la maison : une barre flottante en bas, aucune barre latérale", () => {
+    const { container } = render(<HubApp tours={TOURS} edition="community" />);
+    const barre = screen.getByRole("navigation", { name: "Navigation du studio" });
+    expect(barre).toHaveClass("barre-flottante");
+    expect(screen.getByRole("link", { name: "Mes vidéos" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Réglages" })).toHaveAttribute("href", "/setup");
+    expect(screen.getByRole("link", { name: "Aide" })).toHaveAttribute("href", "/help");
+    expect(container.querySelector("aside")).toBeNull();
+    expect(screen.getByRole("link", { name: "Community" })).toBeInTheDocument();
   });
 
   it("filters by format", async () => {

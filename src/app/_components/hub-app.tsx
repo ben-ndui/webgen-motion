@@ -10,6 +10,7 @@ import GenerateWithAiButton from "./generate-with-ai-button";
 import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
 import HubFilms, { type HubFilm } from "./hub-films";
+import NavigationDuStudio from "./navigation-du-studio";
 import TourCard, { type HubTour } from "./hub-tour-card";
 
 export type { HubTour };
@@ -20,8 +21,6 @@ type SortKey = keyof typeof SORTS;
 /* icons — load-bearing only */
 const Caret = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>;
 const Search = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" /></svg>;
-const Film = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 4v16M17 4v16M3 9h4M17 9h4M3 15h4M17 15h4" /></svg>;
-const Gear = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8M4.6 9a1.6 1.6 0 0 0-.3-1.8" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>;
 const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
 const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
 const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
@@ -129,26 +128,10 @@ export default function HubApp({
 
   return (
     <div className="gm-hub" data-wm-id="hub.page">
-      <aside className="sidebar" data-wm-id="hub.sidebar">
-        <div className="brand"><span className="brand-mark" /><span className="brand-name">GEN&nbsp;MOTION</span></div>
-        <div className="side-new"><CreateControl /></div>
-        <nav className="nav" data-wm-id="hub.nav">
-          <span className="nav-item active"><Film /> Tours <span className="count">{tours.length}</span></span>
-          <Link className="nav-item" href="/setup"><Gear /> Réglages</Link>
-        </nav>
-        <div className="side-foot">
-          <div className="license" data-wm-id="hub.license">
-            <span className="license-badge">{isStudio ? "S" : "C"}</span>
-            <span className="license-meta">
-              <b>{isStudio ? "Studio Edition" : "Community"}</b>
-              <span>{isStudio ? "Licence perpétuelle · à jour" : "Fair-code · FSL"}</span>
-            </span>
-          </div>
-        </div>
-      </aside>
 
       <main className="main" data-wm-id="hub.main">
         <header className="topbar" data-wm-id="hub.topbar">
+          <div className="brand"><span className="brand-mark" /><span className="brand-name">GEN&nbsp;MOTION</span></div>
           <h1 className="page-title">Tours <span className="n">{list.length}</span></h1>
           <div className="topbar-spacer" />
           <label className="search" data-wm-id="hub.search">
@@ -176,6 +159,15 @@ export default function HubApp({
               Setup
             </Link>
           )}
+          <CreateControl />
+          <Link
+            className="edition"
+            href="/setup/license"
+            data-wm-id="hub.license"
+            title={isStudio ? "Licence perpétuelle, à jour" : "Fair-code, FSL : passer à Studio"}
+          >
+            {isStudio ? "Studio" : "Community"}
+          </Link>
           <DeviceIndicator />
           <SettingsMenu />
           <ThemeToggle />
@@ -230,6 +222,7 @@ export default function HubApp({
       {/* Director's Console du hub — drawer bas / flottant / fenêtre
           séparée (chrome fixed, ne touche pas la grille du hub) */}
       <HubConsole />
+      <NavigationDuStudio actif="videos" />
     </div>
   );
 }
