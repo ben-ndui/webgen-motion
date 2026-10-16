@@ -22,9 +22,11 @@ function libelle(cle: string): string {
   if (plan === "probleme") return `Message ${Number(rang) + 1}`;
   if (plan === "parcours") return `Étape ${Number(sous) + 1}`;
   if (plan === "marque") return `Mot ${Number(rang) + 1}`;
+  if (plan === "bibliotheque" && sous === "legendesEventail") return `Légende de l'écran ${Number(rang) + 1}`;
   const noms: Record<string, string> = {
     "bascule.constat": "Aujourd'hui", "bascule.chiffre": "Le chiffre", "bascule.signature": "Ta promesse",
     "evenement.chute": "Ce que ça change", "fin.disponible": "Où trouver ton produit",
+    "bibliotheque.mot": "Ton mot signature", "bibliotheque.anneau": "La phrase qui tourne", "bibliotheque.signature": "La ligne sous ton logo",
   };
   return noms[cle] ?? cle;
 }

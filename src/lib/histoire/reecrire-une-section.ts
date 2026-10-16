@@ -6,7 +6,7 @@ import { languesDuFilm } from "../film-fiche-depart";
 import { extractJsonBlock } from "../llm-providers/anthropic";
 import { lireLaMemoire } from "../site/memoire-du-site";
 import { CONSIGNE_MAX, type Reecriture, demandeDeReecriture, lireLaReecriture } from "./reecriture";
-import { estUneSection } from "./sections";
+import { champsDeLaSection, estUneSection } from "./sections";
 
 export type Refus = { ok: false; statut: 400 | 404 | 409 | 412 | 502; raison: string };
 export type ReponseDeLaReecriture = { ok: true; champs: Record<string, string>; aEcrireSoiMeme: string[] } | Refus;
@@ -38,6 +38,9 @@ export async function reecrireUneSection(
   const langue = languesDuFilm(fiche.spec).find((l) => l === d.langue);
   if (!langue) return { ok: false, statut: 400, raison: "Ce film n'est pas rédigé dans cette langue." };
 
+  if (champsDeLaSection(d.section, fiche.spec.textes[langue]).length === 0) {
+    return { ok: false, statut: 400, raison: "Ce film n'a pas de Reels : rien à écrire ici." };
+  }
   const consigne = typeof d.consigne === "string" ? d.consigne.replace(/\s+/g, " ").trim().slice(0, CONSIGNE_MAX) : "";
   const aEviter = Array.isArray(d.aEviter) ? d.aEviter.filter((t): t is string => typeof t === "string").map((t) => t.slice(0, 200)).slice(-A_EVITER_MAX) : [];
   const demande = {

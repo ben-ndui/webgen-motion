@@ -99,7 +99,7 @@ export default function EtapeHistoire({ id, fiche, langue, propositions, suggest
       </section>
 
       {fiche.bibliotheque && t.bibliotheque && modele.bibliotheque && (
-        <HistoireDesReels fiche={fiche} langue={langue} modifier={modifier} propose={propose} suggestion={suggestion} propositions={propositions} suggestions={suggestions} />
+        <HistoireDesReels fiche={fiche} langue={langue} modifier={modifier} propose={propose} suggestion={suggestion} propositions={propositions} suggestions={suggestions} ecrireAvecClaude={claude("reels")} />
       )}
     </div>
     </div>

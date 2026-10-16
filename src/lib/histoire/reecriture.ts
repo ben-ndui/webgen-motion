@@ -35,7 +35,8 @@ export function demandeDeReecriture(d: DemandeDeReecriture): { systeme: string; 
     `Write in ${LANGUES[d.langue]}. Respect each field's maximum length.`,
     'Answer with ONE JSON object and nothing else: {"champs": {"<key>": "<text>" | null}}',
   ].join("\n");
-  const attendu = champs.map((c) => `- "${c.cle}" (${c.libelle}, ${c.max} characters max): ${c.consigne}. Current: « ${c.actuel} »`).join("\n");
+  const longueur = (c: ChampAReecrire) => (c.min ? `${c.min} to ${c.max} characters` : `${c.max} characters max`);
+  const attendu = champs.map((c) => `- "${c.cle}" (${c.libelle}, ${longueur(c)}): ${c.consigne}. Current: « ${c.actuel} »`).join("\n");
   const site = d.memoire
     ? JSON.stringify({ adresse: d.memoire.url, nom: d.memoire.nomDuSite || d.memoire.titre, description: d.memoire.description, ...d.memoire.textes, pages: d.memoire.pages })
     : "(the site was never read: use only the film texts below, and answer null for any figure)";
@@ -61,6 +62,9 @@ function texteValide(valeur: unknown, max: number): string | null {
 function accepte(champ: ChampAReecrire, valeur: unknown, memoire: MemoireDuSite | null): string | null {
   const texte = texteValide(valeur, champ.max);
   if (!texte) return null;
+  // Les règles du rendu : un anneau trop court bégaie, un mot signature est UN mot.
+  if (champ.min && texte.length < champ.min) return null;
+  if (champ.unSeulMot && /\s/.test(texte)) return null;
   // Vérifié par le code : un chiffre absent du site, ou un prix, est refusé.
   if (champ.cle === "bascule.chiffre") return memoire && chiffreDuSite(texte, memoire) && !/[€$£]/.test(texte) ? texte : null;
   return texte;

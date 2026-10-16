@@ -2,6 +2,8 @@
 
 import { LONGUEUR_DE_L_ANNEAU, LONGUEUR_MAX_DU_MOT } from "../../../../../../remotion/film/bibliotheque/validerBibliotheque";
 import { FILM } from "../../../../../../remotion/film/film";
+import type { ReactNode } from "react";
+
 import type { FilmSpec, Langue, TextesDeLaBibliotheque } from "../../../../../../remotion/film/spec";
 import ChampTexte from "./champ-texte";
 
@@ -13,13 +15,15 @@ type Props = {
   suggestion: (champ: string) => string | undefined;
   propositions: Record<string, string>;
   suggestions: Record<string, string>;
+  // « Écrire avec Claude » au pied du bloc (fourni par « Ton histoire », qui sait enregistrer).
+  ecrireAvecClaude?: ReactNode;
 };
 
 /**
  * Les textes des plans courts, ceux qui font les Reels : le mot signature,
  * la phrase en anneau, l'adresse du site, les légendes de l'éventail.
  */
-export default function HistoireDesReels({ fiche, langue, modifier, propose, suggestion, propositions, suggestions }: Props) {
+export default function HistoireDesReels({ fiche, langue, modifier, propose, suggestion, propositions, suggestions, ecrireAvecClaude }: Props) {
   const t = fiche.textes[langue].bibliotheque;
   const modele = FILM.textes[langue].bibliotheque;
   if (!t || !modele || !fiche.bibliotheque || !FILM.bibliotheque) return null;
@@ -80,6 +84,7 @@ export default function HistoireDesReels({ fiche, langue, modifier, propose, sug
         max={50}
         onChange={(v) => ecrire((x) => { x.signature = v; })}
       />
+      {ecrireAvecClaude}
     </section>
   );
 }

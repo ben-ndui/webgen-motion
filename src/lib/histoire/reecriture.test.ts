@@ -69,4 +69,24 @@ describe("lireLaReecriture", () => {
     expect(lireLaReecriture(demande, { champs: {} })).toMatchObject({ ok: false });
     expect(lireLaReecriture(demande, "pas du json")).toMatchObject({ ok: false });
   });
+
+  it("Reels : un mot signature est UN mot, et l'anneau tient entre 8 et 48 caractères", () => {
+    const reels = { ...demande, section: "reels" as const };
+    const lu = lireLaReecriture(reels, { champs: {
+      "bibliotheque.mot": "Deux mots",
+      "bibliotheque.anneau": "Trop",
+      "bibliotheque.signature": "Parfums naturels, faits main.",
+      "bibliotheque.legendesEventail.0": "La boutique",
+    } });
+    expect(lu.ok && lu.champs).toEqual({ "bibliotheque.signature": "Parfums naturels, faits main.", "bibliotheque.legendesEventail.0": "La boutique" });
+    expect(lu.ok && lu.aEcrireSoiMeme).toEqual(expect.arrayContaining(["bibliotheque.mot", "bibliotheque.anneau"]));
+    const bon = lireLaReecriture(reels, { champs: { "bibliotheque.mot": "Hibiscus.", "bibliotheque.anneau": "Naturel · Fait main · Livré" } });
+    expect(bon.ok && bon.champs).toMatchObject({ "bibliotheque.mot": "Hibiscus.", "bibliotheque.anneau": "Naturel · Fait main · Livré" });
+  });
+
+  it("la demande dit les longueurs minimales quand le rendu en impose", () => {
+    const { message } = demandeDeReecriture({ marque: "M", langue: "fr", section: "reels", textes: TEXTES, memoire: null, consigne: "", aEviter: [] });
+    expect(message).toContain('"bibliotheque.anneau" (Ring phrase, 8 to 48 characters)');
+  });
 });
+

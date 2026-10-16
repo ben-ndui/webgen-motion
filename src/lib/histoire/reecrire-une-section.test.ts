@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { AppelerClaude } from "../cinema/scenario-claude";
 import type { ResolvedAgent } from "../config-resolve";
-import { dossierJetable, ecrireFiche, ficheValide } from "../film-fixtures.test-utils";
+import { dossierJetable, ecrireFiche, ficheSansBibliotheque, ficheValide } from "../film-fixtures.test-utils";
 import type { LectureDuSite } from "../site/lecture-du-site";
 import { garderLaMemoire } from "../site/memoire-du-site";
 import { reecrireUneSection } from "./reecrire-une-section";
@@ -78,4 +78,13 @@ describe("reecrireUneSection", () => {
     const appeler: AppelerClaude = async () => ({ ok: true, texte: "Je ne peux pas." });
     expect(await reecrireUneSection("saya", { langue: "fr", section: "fin" }, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 502 });
   });
+
+  it("un film sans Reels le dit, sans rien demander à Claude", async () => {
+    const { lieux } = preparer();
+    ecrireFiche(lieux.fiches, "sans-reels", ficheSansBibliotheque());
+    const { appeler } = fauxClaude({});
+    expect(await reecrireUneSection("sans-reels", { langue: "fr", section: "reels" }, lieux, AGENT, appeler)).toMatchObject({ statut: 400, raison: expect.stringContaining("pas de Reels") });
+    expect(appeler).not.toHaveBeenCalled();
+  });
 });
+
