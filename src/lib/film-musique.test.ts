@@ -30,4 +30,31 @@ describe("mesure d'un morceau déposé", () => {
     expect(mesurerMusique(metronomeEnFichier(120, 5))).toMatchObject({ ok: false, raison: expect.stringContaining("trop court") });
     expect(mesurerMusique(join(dossierJetable("musique"), "absent.mp3"))).toMatchObject({ ok: false });
   });
+
+  it("accepte une musique dans un .mp4", () => {
+    const wav = metronomeEnFichier(100, 30);
+    const mp4 = wav.replace(/\.wav$/, ".mp4");
+    const sortie = spawnSync("ffmpeg", ["-v", "error", "-y", "-i", wav, "-c:a", "aac", mp4]);
+    if (sortie.status !== 0) throw new Error(String(sortie.stderr));
+    expect(mesurerMusique(mp4)).toMatchObject({ ok: true });
+  });
+
+  // La panne du 16/10 : l'app lancée depuis le Finder n'a pas Homebrew dans son PATH.
+  it("se sert du ffmpeg fourni par l'app, même sans ffmpeg dans le PATH", () => {
+    const fichier = metronomeEnFichier(120, 25);
+    const ffmpegDuSysteme = spawnSync("which", ["ffmpeg"], { encoding: "utf-8" }).stdout.trim();
+    const avant = { path: process.env.PATH, bin: process.env.WEBGEN_FFMPEG_BIN };
+    try {
+      process.env.PATH = "/usr/bin:/bin";
+      process.env.WEBGEN_FFMPEG_BIN = ffmpegDuSysteme;
+      expect(mesurerMusique(fichier)).toMatchObject({ ok: true });
+      process.env.WEBGEN_FFMPEG_BIN = "/chemin/qui/n-existe/pas/ffmpeg";
+      expect(mesurerMusique(fichier)).toMatchObject({ ok: false });
+    } finally {
+      process.env.PATH = avant.path;
+      if (avant.bin === undefined) delete process.env.WEBGEN_FFMPEG_BIN;
+      else process.env.WEBGEN_FFMPEG_BIN = avant.bin;
+    }
+  });
 });
+

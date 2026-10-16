@@ -56,6 +56,10 @@ de ton site, et ta série courte générée par IA, avec Claude à chaque étape
   lui-même si l'app se ferme brutalement.
 - Les vidéos de tes projets se lisent par morceaux : l'aperçu des cartes
   s'affiche sans télécharger chaque vidéo en entier.
+- Dans l'app installée, déposer une musique, convertir une vidéo, mesurer la
+  voix off ou découper un épisode marchait seulement si ffmpeg était installé
+  sur l'ordinateur : l'app se sert maintenant de celui qu'elle embarque.
+  Une musique en `.mp4` est aussi acceptée.
 
 ### Notes
 

@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 import { affinerLeTempo, enveloppeDAttaques, estimerLeTempo } from "./film-rythme";
+import { ffmpeg } from "./binaires-video";
 
 /**
  * Mesure le tempo et le premier temps d'un morceau déposé, pour que le
@@ -22,7 +23,7 @@ export type MesureDeLaMusique =
 
 function decoder(chemin: string): Float32Array | null {
   const sortie = spawnSync(
-    "ffmpeg",
+    ffmpeg(),
     ["-v", "error", "-i", chemin, "-ac", "1", "-ar", String(FREQUENCE), "-f", "f32le", "-"],
     { maxBuffer: 1024 * 1024 * 512 },
   );

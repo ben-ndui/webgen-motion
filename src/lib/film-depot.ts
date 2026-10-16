@@ -99,7 +99,7 @@ export function deposerMusique(id: string, nomOriginal: string, octets: Uint8Arr
   const lecture = ficheValide(id, lieux);
   if (!lecture.ok) return lecture;
   const extension = extensionAudio(nomOriginal);
-  if (!extension) return { ok: false, statut: 400, raison: "Formats lus : MP3, M4A, WAV, AAC ou OGG" };
+  if (!extension) return { ok: false, statut: 400, raison: "Formats lus : MP3, M4A, MP4, WAV, AAC ou OGG" };
   const poids = tropLourd(octets, POIDS_MAX.musique);
   if (poids) return poids;
 

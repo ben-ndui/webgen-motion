@@ -38,7 +38,7 @@ export default function EtapeMusique({ id, fiche, langues, musiquePresente, depo
         <CaseDeDepot
           titre="Morceau"
           format="paysage"
-          accepte=".mp3,.m4a,.wav,.aac,.ogg,audio/*"
+          accepte=".mp3,.m4a,.mp4,.wav,.aac,.ogg,audio/*"
           present={musiquePresente}
           resume={musique.titre}
           onDeposer={(fichier) => deposer("musique", fichier)}

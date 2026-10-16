@@ -10,6 +10,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { extname, join } from "node:path";
+import { ffprobe } from "./binaires-video";
 
 /**
  * Local filesystem store for audio assets (background music + future
@@ -76,7 +77,7 @@ function slugify(name: string): string {
 
 function probeDuration(path: string): number {
   const r = spawnSync(
-    "ffprobe",
+    ffprobe(),
     [
       "-v",
       "error",

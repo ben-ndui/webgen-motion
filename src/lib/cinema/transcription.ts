@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
+import { ffmpeg } from "../binaires-video";
 
 /**
  * Entendre ce que dit un plan, en local et gratuitement (whisper.cpp). Rend
@@ -35,7 +36,7 @@ function modeleDisponible(): { modele: string; detecteur: string | null } | null
 }
 
 function picSonore(wav: string): number {
-  const sortie = spawnSync("ffmpeg", ["-v", "info", "-i", wav, "-af", "volumedetect", "-f", "null", "-"], { encoding: "utf-8" });
+  const sortie = spawnSync(ffmpeg(), ["-v", "info", "-i", wav, "-af", "volumedetect", "-f", "null", "-"], { encoding: "utf-8" });
   const trouve = /max_volume:\s*(-?[\d.]+) dB/.exec(sortie.stderr ?? "");
   return trouve ? Number.parseFloat(trouve[1]) : -Infinity;
 }
@@ -54,7 +55,7 @@ export const transcrireAvecWhisper: Transcrire = (video) => {
   const travail = mkdtempSync(join(tmpdir(), "genmotion-replique-"));
   try {
     const wav = join(travail, "son.wav");
-    if (spawnSync("ffmpeg", ["-v", "error", "-y", "-i", video, "-ar", "16000", "-ac", "1", wav]).status !== 0) return "";
+    if (spawnSync(ffmpeg(), ["-v", "error", "-y", "-i", video, "-ar", "16000", "-ac", "1", wav]).status !== 0) return "";
     if (picSonore(wav) < PIC_MINIMUM_D_UNE_VOIX_DB) return "";
     // -nt : sans horodatage, whisper rend la ponctuation (convention transcription-locale).
     const options = ["-m", outils.modele, "-l", "fr", "-nt", "-f", wav];

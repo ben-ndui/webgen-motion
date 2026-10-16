@@ -49,7 +49,7 @@ export function rapportDeLImage(octets: Uint8Array, genre: GenreDImage): number 
   return null;
 }
 
-const EXTENSIONS_AUDIO = ["mp3", "m4a", "wav", "aac", "ogg"] as const;
+const EXTENSIONS_AUDIO = ["mp3", "m4a", "mp4", "wav", "aac", "ogg"] as const;
 
 /** L'extension audio d'un nom de fichier, si elle fait partie des formats lus. */
 export function extensionAudio(nom: string): (typeof EXTENSIONS_AUDIO)[number] | null {

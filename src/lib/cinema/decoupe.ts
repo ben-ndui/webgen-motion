@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { dirname } from "node:path";
+import { ffmpeg } from "../binaires-video";
 
 /**
  * La planche contact d'un plan : une image toutes les demi-secondes, côte à
@@ -25,7 +26,7 @@ export function fabriquerLaPlanche(video: string, planche: string): boolean {
   if (!existsSync(video)) return false;
   if (existsSync(planche) && statSync(planche).mtimeMs >= statSync(video).mtimeMs) return true;
   mkdirSync(dirname(planche), { recursive: true });
-  const sortie = spawnSync("ffmpeg", [
+  const sortie = spawnSync(ffmpeg(), [
     "-v", "error", "-y", "-i", video,
     "-vf", `fps=${1 / ECART_ENTRE_IMAGES_S},scale=${LARGEUR_D_UNE_IMAGE}:-2,tile=${IMAGES_DE_LA_PLANCHE}x1:padding=2`,
     "-frames:v", "1", planche,

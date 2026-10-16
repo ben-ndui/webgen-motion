@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import type { Browser, Page } from "puppeteer";
 
 import { FORMATS, type Format, ouvrir } from "./navigateur-du-site";
+import { ffmpeg } from "../binaires-video";
 
 /**
  * Filmer une page du site : elle défile en douceur, comme sous un pouce,
@@ -58,7 +59,7 @@ export async function filmerUnePage(navigateur: Browser, url: string, destinatio
       writeFileSync(join(images, `${String(i).padStart(4, "0")}.jpg`), await page.screenshot({ type: "jpeg", quality: 88 }));
     }
     mkdirSync(dirname(destination), { recursive: true });
-    const sortie = spawnSync("ffmpeg", [
+    const sortie = spawnSync(ffmpeg(), [
       "-v", "error", "-y", "-framerate", String(IMAGES_PAR_SECONDE), "-i", join(images, "%04d.jpg"),
       "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-movflags", "+faststart", destination,
     ]);

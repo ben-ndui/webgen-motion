@@ -13,6 +13,7 @@ import { getVoCacheDir } from "./motion-tour-store";
 import { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
 import { texteAPrononcer } from "./voix/prononciation-film";
 import { ensureTts } from "./voix/synthese";
+import { ffmpeg, ffprobe } from "./binaires-video";
 
 /**
  * Générer la voix off d'un film : chaque ligne écrite et pas encore générée
@@ -41,7 +42,7 @@ const LIEUX_PAR_DEFAUT: Lieux = {
 };
 
 export function dureeDeLAudio(chemin: string): number | null {
-  const sortie = spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", chemin], { encoding: "utf-8" });
+  const sortie = spawnSync(ffprobe(), ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", chemin], { encoding: "utf-8" });
   const duree = Number.parseFloat(sortie.stdout);
   return sortie.status === 0 && duree > 0 ? Math.round(duree * 100) / 100 : null;
 }
@@ -52,7 +53,7 @@ export { VOLUME_DE_LA_VOIX_LUFS } from "./film-voix-niveaux";
 
 /** Copie la voix dans le film à un volume constant et audible. */
 export function normaliserLaVoix(source: string, destination: string): boolean {
-  const sortie = spawnSync("ffmpeg", [
+  const sortie = spawnSync(ffmpeg(), [
     "-v", "error", "-y", "-i", source,
     "-af", `loudnorm=I=${VOLUME_DE_LA_VOIX_LUFS}:TP=-1.5:LRA=11`,
     "-ar", "44100", "-c:a", "libmp3lame", "-b:a", "160k", destination,
