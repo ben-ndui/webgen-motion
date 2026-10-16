@@ -1,9 +1,20 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { resolveVoiceBackend } from "./config-resolve";
 
 const ORIG = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const ORIG_HOME = process.env.HOME;
+
+// HOME jetable : le config.json réel de la machine (qui peut porter un
+// compte de service Google) ne doit pas décider du résultat du test.
+beforeEach(() => {
+  process.env.HOME = mkdtempSync(join(tmpdir(), "config-google-"));
+});
 
 afterEach(() => {
+  process.env.HOME = ORIG_HOME;
   if (ORIG === undefined) delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
   else process.env.GOOGLE_APPLICATION_CREDENTIALS = ORIG;
 });

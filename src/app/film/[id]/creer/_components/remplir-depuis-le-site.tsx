@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Destination } from "./remplissage/a-faire-apres";
 import CarteReduite from "./remplissage/carte-reduite";
 import FenetreDuRemplissage from "./remplissage/fenetre-du-remplissage";
-import HorsDuFlux from "./remplissage/hors-du-flux";
+import HorsDuFlux from "@/app/_components/hors-du-flux";
 import { useRemplissage } from "./use-remplissage";
 
 type Props = {
@@ -99,7 +99,7 @@ export default function RemplirDepuisLeSite({ id, adresseAuDepart, blocVisible =
         )}
       </section>
 
-      <HorsDuFlux>
+      <HorsDuFlux racine=".gm-film">
         {etat.type !== "repos" && affichage === "fenetre" && (
           <FenetreDuRemplissage
             id={id}

@@ -113,6 +113,8 @@ npx tsx scripts/compose-tour.ts --tour-id uzme-landing --tour-dir ~/.webgen-moti
 npx tsx scripts/render-film.ts --film-id kotizo [--declinaison Court-FR]   # sans --declinaison : toutes
 ```
 
+- **Réglages après installation** (16/10/2026) : `src/lib/reglages/` (état pur + lecture serveur : Claude = clé ANTHROPIC seulement, vidéo = `resolveVeoKey`, voix = backend résolu ET fichier du compte de service présent). Pastille + fenêtre « Prépare ton studio » (`src/app/_components/reglages/`, une fois par lancement via sessionStorage). Clé Veo : `/setup/video`. Les erreurs qui citent les Réglages mènent à la bonne page (`pageDuReglage`, `serie/message-avec-reglage.tsx`).
+
 ## Pièges
 - **Police du film HORS LIGNE** (15/10/2026) : le rendu chargeait la police depuis Google Fonts À CHAQUE rendu → une coupure = « Rendu Remotion en échec ». Désormais `scripts/render-film.ts` appelle `garderLaPolice` (`src/lib/polices-locales.ts`) : fichiers woff2 téléchargés UNE fois dans `~/.webgen-motion/polices/`, copiés dans `public/polices/<famille>/` + `police.json` ; `usePolice` (`remotion/film/marque/police.ts`) lit d'abord cette copie, Google seulement en secours (aperçu, Studio). Jamais téléchargée + hors ligne → refus clair avant le rendu.
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -91,7 +91,10 @@ describe("AideDeClaude", () => {
   it("affiche la phrase du serveur quand Claude ne peut pas répondre", async () => {
     vi.stubGlobal("fetch", repondre(412, { erreur: "Aucune clé Claude : ajoute-la dans les Réglages pour te faire aider." }));
     afficher();
-    expect(await screen.findByRole("alert")).toHaveTextContent("Aucune clé Claude");
+    const alerte = await screen.findByRole("alert");
+    expect(alerte).toHaveTextContent("Aucune clé Claude");
+    // un clic mène à la page qui règle Claude, pas à celle de la voix off
+    expect(within(alerte).getByRole("link", { name: "Ouvrir les Réglages" })).toHaveAttribute("href", "/setup/agent");
   });
 
   it("refuse de garder une réplique si son personnage a quitté le plan entre-temps", async () => {

@@ -112,7 +112,7 @@ describe("étape « Série »", () => {
     render(<Banc cinema={avecPortrait()} />);
     const alerte = (await screen.findAllByRole("alert")).find((element) => element.closest(".serie") && !element.closest(".bloc"))!;
     expect(alerte).toHaveTextContent("Aucune clé Gemini");
-    expect(within(alerte).getByRole("link", { name: "Ouvrir les Réglages" })).toHaveAttribute("href", "/setup");
+    expect(within(alerte).getByRole("link", { name: "Ouvrir les Réglages" })).toHaveAttribute("href", "/setup/video");
     expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeDisabled();
   });
 

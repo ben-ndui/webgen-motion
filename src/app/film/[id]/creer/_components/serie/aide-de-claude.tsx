@@ -4,6 +4,7 @@ import type { DemandeALAssistant } from "@/lib/cinema/assistant/types";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import PropositionDeClaude from "./proposition-de-claude";
 import type { EtatDeLAssistant } from "./use-assistant";
+import MessageAvecReglage from "./message-avec-reglage";
 
 export type GesteDeClaude = { libelle: string; demande: DemandeALAssistant };
 
@@ -44,7 +45,7 @@ export default function AideDeClaude({ cinema, gestes, etat, demander, garder, r
       {etat.type === "repos" && avecRappel && <p className="champ-aide">Claude propose, tu décides. Quelques centimes, sur ta clé.</p>}
       {etat.type === "erreur" && (
         <p className="depot-erreur" role="alert">
-          {etat.raison}
+          <MessageAvecReglage message={etat.raison} />
         </p>
       )}
       {etat.type === "proposition" && (

@@ -1,0 +1,46 @@
+/* « Prépare ton studio » et la pastille d'état des réglages du tableau de
+   bord. Même famille que la fenêtre de remplissage ; tokens de l'outil. */
+
+.reglages-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--r-md); border: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--accent); font: inherit; font-size: var(--t-xs); font-weight: 600; white-space: nowrap; cursor: pointer; }
+.reglages-chip[data-manque="true"] { border-color: color-mix(in oklch, oklch(70% 0.16 70) 55%, var(--line)); background: color-mix(in oklch, oklch(70% 0.16 70) 14%, var(--surface)); color: var(--ink); }
+.reglages-chip:focus-visible { outline: none; box-shadow: var(--ring); }
+.reglages-chip-point { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.reglages-chip[data-manque="true"] .reglages-chip-point { background: oklch(70% 0.16 70); }
+
+.reglages-fond { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: color-mix(in oklch, var(--ink) 40%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.reglages-fenetre { width: min(560px, 100%); max-height: 88dvh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-4); padding: 28px; border-radius: var(--r-xl); border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-pop); outline: none; animation: reglagesArrivee .3s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes reglagesArrivee { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+.reglages-entete { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.reglages-surtitre { margin: 0 0 4px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.reglages-titre { margin: 0; font-size: var(--t-lg); font-weight: 600; color: var(--ink); }
+.reglages-icone { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: 0; border-radius: var(--r-md); background: transparent; color: var(--muted); cursor: pointer; }
+.reglages-icone:hover { background: var(--surface-2); color: var(--ink); }
+.reglages-icone:focus-visible { outline: none; box-shadow: var(--ring); }
+.reglages-icone svg { width: 18px; height: 18px; }
+.reglages-texte { margin: 0; font-size: var(--t-sm); color: var(--muted); line-height: 1.5; }
+
+.reglages-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.reglages-ligne { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface-2); }
+.reglages-pastille { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--line-strong); color: var(--surface); }
+.reglages-ligne[data-pret="true"] .reglages-pastille { border-color: var(--accent); background: var(--accent); }
+.reglages-pastille svg { width: 14px; height: 14px; stroke-width: 3; }
+.reglages-ligne-texte { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.reglages-ligne-titre { font-size: var(--t-sm); font-weight: 600; color: var(--ink); }
+.reglages-ligne-detail { font-size: var(--t-xs); color: var(--muted); }
+.reglages-pret { font-size: var(--t-xs); font-weight: 600; color: var(--accent); }
+.reglages-bouton { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--r-full); background: var(--ink); color: var(--surface); font-size: var(--t-xs); font-weight: 600; text-decoration: none; }
+.reglages-bouton:hover { opacity: .9; }
+.reglages-bouton:focus-visible { outline: none; box-shadow: var(--ring); }
+.reglages-bouton svg { width: 14px; height: 14px; }
+
+.reglages-pied { display: flex; justify-content: flex-end; }
+.reglages-plus-tard { padding: 8px 14px; border: 1px solid var(--line); border-radius: var(--r-full); background: transparent; color: var(--ink); font: inherit; font-size: var(--t-xs); font-weight: 600; cursor: pointer; }
+.reglages-plus-tard:hover { background: var(--surface-2); }
+.reglages-plus-tard:focus-visible { outline: none; box-shadow: var(--ring); }
+
+@media (prefers-reduced-motion: reduce) { .reglages-fenetre { animation: none; } }
+@media (max-width: 480px) {
+  .reglages-fenetre { padding: 22px 18px; }
+  .reglages-ligne { flex-wrap: wrap; }
+  .reglages-bouton, .reglages-pret { margin-left: 38px; }
+}

@@ -15,6 +15,16 @@ de ton site, et ta série courte générée par IA, avec Claude à chaque étape
 
 ### Added
 
+- « Prépare ton studio » : après une installation ou une mise à jour, s'il
+  manque un réglage (Claude, vidéo Google, voix off), une fenêtre dit ce que
+  chacun débloque et ouvre la bonne page. La pastille du tableau de bord dit
+  « Prêt » seulement quand tout est réglé.
+- Réglages · Vidéo IA : la clé Google qui fabrique les plans de la série se
+  saisit enfin dans l'app (elle ne pouvait venir que de l'environnement de
+  développement).
+- « Remplir depuis ton site » : une fenêtre suit les étapes et montre les
+  captures au moment où elles sont prises, puis devient un récap qui mène
+  à ce qu'il reste à faire. Elle se réduit dans le coin pendant le travail.
 - **Film de marque** (Studio) : colle l'adresse de ton site, GEN MOTION le
   filme, repère ton logo, tes couleurs et ta police, et Claude propose les
   textes. Le film sort en 16:9 et en 9:16, en français et en anglais, calé

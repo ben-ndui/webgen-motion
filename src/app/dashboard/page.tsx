@@ -6,7 +6,7 @@ import { getCategory } from "@/lib/motion-categories";
 import { formatDuration } from "@/lib/format-duration";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveEdition } from "@/lib/edition";
-import { getPublicConfig } from "@/lib/config-public";
+import { lireLEtatDesReglages } from "@/lib/reglages/lire-l-etat-des-reglages";
 import { listerFilms } from "@/lib/film-loader";
 import { resumerFilm } from "@/lib/film-etat";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
@@ -62,7 +62,7 @@ function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
 export default function DashboardPage() {
   const tours = getAllTours();
   const edition = resolveEdition().edition;
-  const configured = getPublicConfig().configured;
+  const reglages = lireLEtatDesReglages();
 
   const cards: HubTour[] = tours.map((t) => {
     const firstSection = t.steps.find((s) => s.type === "section");
@@ -86,6 +86,6 @@ export default function DashboardPage() {
   const { films, error } = filmsDuHub();
 
   return (
-    <HubApp tours={cards} edition={edition} configured={configured} films={films} filmsError={error} />
+    <HubApp tours={cards} edition={edition} reglages={reglages} films={films} filmsError={error} />
   );
 }

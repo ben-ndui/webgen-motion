@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
+import MessageAvecReglage from "./message-avec-reglage";
 
 type Props = {
   filmId: string;
@@ -74,7 +75,7 @@ export default function EcrireAvecClaude({ filmId, premierEpisode, avantDEcrire,
       </button>
       {etat.etat === "erreur" && (
         <p className="depot-erreur" role="alert">
-          {etat.raison}
+          <MessageAvecReglage message={etat.raison} />
         </p>
       )}
     </section>

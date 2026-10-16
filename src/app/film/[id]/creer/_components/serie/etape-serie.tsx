@@ -11,6 +11,7 @@ import EpisodesDeLaSerie from "./episodes-de-la-serie";
 import ObjetEtBudget from "./objet-et-budget";
 import { usePortraits } from "./use-portraits";
 import { useSuiviDesPlans } from "./use-suivi-des-plans";
+import MessageAvecReglage from "./message-avec-reglage";
 
 type Props = {
   id: string;
@@ -112,7 +113,7 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
     <div className="serie">
       {blocage && (
         <p className="depot-erreur" role="alert">
-          {blocage} {blocage.includes("Réglages") && <a href="/setup">Ouvrir les Réglages</a>}
+          <MessageAvecReglage message={blocage} />
         </p>
       )}
       <div className="blocs">

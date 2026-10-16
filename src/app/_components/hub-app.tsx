@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "./theme-toggle";
+import type { Reglage } from "@/lib/reglages/etat-des-reglages";
+
 import HubConsole from "./hub-console";
+import PastilleDesReglages from "./reglages/pastille-des-reglages";
 import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
@@ -78,13 +81,14 @@ function CreateControl() {
 export default function HubApp({
   tours,
   edition,
-  configured = true,
+  reglages,
   films = [],
   filmsError = null,
 }: {
   tours: HubTour[];
   edition: string;
-  configured?: boolean;
+  // Absent : pas de pastille (vitrine publique, sans réglages à faire).
+  reglages?: Reglage[];
   // null : section masquée (vitrine publique).
   films?: HubFilm[] | null;
   filmsError?: string | null;
@@ -138,26 +142,7 @@ export default function HubApp({
             <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un tour…" />
             <kbd>/</kbd>
           </label>
-          {configured ? (
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-accent bg-accent-soft border border-accent-line"
-              data-wm-id="hub.config-chip"
-              title="Voix off configurée"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-accent" aria-hidden />
-              Configuré
-            </span>
-          ) : (
-            <Link
-              href="/setup"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted border border-line hover:border-line-strong hover:text-ink transition-colors"
-              data-wm-id="hub.config-chip"
-              title="Lance le wizard de configuration"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-line-strong" aria-hidden />
-              Setup
-            </Link>
-          )}
+          {reglages && <PastilleDesReglages reglages={reglages} />}
           <CreateControl />
           <Link
             className="edition"
