@@ -58,6 +58,13 @@ describe("Accueil (direction B)", () => {
     }
   });
 
+  it("l'abonnement se trouve : le bouton Studio mène droit aux trois offres, et l'annuel n'est pas « sans engagement »", () => {
+    const { container } = render(<LandingPage />);
+    const studio = container.querySelector('[data-wm-id="landing.pricing.studio"]');
+    expect(studio?.textContent).toContain("15 € par mois sans engagement, ou 120 € par an");
+    expect(container.querySelector('[data-wm-id="landing.pricing.studio-cta"]')).toHaveAttribute("href", "/download#studio");
+  });
+
   it("la vidéo joue seule, sans le son, et propose de le remettre", () => {
     const { container } = render(<LandingPage />);
     const film = container.querySelector<HTMLVideoElement>('[data-wm-id="landing.hero.film"] video');

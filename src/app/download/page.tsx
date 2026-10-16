@@ -91,7 +91,7 @@ export default function Download() {
           ))}
         </section>
 
-        <section className="studio-band" data-wm-id="download.studio" style={{ display: "block" }}>
+        <section id="studio" className="studio-band" data-wm-id="download.studio" style={{ display: "block", scrollMarginTop: 96 }}>
           <div style={{ maxWidth: 640 }}>
             <span className="kicker nr">Studio Edition</span>
             <h3 style={{ marginTop: 10 }}>Le film et la série de ta marque.</h3>

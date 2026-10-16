@@ -18,6 +18,8 @@ describe("Secondary pages (handoff shell)", () => {
     expect(screen.getByText("Configuration requise")).toBeInTheDocument();
     expect(screen.getByText(/Le film et la série de ta marque/i)).toBeInTheDocument();
     expect(container.querySelector('[data-wm-id="download.studio"]')).not.toBeNull();
+    // L'accueil y envoie avec /download#studio : l'ancre doit exister.
+    expect(container.querySelector("section#studio")).not.toBeNull();
   });
 
   it("both share the page chrome (nav + footer)", () => {

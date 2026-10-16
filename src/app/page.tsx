@@ -6,6 +6,7 @@ import CeQuIlFabrique from "./_components/accueil/ce-qu-il-fabrique";
 import { CommentCaMarche, Confiance } from "./_components/accueil/comment-et-confiance";
 import FinDePage from "./_components/accueil/fin-de-page";
 import Prix from "./_components/accueil/prix";
+import { PRIX_STUDIO } from "@/lib/offre-studio";
 import LandingChrome, { type LandingSection } from "./_components/landing-chrome";
 import LandingPrimaryCta from "./_components/landing-primary-cta";
 import ThemeToggle from "./_components/theme-toggle";
@@ -39,9 +40,9 @@ const JSON_LD = {
     "App de bureau qui transforme ton site en film de marque et ta marque en série courte générée par IA : captures, textes, musique, montage, en 16:9 et 9:16.",
   offers: [
     { "@type": "Offer", name: "Community", price: "0", priceCurrency: "EUR" },
-    { "@type": "Offer", name: "Studio, à vie", price: "199", priceCurrency: "EUR" },
-    { "@type": "Offer", name: "Studio, annuel", price: "120", priceCurrency: "EUR" },
-    { "@type": "Offer", name: "Studio, mensuel", price: "15", priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio, à vie", price: String(PRIX_STUDIO.aVie), priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio, annuel", price: String(PRIX_STUDIO.annuel), priceCurrency: "EUR" },
+    { "@type": "Offer", name: "Studio, mensuel", price: String(PRIX_STUDIO.mensuel), priceCurrency: "EUR" },
   ],
   publisher: { "@type": "Organization", name: "Smooth & Design", url: "https://genmotion.app" },
 };

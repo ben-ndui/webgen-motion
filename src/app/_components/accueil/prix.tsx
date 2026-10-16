@@ -1,11 +1,13 @@
 import Link from "next/link";
 
+import { PRIX_STUDIO, euros } from "@/lib/offre-studio";
+
 import LandingPrimaryCta from "../landing-primary-cta";
 
 /**
  * Les deux éditions, avec ce qui justifie de payer en tête de Studio : le
- * film de marque et la série. Les prix sont ceux de la page d'achat
- * (studio-offer.tsx) : les changer là-bas, c'est les changer ici.
+ * film de marque et la série. Les prix viennent de `src/lib/offre-studio.ts`,
+ * la même source que la page d'achat et les CGV.
  */
 function Coche() {
   return (
@@ -57,10 +59,12 @@ export default function Prix() {
           <article className="tier featured reveal d2" data-wm-id="landing.pricing.studio">
             <span className="tier-name">Studio</span>
             <div className="tier-price">
-              <span className="amt">199&nbsp;€</span>
+              <span className="amt">{euros(PRIX_STUDIO.aVie)}</span>
               <span className="per">à vie</span>
             </div>
-            <p className="tier-note">ou 15&nbsp;€ par mois, ou 120&nbsp;€ par an, sans engagement</p>
+            <p className="tier-note">
+              ou {euros(PRIX_STUDIO.mensuel)} par mois sans engagement, ou {euros(PRIX_STUDIO.annuel)} par an
+            </p>
             <ul className="feat">
               <li className="plus">
                 <Coche /> Tout Community, plus&nbsp;:
@@ -71,8 +75,9 @@ export default function Prix() {
                 </li>
               ))}
             </ul>
-            <Link className="btn btn-primary btn-lg btn-block" href="/download" data-wm-id="landing.pricing.studio-cta">
-              Passer à Studio
+            {/* Droit aux trois offres : le haut de /download, c'est le téléchargement de l'app. */}
+            <Link className="btn btn-primary btn-lg btn-block" href="/download#studio" data-wm-id="landing.pricing.studio-cta">
+              Choisir mon offre Studio
             </Link>
           </article>
         </div>
