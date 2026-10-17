@@ -108,7 +108,7 @@ describe("« APERÇU » plan par plan", () => {
     serie.personnages.push({ id: "kofi", nom: "Kofi", description: "x" }, { id: "lea", nom: "Léa", description: "x" });
     serie.episodes[0].scenes[0].plans[0].personnages = ["awa", "kofi", "lea"];
     expect(erreursDuCinema({ cinema: serie })).toEqual([
-      "cinema.episodes[0].scenes[0].plans[0] : 4 images de référence (personnages + photo du produit), 3 au plus pour Veo",
+      "cinema.episodes[0].scenes[0].plans[0] : 4 images de référence (références + photo du produit), 3 au plus pour Veo",
     ]);
   });
 });

@@ -83,23 +83,23 @@ describe("erreursDuCinema — format série", () => {
     const liste = erreurs(serie);
     expect(liste).toContain("cinema.personnages[0].id : lettres, chiffres, _ et - seulement");
     expect(liste).toContain("cinema.personnages[0].portrait : cinema/personnages/<id>.jpg ou .png (posé par GEN MOTION)");
-    expect(liste).toContain("cinema.episodes[0].scenes[0].plans[0].fichier : cinema/<plan>.mp4 (posé par GEN MOTION)");
+    expect(liste).toContain("cinema.episodes[0].scenes[0].plans[0].fichier : cinema/<plan>/prise-<n>.mp4 (posé par GEN MOTION)");
   });
 
   it("borne les épisodes, les scènes et les plans ; vide est refusé à chaque niveau", () => {
-    expect(erreurs({ personnages: [], episodes: [] })).toEqual(["cinema.episodes : 1 à 12 épisodes, 0 reçus"]);
+    expect(erreurs({ personnages: [], episodes: [] })).toEqual(["cinema.episodes : 1 à 120 épisodes, 0 reçus"]);
     const serie = serieSaya();
     serie.episodes[0].scenes[1].plans = [];
     serie.episodes.push({ id: "ep2", titre: "Suite", scenes: [] });
     expect(erreurs(serie)).toEqual([
-      "cinema.episodes[0].scenes[1].plans : 1 à 6 plans, 0 reçus",
-      "cinema.episodes[1].scenes : 1 à 4 scènes, 0 reçus",
+      "cinema.episodes[0].scenes[1].plans : 1 à 20 plans, 0 reçus",
+      "cinema.episodes[1].scenes : 1 à 12 scènes, 0 reçus",
     ]);
   });
 
-  it("borne le budget : 0, 600 et 2,5 sont refusés", () => {
-    for (const budget of [0, 600, 2.5]) {
-      expect(erreurs({ ...serieSaya(), budget })).toEqual(["cinema.budget : nombre entier de plans, de 1 à 60"]);
+  it("borne le budget : 0, 1200 et 2,5 sont refusés", () => {
+    for (const budget of [0, 1200, 2.5]) {
+      expect(erreurs({ ...serieSaya(), budget })).toEqual(["cinema.budget : nombre entier de plans, de 1 à 1000"]);
     }
   });
 

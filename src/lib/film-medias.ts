@@ -108,15 +108,17 @@ export function etatDesMedias(
 ): EtatDesMedias {
   const medias: MediaAttendu[] = [];
   const bibliotheque = spec.bibliotheque;
-  // La musique et le logo servent à tous les rendus (la bibliothèque et
-  // l'épisode ont leur bande son, et finissent sur le logo qui se construit).
-  const rendusQuiLesUtilisent: TypeDeRendu[] = ["film"];
-  if (bibliotheque) rendusQuiLesUtilisent.push("bibliotheque");
-  if (spec.cinema) rendusQuiLesUtilisent.push("episode");
+  // La musique et le logo servent au film et à la bibliothèque. L'épisode
+  // d'une série ne les exige que s'il les joue : une série autonome peut
+  // n'avoir ni musique (« aucune ») ni logo de marque (carton ou rien).
+  const usagesDeLaMusique: TypeDeRendu[] = bibliotheque ? ["film", "bibliotheque"] : ["film"];
+  const usagesDuLogo: TypeDeRendu[] = [...usagesDeLaMusique];
+  if (spec.cinema && spec.cinema.musique !== "aucune") usagesDeLaMusique.push("episode");
+  if (spec.cinema && (spec.cinema.fin?.type ?? "logo-de-la-marque") === "logo-de-la-marque") usagesDuLogo.push("episode");
   const logo = spec.marque.logo;
   for (const langue of langues) {
-    ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: rendusQuiLesUtilisent }, dossierPublic);
-    if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: rendusQuiLesUtilisent }, dossierPublic);
+    ajouter(medias, { role: "musique", langue, relatif: spec.musique.fichier, usages: usagesDeLaMusique }, dossierPublic);
+    if (logo.type === "image") ajouter(medias, { role: "logo", langue, relatif: logo.fichier, usages: usagesDuLogo }, dossierPublic);
   }
   // Les voix GÉNÉRÉES (une ligne sans fichier n'a rien à chercher sur le disque).
   for (const langue of langues) {

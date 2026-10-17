@@ -50,7 +50,7 @@ export function exporterLEpisodeEnOtio(
   if (absent) return { ok: false, statut: 409, raison: `La vidéo du plan « ${absent.planId} » manque sur le disque : régénère-le.` };
 
   const cheminDeLaMusique = join(dossierPublic, spec.musique.fichier);
-  const musique = existsSync(cheminDeLaMusique)
+  const musique = cinema.musique !== "aucune" && existsSync(cheminDeLaMusique)
     ? { ...media(spec.musique.fichier), premierTempsSec: spec.musique.premierTemps, volume: spec.musique.volume ?? 1 }
     : null;
 

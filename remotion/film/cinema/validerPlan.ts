@@ -1,15 +1,16 @@
 // Validation d'UN plan de cinéma : ce qu'il montre, qui parle, son fichier,
 // sa découpe. Appelée par validerCinema.ts pour chaque plan du film.
 import { type Erreurs, estNombre, estObjet, estTexte, texte } from "../validerSpec";
-import { DUREE_D_UN_PLAN, PERSONNAGES_PAR_PLAN_MAX } from "./types";
+import { DUREE_D_UN_PLAN, PERSONNAGES_PAR_PLAN_MAX, REFERENCES_PAR_PLAN_MAX } from "./types";
 
 // Une consigne plus longue noie le personnage et la palette dans le prompt.
 export const LONGUEUR_MAX_DE_CONSIGNE = 600;
 // Au-delà, la réplique ne tient plus dans 8 s dite posément.
 export const LONGUEUR_MAX_DE_REPLIQUE = 120;
 export const ID_SUR = /^[\w-]+$/;
-// Exactement ce que GEN MOTION écrit : ni « .. », ni sous-dossier, ni autre extension.
-const FICHIER_SUR = /^cinema\/[\w-]+\.mp4$/;
+// Exactement ce que GEN MOTION écrit : une prise (cinema/<plan>/prise-<n>.mp4)
+// ou l'ancien fichier unique (cinema/<plan>.mp4). Ni « .. », ni autre extension.
+export const FICHIER_DE_PLAN_SUR = /^cinema\/[\w-]+(\/prise-[1-9]\d{0,3})?\.mp4$/;
 
 function verifierDecoupe(erreurs: Erreurs, chemin: string, decoupe: unknown): void {
   if (decoupe === undefined) return;
@@ -60,8 +61,21 @@ function verifierReplique(erreurs: Erreurs, chemin: string, replique: unknown, p
   }
 }
 
+function verifierReferences(erreurs: Erreurs, chemin: string, references: unknown, connues: Set<string>): void {
+  if (references === undefined) return;
+  if (!Array.isArray(references)) {
+    erreurs.push(`${chemin} : liste attendue`);
+    return;
+  }
+  if (references.length > REFERENCES_PAR_PLAN_MAX) erreurs.push(`${chemin} : ${REFERENCES_PAR_PLAN_MAX} au plus (limite de Veo), ${references.length} reçues`);
+  if (new Set(references).size !== references.length) erreurs.push(`${chemin} : une référence citée deux fois`);
+  for (const id of references) {
+    if (typeof id !== "string" || !connues.has(id)) erreurs.push(`${chemin} : référence inconnue « ${String(id)} »`);
+  }
+}
+
 // objetEnPhoto : la photo du produit part aussi en référence, elle compte dans la limite de Veo.
-export type ContexteDuPlan = { personnagesConnus: Set<string>; objetDecrit: boolean; objetEnPhoto: boolean };
+export type ContexteDuPlan = { personnagesConnus: Set<string>; referencesConnues: Set<string>; objetDecrit: boolean; objetEnPhoto: boolean };
 
 export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, contexte: ContexteDuPlan): void {
   if (!estObjet(plan)) {
@@ -77,13 +91,16 @@ export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, co
   if (typeof plan.objet !== "boolean") erreurs.push(`${chemin}.objet : vrai ou faux`);
   // Un objet à l'image sans description : Veo en inventerait un différent à chaque plan.
   if (plan.objet === true && !contexte.objetDecrit) erreurs.push(`${chemin}.objet : décris d'abord l'objet du film (cinema.objet)`);
-  const references = (Array.isArray(plan.personnages) ? plan.personnages.length : 0) + (plan.objet === true && contexte.objetEnPhoto ? 1 : 0);
-  if (Array.isArray(plan.personnages) && plan.personnages.length <= PERSONNAGES_PAR_PLAN_MAX && references > PERSONNAGES_PAR_PLAN_MAX) {
-    erreurs.push(`${chemin} : ${references} images de référence (personnages + photo du produit), ${PERSONNAGES_PAR_PLAN_MAX} au plus pour Veo`);
+  verifierReferences(erreurs, `${chemin}.references`, plan.references, contexte.referencesConnues);
+  // Sans choix explicite, les personnages du plan partent en référence ; la photo du produit s'y ajoute.
+  const choisies = Array.isArray(plan.references) ? plan.references : Array.isArray(plan.personnages) ? plan.personnages : [];
+  const references = choisies.length + (plan.objet === true && contexte.objetEnPhoto ? 1 : 0);
+  if (choisies.length <= REFERENCES_PAR_PLAN_MAX && references > REFERENCES_PAR_PLAN_MAX) {
+    erreurs.push(`${chemin} : ${references} images de référence (références + photo du produit), ${REFERENCES_PAR_PLAN_MAX} au plus pour Veo`);
   }
   verifierReplique(erreurs, `${chemin}.replique`, plan.replique, plan.personnages);
-  if (plan.fichier !== undefined && (typeof plan.fichier !== "string" || !FICHIER_SUR.test(plan.fichier))) {
-    erreurs.push(`${chemin}.fichier : cinema/<plan>.mp4 (posé par GEN MOTION)`);
+  if (plan.fichier !== undefined && (typeof plan.fichier !== "string" || !FICHIER_DE_PLAN_SUR.test(plan.fichier))) {
+    erreurs.push(`${chemin}.fichier : cinema/<plan>/prise-<n>.mp4 (posé par GEN MOTION)`);
   }
   if (plan.produitReel !== undefined && plan.produitReel !== true) erreurs.push(`${chemin}.produitReel : vrai ou absent (posé par GEN MOTION)`);
   verifierDecoupe(erreurs, `${chemin}.decoupe`, plan.decoupe);

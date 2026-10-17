@@ -93,7 +93,11 @@ export function problemesDeLaDeclinaison(
   episode?: string,
 ): string[] {
   if (type === "bibliotheque" && !spec.bibliotheque) return [MESSAGE_SANS_BIBLIOTHEQUE];
-  const problemes = spec.exemple ? [MESSAGE_FICHE_D_EXEMPLE] : [];
+  // Les textes de la marque ne servent à un épisode que s'il finit sur le logo
+  // de la marque (sa signature) : une série autonome ne les exige pas.
+  const finSurLaMarque = (spec.cinema?.fin?.type ?? "logo-de-la-marque") === "logo-de-la-marque";
+  const exigeLesTextes = type !== "episode" || finSurLaMarque;
+  const problemes = spec.exemple && exigeLesTextes ? [MESSAGE_FICHE_D_EXEMPLE] : [];
   if (type === "episode") problemes.push(...problemesDeLEpisode(spec, episode, medias.dossierPublic));
   // Une voix écrite mais pas générée ne serait pas jouée : le film sortirait
   // muet là où la personne attend sa phrase.

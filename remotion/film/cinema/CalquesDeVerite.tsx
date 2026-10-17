@@ -4,8 +4,8 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 import type { Langue } from "../spec";
 
 type Props = {
-  // Image où le vrai logo commence : les plans générés s'arrêtent là.
-  debutDuLogo: number;
+  // Image où la fin (logo ou carton) commence : les plans générés s'arrêtent là.
+  debutDeLaFin: number;
   // Un plan montre un objet imaginé par l'IA : le rendu n'est qu'un aperçu.
   objetImagine: boolean;
   langue: Langue;
@@ -33,10 +33,10 @@ const APERCU: CSSProperties = {
  * 14/10) : elle se fait à la publication, par l'étiquette IA d'Instagram ou de
  * TikTok (AI Act art. 50) ; l'écran du rendu le rappelle.
  */
-export function CalquesDeVerite({ debutDuLogo, objetImagine, langue }: Props) {
+export function CalquesDeVerite({ debutDeLaFin, objetImagine, langue }: Props) {
   const image = useCurrentFrame();
   if (!objetImagine) return null;
-  const surLesPlans = image < debutDuLogo;
+  const surLesPlans = image < debutDeLaFin;
   return (
     <AbsoluteFill style={{ pointerEvents: "none" }}>
       <span style={{ ...APERCU, top: surLesPlans ? "45%" : "72%" }}>{APERCU_EN[langue]}</span>

@@ -11,17 +11,41 @@ export type QualiteDeCinema = "fast" | "lite";
 export const DUREE_D_UN_PLAN = 8;
 // Veo accepte trois images de référence au plus par plan.
 export const PERSONNAGES_PAR_PLAN_MAX = 3;
+export const REFERENCES_PAR_PLAN_MAX = 3;
 
 export type Personnage = {
-  // Nom de fichier du portrait : lettres, chiffres, _ et - (« awa »).
+  // Lettres, chiffres, _ et - (« awa ») : sert aussi de clé dans la bible visuelle.
   id: string;
   // Tel qu'on l'appelle dans les consignes et les répliques (« Awa »).
   nom: string;
   // Physique et tenue en une phrase : répétée mot pour mot dans chaque plan.
   description: string;
-  // cinema/personnages/<id>.jpg ou .png, posé par GEN MOTION.
+  // ANCIEN portrait unique (avant la bible visuelle). Plus écrit par GEN
+  // MOTION : il devient la version 1 de la vue « en pied » dans la bible.
   portrait?: string;
 };
+
+/**
+ * Ce que la bible visuelle décrit en plus des personnages : une créature, un
+ * objet de l'histoire ou un décor. Ses images (vues, versions, statut) vivent
+ * côté serveur dans bible.json, jamais dans la fiche.
+ */
+export type TypeDElement = "creature" | "objet" | "decor";
+export type ElementDeLaBible = { id: string; type: TypeDElement; nom: string; description: string };
+
+// Le rendu des images de référence ET des plans, choisi une fois pour la série.
+export const STYLES_VISUELS = ["photorealiste", "cinema-fantasy", "animation-3d", "illustration"] as const;
+export type StyleVisuel = (typeof STYLES_VISUELS)[number];
+
+/**
+ * Ce qui suit le dernier plan d'un épisode. Absente : le logo de la marque
+ * (le comportement d'avant la série autonome).
+ */
+export type FinDeLEpisode =
+  | { type: "logo-de-la-marque" }
+  // Un carton : un texte, et le logo du studio (cinema/fin/logo.png|jpg, posé par GEN MOTION).
+  | { type: "carton"; texte: string; logo?: string }
+  | { type: "aucune" };
 
 /** Le morceau gardé d'un plan de 8 s, en secondes. */
 export type DecoupeDuPlan = {
@@ -34,7 +58,7 @@ export type DecoupeDuPlan = {
 export type RepliqueDuPlan = { personnage: string; texte: string };
 
 export type PlanDeCinema = {
-  // Unique dans tout le film : nom du fichier rendu (cinema/<id>.mp4).
+  // Unique dans tout le film : dossier de ses prises (cinema/<id>/prise-<n>.mp4).
   id: string;
   // Ce qui se passe à l'image, en une ou deux phrases.
   consigne: string;
@@ -42,12 +66,18 @@ export type PlanDeCinema = {
   personnages: string[];
   // L'objet du film (cinema.objet) est-il à l'image ?
   objet: boolean;
+  // Les références de la bible envoyées à Veo (ids, 3 au plus). Absentes : les
+  // personnages du plan, dans l'ordre.
+  references?: string[];
   // Dite par un personnage du plan, en français.
   replique?: RepliqueDuPlan;
+  // La PRISE RETENUE, posée par GEN MOTION : c'est elle que le montage joue.
+  // Toutes les prises du plan vivent dans prises.json (serveur).
   fichier?: string;
-  // Posé par GEN MOTION : la vidéo a été générée AVEC la photo du vrai produit.
-  // Un plan généré avant le dépôt de la photo montre un objet imaginé.
+  // Posé par GEN MOTION : la prise retenue a été générée AVEC la photo du vrai
+  // produit. Un plan généré avant le dépôt de la photo montre un objet imaginé.
   produitReel?: true;
+  // La découpe de la prise retenue.
   decoupe?: DecoupeDuPlan;
 };
 
@@ -66,6 +96,10 @@ export type EpisodeDeCinema = {
 
 export type CinemaDuFilm = {
   personnages: Personnage[];
+  // Créatures, objets et décors de la bible visuelle. Absent : aucun.
+  elements?: ElementDeLaBible[];
+  // Absent : photoréaliste.
+  style?: StyleVisuel;
   // Le produit, décrit une fois.
   objet?: string;
   // La photo du VRAI produit (cinema/objet.jpg ou .png), posée par GEN MOTION
@@ -74,4 +108,10 @@ export type CinemaDuFilm = {
   episodes: EpisodeDeCinema[];
   // Plans payés au plus pour ce film, refus de Google non comptés. Absent : 20.
   budget?: number;
+  // Images de référence générées au plus pour ce film. Absent : 100.
+  budgetImages?: number;
+  // Absente : le logo de la marque.
+  fin?: FinDeLEpisode;
+  // « aucune » : l'épisode n'a que le son de ses plans. Absente : la musique du film.
+  musique?: "film" | "aucune";
 };
