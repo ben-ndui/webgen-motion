@@ -1,11 +1,11 @@
 "use client";
 
-import { PICTOS, type Picto } from "../../../../../../remotion/film/pictos";
 import { TYPES_DE_VISUEL, type ExplainerSpec, type MotsDuVisuel, type TypeDeVisuel } from "../../../../../../remotion/film/explainer/spec";
 import { EXPLAINER } from "../../../../../../remotion/film/explainer/ficheExplainer";
 import type { Langue } from "../../../../../../remotion/film/spec";
 import { changerLeVisuel, deplacerUneScene, retirerUneScene } from "@/lib/formats/edition-explainer";
 import ChampTexte from "../../../../film/[id]/creer/_components/champ-texte";
+import ChoixDuPicto from "./choix-du-picto";
 import MotsDeLaScene from "./mots-de-la-scene";
 
 export const VISUELS: Record<TypeDeVisuel, string> = {
@@ -16,23 +16,7 @@ export const VISUELS: Record<TypeDeVisuel, string> = {
   phrase: "La phrase à retenir",
 };
 
-const NOMS_DES_PICTOS: Record<Picto, string> = {
-  robot: "Robot", document: "Document", formulaire: "Formulaire", cadenas: "Cadenas", loupe: "Loupe",
-  personne: "Personne", serveur: "Serveur", ecran: "Écran", horloge: "Horloge", coche: "Coche",
-};
-
 type Props = { spec: ExplainerSpec; index: number; langue: Langue; modifier: (changement: (spec: ExplainerSpec) => ExplainerSpec | void) => void };
-
-function ChoixDuPicto({ libelle, valeur, onChange }: { libelle: string; valeur: Picto; onChange: (p: Picto) => void }) {
-  return (
-    <label className="champ">
-      <span className="champ-question">{libelle}</span>
-      <select className="champ-saisie" value={valeur} onChange={(e) => onChange(e.target.value as Picto)}>
-        {PICTOS.map((p) => <option key={p} value={p}>{NOMS_DES_PICTOS[p]}</option>)}
-      </select>
-    </label>
-  );
-}
 
 /** Une scène : son visuel, sa durée, et ses textes dans la langue qu'on écrit. */
 export default function CarteDeScene({ spec, index, langue, modifier }: Props) {

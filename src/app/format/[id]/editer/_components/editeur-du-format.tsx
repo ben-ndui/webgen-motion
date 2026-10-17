@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { CATALOGUE, type FicheDeFormat } from "@/lib/formats/catalogue";
 import { languesDesDeclinaisons } from "@/lib/formats/declinaisons";
+import type { ConteSpec } from "../../../../../../remotion/film/conte/spec";
 import type { ExplainerSpec } from "../../../../../../remotion/film/explainer/spec";
 import type { Langue } from "../../../../../../remotion/film/spec";
 import ChoixDeCases from "../../../../_components/choix-de-cases";
@@ -12,6 +13,7 @@ import { LANGUES_DU_FILM } from "../../../../_components/choix-du-film";
 import IndicateurDEnregistrement from "../../../../film/[id]/creer/_components/indicateur-d-enregistrement";
 import BlocDeclinaisons from "./bloc-declinaisons";
 import BlocMarque from "./bloc-marque";
+import EditeurConte from "./editeur-conte";
 import EditeurExplainer from "./editeur-explainer";
 import { type EtatDuProjet, useProjetDeFormat } from "./use-projet-de-format";
 
@@ -65,6 +67,9 @@ export default function EditeurDuFormat({ id, initial }: { id: string; initial: 
       {projet.format === "explainer" ? (
         <EditeurExplainer id={id} spec={projet.spec} langue={enCours}
           modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as ExplainerSpec) ?? copie.spec } as FicheDeFormat))} />
+      ) : projet.format === "conte" ? (
+        <EditeurConte spec={projet.spec} langue={enCours}
+          modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as ConteSpec) ?? copie.spec } as FicheDeFormat))} />
       ) : (
         <p className="film-muted" data-wm-id="format.editeur-a-venir">
           L&apos;éditeur du format « {CATALOGUE[projet.format].libelle} » arrive dans le lot suivant.
