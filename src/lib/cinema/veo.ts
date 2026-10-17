@@ -78,6 +78,8 @@ export function raisonDuRefus(statut: number, corps: unknown): string {
     const detail = message ? ` Détail de Google : ${message}` : "";
     return `Quota Google atteint ou facturation coupée : attends une minute, sinon vérifie le crédit de ton projet Google AI Studio.${detail}`;
   }
+  // 402 : le compte n'a plus de crédit prépayé. Rien n'est facturé, il faut recharger.
+  if (statut === 402) return "Plus de crédit sur ton compte Google AI Studio : recharge-le, puis relance.";
   if (statut === 400 && message) return `Google refuse la demande : ${message}`;
   return `Google ne répond pas comme prévu (${statut}).`;
 }

@@ -65,11 +65,13 @@ describe("lancerUnPlan", () => {
     google.repondre(
       { statut: 429, corps: { error: { message: "RESOURCE_EXHAUSTED" } } },
       { statut: 403, corps: {} },
+      { statut: 402, corps: {} },
       { statut: 400, corps: { error: { message: "`allow_adult` for personGeneration is currently not supported." } } },
       { statut: 200, corps: {} },
     );
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 429, raison: expect.stringContaining("Détail de Google : RESOURCE_EXHAUSTED") });
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 403, raison: expect.stringContaining("clé Gemini") });
+    expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 402, raison: expect.stringContaining("Plus de crédit") });
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, raison: expect.stringContaining("allow_adult") });
     // Un 200 sans nom d'opération n'est PAS un lancement : rien à suivre.
     expect(await lancerUnPlan(client(), demande)).toMatchObject({ ok: false, statut: 200 });
