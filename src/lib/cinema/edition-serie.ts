@@ -97,14 +97,19 @@ export function retirerUnPlan(cinema: CinemaDuFilm, planId: string): void {
   cinema.episodes = restants.length > 0 ? restants : serieDeDepart().episodes;
 }
 
-/** Montre ou retire un personnage d'un plan ; un personnage qui sort ne garde pas sa réplique. */
-export function basculerUnPersonnage(plan: PlanDeCinema, personnageId: string): void {
-  if (plan.personnages.includes(personnageId)) {
-    plan.personnages = plan.personnages.filter((id) => id !== personnageId);
-    if (plan.replique?.personnage === personnageId) delete plan.replique;
-  } else {
-    plan.personnages.push(personnageId);
-  }
+/**
+ * Montre ou retire une référence (personnage OU créature) d'un plan.
+ * `plan.personnages` et `plan.references` restent synchronisés : le premier
+ * ne garde que les personnages (qui parlent, qui ont une réplique), le
+ * second sert tel quel à Veo, dans l'ordre choisi.
+ */
+export function basculerUneReference(cinema: CinemaDuFilm, plan: PlanDeCinema, id: string): void {
+  const actuelles = plan.references ?? plan.personnages;
+  const dedans = actuelles.includes(id);
+  const prochaines = dedans ? actuelles.filter((reference) => reference !== id) : [...actuelles, id];
+  plan.references = prochaines;
+  plan.personnages = prochaines.filter((candidat) => cinema.personnages.some((personnage) => personnage.id === candidat));
+  if (dedans && plan.replique?.personnage === id) delete plan.replique;
 }
 
 const auDixieme = (secondes: number) => Math.round(secondes * 10) / 10;

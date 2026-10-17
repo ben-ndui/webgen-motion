@@ -26,13 +26,14 @@ type Props = {
   references: ReferenceAffichee[] | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (planId: string) => void;
+  onRafraichir: (planId: string) => void;
 };
 
 /**
  * Une scène : son décor, puis sa pellicule, les plans en images 9:16 dans
  * l'ordre où ils passeront. Un clic sur un plan l'ouvre en dessous.
  */
-export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, versionsDesPlans, blocage, references, modifierLaSerie, onGenerer }: Props) {
+export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, versionsDesPlans, blocage, references, modifierLaSerie, onGenerer, onRafraichir }: Props) {
   const [choisi, setChoisi] = useState(scene.plans[0]?.id ?? "");
   const plan = scene.plans.find((p) => p.id === choisi) ?? scene.plans[0];
   const numeroDuPlan = plan ? scene.plans.indexOf(plan) + 1 : 0;
@@ -106,6 +107,7 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
           modifierLePlan={modifierLePlan(plan.id)}
           modifierLaSerie={modifierLaSerie}
           onGenerer={() => onGenerer(plan.id)}
+          onRafraichir={() => onRafraichir(plan.id)}
           onRetirer={() => modifierLaSerie((c) => retirerUnPlan(c, plan.id))}
         />
       )}

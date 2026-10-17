@@ -1,10 +1,10 @@
 "use client";
 
 import { COUT_D_UN_PLAN_USD, enDollars } from "@/lib/cinema/couts";
-import { basculerUnPersonnage } from "@/lib/cinema/edition-serie";
+import { basculerUneReference } from "@/lib/cinema/edition-serie";
 import { choisirLeModele } from "@/lib/cinema/plans";
 import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
-import { type CinemaDuFilm, PERSONNAGES_PAR_PLAN_MAX, type PlanDeCinema, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
+import { type CinemaDuFilm, type PlanDeCinema, REFERENCES_PAR_PLAN_MAX, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
 import { raisonDeNePasGenerer } from "./raison-de-ne-pas-generer";
 import type { ReferenceAffichee } from "./use-bible";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
@@ -12,6 +12,7 @@ import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import ChampReplique from "./champ-replique";
 import ControleDeLaReplique from "./controle-de-la-replique";
 import DecoupeDuPlan from "./decoupe-du-plan";
+import PrisesDuPlan from "./prises-du-plan";
 import { episodeDeLaScene, useAssistant } from "./use-assistant";
 import ZoneTexte from "./zone-texte";
 
@@ -31,6 +32,7 @@ type Props = {
   // Pour poser une proposition de Claude gardée.
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: () => void;
+  onRafraichir: () => void;
   onRetirer: () => void;
 };
 
@@ -40,10 +42,12 @@ const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
 };
 
 /** Le plan choisi sur la pellicule : ce qui s'y passe, qui est à l'image, qui parle, et le bouton qui le génère. */
-export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, references, modifierLePlan, modifierLaSerie, onGenerer, onRetirer }: Props) {
+export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, references, modifierLePlan, modifierLaSerie, onGenerer, onRafraichir, onRetirer }: Props) {
   const choix = choisirLeModele(cinema, plan);
   const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage, references);
   const presents = cinema.personnages.filter((p) => plan.personnages.includes(p.id));
+  const choisies = plan.references ?? plan.personnages;
+  const creatures = (cinema.elements ?? []).filter((e) => e.type === "creature");
   const message = suivi && "raison" in suivi ? suivi.raison : suivi ? MESSAGES[suivi.etat] : undefined;
   const dejaGenere = suivi?.etat === "pret";
   const assistant = useAssistant(filmId, cinema, modifierLaSerie);
@@ -68,15 +72,15 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
       />
 
       <fieldset className="champ choix-personnages">
-        <legend className="champ-question">Qui est à l&apos;image ?</legend>
-        {cinema.personnages.length === 0 && <p className="champ-aide">Personne pour l&apos;instant : ajoute un personnage dans le casting.</p>}
+        <legend className="champ-question">Qui (ou quoi) est à l&apos;image ?</legend>
+        {cinema.personnages.length === 0 && creatures.length === 0 && <p className="champ-aide">Personne pour l&apos;instant : ajoute un personnage ou une créature dans la bible.</p>}
         <div className="puces">
-          {cinema.personnages.map((personnage) => {
-            const present = plan.personnages.includes(personnage.id);
-            const plein = !present && plan.personnages.length >= PERSONNAGES_PAR_PLAN_MAX;
+          {[...cinema.personnages, ...creatures].map((reference) => {
+            const present = choisies.includes(reference.id);
+            const plein = !present && choisies.length >= REFERENCES_PAR_PLAN_MAX;
             return (
-              <button key={personnage.id} type="button" className="puce" aria-pressed={present} disabled={plein} onClick={() => modifierLePlan((p) => basculerUnPersonnage(p, personnage.id))}>
-                {personnage.nom}
+              <button key={reference.id} type="button" className="puce" aria-pressed={present} disabled={plein} onClick={() => modifierLePlan((p) => basculerUneReference(cinema, p, reference.id))}>
+                {reference.nom}
               </button>
             );
           })}
@@ -95,6 +99,29 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
       {suivi?.etat === "pret" && plan.replique && <ControleDeLaReplique key={`${version}-${plan.replique.texte}`} filmId={filmId} planId={plan.id} />}
       {suivi?.etat === "pret" && (
         <DecoupeDuPlan key={version} filmId={filmId} plan={plan} fichier={suivi.fichier} version={version} modifierLePlan={modifierLePlan} />
+      )}
+      {suivi?.etat === "pret" && (
+        <PrisesDuPlan
+          key={`prises-${version}`}
+          filmId={filmId}
+          planId={plan.id}
+          version={version}
+          onPlanChange={(citee) => {
+            // La découpe n'est PAS reprise du disque à l'enregistrement (contrairement au
+            // fichier) : sans la recopier ici, la prochaine frappe réécrirait celle de
+            // l'ancienne prise par-dessus celle de la prise qu'on vient de choisir.
+            modifierLePlan((p) => {
+              if (citee.decoupe) p.decoupe = citee.decoupe;
+              else delete p.decoupe;
+              if (citee.produitReel) p.produitReel = true;
+              else delete p.produitReel;
+            });
+            // Le lecteur vidéo suit `suivi.fichier`, pas la fiche : on ne relit (et ne
+            // remonte le composant) que si le fichier a vraiment changé — supprimer une
+            // prise qui n'était pas retenue ne doit rien faire sauter à l'écran.
+            if (citee.fichier && citee.fichier !== suivi.fichier) onRafraichir();
+          }}
+        />
       )}
 
       <div className="generer">

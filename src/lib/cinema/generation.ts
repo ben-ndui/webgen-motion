@@ -8,7 +8,7 @@ import type { FilmSpec } from "../../../remotion/film/spec";
 import { lireLaBible } from "./bible/stockage";
 import { portraitsPourVeo } from "./generation-portrait";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } from "./lieux";
-import { choisirLeModele, personnagesDuPlan, photoDuProduitDansLePlan, trouverLePlan } from "./plans";
+import { choisirLeModele, photoDuProduitDansLePlan, referencesDuPlan, trouverLePlan } from "./plans";
 import { cheminDeLaPrise, prisesDuPlan, prochainNumeroDePrise } from "./prises/etat";
 import { ajouterUnePrise, retenirUnePrise } from "./prises/gestes";
 import { lireLesPrises } from "./prises/stockage";
@@ -71,7 +71,7 @@ function repondre(id: string, contexte: Contexte, plan: EtatDuPlan, lieux: Lieux
 function texteEncoreDExemple(contexte: Contexte): string | null {
   if (estUnExemple("decor", contexte.scene.decor)) return "Décris d'abord le décor de la scène : c'est encore l'exemple.";
   if (estUnExemple("consigne", contexte.plan.consigne)) return "Écris d'abord ce qui se passe dans ce plan : c'est encore l'exemple.";
-  const flou = personnagesDuPlan(contexte.cinema, contexte.plan).find((p) => estUnExemple("description", p.description));
+  const flou = referencesDuPlan(contexte.cinema, contexte.plan).find((r) => estUnExemple("description", r.description));
   return flou ? `Décris d'abord ${flou.nom} : sa description est encore l'exemple.` : null;
 }
 
@@ -93,7 +93,7 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   if (texteDExemple) return { ok: false, statut: 400, raison: texteDExemple };
   const photo = photoDuProduitDansLePlan(contexte.cinema, contexte.plan) ? contexte.cinema.photoDeLObjet : undefined;
   const dossier = lieux.dossier(id);
-  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), lireLaBible(dossier), photo);
+  const portraits = portraitsPourVeo(referencesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), lireLaBible(dossier), photo);
   if (!portraits.ok) return portraits;
 
   const reservation = reserver(dossier, planId, contexte.plafond);

@@ -91,6 +91,18 @@
 .gm-film .decoupe-planche { width: 100%; border-radius: var(--r-sm); cursor: pointer; background: var(--pellicule); }
 .gm-film .decoupe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
 
+/* Les prises d'un plan régénéré */
+.gm-film .prises { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .prises-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.gm-film .prises-liste > li { width: 112px; display: flex; flex-direction: column; gap: 6px; }
+.gm-film .prises-liste > li.retenue .prises-video { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gm-film .prises-video { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); object-fit: cover; }
+.gm-film .prises-absente { display: block; aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--surface-2); color: var(--muted); font-size: var(--t-xs); text-align: center; padding: var(--s-2); }
+.gm-film .prises-actions { display: flex; flex-direction: column; gap: 2px; font-size: var(--t-xs); }
+.gm-film .prises-numero { color: var(--muted); }
+.gm-film .prises-retenue-etiquette { color: var(--accent); font-weight: 600; }
+.gm-film .prises-actions .lien { font-size: inherit; }
+
 /* La photo du vrai produit, Claude */
 .gm-film .photo-du-produit-apercu { width: 120px; aspect-ratio: 1; object-fit: contain; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line); }
 .gm-film .photo-du-produit .film-btn { cursor: pointer; }

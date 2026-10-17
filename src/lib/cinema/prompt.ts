@@ -1,14 +1,14 @@
 import type { PlanDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
 import { paletteEnMots } from "./couleurs";
-import { personnagesDuPlan, photoDuProduitDansLePlan } from "./plans";
+import { personnagesDuPlan, photoDuProduitDansLePlan, referencesDuPlan } from "./plans";
 
 /**
  * Le prompt envoyé à Veo pour un plan : la consigne, plus ce qui doit rester
- * IDENTIQUE d'un plan à l'autre (décor de la scène, personnages, objet,
- * palette, ambiance). Chaque personnage est nommé avec le numéro de son
- * portrait de référence : c'est le portrait qui garde le visage, le texte
- * dit à Veo qui est qui.
+ * IDENTIQUE d'un plan à l'autre (décor de la scène, références de la bible,
+ * objet, palette, ambiance). Chaque référence (personnage ou élément) est
+ * nommée avec le numéro de son image de référence : c'est elle qui garde
+ * l'apparence, le texte dit à Veo qui est qui.
  */
 export type PromptDeVeo = { prompt: string; negatif: string };
 
@@ -37,26 +37,26 @@ export function composerLePrompt(
   const cinema = spec.cinema;
   if (!cinema) throw new Error("composerLePrompt : la fiche n'a pas de « cinema »");
   const { encre, accent, clair } = spec.marque.couleurs;
-  const presents = personnagesDuPlan(cinema, plan);
-  const cadrage = presents.length > 0 ? "Cinematic vertical shot of a short drama series." : "Cinematic vertical shot for a high-end brand film.";
+  const presentes = referencesDuPlan(cinema, plan);
+  const cadrage = presentes.length > 0 ? "Cinematic vertical shot of a short drama series." : "Cinematic vertical shot for a high-end brand film.";
   const decor = enPhrase(scene.decor);
   const morceaux = [cadrage, `The scene takes place in this setting: ${decor}`, enPhrase(plan.consigne)];
-  presents.forEach((personnage, index) => {
-    morceaux.push(`${personnage.nom} (reference image ${index + 1}): ${enPhrase(personnage.description)}`);
+  presentes.forEach((reference, index) => {
+    morceaux.push(`${reference.nom} (reference image ${index + 1}): ${enPhrase(reference.description)}`);
   });
   if (plan.objet && cinema.objet && photoDuProduitDansLePlan(cinema, plan)) {
-    // La photo vient APRÈS les portraits dans les références envoyées.
-    morceaux.push(`The real product (reference image ${presents.length + 1}): ${enPhrase(cinema.objet)} Reproduce it exactly as in its reference image.`);
+    // La photo vient APRÈS les références dans les images envoyées.
+    morceaux.push(`The real product (reference image ${presentes.length + 1}): ${enPhrase(cinema.objet)} Reproduce it exactly as in its reference image.`);
   } else if (plan.objet && cinema.objet) {
     morceaux.push(`The object: ${enPhrase(cinema.objet)} It has no label and no text.`);
   }
   if (plan.replique) {
-    const orateur = presents.find((personnage) => personnage.id === plan.replique?.personnage);
+    const orateur = personnagesDuPlan(cinema, plan).find((personnage) => personnage.id === plan.replique?.personnage);
     if (orateur) morceaux.push(`${orateur.nom} says softly in French: « ${plan.replique.texte.trim()} » Natural lip movement.`);
   }
   // Recette du 14/10 : sans ce rappel, un gros plan a repris le fond et la pose
   // du portrait de référence au lieu du décor. Le décor revient donc à la fin.
-  if (presents.length > 0 || photoDuProduitDansLePlan(cinema, plan)) {
+  if (presentes.length > 0 || photoDuProduitDansLePlan(cinema, plan)) {
     morceaux.push(`Keep this setting all around the characters: ${decor} Never reuse the plain studio background or the pose of the reference images.`);
   }
   morceaux.push(AMBIANCE[spec.direction ?? "marque"]);

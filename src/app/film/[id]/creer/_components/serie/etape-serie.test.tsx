@@ -158,6 +158,43 @@ describe("étape « Série »", () => {
     expect(await screen.findByRole("img", { name: "En pied, version 1" })).toBeInTheDocument();
   });
 
+  it("choisir une autre prise recopie SA découpe dans la fiche locale (sinon le prochain enregistrement écraserait celle du serveur)", async () => {
+    const serie = avecPortrait();
+    serie.episodes[0].scenes[0].plans[0].fichier = "cinema/rangement/prise-1.mp4";
+    serie.episodes[0].scenes[0].plans[0].decoupe = { debut: 1, fin: 7 };
+    const prisesRoute = `${plan("rangement")}/prises`;
+    serveur({
+      [`GET ${plan("rangement")}`]: [{ corps: { plan: { etat: "pret", fichier: "cinema/rangement/prise-1.mp4" }, budget: BUDGET } }],
+      [`GET ${bibleRoute}`]: [bibleVide()],
+      [`GET ${prisesRoute}`]: [
+        {
+          corps: {
+            prises: [
+              { n: 1, fichier: "cinema/rangement/prise-1.mp4", retenue: true, presente: true, creeeLe: null },
+              { n: 2, fichier: "cinema/rangement/prise-2.mp4", retenue: false, presente: true, creeeLe: null },
+            ],
+          },
+        },
+      ],
+      [`POST ${prisesRoute}/2`]: [
+        {
+          corps: {
+            prises: [
+              { n: 1, fichier: "cinema/rangement/prise-1.mp4", retenue: false, presente: true, creeeLe: null },
+              { n: 2, fichier: "cinema/rangement/prise-2.mp4", retenue: true, presente: true, creeeLe: null },
+            ],
+            // La prise 2 n'a pas de découpe propre : le plan ne doit plus en citer après ce choix.
+            plan: { fichier: "cinema/rangement/prise-2.mp4" },
+          },
+        },
+      ],
+    });
+    render(<Banc cinema={serie} />);
+    expect(await screen.findByText("Ses prises (2)")).toBeInTheDocument();
+    fireEvent.click(scene1().getByRole("button", { name: "Garder celle-ci" }));
+    await waitFor(() => expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].decoupe).toBeUndefined());
+  });
+
   it("un plan neuf, pas encore enregistré, est « à écrire », pas en erreur", async () => {
     serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
     render(<Banc cinema={avecPortrait()} />);

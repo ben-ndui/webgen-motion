@@ -23,6 +23,8 @@ type Props = {
   references: ReferenceAffichee[] | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (planId: string) => void;
+  // Relit l'état d'un plan sans rien lancer (après un choix de prise).
+  onRafraichir: (planId: string) => void;
   declinaisons: DeclinaisonDuFilm[];
   enregistrer: () => Promise<boolean>;
   // L'épisode ouvert au départ (celui que Claude vient d'écrire), sinon le premier.
@@ -30,7 +32,7 @@ type Props = {
 };
 
 /** Les épisodes : on en choisit un, on écrit son titre, puis ses scènes. */
-export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, references, modifierLaSerie, onGenerer, declinaisons, enregistrer, episodeOuvert }: Props) {
+export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesPlans, blocage, references, modifierLaSerie, onGenerer, onRafraichir, declinaisons, enregistrer, episodeOuvert }: Props) {
   const [choisi, setChoisi] = useState(episodeOuvert ?? cinema.episodes[0]?.id ?? "");
   const episode = cinema.episodes.find((e) => e.id === choisi) ?? cinema.episodes[0];
   const assistant = useAssistant(filmId, cinema, modifierLaSerie);
@@ -91,6 +93,7 @@ export default function EpisodesDeLaSerie({ filmId, cinema, suivis, versionsDesP
           references={references}
           modifierLaSerie={modifierLaSerie}
           onGenerer={onGenerer}
+          onRafraichir={onRafraichir}
         />
       ))}
       {episode.scenes.length < SCENES_PAR_EPISODE.max && (

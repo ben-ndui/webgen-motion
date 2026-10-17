@@ -3,7 +3,9 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { serieSaya } from "../../../remotion/film/cinema/serie-exemple.test-utils";
+import { modifierLaBible } from "./bible/stockage";
 import { creerFilm, enregistrerFilm } from "../film-ecriture";
+import { ecrireAtomiquement } from "../film-fichiers-deposes";
 import { ficheValide } from "../film-fixtures.test-utils";
 import { type FilmDeTest, filmDeTest } from "./film-de-test.test-utils";
 import { VIDEO_GARDEE_PAR_GOOGLE_MS, genererUnPlan, suivreLePlan } from "./generation";
@@ -64,6 +66,43 @@ describe("plans avec personnage", () => {
     google.repondre(lancementAccepte());
     await genererUnPlan("saya", "confidence", film.lieux);
     expect(corpsDuLancement().instances[0].prompt).toContain("Awa says softly in French: « Ce parfum, c'est l'histoire de ma grand-mère. »");
+  });
+});
+
+describe("plans avec une créature citée par references", () => {
+  function avecSahorValide() {
+    const serie = film.donnerUnPortraitAAwa();
+    serie.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black and silver supernatural wolf, violet eyes." }];
+    serie.episodes[0].scenes[0].plans[0].references = ["awa", "sahor"];
+    ecrireAtomiquement(join(film.lieux.public("saya"), "cinema", "bible", "sahor", "face-v1.jpg"), portraitJpeg());
+    modifierLaBible(film.lieux.dossier("saya"), (bible) => {
+      bible.references.sahor = {
+        statut: "valide",
+        vues: { face: { versions: [{ n: 1, fichier: "cinema/bible/sahor/face-v1.jpg", origine: "generee", creeeLe: "2026-10-17" }], retenue: 1 } },
+        journal: [{ action: "validation", le: "2026-10-17" }],
+      };
+    });
+    return serie;
+  }
+
+  it("envoie les deux images de référence (Awa puis Sahor) et nomme Sahor dans le prompt", async () => {
+    film.creer(avecSahorValide());
+    google.repondre(lancementAccepte());
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: true, modele: { qualite: "fast" } });
+    const instance = corpsDuLancement().instances[0];
+    expect(instance.referenceImages).toHaveLength(2);
+    expect(instance.prompt).toContain("Awa (reference image 1)");
+    expect(instance.prompt).toContain("Sahor (reference image 2)");
+    expect(instance.prompt).toContain("supernatural wolf");
+  });
+
+  it("Sahor sans image validée refuse le plan, même si Awa l'est", async () => {
+    const serie = film.donnerUnPortraitAAwa();
+    serie.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black and silver supernatural wolf." }];
+    serie.episodes[0].scenes[0].plans[0].references = ["awa", "sahor"];
+    film.creer(serie);
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: false, statut: 409, raison: expect.stringContaining("Sahor n'a pas encore d'image validée") });
+    expect(google.appels).toHaveLength(0);
   });
 });
 

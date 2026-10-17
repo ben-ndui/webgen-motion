@@ -10,7 +10,7 @@ import {
   ajouterUnPersonnage,
   ajouterUnPlan,
   ajouterUneScene,
-  basculerUnPersonnage,
+  basculerUneReference,
   poserLaDecoupe,
   retirerUnElement,
   retirerUnPersonnage,
@@ -64,11 +64,25 @@ describe("gestes d'édition de la série", () => {
     const serie = serieSaya();
     ajouterUnPersonnage(serie);
     const confidence = serie.episodes[0].scenes[1].plans[0];
-    basculerUnPersonnage(confidence, "personnage-1");
+    basculerUneReference(serie, confidence, "personnage-1");
     expect(confidence.personnages).toEqual(["awa", "personnage-1"]);
-    basculerUnPersonnage(confidence, "awa");
+    expect(confidence.references).toEqual(["awa", "personnage-1"]);
+    basculerUneReference(serie, confidence, "awa");
     expect(confidence.personnages).toEqual(["personnage-1"]);
+    expect(confidence.references).toEqual(["personnage-1"]);
     expect(confidence.replique).toBeUndefined();
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("basculer une créature l'ajoute aux références SANS la mettre dans .personnages (elle ne parle pas)", () => {
+    const serie = serieSaya();
+    ajouterUnElement(serie, "creature");
+    const confidence = serie.episodes[0].scenes[1].plans[0];
+    basculerUneReference(serie, confidence, "creature-1");
+    expect(confidence.references).toEqual(["awa", "creature-1"]);
+    expect(confidence.personnages).toEqual(["awa"]);
+    basculerUneReference(serie, confidence, "creature-1");
+    expect(confidence.references).toEqual(["awa"]);
     expect(valide(serie)).toEqual([]);
   });
 

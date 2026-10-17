@@ -94,7 +94,7 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
       }),
     [modifierLaSerie],
   );
-  const { suivis, versions: versionsDesPlans, budget, blocage, generer } = useSuiviDesPlans(id, planIds, enregistrer, quandUnPlanArrive);
+  const { suivis, versions: versionsDesPlans, budget, blocage, generer, rafraichir } = useSuiviDesPlans(id, planIds, enregistrer, quandUnPlanArrive);
   // Remontée ici (pas dans BibleDeLaSerie) : les plans en ont besoin aussi,
   // pour griser « Générer » tant qu'une référence n'est pas validée.
   const bible = useBible(id, enregistrer);
@@ -122,6 +122,7 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
         references={bible.references}
         modifierLaSerie={modifierLaSerie}
         onGenerer={(planId) => void generer(planId)}
+        onRafraichir={(planId) => void rafraichir(planId)}
         declinaisons={declinaisons}
         enregistrer={enregistrer}
       />
