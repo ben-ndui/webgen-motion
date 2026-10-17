@@ -37,7 +37,8 @@ describe("la page d'un projet de format", () => {
 
   it("ne propose pas un rendu qui ne peut pas aboutir : contenu d'exemple", () => {
     render(<FormatVue id="wes-of-10-ans" resume={resume({ statut: "exemple" })} pourQui={POUR_QUI} studio />);
-    expect(screen.getByRole("note")).toHaveTextContent("exemple du format");
+    expect(screen.getByRole("note")).toHaveTextContent("textes de l'exemple");
+    expect(screen.getByRole("note")).toHaveTextContent("confirmer qu'ils sont déjà les tiens");
     expect(screen.getByRole("button", { name: "Rendre" })).toBeDisabled();
   });
 

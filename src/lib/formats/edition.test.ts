@@ -49,6 +49,14 @@ describe("les textes encore à écrire", () => {
     expect(textesAEcrire(fiche).map((t) => t.chemin)).toEqual(expect.arrayContaining(["morceau.titre", "morceau.artiste"]));
   });
 
+  it("un texte identique à l'exemple que la personne déclare sien ne bloque plus (Ben, « 10 ANS »)", () => {
+    const fiche = projetDeDepart("karaoke", "clip");
+    const aEcrire = textesAEcrire(fiche).map((t) => t.chemin);
+    expect(aEcrire).toContain("morceau.titre");
+    fiche.confirmes = aEcrire;
+    expect(textesAEcrire(fiche)).toEqual([]);
+  });
+
   it("le serveur décide `exemple`, quoi qu'envoie le navigateur", () => {
     const dossier = mkdtempSync(join(tmpdir(), "edition-"));
     creerProjet("essai", explainer(), dossier);

@@ -40,9 +40,16 @@ export default function EditeurDuFormat({ id, initial, morceauPresent = false }:
       </div>
 
       {aEcrire.length > 0 ? (
-        <p className="film-warning" role="note" data-wm-id="format.a-ecrire">
-          {`${aEcrire.length} texte${aEcrire.length > 1 ? "s" : ""} encore celui de l'exemple : le rendu attend que tu les écrives.`}
-        </p>
+        <div className="film-warning" role="note" data-wm-id="format.a-ecrire">
+          <p>{`${aEcrire.length} texte${aEcrire.length > 1 ? "s" : ""} encore celui de l'exemple : le rendu attend que tu les écrives.`}</p>
+          <p className="film-muted">
+            Ils sont vraiment les tiens (ton titre est celui de l&apos;exemple, par exemple) ?{" "}
+            <button type="button" className="lien" data-wm-id="format.confirmer"
+              onClick={() => modifier((copie) => { copie.confirmes = [...new Set([...(copie.confirmes ?? []), ...aEcrire])]; })}>
+              Ce sont bien les miens
+            </button>
+          </p>
+        </div>
       ) : (
         <p className="film-muted" role="status">Tous les textes sont les tiens.</p>
       )}

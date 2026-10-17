@@ -19,10 +19,12 @@ import { erreursDuKaraoke } from "../../../remotion/film/karaoke/validerKaraoke"
 export const FORMATS = ["explainer", "conte", "karaoke"] as const;
 export type NomDeFormat = (typeof FORMATS)[number];
 
-export type FicheDeFormat =
-  | { format: "explainer"; spec: ExplainerSpec }
-  | { format: "conte"; spec: ConteSpec }
-  | { format: "karaoke"; spec: KaraokeSpec };
+// `confirmes` : les textes identiques à l'exemple que la personne a déclarés siens. Sans ça, un
+// artiste dont le VRAI titre est celui de l'exemple (Ben, « 10 ANS », 17/10) ne pouvait jamais rendre.
+type Confirmations = { confirmes?: string[] };
+
+export type FicheDeFormat = Confirmations &
+  ({ format: "explainer"; spec: ExplainerSpec } | { format: "conte"; spec: ConteSpec } | { format: "karaoke"; spec: KaraokeSpec });
 
 export type DefinitionDeFormat = {
   libelle: string;
@@ -89,6 +91,10 @@ export function erreursDuProjet(entree: unknown): string[] {
   const { format, spec } = entree as Record<string, unknown>;
   if (!estNomDeFormat(format)) return [`format : l'un de ${FORMATS.join(", ")}`];
   const erreurs = CATALOGUE[format].erreurs(spec);
+  const { confirmes } = entree as { confirmes?: unknown };
+  if (confirmes !== undefined && !(Array.isArray(confirmes) && confirmes.every((c) => typeof c === "string"))) {
+    erreurs.push("confirmes : liste de chemins de textes");
+  }
   if (erreurs.length > 0) return erreurs;
   const medias = (CATALOGUE[format].mediasAttendus as (s: unknown) => string[])(spec);
   return medias.filter((media) => !estCheminDeMediaSur(media)).map((media) => `chemin de média refusé : « ${media} » (relatif au projet, sans « .. »)`);

@@ -48,5 +48,6 @@ export function textesAEcrire(fiche: FicheDeFormat): TexteAEcrire[] {
   for (const [chemin, actuel, deLExemple] of signature) {
     if (actuel.trim() && actuel.trim() === deLExemple.trim()) restants.push({ chemin, texte: actuel });
   }
-  return restants.filter((t) => exemple.has(t.texte.trim()) || t.chemin.startsWith("marque."));
+  const confirmes = new Set(fiche.confirmes ?? []);
+  return restants.filter((t) => (exemple.has(t.texte.trim()) || t.chemin.startsWith("marque.")) && !confirmes.has(t.chemin));
 }

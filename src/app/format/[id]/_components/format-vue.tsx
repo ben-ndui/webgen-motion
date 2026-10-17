@@ -74,7 +74,8 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
         <div className="film-main">
           {resume.statut === "exemple" && (
             <p className="film-warning" role="note" data-wm-id="format.exemple">
-              Ce projet porte encore l&apos;exemple du format : le rendu reste refusé tant que tu ne l&apos;as pas remplacé par ton contenu.
+              Ce projet porte encore des textes de l&apos;exemple : le rendu reste refusé tant qu&apos;ils ne sont pas les tiens. Ouvre{" "}
+              <Link href={`/format/${id}/editer`}>Modifier le contenu</Link> pour les écrire, ou pour confirmer qu&apos;ils sont déjà les tiens.
             </p>
           )}
           <section className="film-block" aria-labelledby="fichiers" data-wm-id="format.medias">

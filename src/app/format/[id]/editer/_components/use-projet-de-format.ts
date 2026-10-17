@@ -83,6 +83,23 @@ export function useProjetDeFormat(id: string, initial: EtatDuProjet) {
     [url, enregistrement, enregistrer],
   );
 
+  // On quitte l'éditeur (« Retour au projet ») avec une saisie programmée : on l'envoie TOUT DE
+  // SUITE (keepalive survit à la navigation), au lieu de la perdre ou de la laisser partir plus tard.
+  useEffect(
+    () => () => {
+      if (!minuteur.current) return;
+      clearTimeout(minuteur.current);
+      minuteur.current = null;
+      void fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projet: projetRef.current }),
+        keepalive: true,
+      }).catch(() => {});
+    },
+    [url],
+  );
+
   // Quitter la page avec une saisie pas encore partie : on prévient.
   useEffect(() => {
     const avant = (evenement: BeforeUnloadEvent) => {

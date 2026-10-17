@@ -58,4 +58,22 @@ describe("l'éditeur d'un explainer", () => {
     expect(premiere).toHaveTextContent("Scène 1 · Un tampon sur un objet");
     expect(premiere).toHaveTextContent("Le mot du tampon");
   });
+
+  it("« Ce sont bien les miens » déclare les textes restants comme siens (titre réel identique à l'exemple)", async () => {
+    const utilisateur = userEvent.setup();
+    editeur();
+    await utilisateur.click(screen.getByRole("button", { name: "Ce sont bien les miens" }));
+    await waitFor(() => expect(envoyes).toHaveLength(1), { timeout: 3000 });
+    expect((envoyes[0] as { confirmes?: string[] }).confirmes).toEqual(["a", "b", "c"]);
+  });
+
+  it("quitter l'éditeur juste après une saisie l'envoie aussitôt, sans la perdre", async () => {
+    const utilisateur = userEvent.setup();
+    const { unmount } = editeur();
+    await utilisateur.click(screen.getByRole("button", { name: "Ajouter une scène" }));
+    expect(envoyes).toHaveLength(0);
+    unmount();
+    expect(envoyes).toHaveLength(1);
+    expect((envoyes[0] as { spec: { scenes: unknown[] } }).spec.scenes).toHaveLength(6);
+  });
 });
