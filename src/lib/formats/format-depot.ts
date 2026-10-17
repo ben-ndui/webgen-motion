@@ -48,9 +48,10 @@ export function deposerMusiqueDuFormat(
   const titre = nomOriginal.replace(/\.[^.]*$/, "").trim() || "Morceau déposé";
   if (fiche.format === "karaoke") {
     const { morceau } = fiche.spec;
-    const fin = Math.min(morceau.fin, mesure.dureeSec);
-    const debut = Math.min(morceau.debut, Math.max(0, fin - 5));
-    fiche.spec.morceau = { ...morceau, fichier: relatif, titre: morceau.titre || titre, debut, fin, tempo: mesure.tempo, premierTemps: mesure.premierTemps };
+    // Un morceau déposé se prend EN ENTIER : garder le passage de l'exemple (13 s à 33,9 s) faisait
+    // un clip de 26 s sur une chanson de 3 min 24 (Ben, 17/10). On raccourcit ensuite pour un reel.
+    const fin = Math.round(mesure.dureeSec * 10) / 10;
+    fiche.spec.morceau = { ...morceau, fichier: relatif, titre: morceau.titre || titre, debut: 0, fin, tempo: mesure.tempo, premierTemps: mesure.premierTemps };
   } else {
     fiche.spec.musique = { fichier: relatif, titre, source: "Morceau déposé dans GEN MOTION", tempo: mesure.tempo, premierTemps: mesure.premierTemps };
   }

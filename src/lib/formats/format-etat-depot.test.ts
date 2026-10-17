@@ -68,14 +68,14 @@ describe("déposer la musique d'un format", () => {
     expect(Math.abs(spec.musique.tempo - 120)).toBeLessThanOrEqual(0.2);
   });
 
-  it("pour un karaoké, c'est LE morceau, et son passage reste dans sa durée", () => {
+  it("pour un karaoké, c'est LE morceau, pris en entier", () => {
     const l = lieux();
     creerProjet("clip", projetDeDepart("karaoke", "clip"), l.fiches);
     expect(deposerMusiqueDuFormat("clip", "10 ANS.wav", metronome(25), l)).toEqual({ ok: true });
     const { spec } = lireProjetBrut("clip", l.fiches) as { spec: { morceau: { fichier: string; debut: number; fin: number; titre: string } } };
     expect(spec.morceau.fichier).toBe("musique/10-ans.wav");
-    expect(spec.morceau.fin).toBeLessThanOrEqual(25.01);
-    expect(spec.morceau.fin - spec.morceau.debut).toBeGreaterThanOrEqual(5);
+    expect(spec.morceau.debut).toBe(0);
+    expect(spec.morceau.fin).toBeCloseTo(25, 0);
     expect(spec.morceau.titre).toBe("10 ANS");
   });
 
