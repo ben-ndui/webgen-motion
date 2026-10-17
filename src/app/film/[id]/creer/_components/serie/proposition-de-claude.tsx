@@ -1,12 +1,17 @@
 "use client";
 
 import type { Proposition } from "@/lib/cinema/assistant/types";
+import { referencesDeLaSerie } from "@/lib/cinema/bible/etat";
 import type { CinemaDuFilm, RepliqueDuPlan } from "../../../../../../../remotion/film/cinema/types";
 
 type Props = { cinema: CinemaDuFilm; proposition: Proposition };
 
 function nom(cinema: CinemaDuFilm, id: string): string {
   return cinema.personnages.find((p) => p.id === id)?.nom ?? id;
+}
+
+function nomDeLaReference(cinema: CinemaDuFilm, id: string): string {
+  return referencesDeLaSerie(cinema).find((r) => r.id === id)?.nom ?? id;
 }
 
 function Replique({ cinema, replique }: { cinema: CinemaDuFilm; replique: RepliqueDuPlan }) {
@@ -76,5 +81,11 @@ export default function PropositionDeClaude({ cinema, proposition }: Props) {
         </>
       );
     }
+    case "decrire-reference":
+      return (
+        <p lang="en">
+          <b>{nomDeLaReference(cinema, proposition.reference)}</b> : {proposition.description}
+        </p>
+      );
   }
 }

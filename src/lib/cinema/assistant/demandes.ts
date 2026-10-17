@@ -1,6 +1,7 @@
 import type { CinemaDuFilm } from "../../../../remotion/film/cinema/types";
+import { referencesDeLaSerie } from "../bible/etat";
 import { LIMITES_DU_SCENARIO, demandeDeScenario, type DemandeDeScenario } from "../scenario-demande";
-import { type MarqueDuFilm, leCasting, lEpisode, leProduit, lesEpisodesPrecedents, ligneDeLaMarque } from "./contexte";
+import { type MarqueDuFilm, laBible, leCasting, lEpisode, leProduit, lesEpisodesPrecedents, ligneDeLaMarque } from "./contexte";
 import type { DemandeALAssistant } from "./types";
 
 /**
@@ -24,6 +25,14 @@ const REGLES = [
 // Une réplique existe déjà : on en veut une AUTRE (la recette du 15/10 l'a vu
 // recopier mot pour mot la réplique en place).
 const UNE_AUTRE = "If a line already exists, write a DIFFERENT one: never repeat the current wording.";
+const UNE_AUTRE_DESCRIPTION = "If a description already exists, write a DIFFERENT one: never repeat the current wording.";
+
+const QUOI_DECRIRE: Record<"personnage" | "creature" | "objet" | "decor", { quoi: string; style: string }> = {
+  personnage: { quoi: "a character", style: "Describe their physical appearance AND outfit in one or two concrete sentences, the way a casting reference sheet would." },
+  creature: { quoi: "a creature", style: "Describe its anatomy, colors and distinctive features in one or two concrete sentences, the way a creature reference sheet would." },
+  objet: { quoi: "an object", style: "Describe its shape, material and colors in one or two concrete sentences, the way a props reference sheet would." },
+  decor: { quoi: "a location", style: "Describe what it looks like (architecture, light, mood) in one or two concrete sentences, the way an art department reference sheet would." },
+};
 
 function contexte(marque: MarqueDuFilm, cinema: CinemaDuFilm, episodeId: string, cible: { scene?: string; plan?: string }): string {
   const episode = cinema.episodes.find((e) => e.id === episodeId);
@@ -59,6 +68,21 @@ function demandeSansHistorique(marque: MarqueDuFilm, cinema: CinemaDuFilm, deman
         systeme: `${REGLES}\nFormat: {"consigne": English action, "personnages": [first names on screen, at most 3, existing characters only], "objet": boolean (is the product visible), "replique": {"personnage": first name on screen, "texte": French line} | null}`,
         message: `${contexte(marque, cinema, demande.episode, { scene: demande.scene })}\n\nPropose the NEXT shot at the end of THIS SCENE: what naturally comes next in the story.`,
       };
+    case "decrire-reference": {
+      const reference = referencesDeLaSerie(cinema).find((r) => r.id === demande.reference);
+      const nom = reference?.nom ?? demande.reference;
+      const { quoi, style } = QUOI_DECRIRE[reference?.type ?? "personnage"];
+      return {
+        systeme: [
+          "You write visual reference descriptions for an AI video generator (Veo). Each description is repeated word for word in every shot that uses it: it must stay short, concrete and visually consistent.",
+          `You are describing ${quoi} named "${nom}".`,
+          style,
+          "Write in ENGLISH (Veo follows it better). No text, no logo, no brand name. This is a FICTIONAL reference, never describe a real identifiable person.",
+          'Answer with ONE JSON object and nothing else.\nFormat: {"description": the English description}',
+        ].join("\n"),
+        message: `${ligneDeLaMarque(marque)}\n\n${leProduit(cinema)}\n\n${laBible(cinema)}\n\nWrite (or rewrite, more concrete) ${nom}'s description, consistent with the rest of the references above and with the brand. ${UNE_AUTRE_DESCRIPTION}`,
+      };
+    }
     case "episode-suivant": {
       const brief = demande.note?.trim()
         ? demande.note.trim()

@@ -55,6 +55,7 @@ export default function BibleDeLaSerie({ filmId, cinema, modifierLaSerie, bible 
         <CarteDeReference
           key={personnage.id}
           filmId={filmId}
+          cinema={cinema}
           id={personnage.id}
           type="personnage"
           nom={personnage.nom}
@@ -62,6 +63,7 @@ export default function BibleDeLaSerie({ filmId, cinema, modifierLaSerie, bible 
           fiche={bible.references?.find((r) => r.id === personnage.id)?.fiche}
           etats={bible.etats}
           modifierLesTextes={modifierLePersonnage(personnage.id)}
+          modifierLaSerie={modifierLaSerie}
           onGenerer={(vue) => void bible.generer(personnage.id, vue)}
           onImporter={(vue, fichier, droits) => void bible.importer(personnage.id, vue, fichier, droits)}
           onRetenir={(vue, n) => void bible.retenir(personnage.id, vue, n)}
@@ -75,6 +77,7 @@ export default function BibleDeLaSerie({ filmId, cinema, modifierLaSerie, bible 
         <CarteDeReference
           key={element.id}
           filmId={filmId}
+          cinema={cinema}
           id={element.id}
           type={element.type}
           nom={element.nom}
@@ -82,6 +85,7 @@ export default function BibleDeLaSerie({ filmId, cinema, modifierLaSerie, bible 
           fiche={bible.references?.find((r) => r.id === element.id)?.fiche}
           etats={bible.etats}
           modifierLesTextes={modifierLElement(element.id)}
+          modifierLaSerie={modifierLaSerie}
           onGenerer={(vue) => void bible.generer(element.id, vue)}
           onImporter={(vue, fichier, droits) => void bible.importer(element.id, vue, fichier, droits)}
           onRetenir={(vue, n) => void bible.retenir(element.id, vue, n)}

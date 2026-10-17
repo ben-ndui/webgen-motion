@@ -5,12 +5,16 @@ import { useState } from "react";
 import type { FicheVisuelle, TypeDeReference, VueDeReference } from "@/lib/cinema/bible/etat";
 import { NOM_DU_TYPE, VUES_DU_TYPE } from "@/lib/cinema/bible/etat";
 import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
+import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
+import AideDeClaude from "./aide-de-claude";
+import { useAssistant } from "./use-assistant";
 import type { EtatDeLaVue } from "./use-bible";
 import VueDeLaBible from "./vue-de-la-bible";
 import ZoneTexte from "./zone-texte";
 
 type Props = {
   filmId: string;
+  cinema: CinemaDuFilm;
   id: string;
   type: TypeDeReference;
   nom: string;
@@ -19,6 +23,7 @@ type Props = {
   fiche: FicheVisuelle | undefined;
   etats: Record<string, EtatDeLaVue>;
   modifierLesTextes: (nom: string, description: string) => void;
+  modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (vue: VueDeReference) => void;
   onImporter: (vue: VueDeReference, fichier: File, droitsDeclares: boolean) => void;
   onRetenir: (vue: VueDeReference, n: number) => void;
@@ -31,12 +36,15 @@ type Props = {
 const FICHE_PAR_DEFAUT: FicheVisuelle = { statut: "propose", vues: {}, journal: [] };
 
 /** Une référence de la bible (personnage, créature, objet ou décor) : ses textes, ses vues, et son verrou. */
-export default function CarteDeReference({ filmId, id, type, nom, description, fiche = FICHE_PAR_DEFAUT, etats, modifierLesTextes, onGenerer, onImporter, onRetenir, onChoisirPrincipale, onValider, onDeverrouiller, onRetirer }: Props) {
+export default function CarteDeReference({ filmId, cinema, id, type, nom, description, fiche = FICHE_PAR_DEFAUT, etats, modifierLesTextes, modifierLaSerie, onGenerer, onImporter, onRetenir, onChoisirPrincipale, onValider, onDeverrouiller, onRetirer }: Props) {
   const [motif, setMotif] = useState<string | null>(null);
   const verrouillee = fiche.statut === "valide";
   const vues = VUES_DU_TYPE[type];
   const aUneImage = vues.some((v) => fiche.vues[v]?.versions.length);
   const descriptionAEcrire = estUnExemple("description", description);
+  const assistant = useAssistant(filmId, cinema, modifierLaSerie);
+  // Verrouillée : c'est cette description, mot pour mot, qui part avec l'image validée à Veo.
+  const gestes = verrouillee ? [] : [{ libelle: descriptionAEcrire ? "Décrire avec Claude" : "Réécrire avec Claude", demande: { type: "decrire-reference" as const, reference: id } }];
 
   return (
     <article className="reference-bible" aria-label={`${NOM_DU_TYPE[type]} ${nom}`}>
@@ -55,6 +63,7 @@ export default function CarteDeReference({ filmId, id, type, nom, description, f
         max={800}
         onChange={(valeur) => modifierLesTextes(nom, valeur)}
       />
+      <AideDeClaude cinema={cinema} gestes={gestes} etat={assistant.etat} demander={(d) => void assistant.demander(d)} garder={() => assistant.garder()} refuser={assistant.refuser} autre={assistant.autre} />
       {descriptionAEcrire ? (
         <p className="champ-aide">Décris-le d&apos;abord : les vues se génèrent à partir de la description.</p>
       ) : (

@@ -42,6 +42,23 @@ describe("appliquerLaProposition", () => {
     expect(erreursDuCinema({ cinema })).toEqual([]);
   });
 
+  it("decrire-reference pose la description sur le personnage", () => {
+    const cinema = serieSaya();
+    expect(appliquerLaProposition(cinema, { type: "decrire-reference", reference: "awa", description: "A tall woman with a confident smile." })).toBeNull();
+    expect(cinema.personnages[0].description).toBe("A tall woman with a confident smile.");
+  });
+
+  it("decrire-reference pose la description sur un élément (créature, objet ou décor)", () => {
+    const cinema = serieSaya();
+    cinema.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "x" }];
+    expect(appliquerLaProposition(cinema, { type: "decrire-reference", reference: "sahor", description: "A black wolf with violet eyes." })).toBeNull();
+    expect(cinema.elements[0].description).toBe("A black wolf with violet eyes.");
+  });
+
+  it("decrire-reference refuse si la référence a été retirée entre-temps", () => {
+    expect(appliquerLaProposition(serieSaya(), { type: "decrire-reference", reference: "disparue", description: "x" })).toContain("retirée");
+  });
+
   it("l'épisode suivant reprend des ids libres, même si la série a grandi entre-temps", () => {
     const cinema = serieSaya();
     // L'épisode a été numéroté contre une série qui n'avait pas encore « plan-1 ».

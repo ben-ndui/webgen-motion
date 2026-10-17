@@ -76,5 +76,12 @@ export function appliquerLaProposition(cinema: CinemaDuFilm, proposition: Propos
       cinema.episodes.push(renumeroter(cinema, proposition.episode));
       return null;
     }
+    case "decrire-reference": {
+      const personnage = cinema.personnages.find((p) => p.id === proposition.reference);
+      const element = (cinema.elements ?? []).find((e) => e.id === proposition.reference);
+      if (!personnage && !element) return "Cette référence a été retirée entre-temps.";
+      (personnage ?? element!).description = proposition.description;
+      return null;
+    }
   }
 }

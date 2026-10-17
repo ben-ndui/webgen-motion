@@ -3,6 +3,7 @@ import { erreursDuCinema } from "../../../../remotion/film/cinema/validerCinema"
 import { type ResolvedAgent, resolveAgent } from "../../config-resolve";
 import { chargerFilm } from "../../film-loader";
 import { extractJsonBlock } from "../../llm-providers/anthropic";
+import { trouverLaReference } from "../bible/etat";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus } from "../lieux";
 import { type AppelerClaude, appelerClaude } from "../scenario-claude";
 import { demandeALAssistant } from "./demandes";
@@ -32,6 +33,9 @@ export async function demanderALAssistant(
     return { ok: false, statut: 400, raison: `La série a des erreurs, corrige-les d'abord : ${erreurs.slice(0, 2).join(" ; ")}` };
   }
   const cinema = cinemaDeLEcran as CinemaDuFilm;
+  if (demande.type === "decrire-reference" && !trouverLaReference(cinema, demande.reference)) {
+    return { ok: false, statut: 409, raison: "Cette référence a été retirée entre-temps." };
+  }
   if (!agent) return { ok: false, statut: 412, raison: "Aucune clé Claude : ajoute-la dans les Réglages pour te faire aider." };
   if (agent.provider !== "anthropic") return { ok: false, statut: 412, raison: "L'assistant de la série fonctionne avec une clé Claude (Anthropic)." };
 

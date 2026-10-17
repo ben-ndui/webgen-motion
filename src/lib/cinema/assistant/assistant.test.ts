@@ -113,6 +113,54 @@ describe("demanderALAssistant", () => {
     if (reponse.ok && reponse.proposition.type === "episode-suivant") expect(reponse.proposition.episode.scenes[0].plans[0].personnages).toEqual(["awa"]);
   });
 
+  it("décrire un personnage de la bible : le système nomme « a character », le message porte la bible, la marque ET le produit", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler, appels } = fauxClaude({ description: "A tall woman with a confident smile." });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "decrire-reference", reference: "awa" }, lieux, AGENT, appeler);
+    expect(reponse).toEqual({ ok: true, proposition: { type: "decrire-reference", reference: "awa", description: "A tall woman with a confident smile." } });
+    expect(appels[0].systeme).toContain('describing a character named "Awa"');
+    expect(appels[0].message).toContain("Brand:");
+    expect(appels[0].message).toContain("The product");
+    expect(appels[0].message).toContain("References:");
+    expect(appels[0].message).toContain("- [Character] Awa:");
+  });
+
+  it("décrire une créature de la bible : le système nomme « a creature »", async () => {
+    const { lieux, cinema } = preparer();
+    cinema.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "x" }];
+    const { appeler, appels } = fauxClaude({ description: "A black wolf with violet eyes." });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "decrire-reference", reference: "sahor" }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: true, proposition: { type: "decrire-reference", reference: "sahor", description: "A black wolf with violet eyes." } });
+    expect(appels[0].systeme).toContain('describing a creature named "Sahor"');
+    expect(appels[0].message).toContain("- [Creature] Sahor:");
+  });
+
+  it("« Autre proposition » sur une description : Claude reçoit ce qu'on a écarté", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler, appels } = fauxClaude({ description: "Une autre." });
+    const demande = { type: "decrire-reference", reference: "awa", aEviter: ["Une première version."] };
+    await demanderALAssistant("saya", cinema, demande, lieux, AGENT, appeler);
+    expect(appels[0].message).toContain("Already proposed and rejected");
+    expect(appels[0].message).toContain("- Une première version.");
+  });
+
+  it("refuse une description trop longue au lieu de la couper", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler } = fauxClaude({ description: "a".repeat(900) });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "decrire-reference", reference: "awa" }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: false });
+    if (!reponse.ok) expect(reponse.raison).toContain("900 caractères");
+  });
+
+  it("refuse de décrire une référence retirée entre-temps, SANS appeler Claude (ça coûte)", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler, appels } = fauxClaude({ description: "x" });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "decrire-reference", reference: "disparue" }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: false, statut: 409 });
+    if (!reponse.ok) expect(reponse.raison).toContain("retirée");
+    expect(appels).toHaveLength(0);
+  });
+
   it("refuse une série invalide, une demande illisible, l'absence de clé, une réponse illisible", async () => {
     const { lieux, cinema } = preparer();
     const { appeler } = fauxClaude("pas du json");
