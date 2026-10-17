@@ -10,6 +10,7 @@ const DECORS: { valeur: DecorDuKaraoke; libelle: string; aide: string }[] = [
   { valeur: "ocean", libelle: "Océan", aide: "Lune et vagues" },
   { valeur: "vinyle", libelle: "Vinyle", aide: "Le disque tourne" },
   { valeur: "minimal", libelle: "Minimal", aide: "Tes paroles en très grand" },
+  { valeur: "sur-mesure", libelle: "Sur mesure", aide: "Tu le décris, l'IA le fabrique (Studio)" },
 ];
 
 /** Le décor du clip : dans tes couleurs, et il bat sur ton tempo. */
@@ -18,7 +19,7 @@ export default function ChoixDuDecor({ decor, onChange }: { decor: DecorDuKaraok
     <section className="bloc" aria-labelledby="bloc-decor" data-wm-id="format.karaoke.decor">
       <h3 id="bloc-decor" className="bloc-titre">Ton décor</h3>
       <p className="champ-aide">Il prend tes couleurs et bat sur ton tempo.</p>
-      <ChoixDeCases titre="Décor" options={DECORS.map((d) => ({ ...d, image: `/formats/decors/${d.valeur}.jpg` }))} valeurs={[decor]}
+      <ChoixDeCases titre="Décor" options={DECORS.map((d) => (d.valeur === "sur-mesure" ? d : { ...d, image: `/formats/decors/${d.valeur}.jpg` }))} valeurs={[decor]}
         onChange={(valeurs) => onChange(valeurs[0] as DecorDuKaraoke)} />
     </section>
   );

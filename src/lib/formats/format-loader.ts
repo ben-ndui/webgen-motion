@@ -114,8 +114,25 @@ function marquerLExemple(fiche: Record<string, unknown>): void {
   }
 }
 
+/**
+ * Les vidéos du décor sur mesure sont un champ du SERVEUR (payées, téléchargées,
+ * vérifiées) : un enregistrement venu de l'éditeur garde celles du disque, quoi
+ * qu'il envoie. Sans ça, l'éditeur ouvert avant la génération les effaçait au
+ * prochain enregistrement, et une fiche forgée pouvait pointer ailleurs.
+ */
+function garderLesVideosDuServeur(fiche: Record<string, unknown>, actuel: unknown): void {
+  const spec = fiche.spec as { fond?: { videos?: unknown } } | undefined;
+  const surDisque = (actuel as { spec?: { fond?: { videos?: unknown } } } | null)?.spec?.fond?.videos ?? {};
+  if (spec?.fond) spec.fond.videos = surDisque;
+}
+
 /** Remplace un projet EXISTANT, de façon atomique (temporaire puis renommage). */
-export function enregistrerProjet(id: string, fiche: unknown, dossier: string = getFormatsDir()): ResultatDEcriture {
+export function enregistrerProjet(
+  id: string,
+  fiche: unknown,
+  dossier: string = getFormatsDir(),
+  options: { videosDuServeur?: boolean } = {},
+): ResultatDEcriture {
   if (!estNomSur(id)) return { ok: false, statut: 400, raison: "Nom de projet invalide" };
   if (typeof fiche !== "object" || fiche === null || Array.isArray(fiche)) return { ok: false, statut: 400, raison: "Le projet doit être un objet" };
   if (!existsSync(chemin(id, dossier))) return { ok: false, statut: 404, raison: "Projet introuvable" };
@@ -124,6 +141,7 @@ export function enregistrerProjet(id: string, fiche: unknown, dossier: string = 
   if (actuel?.format !== undefined && actuel.format !== (fiche as { format?: unknown }).format) {
     return { ok: false, statut: 400, raison: "Le format d'un projet ne change pas" };
   }
+  if (!options.videosDuServeur) garderLesVideosDuServeur(fiche as Record<string, unknown>, actuel);
   marquerLExemple(fiche as Record<string, unknown>);
   const temporaire = `${chemin(id, dossier)}.${process.pid}.${Date.now()}.tmp`;
   writeFileSync(temporaire, `${JSON.stringify(fiche, null, 2)}\n`);

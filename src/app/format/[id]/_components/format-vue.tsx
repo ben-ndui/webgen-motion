@@ -87,7 +87,9 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
                   {media.present ? (
                     "prêt"
                   ) : media.geste === "editeur" ? (
-                    <>à coller et caler dans <Link href={`/format/${id}/editer`}>Modifier le contenu</Link></>
+                    <>
+                      {media.relatif.startsWith("fond/") ? "à générer" : "à coller et caler"} dans <Link href={`/format/${id}/editer`}>Modifier le contenu</Link>
+                    </>
                   ) : (
                     "à déposer"
                   )}

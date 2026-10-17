@@ -42,7 +42,7 @@ export function Karaoke({ spec, declinaison, paroles }: ProprietesDuKaraoke) {
             interpolate(image, [durationInFrames - FONDU * fps - 1, durationInFrames - 1], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
           }
         />
-        <Decor decor={spec.decor} tempo={morceau.tempo} premierTemps={morceau.premierTemps} debutDuPassage={passage.debut} />
+        <Decor decor={spec.decor} fond={spec.fond} version={declinaison.version} tempo={morceau.tempo} premierTemps={morceau.premierTemps} debutDuPassage={passage.debut} />
         <Sequence durationInFrames={imagesDuPassage} name="passage">
           {/* La carte de titre ne s'affiche que si le passage s'ouvre sur une intro (au moins 2 s). */}
           <AbsoluteFill style={{ opacity: effacement }}>

@@ -81,7 +81,7 @@ export default function EditeurDuFormat({ id, initial, morceauPresent = false }:
         <EditeurConte spec={projet.spec} langue={enCours}
           modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as ConteSpec) ?? copie.spec } as FicheDeFormat))} />
       ) : (
-        <EditeurKaraoke id={id} spec={projet.spec} langue={enCours} morceauPresent={morceauDepose}
+        <EditeurKaraoke id={id} spec={projet.spec} langue={enCours} morceauPresent={morceauDepose} enregistrer={enregistrer}
           modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as KaraokeSpec) ?? copie.spec } as FicheDeFormat))}
           apresLeDepot={() => {
             setMorceauDepose(true);

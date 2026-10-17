@@ -5,7 +5,7 @@ import { erreursDeLaSpec } from "../validerSpec.ts";
 
 type Erreurs = string[];
 
-export const DECORS_CONNUS = ["horizon", "ville", "ocean", "vinyle", "minimal"];
+export const DECORS_CONNUS = ["horizon", "ville", "ocean", "vinyle", "minimal", "sur-mesure"];
 
 function estObjet(valeur: unknown): valeur is Record<string, unknown> {
   return typeof valeur === "object" && valeur !== null && !Array.isArray(valeur);
@@ -48,6 +48,12 @@ export function erreursDuKaraoke(entree: unknown): string[] {
   texte(erreurs, "paroles", entree.paroles);
   // Liste écrite ici et non importée (Node lit ce fichier tel quel) ; le test la compare à spec.ts.
   if (!DECORS_CONNUS.includes(entree.decor as string)) erreurs.push(`decor : l'un de ${DECORS_CONNUS.join(", ")}`);
+  if (entree.decor === "sur-mesure") {
+    const fond = estObjet(entree.fond) ? entree.fond : {};
+    texte(erreurs, "fond.description", fond.description);
+    if (typeof fond.description === "string" && fond.description.length > 600) erreurs.push("fond.description : 600 caractères au plus");
+    if (!estObjet(fond.videos)) erreurs.push("fond.videos : objet attendu ({ long?, court? })");
+  }
   const textes = estObjet(entree.textes) ? entree.textes : {};
   for (const langue of ["fr", "en"]) {
     const t = estObjet(textes[langue]) ? textes[langue] : {};

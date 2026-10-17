@@ -38,6 +38,9 @@ const DOSSIERS_PAR_DEFAUT: Dossiers = { public: getFormatPublicDir, sortie: getF
  */
 function presentationDuMedia(fiche: FicheDeFormat, relatif: string): { libelle: string; geste: "depot" | "editeur" } {
   if (fiche.format === "karaoke" && relatif === fiche.spec.paroles) return { libelle: "Tes paroles, calées sur ton morceau", geste: "editeur" };
+  if (fiche.format === "karaoke" && relatif.startsWith("fond/")) {
+    return { libelle: relatif.includes("court") ? "Ton décor sur mesure (teaser 9:16)" : "Ton décor sur mesure (clip 16:9)", geste: "editeur" };
+  }
   if (fiche.format === "karaoke") return { libelle: "Ton morceau", geste: "depot" };
   if (relatif === fiche.spec.musique.fichier) return { libelle: "La musique", geste: "depot" };
   return { libelle: "Une image", geste: "depot" };

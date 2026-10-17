@@ -131,8 +131,13 @@ describe("la garde du karaoké", () => {
   it("accepte la fiche d'exemple, et chaque décor de la bibliothèque", () => {
     expect(erreursDuKaraoke(copie())).toEqual([]);
     expect(DECORS_CONNUS).toEqual([...DECORS]);
-    for (const decor of DECORS) expect(erreursDuKaraoke({ ...copie(), decor })).toEqual([]);
-    expect(erreursDuKaraoke({ ...copie(), decor: "plage" as never })).toContain("decor : l'un de horizon, ville, ocean, vinyle, minimal");
+    for (const decor of DECORS.filter((d) => d !== "sur-mesure")) expect(erreursDuKaraoke({ ...copie(), decor })).toEqual([]);
+    expect(erreursDuKaraoke({ ...copie(), decor: "plage" as never })).toContain("decor : l'un de horizon, ville, ocean, vinyle, minimal, sur-mesure");
+  });
+
+  it("le décor sur mesure exige sa description, et accepte des vidéos encore à générer", () => {
+    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure" })).toContain("fond.description : texte non vide attendu");
+    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure", fond: { description: "Une rue sous la pluie", videos: {} } })).toEqual([]);
   });
 
   it("refuse en livraison des paroles calées sur le brouillon de whisper", () => {

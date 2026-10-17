@@ -68,7 +68,12 @@ export const CATALOGUE: Record<NomDeFormat, DefinitionDeFormat> = {
     composition: "Karaoke",
     erreurs: erreursDuKaraoke,
     modele: KARAOKE,
-    mediasAttendus: (spec: KaraokeSpec) => [spec.morceau.fichier, spec.paroles],
+    // Le décor sur mesure : une vidéo par format rendu (« à générer » tant qu'elle manque).
+    mediasAttendus: (spec: KaraokeSpec) => [
+      spec.morceau.fichier,
+      spec.paroles,
+      ...(spec.decor === "sur-mesure" ? [...new Set(spec.declinaisons.map((d) => d.version))].map((v) => spec.fond?.videos[v] ?? `fond/${v}.mp4`) : []),
+    ],
   },
 };
 

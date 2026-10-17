@@ -28,8 +28,19 @@ export type MorceauDuKaraoke = {
   premierTemps: number;
 };
 
-export const DECORS = ["horizon", "ville", "ocean", "vinyle", "minimal"] as const;
+export const DECORS = ["horizon", "ville", "ocean", "vinyle", "minimal", "sur-mesure"] as const;
 export type DecorDuKaraoke = (typeof DECORS)[number];
+
+/**
+ * Le décor « sur mesure » : décrit par l'artiste (ou proposé à partir de ses
+ * paroles), généré en vidéo de 8 s qui BOUCLE sur tout le morceau. Une vidéo
+ * par format rendu : recadrer du 16:9 en 9:16 donnerait une image floue.
+ */
+export type FondSurMesure = {
+  description: string;
+  // Chemins dans public/ ; absent tant que la vidéo n'est pas générée.
+  videos: Partial<Record<"long" | "court", string>>;
+};
 
 export type TextesDuKaraoke = {
   // La ligne de fin sous l'artiste (« Disponible sur toutes les plateformes »).
@@ -53,6 +64,8 @@ export type KaraokeSpec = {
   // Chemin du paroles.json dans public/.
   paroles: string;
   decor: DecorDuKaraoke;
+  // Seulement pour le décor « sur-mesure ».
+  fond?: FondSurMesure;
   textes: Record<Langue, TextesDuKaraoke>;
   declinaisons: DeclinaisonDuFilm[];
 };
