@@ -5,12 +5,14 @@ import { serieSaya } from "../../../remotion/film/cinema/serie-exemple.test-util
 import type { CinemaDuFilm } from "../../../remotion/film/cinema/types";
 import { erreursDuCinema } from "../../../remotion/film/cinema/validerCinema";
 import {
+  ajouterUnElement,
   ajouterUnEpisode,
   ajouterUnPersonnage,
   ajouterUnPlan,
   ajouterUneScene,
   basculerUnPersonnage,
   poserLaDecoupe,
+  retirerUnElement,
   retirerUnPersonnage,
   retirerUnPlan,
   serieDeDepart,
@@ -67,6 +69,39 @@ describe("gestes d'édition de la série", () => {
     basculerUnPersonnage(confidence, "awa");
     expect(confidence.personnages).toEqual(["personnage-1"]);
     expect(confidence.replique).toBeUndefined();
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("ajouter une créature, un objet puis un décor donne un id et un nom par type, sans collision entre types", () => {
+    const serie = serieSaya();
+    ajouterUnElement(serie, "creature");
+    ajouterUnElement(serie, "objet");
+    ajouterUnElement(serie, "decor");
+    expect(serie.elements?.map((e) => [e.id, e.type, e.nom])).toEqual([
+      ["creature-1", "creature", "Créature 1"],
+      ["objet-1", "objet", "Objet 1"],
+      ["decor-1", "decor", "Décor 1"],
+    ]);
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("retirer un élément le retire aussi des références des plans qui le citaient", () => {
+    const serie = serieSaya();
+    ajouterUnElement(serie, "creature");
+    const confidence = serie.episodes[0].scenes[1].plans[0];
+    confidence.references = ["awa", "creature-1"];
+    retirerUnElement(serie, "creature-1");
+    expect(serie.elements).toEqual([]);
+    expect(confidence.references).toEqual(["awa"]);
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("retirer un personnage le retire aussi des références des plans qui le citaient (pas seulement de .personnages)", () => {
+    const serie = serieSaya();
+    const confidence = serie.episodes[0].scenes[1].plans[0];
+    confidence.references = ["awa"];
+    retirerUnPersonnage(serie, "awa");
+    expect(confidence.references).toEqual([]);
     expect(valide(serie)).toEqual([]);
   });
 

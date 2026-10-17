@@ -14,9 +14,6 @@ export type OperationEnCours = {
   depuis: string;
   // La photo du vrai produit est partie avec ce lancement.
   avecLaPhotoDuProduit?: boolean;
-  // Le numéro de prise que la vidéo prendra, fixé au premier téléchargement :
-  // un téléchargement retenté réécrit le MÊME fichier au lieu d'en semer un autre.
-  prise?: number;
 };
 export type Registre = { utilises: number; operations: Record<string, OperationEnCours> };
 
@@ -67,16 +64,6 @@ export function noterLeLancement(dossier: string, planId: string, nom: string, a
     if (!enCours) return;
     enCours.nom = nom;
     if (avecLaPhotoDuProduit) enCours.avecLaPhotoDuProduit = true;
-  });
-}
-
-/** Fixe (une fois) le numéro de prise de l'opération en cours ; rend celui qui tient. */
-export function fixerLaPrise(dossier: string, planId: string, proposee: number): number {
-  return modifier(dossier, (registre) => {
-    const enCours = registre.operations[planId];
-    if (!enCours) return proposee;
-    enCours.prise ??= proposee;
-    return enCours.prise;
   });
 }
 

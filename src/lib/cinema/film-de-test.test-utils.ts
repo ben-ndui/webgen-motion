@@ -6,6 +6,8 @@ import type { FilmSpec } from "../../../remotion/film/spec";
 import { creerFilm, lireFicheBrute } from "../film-ecriture";
 import { ecrireAtomiquement } from "../film-fichiers-deposes";
 import { dossierJetable, ficheValide } from "../film-fixtures.test-utils";
+import type { Bible } from "./bible/etat";
+import { lireLaBible, modifierLaBible } from "./bible/stockage";
 import type { Lieux } from "./lieux";
 import type { RegistreDesPrises } from "./prises/etat";
 import { lireLesPrises } from "./prises/stockage";
@@ -22,6 +24,9 @@ export type FilmDeTest = {
   fiche: () => FilmSpec;
   registre: () => ReturnType<typeof lireLeRegistre>;
   prises: () => RegistreDesPrises;
+  bible: () => Bible;
+  // Fige une référence de la bible comme déjà validée, une image comprise.
+  validerLaBiblePour: (referenceId: string) => void;
   // Pose le portrait d'Awa sur le disque ET dans la fiche, comme après sa génération.
   donnerUnPortraitAAwa: (cinema?: CinemaDuFilm) => CinemaDuFilm;
 };
@@ -47,6 +52,16 @@ export function filmDeTest(baseGoogle: string): FilmDeTest {
     fiche: () => lireFicheBrute("saya", lieux.fiches) as FilmSpec,
     registre: () => lireLeRegistre(lieux.dossier("saya")),
     prises: () => lireLesPrises(lieux.dossier("saya")),
+    bible: () => lireLaBible(lieux.dossier("saya")),
+    validerLaBiblePour: (referenceId) => {
+      modifierLaBible(lieux.dossier("saya"), (bible) => {
+        bible.references[referenceId] = {
+          statut: "valide",
+          vues: { face: { versions: [{ n: 1, fichier: `cinema/bible/${referenceId}/face-v1.jpg`, origine: "generee", creeeLe: "2026-10-17" }], retenue: 1 } },
+          journal: [{ action: "validation", le: "2026-10-17" }],
+        };
+      });
+    },
     donnerUnPortraitAAwa: (cinema = serieSaya()) => {
       ecrireAtomiquement(join(lieux.public("saya"), "cinema", "personnages", "awa.jpg"), portraitJpeg());
       cinema.personnages[0].portrait = "cinema/personnages/awa.jpg";
