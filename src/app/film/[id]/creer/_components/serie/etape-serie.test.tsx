@@ -88,6 +88,14 @@ describe("étape « Série »", () => {
     expect(scene1().getByText("Awa n'a pas encore d'image validée dans la bible.")).toBeInTheDocument();
   });
 
+  it("au premier affichage, l'enregistrement est forcé AVANT de lire la bible (une série tout juste commencée n'existe pas encore sur le disque)", async () => {
+    const enregistrer = vi.fn(async () => true);
+    serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
+    render(<Banc cinema={avecPortrait()} enregistrer={enregistrer} />);
+    await screen.findByRole("heading", { name: "La bible visuelle" });
+    await waitFor(() => expect(enregistrer).toHaveBeenCalled());
+  });
+
   it("bible pas encore chargée (fetch en vol) : le clic affiche le refus que le serveur renvoie", async () => {
     serveur({
       [`GET ${plan("rangement")}`]: [vide()],

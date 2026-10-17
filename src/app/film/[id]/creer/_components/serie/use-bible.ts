@@ -28,7 +28,16 @@ export function useBible(filmId: string, avantDeGenerer: () => Promise<boolean>)
     setReferences(corps.references);
   }, [filmId]);
 
-  useEffect(() => void recharger(), [recharger]);
+  // Juste commencée, la série n'existe encore QUE dans la copie locale : la
+  // lisant tout de suite, le serveur ne la connaît pas encore (enregistrement
+  // débattu à 1200 ms) et répond « pas de série ». On force l'enregistrement
+  // AVANT la première lecture, comme avant une génération.
+  useEffect(() => {
+    void (async () => {
+      await avantDeGenerer();
+      await recharger();
+    })();
+  }, [recharger, avantDeGenerer]);
 
   const appeler = useCallback(
     async (cle: string, chemin: string, options?: RequestInit) => {
