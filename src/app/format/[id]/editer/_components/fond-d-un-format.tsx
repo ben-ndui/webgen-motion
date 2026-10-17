@@ -18,6 +18,12 @@ export default function FondDUnFormat({ id, version, prixUsd, descriptionPrete, 
         <video className="film-player" src={`/api/motion/formats/${encodeURIComponent(id)}/media?relatif=${encodeURIComponent(etat.video)}`}
           muted loop autoPlay playsInline aria-label={`Ton décor ${LIBELLES[version].toLowerCase()}`} />
       )}
+      {etat.type === "pret" && etat.boucle === "action" && (
+        <p className="depot-erreur" role="status">
+          Ce décor raconte une action : il change trop du début à la fin, la boucle sautera à chaque tour. Refais-le,
+          ou décris une scène plus calme (une lumière, une fumée, un reflet qui bouge).
+        </p>
+      )}
       {etat.type === "erreur" && <p className="depot-erreur" role="alert">{etat.message}</p>}
       {(etat.type === "aucun" || etat.type === "pret" || (etat.type === "erreur" && !etat.studio)) && (
         <button type="button" className="film-btn" disabled={!descriptionPrete} onClick={() => void generer()}>

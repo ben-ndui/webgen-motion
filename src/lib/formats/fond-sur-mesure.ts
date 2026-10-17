@@ -7,7 +7,7 @@ import { COUT_D_UN_PLAN_USD } from "../cinema/couts";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "../cinema/registre";
 import { API_VEO, type ClientVeo, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "../cinema/veo";
 import { resolveVeoKey } from "../config-resolve";
-import { mettreEnBoucle } from "./fond-en-boucle";
+import { mettreEnBoucle, type QualiteDeBoucle, qualiteDeBoucle } from "./fond-en-boucle";
 import { chargerProjet, enregistrerProjet, lireProjetBrut } from "./format-loader";
 import { getFormatPublicDir, getFormatsDir } from "./format-store";
 
@@ -46,6 +46,8 @@ export function promptDuFond(spec: KaraokeSpec, version: Version): string {
     `Scene: ${spec.fond?.description.trim()}`,
     `Color palette: ${paletteEnMots([couleurs.encre, couleurs.accent, couleurs.clair])}.`,
     "Slow, continuous, ambient motion that can loop without a visible cut. Static camera or very slow drift.",
+    // Au 1er décor de Ben, « lutte, résilience » a donné un mur qui s'effondre : une action, pas une boucle.
+    "Nothing happens: no event, nothing breaks, falls, collapses, appears or transforms. The last second looks like the first.",
     "Pure imagery only, clean frame. Keep the lower third calm and darker.",
   ].join(" ");
 }
@@ -84,7 +86,15 @@ export async function lancerLeFond(id: string, version: Version, partiel: Partia
   return { ok: true, coutUsd: COUT_D_UN_FOND_USD };
 }
 
-export type EtatDuFond = { etat: "aucun" | "en-cours" | "pret"; video?: string } | { etat: "refuse"; raison: string };
+export type EtatDuFond =
+  | { etat: "aucun" | "en-cours" }
+  | { etat: "pret"; video: string; boucle: QualiteDeBoucle }
+  | { etat: "refuse"; raison: string };
+
+/** Mesurée sur la vidéo livrée à chaque lecture : aucun champ de plus à protéger dans la fiche. */
+function pret(lieux: Lieux, id: string, video: string): EtatDuFond {
+  return { etat: "pret", video, boucle: qualiteDeBoucle(join(lieux.public(id), video)) };
+}
 
 /**
  * Un pas de suivi : demande à Google où en est la génération, et range la
@@ -96,7 +106,7 @@ export async function suivreLeFond(id: string, version: Version, partiel: Partia
   const projet = lireProjetBrut(id, lieux.fiches) as { format?: string; spec?: KaraokeSpec } | null;
   if (!projet) return { ok: false, statut: 404, raison: "Projet introuvable" };
   const deja = projet.spec?.fond?.videos[version];
-  if (!operation) return deja ? { etat: "pret", video: deja } : { etat: "aucun" };
+  if (!operation) return deja ? pret(lieux, id, deja) : { etat: "aucun" };
   if (!operation.nom) return { etat: "en-cours" };
   const client = lieux.veo();
   if (!client) return { ok: false, statut: 412, raison: "Aucune clé Google (Veo) : ajoute-la dans Réglages › Vidéo IA." };
@@ -117,5 +127,5 @@ export async function suivreLeFond(id: string, version: Version, partiel: Partia
   fiche.spec.fond = { description: fiche.spec.fond?.description ?? "", videos: { ...fiche.spec.fond?.videos, [version]: relatif } };
   enregistrerProjet(id, fiche, lieux.fiches, { videosDuServeur: true });
   terminer(lieux.dossier(id), `fond-${version}`);
-  return { etat: "pret", video: relatif };
+  return pret(lieux, id, relatif);
 }

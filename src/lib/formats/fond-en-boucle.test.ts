@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { ffmpeg, ffprobe } from "../binaires-video";
-import { DEBUT_COUPE_S, FONDU_S, mettreEnBoucle } from "./fond-en-boucle";
+import { DEBUT_COUPE_S, FONDU_S, mettreEnBoucle, qualiteDeBoucle } from "./fond-en-boucle";
 
 const dossier = mkdtempSync(join(tmpdir(), "fond-boucle-"));
 
@@ -53,5 +53,35 @@ describe("mettreEnBoucle", () => {
     const faux = join(dossier, "faux.mp4");
     writeFileSync(faux, "pas une vidéo");
     expect(mettreEnBoucle(faux, join(dossier, "y.mp4"))).toBe(false);
+  });
+});
+
+/** Une scène qui ne bouge pas, et une qui « raconte » quelque chose : du noir au blanc. */
+function planCalme(nom: string): string {
+  const chemin = join(dossier, nom);
+  spawnSync(ffmpeg(), ["-v", "error", "-y", "-f", "lavfi", "-i", "color=c=0x334455:s=320x180:r=24:d=8", "-pix_fmt", "yuv420p", chemin]);
+  return chemin;
+}
+
+function planQuiRaconte(nom: string): string {
+  const chemin = join(dossier, nom);
+  spawnSync(ffmpeg(), ["-v", "error", "-y", "-f", "lavfi", "-i", "color=c=white:s=320x180:r=24:d=8", "-vf", "fade=in:0:192", "-pix_fmt", "yuv420p", chemin]);
+  return chemin;
+}
+
+describe("qualiteDeBoucle", () => {
+  it("une scène calme boucle proprement ; une scène qui change du début à la fin raconte une action", () => {
+    const calme = join(dossier, "calme-boucle.mp4");
+    const action = join(dossier, "action-boucle.mp4");
+    expect(mettreEnBoucle(planCalme("calme.mp4"), calme)).toBe(true);
+    expect(mettreEnBoucle(planQuiRaconte("action.mp4"), action)).toBe(true);
+    expect(qualiteDeBoucle(calme)).toBe("propre");
+    expect(qualiteDeBoucle(action)).toBe("action");
+  });
+
+  it("ce qui ne se lit pas n'est ni propre ni une action : on ne sait pas", () => {
+    const faux = join(dossier, "illisible.mp4");
+    writeFileSync(faux, "rien");
+    expect(qualiteDeBoucle(faux)).toBe("inconnue");
   });
 });

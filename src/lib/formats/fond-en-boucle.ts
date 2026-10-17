@@ -33,3 +33,36 @@ export function mettreEnBoucle(entree: string, sortie: string): boolean {
   const resultat = spawnSync(ffmpeg(), ["-v", "error", "-y", "-i", entree, "-filter_complex", filtre, "-map", "[v]", "-an", "-c:v", "libx264", "-crf", "18", "-movflags", "+faststart", sortie]);
   return resultat.status === 0;
 }
+
+/**
+ * Au-delà de cet écart moyen (niveaux de gris, 0 à 255) entre la première image et la
+ * dernière avant le fondu, la boucle se voit : le décor « raconte une action ». Calé le
+ * 17/10/2026 sur des décors réels : route de nuit 5,7 et 16,2, néons et fumée 24, mur
+ * de blocs qui s'effondre 58,7 (le fondu le faisait revenir intact à chaque tour).
+ */
+export const SEUIL_DE_BOUCLE = 40;
+
+function imageGrise(fichier: string, instant: number): Buffer {
+  const sortie = spawnSync(ffmpeg(), ["-v", "error", "-ss", String(instant), "-i", fichier, "-vf", "scale=64:36,format=gray", "-frames:v", "1", "-f", "rawvideo", "-"]);
+  return sortie.stdout ?? Buffer.alloc(0);
+}
+
+/** L'écart entre le début de la boucle et l'image juste avant le fondu ; null si illisible. */
+export function ecartDeBoucle(fichier: string): number | null {
+  const duree = dureeDe(fichier);
+  if (!Number.isFinite(duree) || duree <= FONDU_S) return null;
+  const debut = imageGrise(fichier, 0);
+  const avantLeFondu = imageGrise(fichier, Math.max(0, duree - FONDU_S - 0.1));
+  if (debut.length === 0 || debut.length !== avantLeFondu.length) return null;
+  let somme = 0;
+  for (let i = 0; i < debut.length; i++) somme += Math.abs(debut[i] - avantLeFondu[i]);
+  return somme / debut.length;
+}
+
+export type QualiteDeBoucle = "propre" | "action" | "inconnue";
+
+export function qualiteDeBoucle(fichier: string): QualiteDeBoucle {
+  const ecart = ecartDeBoucle(fichier);
+  if (ecart === null) return "inconnue";
+  return ecart > SEUIL_DE_BOUCLE ? "action" : "propre";
+}

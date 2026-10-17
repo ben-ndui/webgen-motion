@@ -6,7 +6,8 @@ export type EtatDUnFond =
   | { type: "lecture" }
   | { type: "aucun" }
   | { type: "en-cours" }
-  | { type: "pret"; video: string }
+  // `action` : le décor change du début à la fin, sa boucle sautera à chaque tour.
+  | { type: "pret"; video: string; boucle?: "propre" | "action" | "inconnue" }
   | { type: "erreur"; message: string; studio?: boolean };
 
 // Veo met une à trois minutes : on demande toutes les 6 s, comme la série.
@@ -30,11 +31,11 @@ export function useFondSurMesure(id: string, version: "long" | "court", avantDeG
     (garder: () => boolean = () => true): Promise<void> =>
       fetch(`${url}?version=${version}`, { cache: "no-store" })
         .then(async (reponse) => {
-          const corps = (await reponse.json().catch(() => ({}))) as { etat?: string; video?: string; raison?: string; erreur?: string };
+          const corps = (await reponse.json().catch(() => ({}))) as { etat?: string; video?: string; boucle?: "propre" | "action" | "inconnue"; raison?: string; erreur?: string };
           if (!garder()) return;
           if (reponse.status === 403) return setEtat({ type: "erreur", message: "Le décor sur mesure est une fonction Studio.", studio: true });
           if (!reponse.ok) return setEtat({ type: "erreur", message: corps.erreur ?? `Suivi impossible (${reponse.status}).` });
-          if (corps.etat === "pret" && corps.video) return setEtat({ type: "pret", video: corps.video });
+          if (corps.etat === "pret" && corps.video) return setEtat({ type: "pret", video: corps.video, boucle: corps.boucle });
           if (corps.etat === "refuse") {
             return setEtat({ type: "erreur", message: `Google a refusé ce décor : ${corps.raison ?? ""} Rien n'a été facturé. Change la description et relance.` });
           }
