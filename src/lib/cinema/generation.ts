@@ -5,6 +5,7 @@ import { estUnExemple } from "../../../remotion/film/cinema/exemples";
 import { BUDGET_PAR_DEFAUT } from "../../../remotion/film/cinema/validerCinema";
 import type { CinemaDuFilm, PlanDeCinema, QualiteDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
+import { lireLaBible } from "./bible/stockage";
 import { portraitsPourVeo } from "./generation-portrait";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } from "./lieux";
 import { choisirLeModele, personnagesDuPlan, photoDuProduitDansLePlan, trouverLePlan } from "./plans";
@@ -91,10 +92,10 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   const texteDExemple = texteEncoreDExemple(contexte);
   if (texteDExemple) return { ok: false, statut: 400, raison: texteDExemple };
   const photo = photoDuProduitDansLePlan(contexte.cinema, contexte.plan) ? contexte.cinema.photoDeLObjet : undefined;
-  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), photo);
+  const dossier = lieux.dossier(id);
+  const portraits = portraitsPourVeo(personnagesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), lireLaBible(dossier), photo);
   if (!portraits.ok) return portraits;
 
-  const dossier = lieux.dossier(id);
   const reservation = reserver(dossier, planId, contexte.plafond);
   if (!reservation.ok && reservation.raison === "en-cours") return repondre(id, contexte, { etat: "en-cours" }, lieux);
   if (!reservation.ok) {

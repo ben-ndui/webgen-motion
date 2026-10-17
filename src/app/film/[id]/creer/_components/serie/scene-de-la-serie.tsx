@@ -9,6 +9,7 @@ import { PLANS_PAR_SCENE } from "../../../../../../../remotion/film/cinema/valid
 import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import EditeurDuPlan from "./editeur-du-plan";
 import { episodeDeLaScene, useAssistant } from "./use-assistant";
+import type { ReferenceAffichee } from "./use-bible";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 import VignetteDuPlan from "./vignette-du-plan";
 import ZoneTexte from "./zone-texte";
@@ -21,6 +22,8 @@ type Props = {
   suivis: Record<string, SuiviDUnPlan>;
   versionsDesPlans: Record<string, number>;
   blocage: string | null;
+  // La bible visuelle : null tant qu'elle n'a pas fini de se charger.
+  references: ReferenceAffichee[] | null;
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: (planId: string) => void;
 };
@@ -29,7 +32,7 @@ type Props = {
  * Une scène : son décor, puis sa pellicule, les plans en images 9:16 dans
  * l'ordre où ils passeront. Un clic sur un plan l'ouvre en dessous.
  */
-export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, versionsDesPlans, blocage, modifierLaSerie, onGenerer }: Props) {
+export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, versionsDesPlans, blocage, references, modifierLaSerie, onGenerer }: Props) {
   const [choisi, setChoisi] = useState(scene.plans[0]?.id ?? "");
   const plan = scene.plans.find((p) => p.id === choisi) ?? scene.plans[0];
   const numeroDuPlan = plan ? scene.plans.indexOf(plan) + 1 : 0;
@@ -99,6 +102,7 @@ export default function SceneDeLaSerie({ filmId, cinema, scene, numero, suivis, 
           version={versionsDesPlans[plan.id] ?? 0}
           filmId={filmId}
           blocage={blocage}
+          references={references}
           modifierLePlan={modifierLePlan(plan.id)}
           modifierLaSerie={modifierLaSerie}
           onGenerer={() => onGenerer(plan.id)}

@@ -7,7 +7,8 @@ import type { QualiteDeCinema } from "../../../remotion/film/cinema/types";
  * Sans accès disque : l'écran l'importe.
  */
 export const COUT_D_UN_PLAN_USD: Record<QualiteDeCinema, number> = { fast: 0.96, lite: 0.64 };
-export const COUT_D_UN_PORTRAIT_USD = 0.05;
+// Une image de la bible (personnage, créature, objet ou décor) : même modèle Gemini image.
+export const COUT_D_UNE_IMAGE_DE_BIBLE_USD = 0.05;
 
 /** « 0,96 $ » : le format qu'on lit à l'écran. */
 export function enDollars(montant: number): string {

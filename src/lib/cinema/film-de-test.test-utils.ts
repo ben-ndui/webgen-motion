@@ -62,9 +62,20 @@ export function filmDeTest(baseGoogle: string): FilmDeTest {
         };
       });
     },
+    // Pose le portrait d'Awa sur le disque, le cite dans la fiche (ancien
+    // champ, encore utile aux tests de médias servis) ET valide la même
+    // image dans la bible (en-pied) : c'est elle que lit la génération.
     donnerUnPortraitAAwa: (cinema = serieSaya()) => {
+      const fichier = "cinema/personnages/awa.jpg";
       ecrireAtomiquement(join(lieux.public("saya"), "cinema", "personnages", "awa.jpg"), portraitJpeg());
-      cinema.personnages[0].portrait = "cinema/personnages/awa.jpg";
+      cinema.personnages[0].portrait = fichier;
+      modifierLaBible(lieux.dossier("saya"), (bible) => {
+        bible.references.awa = {
+          statut: "valide",
+          vues: { "en-pied": { versions: [{ n: 1, fichier, origine: "generee", creeeLe: "2026-10-17" }], retenue: 1 } },
+          journal: [{ action: "validation", le: "2026-10-17" }],
+        };
+      });
       return cinema;
     },
   };

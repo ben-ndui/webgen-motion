@@ -6,6 +6,7 @@ import { choisirLeModele } from "@/lib/cinema/plans";
 import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
 import { type CinemaDuFilm, PERSONNAGES_PAR_PLAN_MAX, type PlanDeCinema, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
 import { raisonDeNePasGenerer } from "./raison-de-ne-pas-generer";
+import type { ReferenceAffichee } from "./use-bible";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import ChampReplique from "./champ-replique";
@@ -24,6 +25,8 @@ type Props = {
   // Change quand une nouvelle vidéo du plan arrive.
   version: number;
   blocage: string | null;
+  // La bible visuelle : null tant qu'elle n'a pas fini de se charger.
+  references: ReferenceAffichee[] | null;
   modifierLePlan: (changement: (plan: PlanDeCinema) => void) => void;
   // Pour poser une proposition de Claude gardée.
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
@@ -37,9 +40,9 @@ const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
 };
 
 /** Le plan choisi sur la pellicule : ce qui s'y passe, qui est à l'image, qui parle, et le bouton qui le génère. */
-export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, modifierLePlan, modifierLaSerie, onGenerer, onRetirer }: Props) {
+export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, references, modifierLePlan, modifierLaSerie, onGenerer, onRetirer }: Props) {
   const choix = choisirLeModele(cinema, plan);
-  const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage);
+  const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage, references);
   const presents = cinema.personnages.filter((p) => plan.personnages.includes(p.id));
   const message = suivi && "raison" in suivi ? suivi.raison : suivi ? MESSAGES[suivi.etat] : undefined;
   const dejaGenere = suivi?.etat === "pret";

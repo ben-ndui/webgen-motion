@@ -5,11 +5,11 @@ import { type ReactNode, useCallback, useState } from "react";
 import { serieDeDepart } from "@/lib/cinema/edition-serie";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../../../../../remotion/film/spec";
-import Casting from "./casting";
+import BibleDeLaSerie from "./bible-de-la-serie";
 import EcrireAvecClaude from "./ecrire-avec-claude";
 import EpisodesDeLaSerie from "./episodes-de-la-serie";
 import ObjetEtBudget from "./objet-et-budget";
-import { usePortraits } from "./use-portraits";
+import { useBible } from "./use-bible";
 import { useSuiviDesPlans } from "./use-suivi-des-plans";
 import MessageAvecReglage from "./message-avec-reglage";
 
@@ -95,19 +95,9 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
     [modifierLaSerie],
   );
   const { suivis, versions: versionsDesPlans, budget, blocage, generer } = useSuiviDesPlans(id, planIds, enregistrer, quandUnPlanArrive);
-  const [versions, setVersions] = useState<Record<string, number>>({});
-  const quandLePortraitEstPret = useCallback(
-    (personnageId: string, portrait: string) => {
-      modifierLaSerie((c) => {
-        const personnage = c.personnages.find((p) => p.id === personnageId);
-        if (personnage) personnage.portrait = portrait;
-      });
-      // Même adresse, nouvelle image : la version force le navigateur à la recharger.
-      setVersions((avant) => ({ ...avant, [personnageId]: Date.now() }));
-    },
-    [modifierLaSerie],
-  );
-  const portraits = usePortraits(id, enregistrer, quandLePortraitEstPret);
+  // Remontée ici (pas dans BibleDeLaSerie) : les plans en ont besoin aussi,
+  // pour griser « Générer » tant qu'une référence n'est pas validée.
+  const bible = useBible(id, enregistrer);
 
   return (
     <div className="serie">
@@ -117,15 +107,7 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
         </p>
       )}
       <div className="blocs">
-        <Casting
-          filmId={id}
-          cinema={cinema}
-          etats={portraits.etats}
-          suivis={suivis}
-          versions={versions}
-          modifierLaSerie={modifierLaSerie}
-          onGenererLePortrait={(personnageId) => void portraits.generer(personnageId)}
-        />
+        <BibleDeLaSerie filmId={id} cinema={cinema} modifierLaSerie={modifierLaSerie} bible={bible} />
         <ObjetEtBudget filmId={id} cinema={cinema} enregistrer={enregistrer} budget={budget} modifierLaSerie={modifierLaSerie} />
         {ecrire}
       </div>
@@ -137,6 +119,7 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
         suivis={suivis}
         versionsDesPlans={versionsDesPlans}
         blocage={blocage}
+        references={bible.references}
         modifierLaSerie={modifierLaSerie}
         onGenerer={(planId) => void generer(planId)}
         declinaisons={declinaisons}

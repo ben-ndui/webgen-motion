@@ -45,18 +45,17 @@ describe("plans avec personnage", () => {
     expect(film.registre()).toEqual({ utilises: 1, operations: {} });
   });
 
-  it("sans portrait d'Awa : refusé AVANT de réserver et d'appeler Google (son visage changerait)", async () => {
+  it("sans image validée dans la bible pour Awa : refusé AVANT de réserver et d'appeler Google (son visage changerait)", async () => {
     film.creer();
-    expect(await genererUnPlan("saya", "rangement", film.lieux)).toEqual({ ok: false, statut: 409, raison: expect.stringContaining("Awa n'a pas encore de portrait") });
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toEqual({ ok: false, statut: 409, raison: expect.stringContaining("Awa n'a pas encore d'image validée dans la bible") });
     expect(google.appels).toHaveLength(0);
     expect(film.registre().utilises).toBe(0);
   });
 
-  it("un portrait cité par la fiche mais absent du disque est traité comme manquant", async () => {
-    const serie = serieSaya();
-    serie.personnages[0].portrait = "cinema/personnages/awa.jpg";
-    film.creer(serie);
-    expect(await genererUnPlan("saya", "confidence", film.lieux)).toMatchObject({ ok: false, statut: 409 });
+  it("une image validée dans la bible mais absente du disque est traitée comme manquante", async () => {
+    film.creer();
+    film.validerLaBiblePour("awa");
+    expect(await genererUnPlan("saya", "confidence", film.lieux)).toMatchObject({ ok: false, statut: 409, raison: expect.stringContaining("absente du disque") });
     expect(google.appels).toHaveLength(0);
   });
 
