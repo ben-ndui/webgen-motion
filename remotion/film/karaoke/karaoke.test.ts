@@ -135,8 +135,10 @@ describe("la garde du karaoké", () => {
     expect(erreursDuKaraoke({ ...copie(), decor: "plage" as never })).toContain("decor : l'un de horizon, ville, ocean, vinyle, minimal, sur-mesure");
   });
 
-  it("le décor sur mesure exige sa description, et accepte des vidéos encore à générer", () => {
-    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure" })).toContain("fond.description : texte non vide attendu");
+  it("le décor sur mesure se choisit avant d'être décrit, et accepte des vidéos encore à générer", () => {
+    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure" })).toEqual([]);
+    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure", fond: { description: "", videos: {} } })).toEqual([]);
+    expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure", fond: { description: "x".repeat(601), videos: {} } })).toContain("fond.description : 600 caractères au plus");
     expect(erreursDuKaraoke({ ...copie(), decor: "sur-mesure", fond: { description: "Une rue sous la pluie", videos: {} } })).toEqual([]);
   });
 

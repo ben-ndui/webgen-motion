@@ -48,10 +48,13 @@ export function erreursDuKaraoke(entree: unknown): string[] {
   texte(erreurs, "paroles", entree.paroles);
   // Liste écrite ici et non importée (Node lit ce fichier tel quel) ; le test la compare à spec.ts.
   if (!DECORS_CONNUS.includes(entree.decor as string)) erreurs.push(`decor : l'un de ${DECORS_CONNUS.join(", ")}`);
-  if (entree.decor === "sur-mesure") {
+  // Le décor sur mesure se choisit AVANT d'être décrit : une description vide est permise ici (sinon
+  // le projet devenait invalide au clic sur « Sur mesure », et plus rien ne marchait). C'est la
+  // GÉNÉRATION qui exige une description, et le rendu qui exige la vidéo.
+  if (entree.fond !== undefined) {
     const fond = estObjet(entree.fond) ? entree.fond : {};
-    texte(erreurs, "fond.description", fond.description);
-    if (typeof fond.description === "string" && fond.description.length > 600) erreurs.push("fond.description : 600 caractères au plus");
+    if (typeof fond.description !== "string") erreurs.push("fond.description : texte attendu");
+    else if (fond.description.length > 600) erreurs.push("fond.description : 600 caractères au plus");
     if (!estObjet(fond.videos)) erreurs.push("fond.videos : objet attendu ({ long?, court? })");
   }
   const textes = estObjet(entree.textes) ? entree.textes : {};

@@ -66,7 +66,7 @@ describe("le décor sur mesure d'un karaoké", () => {
 
   it("demande une description, puis une clé, avant d'appeler Google", async () => {
     projet("   ");
-    expect(await lancerLeFond("clip", "long", lieux)).toEqual({ ok: false, statut: 409, raison: "Le projet a des erreurs : fond.description : texte non vide attendu" });
+    expect(await lancerLeFond("clip", "long", lieux)).toEqual({ ok: false, statut: 400, raison: "Décris d'abord ton décor." });
     const fiche = lireProjetBrut("clip", lieux.fiches) as { spec: KaraokeSpec };
     fiche.spec.fond = { description: "Une plage la nuit", videos: {} };
     enregistrerProjet("clip", fiche, lieux.fiches);
