@@ -31,13 +31,14 @@ export type FilmDeTest = {
   donnerUnPortraitAAwa: (cinema?: CinemaDuFilm) => CinemaDuFilm;
 };
 
-export function filmDeTest(baseGoogle: string): FilmDeTest {
+export function filmDeTest(baseGoogle: string, baseFal?: string): FilmDeTest {
   const racine = dossierJetable("cinema");
   const lieux: Lieux = {
     fiches: join(racine, "fiches"),
     dossier: (id) => join(racine, "films", id),
     public: (id) => join(racine, "films", id, "public"),
     veo: () => ({ base: baseGoogle, cle: "cle-de-test" }),
+    fal: () => (baseFal ? { base: baseFal, cle: "cle-de-test", domainesMedia: [new URL(baseFal).hostname] } : null),
   };
   const creer = (cinema: CinemaDuFilm = serieSaya()) => {
     const fiche = ficheValide();

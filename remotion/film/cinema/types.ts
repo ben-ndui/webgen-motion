@@ -7,6 +7,11 @@
 // cher, mais refuse les références) : GEN MOTION choisit selon le plan.
 export type QualiteDeCinema = "fast" | "lite";
 
+// Veo (Google, par défaut) ou Seedance (ByteDance, via fal.ai) : qui génère
+// la vidéo de ce plan. Absent sur un plan : Veo, choisi automatiquement
+// (choisirLeModele). Un choix explicite ne change RIEN d'autre au plan.
+export type FournisseurDeCinema = "veo" | "seedance";
+
 // Veo rend toujours 8 secondes : une découpe ne peut pas aller au-delà.
 export const DUREE_D_UN_PLAN = 8;
 // Veo accepte trois images de référence au plus par plan.
@@ -66,9 +71,11 @@ export type PlanDeCinema = {
   personnages: string[];
   // L'objet du film (cinema.objet) est-il à l'image ?
   objet: boolean;
-  // Les références de la bible envoyées à Veo (ids, 3 au plus). Absentes : les
-  // personnages du plan, dans l'ordre.
+  // Les références de la bible envoyées en génération (ids, 3 au plus). Absentes :
+  // les personnages du plan, dans l'ordre.
   references?: string[];
+  // Qui génère ce plan. Absent : Veo (comportement d'avant Seedance).
+  fournisseur?: FournisseurDeCinema;
   // Dite par un personnage du plan, en français.
   replique?: RepliqueDuPlan;
   // La PRISE RETENUE, posée par GEN MOTION : c'est elle que le montage joue.

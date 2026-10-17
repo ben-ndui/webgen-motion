@@ -9,6 +9,7 @@ import { ecrireAtomiquement } from "../film-fichiers-deposes";
 import { ficheValide } from "../film-fixtures.test-utils";
 import { type FilmDeTest, filmDeTest } from "./film-de-test.test-utils";
 import { VIDEO_GARDEE_PAR_GOOGLE_MS, genererUnPlan, suivreLePlan } from "./generation";
+import { REQUEST_ID, type FalLocal, demarrerFalLocal, enFile as seedanceEnFile, soumissionAcceptee, termine as seedanceTermine } from "./seedance-local.test-utils";
 import { type GoogleLocal, demarrerGoogleLocal, enCours, lancementAccepte, portraitJpeg, termine, videoMp4 } from "./veo-local.test-utils";
 
 let google: GoogleLocal;
@@ -262,5 +263,78 @@ describe("la fiche pendant la génération", () => {
     film.creer();
     expect(await genererUnPlan("saya", "fenetre", film.lieux)).toMatchObject({ ok: false, statut: 404 });
     expect(google.appels).toHaveLength(0);
+  });
+});
+
+describe("Seedance (fournisseur explicite sur le plan)", () => {
+  let fal: FalLocal;
+  let filmAvecFal: FilmDeTest;
+  beforeEach(async () => {
+    fal = await demarrerFalLocal();
+    filmAvecFal = filmDeTest(google.base, fal.base);
+  });
+  afterEach(() => fal.fermer());
+
+  it("le parcours complet : lancé, suivi et téléchargé chez fal.ai, pas de prix fixe affiché", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+
+    const lancement = await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+    expect(lancement).toMatchObject({ ok: true, plan: { etat: "en-cours" }, modele: { fournisseur: "seedance", coutUsd: null } });
+    expect(fal.appels[0].chemin).toBe("/bytedance/seedance-2.5/us/reference-to-video");
+    expect(google.appels).toHaveLength(0);
+
+    fal.repondre(seedanceEnFile());
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "en-cours" } });
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/flacon/prise-1.mp4" } });
+    expect(readFileSync(join(filmAvecFal.lieux.public("saya"), "cinema", "flacon", "prise-1.mp4")).equals(videoMp4())).toBe(true);
+    expect(filmAvecFal.registre()).toEqual({ utilises: 1, operations: {} });
+  });
+
+  it("sans clé fal.ai : 412, et rien n'est réservé — Veo reste intact", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    expect(await genererUnPlan("saya", "flacon", { ...filmAvecFal.lieux, fal: () => null })).toMatchObject({ ok: false, statut: 412, raison: expect.stringContaining("fal.ai") });
+    expect(filmAvecFal.registre().utilises).toBe(0);
+    expect(fal.appels).toHaveLength(0);
+  });
+
+  it("le suivi reste chez fal.ai même si le plan repasse sur Veo entre-temps (le lancement fait foi)", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+    await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+
+    // La personne change d'avis sur l'écran AVANT que la génération ne finisse.
+    const fiche = filmAvecFal.fiche();
+    fiche.cinema!.episodes[0].scenes[0].plans[1].fournisseur = "veo";
+    enregistrerFilm("saya", fiche, filmAvecFal.lieux.fiches);
+
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret" } });
+    expect(google.appels).toHaveLength(0);
+  });
+
+  it("une panne PASSAGÈRE de fal.ai sur un plan déjà terminé (donc facturé) ne le rend PAS au budget", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+    await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+
+    fal.repondre({ statut: 200, corps: { status: "COMPLETED" } }, { statut: 502, corps: null });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "injoignable" } });
+    // Toujours compté : une panne passagère chez fal.ai n'efface pas un plan payé.
+    expect(filmAvecFal.registre().utilises).toBe(1);
+    expect(filmAvecFal.registre().operations.flacon.nom).toBe(REQUEST_ID);
+
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret" } });
+    expect(filmAvecFal.registre()).toEqual({ utilises: 1, operations: {} });
   });
 });

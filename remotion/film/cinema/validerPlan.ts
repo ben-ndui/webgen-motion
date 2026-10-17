@@ -103,5 +103,8 @@ export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, co
     erreurs.push(`${chemin}.fichier : cinema/<plan>/prise-<n>.mp4 (posé par GEN MOTION)`);
   }
   if (plan.produitReel !== undefined && plan.produitReel !== true) erreurs.push(`${chemin}.produitReel : vrai ou absent (posé par GEN MOTION)`);
+  if (plan.fournisseur !== undefined && plan.fournisseur !== "veo" && plan.fournisseur !== "seedance") {
+    erreurs.push(`${chemin}.fournisseur : « veo » ou « seedance » (absent : Veo)`);
+  }
   verifierDecoupe(erreurs, `${chemin}.decoupe`, plan.decoupe);
 }

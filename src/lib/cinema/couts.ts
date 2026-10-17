@@ -1,3 +1,4 @@
+import type { ChoixDuModele } from "./plans";
 import type { QualiteDeCinema } from "../../../remotion/film/cinema/types";
 
 /**
@@ -9,6 +10,14 @@ import type { QualiteDeCinema } from "../../../remotion/film/cinema/types";
 export const COUT_D_UN_PLAN_USD: Record<QualiteDeCinema, number> = { fast: 0.96, lite: 0.64 };
 // Une image de la bible (personnage, créature, objet ou décor) : même modèle Gemini image.
 export const COUT_D_UNE_IMAGE_DE_BIBLE_USD = 0.05;
+
+/**
+ * Seedance facture au token, pas au plan : aucun prix fixe à afficher sans
+ * l'avoir mesuré en réel. Mieux vaut le dire que d'inventer un chiffre.
+ */
+export function coutDuModele(choix: ChoixDuModele): number | null {
+  return choix.fournisseur === "veo" ? COUT_D_UN_PLAN_USD[choix.qualite] : null;
+}
 
 /** « 0,96 $ » : le format qu'on lit à l'écran. */
 export function enDollars(montant: number): string {

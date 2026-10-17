@@ -1,3 +1,4 @@
+import type { FournisseurDeCinema } from "../../../remotion/film/cinema/types";
 import { type FichierJson, lireLeJson, modifierLeJson } from "./json-sous-verrou";
 
 /**
@@ -9,9 +10,14 @@ import { type FichierJson, lireLeJson, modifierLeJson } from "./json-sous-verrou
  * Toute lecture-écriture passe par un verrou de fichier (json-sous-verrou.ts).
  */
 export type OperationEnCours = {
-  // Nom de l'opération chez Google ; null entre la réservation et la réponse.
+  // Nom de l'opération chez Google, ou request_id chez fal.ai ; null entre
+  // la réservation et la réponse.
   nom: string | null;
   depuis: string;
+  // Qui a lancé cette opération. Absent : Veo (écrit avant Seedance) — le
+  // SUIVI se fait toujours avec le fournisseur du LANCEMENT, jamais celui
+  // choisi aujourd'hui sur le plan (il a pu changer entre-temps).
+  fournisseur?: FournisseurDeCinema;
   // La photo du vrai produit est partie avec ce lancement.
   avecLaPhotoDuProduit?: boolean;
 };
@@ -57,12 +63,13 @@ export function reserver(dossier: string, planId: string, plafond: number, maint
   });
 }
 
-/** Google a accepté le lancement : on garde le nom pour reprendre plus tard. */
-export function noterLeLancement(dossier: string, planId: string, nom: string, avecLaPhotoDuProduit = false): void {
+/** Le fournisseur a accepté le lancement : on garde le nom pour reprendre plus tard. */
+export function noterLeLancement(dossier: string, planId: string, nom: string, fournisseur: FournisseurDeCinema, avecLaPhotoDuProduit = false): void {
   modifier(dossier, (registre) => {
     const enCours = registre.operations[planId];
     if (!enCours) return;
     enCours.nom = nom;
+    enCours.fournisseur = fournisseur;
     if (avecLaPhotoDuProduit) enCours.avecLaPhotoDuProduit = true;
   });
 }

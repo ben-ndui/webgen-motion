@@ -26,6 +26,15 @@ describe("erreursDuCinema — format série", () => {
     expect(erreurs(serie)).toEqual([]);
   });
 
+  it("accepte un plan confié à Seedance, refuse un fournisseur qui n'existe pas", () => {
+    const serie = serieSaya();
+    const plan = serie.episodes[0].scenes[0].plans[0] as { fournisseur?: string };
+    plan.fournisseur = "seedance";
+    expect(erreurs(serie)).toEqual([]);
+    plan.fournisseur = "sora";
+    expect(erreurs(serie)).toEqual(["cinema.episodes[0].scenes[0].plans[0].fournisseur : « veo » ou « seedance » (absent : Veo)"]);
+  });
+
   it("accepte un Reel sans personnage : un épisode, une scène, un plan", () => {
     const reel = { personnages: [], episodes: [{ id: "reel", titre: "Reel", scenes: [{ id: "mer", decor: "The sea at dawn.", plans: [{ id: "vagues", consigne: "Waves.", personnages: [], objet: false }] }] }] };
     expect(erreurs(reel)).toEqual([]);

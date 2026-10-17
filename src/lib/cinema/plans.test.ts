@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { serieSaya } from "../../../remotion/film/cinema/serie-exemple.test-utils";
 import type { CinemaDuFilm } from "../../../remotion/film/cinema/types";
-import { referencesDuPlan, trouverLePlan } from "./plans";
+import { choisirLeModele, referencesDuPlan, trouverLePlan } from "./plans";
 
 function avecSahor(): CinemaDuFilm {
   const serie = serieSaya();
@@ -38,5 +38,26 @@ describe("referencesDuPlan", () => {
     const serie = serieSaya();
     const plan = trouverLePlan(serie, "flacon")!.plan;
     expect(referencesDuPlan(serie, plan)).toEqual([]);
+  });
+});
+
+describe("choisirLeModele", () => {
+  it("un plan sans référence choisit Veo Lite", () => {
+    const serie = serieSaya();
+    const plan = trouverLePlan(serie, "flacon")!.plan;
+    expect(choisirLeModele(serie, plan)).toEqual({ fournisseur: "veo", qualite: "lite", pourquoi: expect.stringContaining("Aucune référence") });
+  });
+
+  it("un plan avec une référence choisit Veo Fast", () => {
+    const serie = serieSaya();
+    const plan = trouverLePlan(serie, "rangement")!.plan;
+    expect(choisirLeModele(serie, plan)).toMatchObject({ fournisseur: "veo", qualite: "fast" });
+  });
+
+  it("un plan confié explicitement à Seedance ignore la logique fast/lite de Veo", () => {
+    const serie = serieSaya();
+    const plan = trouverLePlan(serie, "flacon")!.plan;
+    plan.fournisseur = "seedance";
+    expect(choisirLeModele(serie, plan)).toEqual({ fournisseur: "seedance", pourquoi: expect.stringContaining("fal.ai") });
   });
 });

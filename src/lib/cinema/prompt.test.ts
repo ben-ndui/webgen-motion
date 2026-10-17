@@ -98,8 +98,8 @@ describe("composerLePrompt — série", () => {
 describe("choisirLeModele", () => {
   it("Fast dès qu'un personnage est à l'image (Lite refuse les portraits), en disant pourquoi", () => {
     const serie = serieSaya();
-    expect(choisirLeModele(serie, trouverLePlan(serie, "rangement")!.plan)).toEqual({ qualite: "fast", pourquoi: "Awa est à l'image : Fast garde le même visage." });
-    expect(choisirLeModele(serie, trouverLePlan(serie, "flacon")!.plan)).toEqual({ qualite: "lite", pourquoi: "Aucune référence à l'image : le modèle Lite suffit." });
+    expect(choisirLeModele(serie, trouverLePlan(serie, "rangement")!.plan)).toEqual({ fournisseur: "veo", qualite: "fast", pourquoi: "Awa est à l'image : Fast garde le même visage." });
+    expect(choisirLeModele(serie, trouverLePlan(serie, "flacon")!.plan)).toEqual({ fournisseur: "veo", qualite: "lite", pourquoi: "Aucune référence à l'image : le modèle Lite suffit." });
   });
 
   it("trouverLePlan cherche dans toutes les scènes et rend null pour un plan inconnu", () => {
