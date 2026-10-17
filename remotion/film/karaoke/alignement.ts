@@ -145,5 +145,44 @@ export function calerLesParoles(lignes: string[], entendus: MotEntendu[]): { lig
     }),
   }));
   const reconnus = aPlat.length === 0 ? 0 : indices.filter((j) => j >= 0).length / aPlat.length;
-  return { lignes: calees, reconnus };
+  return { lignes: assainir(calees), reconnus };
+}
+
+// Un mot dure au moins ça : en dessous, il « s'allume d'un coup » au lieu de se remplir.
+export const DUREE_MINIMALE_D_UN_MOT = 0.08;
+
+/**
+ * Les impossibilités physiques, corrigées quel que soit le style (rap, chant tenu,
+ * voix off) : aucune phrase ne commence avant que la précédente ait fini, et aucun
+ * mot ne dure zéro seconde. Constaté le 18/10/2026 sur « 10 ANS » : des phrases qui
+ * se chevauchaient (28,04 s contre 28,16 s) et jusqu'à trois mots par ligne de
+ * durée nulle. Les DÉBUTS sont plus fiables que les fins (whisper étire chaque fin
+ * jusqu'au mot suivant) : c'est la fin de la phrase précédente qui recule.
+ * Rien ici ne devine une durée « normale » : une note tenue garde la sienne.
+ */
+export function assainir(lignes: LigneCalee[]): LigneCalee[] {
+  const mots = lignes.flatMap((ligne) => ligne.mots.map((mot) => ({ ...mot })));
+  // L'ordre d'abord : un mot ne commence jamais avant le précédent.
+  for (let i = 1; i < mots.length; i += 1) mots[i]!.debut = Math.max(mots[i]!.debut, mots[i - 1]!.debut);
+  // Une suite de mots collés au même instant se partage le temps jusqu'au mot suivant.
+  let i = 0;
+  while (i < mots.length) {
+    let j = i;
+    while (j + 1 < mots.length && mots[j + 1]!.debut - mots[i]!.debut < DUREE_MINIMALE_D_UN_MOT) j += 1;
+    if (j > i) {
+      const suivant = j + 1 < mots.length ? mots[j + 1]!.debut : mots[j]!.fin;
+      const pas = Math.max(DUREE_MINIMALE_D_UN_MOT, (Math.max(suivant, mots[j]!.fin) - mots[i]!.debut) / (j - i + 1));
+      for (let k = i; k <= j; k += 1) mots[k]!.debut = mots[i]!.debut + pas * (k - i);
+    }
+    i = j + 1;
+  }
+  // Chaque mot finit avant le suivant, et dure au moins le minimum quand il y a la place.
+  for (let k = 0; k < mots.length; k += 1) {
+    const mot = mots[k]!;
+    const suivant = mots[k + 1]?.debut ?? Infinity;
+    mot.fin = Math.min(Math.max(mot.fin, mot.debut + DUREE_MINIMALE_D_UN_MOT), suivant);
+    mot.fin = Math.max(mot.fin, mot.debut);
+  }
+  let curseur = 0;
+  return lignes.map((ligne) => ({ mots: ligne.mots.map(() => mots[curseur++]!) }));
 }
