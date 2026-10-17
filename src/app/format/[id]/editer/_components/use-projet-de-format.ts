@@ -61,6 +61,28 @@ export function useProjetDeFormat(id: string, initial: EtatDuProjet) {
     [enregistrer],
   );
 
+  /**
+   * Après un dépôt, le SERVEUR a réécrit le projet (fichier, tempo mesuré) :
+   * on enregistre d'abord ce qui attend, puis on reprend du serveur les seuls
+   * champs que `prendre` désigne. Sans ça, l'enregistrement suivant renvoyait
+   * l'ancienne copie et effaçait en silence ce que le serveur venait de mesurer.
+   */
+  const reprendreDuServeur = useCallback(
+    async (prendre: (local: FicheDeFormat, serveur: FicheDeFormat) => FicheDeFormat): Promise<boolean> => {
+      if (enregistrement !== "a-jour" && !(await enregistrer())) return false;
+      const reponse = await fetch(url, { cache: "no-store" });
+      if (!reponse.ok) return false;
+      const etat = (await reponse.json()) as EtatDuProjet;
+      const fusion = prendre(structuredClone(projetRef.current), etat.projet);
+      projetRef.current = fusion;
+      setProjet(fusion);
+      setErreurs(etat.erreurs);
+      setAEcrire(etat.aEcrire);
+      return true;
+    },
+    [url, enregistrement, enregistrer],
+  );
+
   // Quitter la page avec une saisie pas encore partie : on prévient.
   useEffect(() => {
     const avant = (evenement: BeforeUnloadEvent) => {
@@ -70,5 +92,5 @@ export function useProjetDeFormat(id: string, initial: EtatDuProjet) {
     return () => window.removeEventListener("beforeunload", avant);
   }, [enregistrement]);
 
-  return { projet, erreurs, aEcrire, enregistrement, modifier, enregistrer };
+  return { projet, erreurs, aEcrire, enregistrement, modifier, enregistrer, reprendreDuServeur };
 }

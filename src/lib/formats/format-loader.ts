@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { estNomSur } from "../film-store";
 import { CATALOGUE, type FicheDeFormat, type NomDeFormat, erreursDuProjet } from "./catalogue";
 import { getFormatsDir } from "./format-store";
+import { CHEMINS_DES_PAROLES } from "./karaoke-paroles";
 import { textesAEcrire } from "./textes-a-ecrire";
 
 /**
@@ -76,7 +77,13 @@ export function lireProjetBrut(id: string, dossier: string = getFormatsDir()): u
  */
 export function projetDeDepart(format: NomDeFormat, id: string): FicheDeFormat {
   const spec = JSON.parse(JSON.stringify(CATALOGUE[format].modele)) as FicheDeFormat["spec"];
-  return { format, spec: { ...spec, sujet: id.toLowerCase().replace(/_/g, "-") } } as FicheDeFormat;
+  const fiche = { format, spec: { ...spec, sujet: id.toLowerCase().replace(/_/g, "-") } } as FicheDeFormat;
+  // Le karaoké d'exemple range ses fichiers sous le nom de son artiste : un projet neuf a les siens.
+  if (fiche.format === "karaoke") {
+    fiche.spec.morceau.fichier = "musique/morceau.mp3";
+    fiche.spec.paroles = CHEMINS_DES_PAROLES.calees;
+  }
+  return fiche;
 }
 
 /** Crée le projet ; refuse d'écraser un projet existant, même en course (`wx`). */

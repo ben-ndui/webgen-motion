@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { CATALOGUE, type FicheDeFormat } from "@/lib/formats/catalogue";
+import type { FicheDeFormat } from "@/lib/formats/catalogue";
 import { languesDesDeclinaisons } from "@/lib/formats/declinaisons";
 import type { ConteSpec } from "../../../../../../remotion/film/conte/spec";
 import type { ExplainerSpec } from "../../../../../../remotion/film/explainer/spec";
+import type { KaraokeSpec } from "../../../../../../remotion/film/karaoke/spec";
 import type { Langue } from "../../../../../../remotion/film/spec";
 import ChoixDeCases from "../../../../_components/choix-de-cases";
 import { LANGUES_DU_FILM } from "../../../../_components/choix-du-film";
@@ -15,6 +16,7 @@ import BlocDeclinaisons from "./bloc-declinaisons";
 import BlocMarque from "./bloc-marque";
 import EditeurConte from "./editeur-conte";
 import EditeurExplainer from "./editeur-explainer";
+import EditeurKaraoke from "./editeur-karaoke";
 import { type EtatDuProjet, useProjetDeFormat } from "./use-projet-de-format";
 
 /**
@@ -23,8 +25,9 @@ import { type EtatDuProjet, useProjetDeFormat } from "./use-projet-de-format";
  * Enregistré tout seul ; ce qui reste à écrire et les erreurs se relisent
  * sur le serveur après chaque enregistrement.
  */
-export default function EditeurDuFormat({ id, initial }: { id: string; initial: EtatDuProjet }) {
-  const { projet, erreurs, aEcrire, enregistrement, modifier, enregistrer } = useProjetDeFormat(id, initial);
+export default function EditeurDuFormat({ id, initial, morceauPresent = false }: { id: string; initial: EtatDuProjet; morceauPresent?: boolean }) {
+  const { projet, erreurs, aEcrire, enregistrement, modifier, enregistrer, reprendreDuServeur } = useProjetDeFormat(id, initial);
+  const [morceauDepose, setMorceauDepose] = useState(morceauPresent);
   const langues = languesDesDeclinaisons(projet.spec.declinaisons);
   const [langue, setLangue] = useState<Langue>(langues[0] ?? "fr");
   const enCours = langues.includes(langue) ? langue : (langues[0] ?? "fr");
@@ -71,9 +74,15 @@ export default function EditeurDuFormat({ id, initial }: { id: string; initial: 
         <EditeurConte spec={projet.spec} langue={enCours}
           modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as ConteSpec) ?? copie.spec } as FicheDeFormat))} />
       ) : (
-        <p className="film-muted" data-wm-id="format.editeur-a-venir">
-          L&apos;éditeur du format « {CATALOGUE[projet.format].libelle} » arrive dans le lot suivant.
-        </p>
+        <EditeurKaraoke id={id} spec={projet.spec} langue={enCours} morceauPresent={morceauDepose}
+          modifier={(changement) => modifier((copie) => ({ ...copie, spec: changement(copie.spec as KaraokeSpec) ?? copie.spec } as FicheDeFormat))}
+          apresLeDepot={() => {
+            setMorceauDepose(true);
+            void reprendreDuServeur((local, serveur) => {
+              if (local.format === "karaoke" && serveur.format === "karaoke") local.spec.morceau = { ...serveur.spec.morceau, titre: local.spec.morceau.titre, artiste: local.spec.morceau.artiste };
+              return local;
+            });
+          }} />
       )}
     </div>
   );

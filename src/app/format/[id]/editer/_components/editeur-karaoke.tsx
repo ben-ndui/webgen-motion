@@ -1,0 +1,52 @@
+"use client";
+
+import { KARAOKE } from "../../../../../../remotion/film/karaoke/ficheKaraoke";
+import type { KaraokeSpec } from "../../../../../../remotion/film/karaoke/spec";
+import type { Langue } from "../../../../../../remotion/film/spec";
+import ChampTexte from "../../../../film/[id]/creer/_components/champ-texte";
+import DepotDeMusique from "../../_components/depot-de-musique";
+import BlocParoles from "./bloc-paroles";
+
+type Props = {
+  id: string;
+  spec: KaraokeSpec;
+  langue: Langue;
+  morceauPresent: boolean;
+  modifier: (changement: (spec: KaraokeSpec) => KaraokeSpec | void) => void;
+  // Après le dépôt du morceau : reprendre du serveur ce qu'il a mesuré (fichier, tempo, passage).
+  apresLeDepot: () => void;
+};
+
+/** L'éditeur du clip karaoké : le morceau et son passage, les paroles, la ligne de fin. */
+export default function EditeurKaraoke({ id, spec, langue, morceauPresent, modifier, apresLeDepot }: Props) {
+  const { morceau } = spec;
+  return (
+    <div className="blocs" data-wm-id="format.karaoke">
+      <section className="bloc" aria-labelledby="bloc-morceau">
+        <h3 id="bloc-morceau" className="bloc-titre">Ton morceau</h3>
+        <DepotDeMusique id={id} karaoke onDepose={apresLeDepot} />
+        {morceauPresent && <p className="champ-aide">Tempo mesuré : {morceau.tempo} BPM. Le décor bat dessus.</p>}
+        <ChampTexte question="Son titre" max={30} valeur={morceau.titre} exemple={KARAOKE.morceau.titre}
+          onChange={(titre) => modifier((s) => { s.morceau.titre = titre; })} />
+        <ChampTexte question="Ton nom d'artiste" max={30} valeur={morceau.artiste} exemple={KARAOKE.morceau.artiste}
+          onChange={(artiste) => modifier((s) => { s.morceau.artiste = artiste; })} />
+        <label className="champ">
+          <span className="champ-question">Le passage, en secondes du morceau</span>
+          <span className="champ-aide">Un refrain pour un reel (15 à 30 s), tout le morceau pour YouTube.</span>
+          <span className="champ-tete">
+            <input className="champ-saisie petit" type="number" min={0} step={0.1} value={morceau.debut} aria-label="Début du passage"
+              onChange={(e) => modifier((s) => { s.morceau.debut = Number(e.target.value); })} />
+            <input className="champ-saisie petit" type="number" min={0} step={0.1} value={morceau.fin} aria-label="Fin du passage"
+              onChange={(e) => modifier((s) => { s.morceau.fin = Number(e.target.value); })} />
+          </span>
+        </label>
+      </section>
+      <BlocParoles id={id} morceauPresent={morceauPresent} />
+      <section className="bloc" aria-labelledby="bloc-fin">
+        <h3 id="bloc-fin" className="bloc-titre">La fin</h3>
+        <ChampTexte question="La ligne sous ton nom" max={50} valeur={spec.textes[langue].disponible} exemple={KARAOKE.textes[langue].disponible}
+          aide="« Disponible sur toutes les plateformes », « Extrait de l'EP… »" onChange={(v) => modifier((s) => { s.textes[langue].disponible = v; })} />
+      </section>
+    </div>
+  );
+}

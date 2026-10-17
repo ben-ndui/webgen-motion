@@ -20,6 +20,11 @@ export type OptionsDuFlux = {
   journal: string;
   // Ce que l'événement « done » ajoute (l'URL du rendu, l'id…).
   termine: (infos: Stats) => Record<string, unknown>;
+  // Un runner qui n'est pas un rendu (le calage des paroles) : son nom dans les messages,
+  // sa lecture des lignes, et le poids minimum de ce qu'il produit (un JSON, pas un mp4).
+  quoi?: string;
+  lireLigne?: (ligne: string) => { type: string; label: string } | null;
+  poidsMinimum?: number;
 };
 
 export function diffuserLeRendu(options: OptionsDuFlux): Response {
@@ -89,7 +94,7 @@ export function diffuserLeRendu(options: OptionsDuFlux): Response {
         const lignes = tamponSortie.split("\n");
         tamponSortie = lignes.pop() ?? "";
         for (const ligne of lignes) {
-          const evenement = lireLigneDuRendu(ligne.trim());
+          const evenement = (options.lireLigne ?? lireLigneDuRendu)(ligne.trim());
           if (evenement) emettre(evenement);
         }
       });
@@ -109,7 +114,7 @@ export function diffuserLeRendu(options: OptionsDuFlux): Response {
         if (code !== 0) {
           emettre({
             type: "error",
-            message: code === 143 ? "Rendu annulé" : `Rendu en échec (code ${code})`,
+            message: code === 143 ? `${options.quoi ?? "Rendu"} annulé` : `${options.quoi ?? "Rendu"} en échec (code ${code})`,
             wallSec,
             stderr: tamponErreur.slice(-2000),
           });
@@ -120,8 +125,9 @@ export function diffuserLeRendu(options: OptionsDuFlux): Response {
         // par une tentative précédente ne compte pas.
         const sortie = options.sortie;
         const infos = existsSync(sortie) ? statSync(sortie) : null;
-        if (!infos || infos.size < POIDS_MINIMUM_D_UN_RENDU || infos.mtimeMs < debut) {
-          emettre({ type: "error", message: "Vidéo absente, vide, ou plus ancienne que ce rendu", wallSec });
+        if (!infos || infos.size < (options.poidsMinimum ?? POIDS_MINIMUM_D_UN_RENDU) || infos.mtimeMs < debut) {
+          const message = options.quoi ? `${options.quoi} : résultat absent, vide, ou plus ancien que ce lancement` : "Vidéo absente, vide, ou plus ancienne que ce rendu";
+          emettre({ type: "error", message, wallSec });
           fermer();
           return;
         }

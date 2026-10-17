@@ -1,8 +1,9 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ffmpeg } from "../binaires-video";
+import { outilsWhisper } from "../whisper";
 
 /**
  * Entendre ce que dit un plan, en local et gratuitement (whisper.cpp). Rend
@@ -16,24 +17,8 @@ import { ffmpeg } from "../binaires-video";
  */
 export type Transcrire = (video: string) => string | null;
 
-const DOSSIER_DES_MODELES = join(homedir(), ".whisper-models");
-// Du plus fidèle au plus léger : on prend le meilleur présent.
-const MODELES_PREFERES = ["ggml-medium.bin", "ggml-small.bin", "ggml-base.bin", "ggml-tiny.bin"];
 // Sous ce pic, il n'y a pas de voix (une parole lointaine culmine vers -35 dB).
 const PIC_MINIMUM_D_UNE_VOIX_DB = -45;
-
-function commandePresente(nom: string): boolean {
-  return spawnSync("which", [nom]).status === 0;
-}
-
-function modeleDisponible(): { modele: string; detecteur: string | null } | null {
-  if (!existsSync(DOSSIER_DES_MODELES)) return null;
-  const presents = readdirSync(DOSSIER_DES_MODELES);
-  const modele = MODELES_PREFERES.find((nom) => presents.includes(nom));
-  if (!modele) return null;
-  const detecteur = presents.find((nom) => nom.startsWith("ggml-silero")) ?? null;
-  return { modele: join(DOSSIER_DES_MODELES, modele), detecteur: detecteur ? join(DOSSIER_DES_MODELES, detecteur) : null };
-}
 
 function picSonore(wav: string): number {
   const sortie = spawnSync(ffmpeg(), ["-v", "info", "-i", wav, "-af", "volumedetect", "-f", "null", "-"], { encoding: "utf-8" });
@@ -50,8 +35,9 @@ export function nettoyerLaTranscription(texte: string): string {
 }
 
 export const transcrireAvecWhisper: Transcrire = (video) => {
-  const outils = modeleDisponible();
-  if (!outils || !commandePresente("whisper-cli")) return null;
+  // Trouvé à son emplacement, jamais par le PATH (absent de Homebrew dans l'app lancée du Finder).
+  const outils = outilsWhisper();
+  if (!outils.ok) return null;
   const travail = mkdtempSync(join(tmpdir(), "genmotion-replique-"));
   try {
     const wav = join(travail, "son.wav");
@@ -60,7 +46,7 @@ export const transcrireAvecWhisper: Transcrire = (video) => {
     // -nt : sans horodatage, whisper rend la ponctuation (convention transcription-locale).
     const options = ["-m", outils.modele, "-l", "fr", "-nt", "-f", wav];
     if (outils.detecteur) options.push("--vad", "-vm", outils.detecteur);
-    const sortie = spawnSync("whisper-cli", options, { encoding: "utf-8", maxBuffer: 8 * 1024 * 1024 });
+    const sortie = spawnSync(outils.cli, options, { encoding: "utf-8", maxBuffer: 8 * 1024 * 1024 });
     if (sortie.status !== 0) return null;
     return nettoyerLaTranscription(sortie.stdout ?? "");
   } finally {
