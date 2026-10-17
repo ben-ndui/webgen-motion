@@ -5,11 +5,12 @@ import { estUnExemple } from "../../../remotion/film/cinema/exemples";
 import { BUDGET_PAR_DEFAUT } from "../../../remotion/film/cinema/validerCinema";
 import type { CinemaDuFilm, PlanDeCinema, QualiteDeCinema, SceneDeCinema } from "../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../remotion/film/spec";
-import { enregistrerFilm } from "../film-ecriture";
-import { chargerFilm } from "../film-loader";
 import { portraitsPourVeo } from "./generation-portrait";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, ficheAvecCinema } from "./lieux";
 import { choisirLeModele, personnagesDuPlan, photoDuProduitDansLePlan, trouverLePlan } from "./plans";
+import { cheminDeLaPrise, prisesDuPlan, prochainNumeroDePrise } from "./prises/etat";
+import { ajouterUnePrise, retenirUnePrise } from "./prises/gestes";
+import { lireLesPrises } from "./prises/stockage";
 import { composerLePrompt } from "./prompt";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "./registre";
 import { COUT_D_UN_PLAN_USD } from "./couts";
@@ -128,7 +129,8 @@ export async function suivreLePlan(id: string, planId: string, partiel: Partial<
     annulerSansFrais(dossier, planId);
     return repondre(id, contexte, { etat: "refuse", raison: `${suivi.raison} Rien n'a été facturé.` }, lieux);
   }
-  const fichier = `cinema/${planId}.mp4`;
+  const n = prochainNumeroDePrise(prisesDuPlan(lireLesPrises(dossier), contexte.plan));
+  const fichier = cheminDeLaPrise(planId, n);
   if (!(await telechargerLePlan(client, suivi.uri, join(lieux.public(id), fichier)))) {
     if (maintenant - Date.parse(operation.depuis) > VIDEO_GARDEE_PAR_GOOGLE_MS) {
       terminer(dossier, planId);
@@ -137,7 +139,14 @@ export async function suivreLePlan(id: string, planId: string, partiel: Partial<
     // L'opération reste notée : le prochain passage retente le téléchargement.
     return repondre(id, contexte, { etat: "injoignable", raison: "La vidéo est prête chez Google mais le téléchargement a échoué : nouvel essai au prochain passage." }, lieux);
   }
-  if (!poserLeFichier(id, planId, fichier, operation.avecLaPhotoDuProduit === true, lieux)) {
+  const prise = { n, fichier, creeeLe: new Date(maintenant).toISOString(), ...(operation.avecLaPhotoDuProduit ? { produitReel: true as const } : {}) };
+  const ajout = ajouterUnePrise(id, planId, prise, lieux);
+  // Une prise de plus qu'une déjà retenue se regarde avant de remplacer : tant
+  // que l'écran de choix n'existe pas, on la retient tout de suite (même
+  // comportement qu'avant les prises multiples). Sa découpe tombe : elle
+  // visait l'ancienne vidéo.
+  const cite = ajout.ok && !ajout.retenue ? retenirUnePrise(id, planId, n, lieux) : ajout;
+  if (!cite.ok) {
     // L'opération reste notée : elle se re-télécharge (gratuitement) au
     // prochain passage, une fois la fiche réparée. Sinon ce plan payé
     // s'afficherait « vide ».
@@ -145,21 +154,4 @@ export async function suivreLePlan(id: string, planId: string, partiel: Partial<
   }
   terminer(dossier, planId);
   return repondre(id, contexte, { etat: "pret", fichier }, lieux);
-}
-
-/**
- * Cite la vidéo dans la fiche. La fiche est RELUE juste avant d'écrire : la
- * personne a pu la modifier pendant la génération (deux minutes), et seul ce
- * plan doit changer. Sa découpe tombe : elle visait l'ancienne vidéo.
- */
-function poserLeFichier(id: string, planId: string, fichier: string, avecLaPhotoDuProduit: boolean, lieux: Lieux): boolean {
-  const fiche = chargerFilm(id, lieux.fiches);
-  if (!fiche || fiche.etat === "invalide" || !fiche.spec.cinema) return false;
-  const situe = trouverLePlan(fiche.spec.cinema, planId);
-  if (!situe) return false;
-  situe.plan.fichier = fichier;
-  if (avecLaPhotoDuProduit) situe.plan.produitReel = true;
-  else delete situe.plan.produitReel;
-  delete situe.plan.decoupe;
-  return enregistrerFilm(id, fiche.spec, lieux.fiches).ok;
 }

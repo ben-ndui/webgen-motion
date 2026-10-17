@@ -7,6 +7,8 @@ import { creerFilm, lireFicheBrute } from "../film-ecriture";
 import { ecrireAtomiquement } from "../film-fichiers-deposes";
 import { dossierJetable, ficheValide } from "../film-fixtures.test-utils";
 import type { Lieux } from "./lieux";
+import type { RegistreDesPrises } from "./prises/etat";
+import { lireLesPrises } from "./prises/stockage";
 import { lireLeRegistre } from "./registre";
 import { portraitJpeg } from "./veo-local.test-utils";
 
@@ -19,6 +21,7 @@ export type FilmDeTest = {
   creer: (cinema?: CinemaDuFilm) => void;
   fiche: () => FilmSpec;
   registre: () => ReturnType<typeof lireLeRegistre>;
+  prises: () => RegistreDesPrises;
   // Pose le portrait d'Awa sur le disque ET dans la fiche, comme après sa génération.
   donnerUnPortraitAAwa: (cinema?: CinemaDuFilm) => CinemaDuFilm;
 };
@@ -43,6 +46,7 @@ export function filmDeTest(baseGoogle: string): FilmDeTest {
     creer,
     fiche: () => lireFicheBrute("saya", lieux.fiches) as FilmSpec,
     registre: () => lireLeRegistre(lieux.dossier("saya")),
+    prises: () => lireLesPrises(lieux.dossier("saya")),
     donnerUnPortraitAAwa: (cinema = serieSaya()) => {
       ecrireAtomiquement(join(lieux.public("saya"), "cinema", "personnages", "awa.jpg"), portraitJpeg());
       cinema.personnages[0].portrait = "cinema/personnages/awa.jpg";

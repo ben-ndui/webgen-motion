@@ -39,9 +39,9 @@ describe("plans avec personnage", () => {
     expect(corpsDuLancement().parameters.negativePrompt).toBeUndefined();
 
     expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "en-cours" } });
-    expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/rangement.mp4" } });
-    expect(readFileSync(join(film.lieux.public("saya"), "cinema", "rangement.mp4")).equals(videoMp4())).toBe(true);
-    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[0].fichier).toBe("cinema/rangement.mp4");
+    expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/rangement/prise-1.mp4" } });
+    expect(readFileSync(join(film.lieux.public("saya"), "cinema", "rangement", "prise-1.mp4")).equals(videoMp4())).toBe(true);
+    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[0].fichier).toBe("cinema/rangement/prise-1.mp4");
     expect(film.registre()).toEqual({ utilises: 1, operations: {} });
   });
 
@@ -181,6 +181,21 @@ describe("la fiche pendant la génération", () => {
 
     expect(film.fiche().cinema?.episodes[0].titre).toBe("L'héritage (retouché)");
     expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].decoupe).toBeUndefined();
+  });
+
+  it("refaire un plan déjà généré garde l'ancienne prise dans l'historique et retient la nouvelle", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fichier = "cinema/flacon.mp4";
+    film.creer(serie);
+    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, video: true });
+    await genererUnPlan("saya", "flacon", film.lieux);
+
+    expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/flacon/prise-2.mp4" } });
+    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].fichier).toBe("cinema/flacon/prise-2.mp4");
+    const prises = film.prises().plans.flacon;
+    expect(prises.map((p) => p.n)).toEqual([1, 2]);
+    expect(prises.find((p) => p.n === 1)?.fichier).toBe("cinema/flacon.mp4");
+    expect(prises.find((p) => p.n === 2)?.fichier).toBe("cinema/flacon/prise-2.mp4");
   });
 
   it("une fiche qui cite une vidéo absente du disque n'annonce pas un plan prêt", async () => {

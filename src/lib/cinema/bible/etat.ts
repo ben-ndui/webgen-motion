@@ -107,6 +107,15 @@ export function imagePrincipale(fiche: FicheVisuelle, type: TypeDeReference): Ve
   return vue ? versionRetenue(fiche, vue) : null;
 }
 
+/**
+ * L'image à envoyer à Veo : jamais une référence encore proposée, même si
+ * elle a une image choisie. Le canon de la Bible l'exige (§12) : une
+ * variation pas encore validée ne doit pas partir en génération.
+ */
+export function imageValideePourVeo(fiche: FicheVisuelle, type: TypeDeReference): VersionDUneVue | null {
+  return fiche.statut === "valide" ? imagePrincipale(fiche, type) : null;
+}
+
 export function estUneVue(valeur: unknown): valeur is VueDeReference {
   return typeof valeur === "string" && (Object.keys(NOM_DE_LA_VUE) as string[]).includes(valeur);
 }
