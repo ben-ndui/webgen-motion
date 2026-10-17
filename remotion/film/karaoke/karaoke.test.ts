@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { calerLesParoles, estUnMarqueur, jumeaux, lignesChantees, normaliser, recalerSurLesFenetres, type MotEntendu } from "./alignement";
 import { KARAOKE } from "./ficheKaraoke";
-import { ANTICIPATION, SILENCE_MAX, ligneEnCours, lignesDuPassage, remplissage } from "./lecture";
+import { ANTICIPATION, SILENCE_MAX, ligneEnCours, lignesDuPassage, passageDe, remplissage } from "./lecture";
 import type { KaraokeSpec, ParolesDuKaraoke } from "./spec";
-import { erreursDesParoles, erreursDuKaraoke } from "./validerKaraoke";
+import { DECORS } from "./spec";
+import { DECORS_CONNUS, erreursDesParoles, erreursDuKaraoke } from "./validerKaraoke";
 
 const entendus = (texte: string, depart = 10, pas = 0.5): MotEntendu[] =>
   texte.split(" ").map((mot, i) => ({ texte: mot, debut: depart + i * pas, fin: depart + (i + 1) * pas }));
@@ -113,8 +114,11 @@ describe("la garde du karaoké", () => {
     lignes: [{ mots: [{ texte: "on", debut: 17.4, fin: 17.6 }] }],
   });
 
-  it("accepte la fiche d'exemple", () => {
+  it("accepte la fiche d'exemple, et chaque décor de la bibliothèque", () => {
     expect(erreursDuKaraoke(copie())).toEqual([]);
+    expect(DECORS_CONNUS).toEqual([...DECORS]);
+    for (const decor of DECORS) expect(erreursDuKaraoke({ ...copie(), decor })).toEqual([]);
+    expect(erreursDuKaraoke({ ...copie(), decor: "plage" as never })).toContain("decor : l'un de horizon, ville, ocean, vinyle, minimal");
   });
 
   it("refuse en livraison des paroles calées sur le brouillon de whisper", () => {
@@ -130,6 +134,21 @@ describe("la garde du karaoké", () => {
     expect(erreursDesParoles(paroles("10-ans.txt"), spec, true)).toContain(
       "paroles : aucune ligne chantée dans le passage retenu (morceau.debut / morceau.fin)",
     );
+  });
+
+  it("le clip complet garde son passage, le teaser le sien", () => {
+    const morceau = { ...copie().morceau, debut: 0, fin: 204, teaser: { debut: 17, fin: 40 } };
+    expect(passageDe(morceau, "long")).toEqual({ debut: 0, fin: 204 });
+    expect(passageDe(morceau, "court")).toEqual({ debut: 17, fin: 40 });
+    expect(passageDe({ ...morceau, teaser: undefined }, "court")).toEqual({ debut: 0, fin: 204 });
+  });
+
+  it("refuse un teaser trop court, ou sans aucune ligne chantée", () => {
+    const spec = copie();
+    spec.morceau.teaser = { debut: 0, fin: 3 };
+    expect(erreursDuKaraoke(spec)).toContain("morceau.teaser.fin : au moins 5 s après le début");
+    spec.morceau.teaser = { debut: 0, fin: 10 };
+    expect(erreursDesParoles(paroles("10-ans.txt"), spec, true)).toContain("paroles : aucune ligne chantée dans le teaser (morceau.teaser)");
   });
 
   it("exige un passage d'au moins 5 s et un tempo mesuré", () => {

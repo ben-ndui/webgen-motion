@@ -5,6 +5,8 @@ import { erreursDeLaSpec } from "../validerSpec.ts";
 
 type Erreurs = string[];
 
+export const DECORS_CONNUS = ["horizon", "ville", "ocean", "vinyle", "minimal"];
+
 function estObjet(valeur: unknown): valeur is Record<string, unknown> {
   return typeof valeur === "object" && valeur !== null && !Array.isArray(valeur);
 }
@@ -37,8 +39,15 @@ export function erreursDuKaraoke(entree: unknown): string[] {
   nombre(erreurs, "morceau.tempo", m.tempo, 40);
   nombre(erreurs, "morceau.premierTemps", m.premierTemps, 0);
   if (typeof m.debut === "number" && typeof m.fin === "number" && m.fin - m.debut < 5) erreurs.push("morceau.fin : au moins 5 s après le début");
+  if (m.teaser !== undefined) {
+    const t = estObjet(m.teaser) ? m.teaser : {};
+    nombre(erreurs, "morceau.teaser.debut", t.debut, 0);
+    nombre(erreurs, "morceau.teaser.fin", t.fin, 0);
+    if (typeof t.debut === "number" && typeof t.fin === "number" && t.fin - t.debut < 5) erreurs.push("morceau.teaser.fin : au moins 5 s après le début");
+  }
   texte(erreurs, "paroles", entree.paroles);
-  if (entree.decor !== "horizon") erreurs.push("decor : « horizon »");
+  // Liste écrite ici et non importée (Node lit ce fichier tel quel) ; le test la compare à spec.ts.
+  if (!DECORS_CONNUS.includes(entree.decor as string)) erreurs.push(`decor : l'un de ${DECORS_CONNUS.join(", ")}`);
   const textes = estObjet(entree.textes) ? entree.textes : {};
   for (const langue of ["fr", "en"]) {
     const t = estObjet(textes[langue]) ? textes[langue] : {};
@@ -57,11 +66,14 @@ export function erreursDesParoles(paroles: ParolesDuKaraoke, spec: Pick<KaraokeS
   if (livraison && paroles.source.includes("brouillon")) {
     erreurs.push(`paroles : calées sur le brouillon de whisper (${paroles.source}) ; l'artiste corrige le texte, puis on recale`);
   }
-  const dansLePassage = paroles.lignes.filter((l) => {
-    const debut = l.mots[0]?.debut ?? -1;
-    return debut >= spec.morceau.debut && debut < spec.morceau.fin;
-  });
-  if (dansLePassage.length === 0) erreurs.push("paroles : aucune ligne chantée dans le passage retenu (morceau.debut / morceau.fin)");
+  const chante = (debut: number, fin: number) =>
+    paroles.lignes.some((l) => {
+      const d = l.mots[0]?.debut ?? -1;
+      return d >= debut && d < fin;
+    });
+  if (!chante(spec.morceau.debut, spec.morceau.fin)) erreurs.push("paroles : aucune ligne chantée dans le passage retenu (morceau.debut / morceau.fin)");
+  const { teaser } = spec.morceau;
+  if (teaser && !chante(teaser.debut, teaser.fin)) erreurs.push("paroles : aucune ligne chantée dans le teaser (morceau.teaser)");
   return erreurs;
 }
 

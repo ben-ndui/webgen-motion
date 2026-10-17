@@ -15,7 +15,7 @@ function resume(surcharge: Partial<ResumeDuProjet> = {}): ResumeDuProjet {
       { relatif: "musique/10-ans.mp3", present: true, libelle: "Ton morceau", geste: "depot" },
       { relatif: "paroles/paroles.json", present: false, libelle: "Tes paroles, calées sur ton morceau", geste: "editeur" },
     ],
-    declinaisons: [{ nom: "Karaoke-FR", langue: "fr", version: "long", rendu: null }],
+    declinaisons: [{ nom: "Karaoke-FR", libelle: "Clip complet (YouTube)", langue: "fr", version: "long", rendu: null }],
     ...surcharge,
   };
 }
@@ -68,7 +68,7 @@ describe("la page d'un projet de format", () => {
   it("un rendu sur le disque se montre dans son lecteur, avec son poids", () => {
     const rendu = { url: "/api/motion/formats/video?id=wes-of-10-ans&declinaison=Karaoke-FR&t=1", octets: 20 * 1024 * 1024 };
     const { container } = render(
-      <FormatVue id="wes-of-10-ans" resume={resume({ statut: "rendu", declinaisons: [{ nom: "Karaoke-FR", langue: "fr", version: "long", rendu }] })} pourQui={POUR_QUI} studio />,
+      <FormatVue id="wes-of-10-ans" resume={resume({ statut: "rendu", declinaisons: [{ nom: "Karaoke-FR", libelle: "Clip complet (YouTube)", langue: "fr", version: "long", rendu }] })} pourQui={POUR_QUI} studio />,
     );
     expect(container.querySelector("video")?.getAttribute("src")).toBe(rendu.url);
     expect(screen.getByText("20.0 Mo")).toBeInTheDocument();

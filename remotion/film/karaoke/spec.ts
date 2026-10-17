@@ -17,15 +17,18 @@ export type MorceauDuKaraoke = {
   fichier: string;
   titre: string;
   artiste: string;
-  // Le passage retenu, en secondes du morceau (un refrain pour un reel, tout pour YouTube).
+  // Le passage du clip, en secondes du morceau (tout le morceau pour YouTube).
   debut: number;
   fin: number;
+  // Le passage du TEASER (9:16, réseaux), s'il diffère : le refrain, en général. Absent : le
+  // vertical reprend le passage du clip. Le clip complet (16:9, YouTube) garde debut / fin.
+  teaser?: { debut: number; fin: number };
   // Tempo MESURÉ (npm run musique) et premier temps, en secondes : le décor pulse dessus.
   tempo: number;
   premierTemps: number;
 };
 
-export const DECORS = ["horizon"] as const;
+export const DECORS = ["horizon", "ville", "ocean", "vinyle", "minimal"] as const;
 export type DecorDuKaraoke = (typeof DECORS)[number];
 
 export type TextesDuKaraoke = {

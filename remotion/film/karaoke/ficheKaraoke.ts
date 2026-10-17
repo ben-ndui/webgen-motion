@@ -34,11 +34,12 @@ export const KARAOKE: KaraokeSpec = {
     fichier: "karaoke/wes-of-10-ans/morceau.mp3",
     titre: "10 ANS",
     artiste: "Wes Øf.",
-    // Le premier refrain : mesure 7 (fin de l'intro) jusqu'avant la reprise du refrain
-    // (calée à 34,03 s). La dernière ligne reste ensuite 1,5 s à l'écran (TENUE_FINALE).
+    // Le clip complet : tout le morceau (YouTube). Le teaser (réseaux) : le premier refrain,
+    // mesure 7 (fin de l'intro) jusqu'avant sa reprise (calée à 34,03 s).
     // Tempo et premier temps MESURÉS le 16/10/2026 (npm run musique).
-    debut: 13.0,
-    fin: 33.9,
+    debut: 0,
+    fin: 203.9,
+    teaser: { debut: 13.0, fin: 33.9 },
     tempo: 112.1,
     premierTemps: 0.14,
   },

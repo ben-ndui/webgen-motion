@@ -65,7 +65,7 @@ export default function EditeurDuFormat({ id, initial, morceauPresent = false }:
       <div className="blocs">
         <BlocMarque marque={projet.spec.marque} pour={projet.format === "karaoke" ? "artiste" : "marque"}
           modifier={(changement) => modifier((copie) => { changement(copie.spec.marque); })} />
-        <BlocDeclinaisons format={projet.format} declinaisons={projet.spec.declinaisons}
+        <BlocDeclinaisons format={projet.format} declinaisons={projet.spec.declinaisons} avecFormats={projet.format !== "karaoke"}
           modifier={(declinaisons) => modifier((copie) => { copie.spec.declinaisons = declinaisons; })} />
       </div>
 

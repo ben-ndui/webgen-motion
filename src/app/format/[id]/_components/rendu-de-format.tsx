@@ -24,7 +24,7 @@ export default function RenduDeFormat({ declinaison, bloque, studio, etat, occup
     <li className="film-block film-rendu" data-wm-id="format.rendu">
       <div className="film-rendu-head">
         <div>
-          <h3 className="film-h3">{declinaison.nom}</h3>
+          <h3 className="film-h3">{declinaison.libelle}</h3>
           <p className="film-muted">
             {declinaison.langue.toUpperCase()} · {FORMAT[declinaison.version] ?? declinaison.version}
           </p>

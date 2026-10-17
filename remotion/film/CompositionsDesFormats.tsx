@@ -11,7 +11,7 @@ import { plansDeLExplainer, scenesTropCourtes } from "./explainer/rythme";
 import { validerExplainer } from "./explainer/validerExplainer";
 import { KARAOKE } from "./karaoke/ficheKaraoke";
 import { Karaoke, type ProprietesDuKaraoke, SECONDES_DE_FIN } from "./karaoke/Karaoke";
-import { dureeDuPassage } from "./karaoke/lecture";
+import { dureeDuPassage, passageDe } from "./karaoke/lecture";
 import type { ParolesDuKaraoke } from "./karaoke/spec";
 import { erreursDesParoles, validerKaraoke } from "./karaoke/validerKaraoke";
 import { IMAGES_PAR_SECONDE, dureeTotale } from "./lib/tempo";
@@ -41,7 +41,8 @@ export const metadonneesDuKaraoke: CalculateMetadataFunction<ProprietesDuKaraoke
   const paroles = (await reponse.json()) as ParolesDuKaraoke;
   const erreurs = erreursDesParoles(paroles, spec, false);
   if (erreurs.length > 0) throw new Error(erreurs.join("\n"));
-  const secondes = dureeDuPassage(paroles.lignes, spec.morceau.debut, spec.morceau.fin) + SECONDES_DE_FIN;
+  const passage = passageDe(spec.morceau, props.declinaison.version);
+  const secondes = dureeDuPassage(paroles.lignes, passage.debut, passage.fin) + SECONDES_DE_FIN;
   return { ...CADRES[props.declinaison.version], durationInFrames: Math.round(secondes * IMAGES_PAR_SECONDE), props: { ...props, paroles } };
 };
 

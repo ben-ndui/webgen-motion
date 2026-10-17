@@ -23,7 +23,8 @@ export type ResumeDuProjet = {
   // `libelle` : ce que la personne comprend (jamais un nom de fichier) ; `geste` : déposer un
   // fichier, ou passer par l'éditeur (les paroles calées, que l'app fabrique elle-même).
   medias: { relatif: string; present: boolean; libelle: string; geste: "depot" | "editeur" }[];
-  declinaisons: { nom: string; langue: string; version: string; rendu: { url: string; octets: number } | null }[];
+  // `libelle` : ce que la personne lit (« Teaser (réseaux) »), pas le nom du fichier rendu.
+  declinaisons: { nom: string; libelle: string; langue: string; version: string; rendu: { url: string; octets: number } | null }[];
 };
 
 export type Dossiers = { public: (id: string) => string; sortie: (id: string) => string };
@@ -57,8 +58,11 @@ export function resumerProjet(projet: ProjetDeFormat, dossiers: Dossiers = DOSSI
   const declinaisons = fiche.spec.declinaisons.map((declinaison) => {
     const livrable = fichiersDuRendu(dossiers.sortie(projet.id), declinaison.nom).livrable;
     const infos = existsSync(livrable) ? statSync(livrable) : null;
+    const libelle =
+      fiche.format === "karaoke" ? (declinaison.version === "court" ? "Teaser (réseaux)" : "Clip complet (YouTube)") : declinaison.nom;
     return {
       nom: declinaison.nom,
+      libelle,
       langue: declinaison.langue,
       version: declinaison.version,
       rendu: infos ? { url: urlDuRenduDeFormat(projet.id, declinaison.nom, Math.round(infos.mtimeMs)), octets: infos.size } : null,

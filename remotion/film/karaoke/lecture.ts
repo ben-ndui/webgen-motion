@@ -1,6 +1,7 @@
 // CE QUI S'AFFICHE à l'instant t (secondes du morceau) : la ligne chantée, la
 // suivante, et jusqu'où chaque mot est rempli. Sans React, testé à part.
 import type { LigneCalee, MotCale } from "./alignement";
+import type { MorceauDuKaraoke } from "./spec";
 
 // La ligne s'affiche un peu AVANT d'être chantée : on lit ce qu'on va entendre.
 export const ANTICIPATION = 0.35;
@@ -62,4 +63,11 @@ export function dureeDuPassage(lignes: LigneCalee[], debut: number, fin: number)
   const passage = lignesDuPassage(lignes, debut, fin);
   const finDuChant = passage.length > 0 ? finDeLigne(passage.at(-1)!) : 0;
   return Math.max(fin - debut, finDuChant + TENUE_FINALE);
+}
+
+export type Passage = { debut: number; fin: number };
+
+/** Le passage d'une déclinaison : le teaser en vertical (s'il est défini), le clip sinon. */
+export function passageDe(morceau: MorceauDuKaraoke, version: "long" | "court"): Passage {
+  return version === "court" && morceau.teaser ? morceau.teaser : { debut: morceau.debut, fin: morceau.fin };
 }

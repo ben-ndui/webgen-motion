@@ -1,24 +1,19 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useVideoConfig } from "remotion";
 
 import { transparence } from "../../marque/couleurs";
 import { useCouleurs } from "../../marque/MarqueDuFilm";
+import { type PropsDuDecor, useBattement } from "./battement";
 
-type Props = { tempo: number; premierTemps: number; debutDuPassage: number };
 
 /**
  * Le décor « horizon » : un ciel, un soleil rayé posé sur l'horizon, et une
  * grille en perspective qui avance d'une ligne par temps. Le soleil bat sur
  * le temps fort. Tout dans la palette de l'artiste, sans teinte inventée.
  */
-export function Horizon({ tempo, premierTemps, debutDuPassage }: Props) {
+export function Horizon(props: PropsDuDecor) {
   const couleurs = useCouleurs();
-  const image = useCurrentFrame();
-  const { width: largeur, height: hauteur, fps } = useVideoConfig();
-  // Le temps du MORCEAU (pas de la vidéo) : le décor reste calé si le passage commence au milieu.
-  const t = debutDuPassage + image / fps;
-  const temps = Math.max(0, ((t - premierTemps) * tempo) / 60);
-  const dansLeTemps = temps - Math.floor(temps);
-  const battement = Math.max(0, 1 - dansLeTemps * 4);
+  const { width: largeur, height: hauteur } = useVideoConfig();
+  const { dansLeTemps, battement } = useBattement(props);
   const horizon = hauteur * (largeur > hauteur ? 0.56 : 0.5);
   const rayon = Math.min(largeur, hauteur) * (largeur > hauteur ? 0.26 : 0.34) * (1 + 0.025 * battement);
   const centre = largeur / 2;

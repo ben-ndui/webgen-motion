@@ -51,7 +51,9 @@ export function deposerMusiqueDuFormat(
     // Un morceau déposé se prend EN ENTIER : garder le passage de l'exemple (13 s à 33,9 s) faisait
     // un clip de 26 s sur une chanson de 3 min 24 (Ben, 17/10). On raccourcit ensuite pour un reel.
     const fin = Math.round(mesure.dureeSec * 10) / 10;
-    fiche.spec.morceau = { ...morceau, fichier: relatif, titre: morceau.titre || titre, debut: 0, fin, tempo: mesure.tempo, premierTemps: mesure.premierTemps };
+    // Le teaser (réseaux) part sur les 30 premières secondes : on le règle ensuite sur le refrain.
+    const teaser = { debut: 0, fin: Math.min(30, fin) };
+    fiche.spec.morceau = { ...morceau, fichier: relatif, titre: morceau.titre || titre, debut: 0, fin, teaser, tempo: mesure.tempo, premierTemps: mesure.premierTemps };
   } else {
     fiche.spec.musique = { fichier: relatif, titre, source: "Morceau déposé dans GEN MOTION", tempo: mesure.tempo, premierTemps: mesure.premierTemps };
   }
