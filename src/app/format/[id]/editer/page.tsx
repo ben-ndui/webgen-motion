@@ -31,7 +31,7 @@ export default async function EditerUnFormat({ params }: { params: Promise<{ id:
     // Trop incomplet pour être lu : les erreurs le disent.
   }
   return (
-    <CadreDuFormat nom={id} kicker={`${CATALOGUE[projet.format].libelle} · formats/${id}.json`} titre={`Modifier ${id}`}
+    <CadreDuFormat nom={id} kicker={CATALOGUE[projet.format].libelle} titre={`Modifier ${id}`}
       sousTitre="Tout s'enregistre tout seul. Les textes de l'exemple s'affichent en gris : écris les tiens à leur place.">
       <EditeurDuFormat id={id} initial={{ projet, erreurs: erreursDuProjet(projet), aEcrire }}
         morceauPresent={projet.format === "karaoke" && existsSync(join(getFormatPublicDir(id), projet.spec.morceau.fichier))} />

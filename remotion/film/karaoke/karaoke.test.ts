@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calerLesParoles, estUnMarqueur, jumeaux, normaliser, recalerSurLesFenetres, type MotEntendu } from "./alignement";
+import { calerLesParoles, estUnMarqueur, jumeaux, lignesChantees, normaliser, recalerSurLesFenetres, type MotEntendu } from "./alignement";
 import { KARAOKE } from "./ficheKaraoke";
 import { ANTICIPATION, SILENCE_MAX, ligneEnCours, lignesDuPassage, remplissage } from "./lecture";
 import type { KaraokeSpec, ParolesDuKaraoke } from "./spec";
@@ -37,6 +37,13 @@ describe("caler les paroles", () => {
   it("dit quand le texte ne correspond pas au morceau", () => {
     const { reconnus } = calerLesParoles(["rien à voir ici"], entendus("on s'est donné rendez-vous"));
     expect(reconnus).toBe(0);
+  });
+});
+
+describe("le texte de l'artiste, tel qu'il l'écrit", () => {
+  it("garde les lignes chantées : ni repères de section, ni lignes vides, ni virgule de fin", () => {
+    const texte = "[ Refrain ]\n\nOn s'est donné rendez-vous y a dix ans,\nA l'époque, on avait pas de plan\n(Couplet)\nMais face au miroir, que restera-t-il ?\n";
+    expect(lignesChantees(texte)).toEqual(["On s'est donné rendez-vous y a dix ans", "A l'époque, on avait pas de plan", "Mais face au miroir, que restera-t-il ?"]);
   });
 });
 

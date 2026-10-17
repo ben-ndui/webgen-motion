@@ -43,7 +43,7 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
   return (
     <CadreDuFormat
       nom={resume.id}
-      kicker={`${resume.libelle} · formats/${resume.id}.json`}
+      kicker={resume.libelle}
       titre={resume.id}
       sousTitre={pourQui ?? "Format inconnu."}
       statut={
@@ -82,7 +82,14 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
             <ul className="film-list">
               {resume.medias.map((media) => (
                 <li key={media.relatif}>
-                  <code>{media.relatif}</code> · {media.present ? "déposé" : "à déposer"}
+                  {media.libelle} ·{" "}
+                  {media.present ? (
+                    "prêt"
+                  ) : media.geste === "editeur" ? (
+                    <>à coller et caler dans <Link href={`/format/${id}/editer`}>Modifier le contenu</Link></>
+                  ) : (
+                    "à déposer"
+                  )}
                 </li>
               ))}
             </ul>

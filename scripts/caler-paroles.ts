@@ -12,6 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
+import { lignesChantees } from "../remotion/film/karaoke/alignement";
 import { chargerProjet } from "../src/lib/formats/format-loader";
 import { getFormatPublicDir } from "../src/lib/formats/format-store";
 import { SEUIL_DE_RECONNAISSANCE, calerLesParolesDuMorceau, ecrireLeBrouillon } from "../src/lib/formats/karaoke-ecoute";
@@ -48,7 +49,7 @@ function principal(): void {
   if (etape === "calage") {
     const texte = join(publicDir, CHEMINS_DES_PAROLES.texte);
     if (!existsSync(texte)) arreter("Écris d'abord tes paroles.");
-    const lignes = readFileSync(texte, "utf-8").split("\n").map((l) => l.trim()).filter(Boolean);
+    const lignes = lignesChantees(readFileSync(texte, "utf-8"));
     const { lignes: calees, reconnus } = calerLesParolesDuMorceau(outils, morceau, lignes, langue, console.log);
     if (reconnus < SEUIL_DE_RECONNAISSANCE) {
       arreter(`Seulement ${Math.round(reconnus * 100)} % des mots reconnus : ces paroles ne sont probablement pas celles de ce morceau.`);

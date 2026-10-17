@@ -37,7 +37,6 @@ function CarteDeFormat({ projet }: { projet: HubFormat }) {
         </div>
         <div className="tmeta">
           <span className="tcat">{projet.libelle}</span>
-          <span>{projet.id}.json</span>
         </div>
         <div className="tfoot">
           <span className={`status ${statut.classe}`}>

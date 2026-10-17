@@ -20,13 +20,27 @@ export type ResumeDuProjet = {
   libelle: string;
   statut: StatutDuProjet;
   erreurs: string[];
-  medias: { relatif: string; present: boolean }[];
+  // `libelle` : ce que la personne comprend (jamais un nom de fichier) ; `geste` : déposer un
+  // fichier, ou passer par l'éditeur (les paroles calées, que l'app fabrique elle-même).
+  medias: { relatif: string; present: boolean; libelle: string; geste: "depot" | "editeur" }[];
   declinaisons: { nom: string; langue: string; version: string; rendu: { url: string; octets: number } | null }[];
 };
 
 export type Dossiers = { public: (id: string) => string; sortie: (id: string) => string };
 
 const DOSSIERS_PAR_DEFAUT: Dossiers = { public: getFormatPublicDir, sortie: getFormatOutDir };
+
+/**
+ * Un fichier attendu, dit pour une personne : le 16/10, la page affichait
+ * « paroles/paroles.json · à déposer », et un artiste cherchait quel .json
+ * fournir alors que l'app le fabrique elle-même au calage (remarque de Ben).
+ */
+function presentationDuMedia(fiche: FicheDeFormat, relatif: string): { libelle: string; geste: "depot" | "editeur" } {
+  if (fiche.format === "karaoke" && relatif === fiche.spec.paroles) return { libelle: "Tes paroles, calées sur ton morceau", geste: "editeur" };
+  if (fiche.format === "karaoke") return { libelle: "Ton morceau", geste: "depot" };
+  if (relatif === fiche.spec.musique.fichier) return { libelle: "La musique", geste: "depot" };
+  return { libelle: "Une image", geste: "depot" };
+}
 
 export function resumerProjet(projet: ProjetDeFormat, dossiers: Dossiers = DOSSIERS_PAR_DEFAUT): ResumeDuProjet {
   if (projet.etat === "invalide") {
@@ -38,6 +52,7 @@ export function resumerProjet(projet: ProjetDeFormat, dossiers: Dossiers = DOSSI
   const medias = (definition.mediasAttendus as (s: unknown) => string[])(fiche.spec).map((relatif) => ({
     relatif,
     present: existsSync(join(dossiers.public(projet.id), relatif)),
+    ...presentationDuMedia(fiche, relatif),
   }));
   const declinaisons = fiche.spec.declinaisons.map((declinaison) => {
     const livrable = fichiersDuRendu(dossiers.sortie(projet.id), declinaison.nom).livrable;

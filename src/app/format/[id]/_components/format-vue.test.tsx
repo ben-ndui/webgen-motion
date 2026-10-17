@@ -12,8 +12,8 @@ function resume(surcharge: Partial<ResumeDuProjet> = {}): ResumeDuProjet {
     statut: "pret",
     erreurs: [],
     medias: [
-      { relatif: "musique/10-ans.mp3", present: true },
-      { relatif: "karaoke/paroles.json", present: true },
+      { relatif: "musique/10-ans.mp3", present: true, libelle: "Ton morceau", geste: "depot" },
+      { relatif: "paroles/paroles.json", present: false, libelle: "Tes paroles, calées sur ton morceau", geste: "editeur" },
     ],
     declinaisons: [{ nom: "Karaoke-FR", langue: "fr", version: "long", rendu: null }],
     ...surcharge,
@@ -41,11 +41,17 @@ describe("la page d'un projet de format", () => {
     expect(screen.getByRole("button", { name: "Rendre" })).toBeDisabled();
   });
 
-  it("dit chaque fichier à déposer, et bloque le rendu tant qu'il en manque", () => {
+  it("dit ce qui manque en mots de tous les jours, jamais un nom de fichier", () => {
+    render(<FormatVue id="wes-of-10-ans" resume={resume({ statut: "medias-manquants" })} pourQui={POUR_QUI} studio />);
+    expect(screen.queryByText(/\.json/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Tes paroles, calées sur ton morceau/)).toHaveTextContent("à coller et caler dans Modifier le contenu");
+  });
+
+  it("bloque le rendu tant qu'un fichier manque", () => {
     render(
-      <FormatVue id="wes-of-10-ans" resume={resume({ statut: "medias-manquants", medias: [{ relatif: "musique/10-ans.mp3", present: false }] })} pourQui={POUR_QUI} studio />,
+      <FormatVue id="wes-of-10-ans" resume={resume({ statut: "medias-manquants", medias: [{ relatif: "musique/10-ans.mp3", present: false, libelle: "Ton morceau", geste: "depot" }] })} pourQui={POUR_QUI} studio />,
     );
-    expect(screen.getByText("musique/10-ans.mp3").parentElement).toHaveTextContent("à déposer");
+    expect(screen.getByText(/Ton morceau/)).toHaveTextContent("à déposer");
     expect(screen.getByRole("button", { name: "Rendre" })).toBeDisabled();
     expect(screen.getByText("Déposer ton morceau")).toBeInTheDocument();
   });

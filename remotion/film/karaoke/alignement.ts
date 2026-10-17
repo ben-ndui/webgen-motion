@@ -28,6 +28,21 @@ export function estUnMarqueur(texte: string): boolean {
   return t === "" || /^[*[(♪].*[*\])♪]$/.test(t) || t === "♪";
 }
 
+/**
+ * Le texte tel que l'artiste l'écrit → les lignes CHANTÉES. Les repères de
+ * section (« [ Refrain ] », « (Couplet) »), les lignes vides et la virgule de
+ * fin de ligne ne s'affichent pas : on les retire avant le calage, sans
+ * toucher au reste (ponctuation interne, majuscules, apostrophes).
+ */
+export function lignesChantees(texte: string): string[] {
+  return texte
+    .split("\n")
+    .map((ligne) => ligne.trim())
+    .filter((ligne) => ligne && !/^\[.*\]$/.test(ligne) && !/^\(.*\)$/.test(ligne))
+    .map((ligne) => ligne.replace(/[,;]+$/, "").trim())
+    .filter(Boolean);
+}
+
 /** Pour chaque mot de `a`, l'indice de son jumeau dans `b` (plus longue sous-suite commune), ou -1. */
 export function jumeaux(a: string[], b: string[]): number[] {
   const n = a.length;
