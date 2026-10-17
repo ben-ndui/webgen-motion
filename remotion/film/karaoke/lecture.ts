@@ -71,3 +71,26 @@ export type Passage = { debut: number; fin: number };
 export function passageDe(morceau: MorceauDuKaraoke, version: "long" | "court"): Passage {
   return version === "court" && morceau.teaser ? morceau.teaser : { debut: morceau.debut, fin: morceau.fin };
 }
+
+/**
+ * Le passage du REFRAIN, pour le teaser : la ligne la plus répétée des paroles
+ * (le refrain revient, un couplet non), de sa première apparition jusqu'à sa
+ * reprise, 30 s au plus. `null` : aucune ligne ne revient, rien à proposer.
+ */
+export function passageDuRefrain(lignes: LigneCalee[], maximum = 30): Passage | null {
+  const texte = (ligne: LigneCalee) => ligne.mots.map((m) => m.texte.toLowerCase().replace(/[^\p{L}\p{N} ]/gu, "")).join(" ").trim();
+  const occurrences = new Map<string, number[]>();
+  lignes.forEach((ligne, index) => {
+    const cle = texte(ligne);
+    if (cle) occurrences.set(cle, [...(occurrences.get(cle) ?? []), index]);
+  });
+  let meilleure: number[] | null = null;
+  for (const indices of occurrences.values()) {
+    if (indices.length >= 2 && (!meilleure || indices.length > meilleure.length || (indices.length === meilleure.length && indices[0]! < meilleure[0]!))) meilleure = indices;
+  }
+  if (!meilleure) return null;
+  // Une demi-seconde d'élan avant le premier mot.
+  const debut = Math.max(0, debutDeLigne(lignes[meilleure[0]!]!) - 0.5);
+  const reprise = debutDeLigne(lignes[meilleure[1]!]!) - 0.5;
+  return { debut, fin: Math.min(reprise, debut + maximum) };
+}

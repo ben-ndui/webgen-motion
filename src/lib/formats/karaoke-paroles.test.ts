@@ -35,7 +35,7 @@ describe("les fichiers de paroles d'un karaoké", () => {
 
   it("lit le brouillon, le texte et le résumé des paroles calées ; rien = trois null", () => {
     const dossier = jetable();
-    expect(etatDesParoles(dossier, CHEMINS_DES_PAROLES.calees)).toEqual({ brouillon: null, texte: null, calees: null });
+    expect(etatDesParoles(dossier, CHEMINS_DES_PAROLES.calees)).toEqual({ brouillon: null, texte: null, calees: null, refrain: null });
     mkdirSync(join(dossier, "paroles"), { recursive: true });
     writeFileSync(join(dossier, CHEMINS_DES_PAROLES.brouillon), "on s'est donné\n");
     writeFileSync(join(dossier, CHEMINS_DES_PAROLES.calees), JSON.stringify({ source: "paroles.txt", reconnus: 0.99, lignes: [{ mots: [] }, { mots: [] }] }));
@@ -43,6 +43,7 @@ describe("les fichiers de paroles d'un karaoké", () => {
       brouillon: "on s'est donné\n",
       texte: null,
       calees: { source: "paroles.txt", reconnus: 0.99, lignes: 2 },
+      refrain: null,
     });
   });
 

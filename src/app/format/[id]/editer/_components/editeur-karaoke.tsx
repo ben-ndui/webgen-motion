@@ -3,6 +3,9 @@
 import { KARAOKE } from "../../../../../../remotion/film/karaoke/ficheKaraoke";
 import type { KaraokeSpec } from "../../../../../../remotion/film/karaoke/spec";
 import type { Langue } from "../../../../../../remotion/film/spec";
+import { useState } from "react";
+
+import type { Passage } from "../../../../../../remotion/film/karaoke/lecture";
 import ChampTexte from "../../../../film/[id]/creer/_components/champ-texte";
 import DepotDeMusique from "../../_components/depot-de-musique";
 import BlocIntentionsKaraoke from "./bloc-intentions-karaoke";
@@ -22,6 +25,7 @@ type Props = {
 /** L'éditeur du clip karaoké : le morceau et son passage, les paroles, la ligne de fin. */
 export default function EditeurKaraoke({ id, spec, langue, morceauPresent, modifier, apresLeDepot }: Props) {
   const { morceau } = spec;
+  const [refrain, setRefrain] = useState<Passage | null>(null);
   return (
     <div className="blocs" data-wm-id="format.karaoke">
       <section className="bloc" aria-labelledby="bloc-morceau">
@@ -33,9 +37,9 @@ export default function EditeurKaraoke({ id, spec, langue, morceauPresent, modif
         <ChampTexte question="Ton nom d'artiste" max={30} valeur={morceau.artiste} exemple={KARAOKE.morceau.artiste}
           onChange={(artiste) => modifier((s) => { s.morceau.artiste = artiste; })} />
       </section>
-      <BlocIntentionsKaraoke spec={spec} modifier={modifier} />
+      <BlocIntentionsKaraoke spec={spec} modifier={modifier} refrain={refrain} />
       <ChoixDuDecor decor={spec.decor} onChange={(decor) => modifier((s) => { s.decor = decor; })} />
-      <BlocParoles id={id} morceauPresent={morceauPresent} />
+      <BlocParoles id={id} morceauPresent={morceauPresent} surLeRefrain={setRefrain} />
       <section className="bloc" aria-labelledby="bloc-fin">
         <h3 id="bloc-fin" className="bloc-titre">La fin</h3>
         <ChampTexte question="La ligne sous ton nom" max={50} valeur={spec.textes[langue].disponible} exemple={KARAOKE.textes[langue].disponible}

@@ -13,7 +13,7 @@ const LANGUES_CHANTEES = [{ valeur: "fr", libelle: "Français" }, { valeur: "en"
  * BROUILLON ; l'artiste le corrige (c'est SON texte qui s'affichera) ; puis
  * ses mots sont calés sur le morceau. Chaque étape dit son état et ses refus.
  */
-export default function BlocParoles({ id, morceauPresent }: { id: string; morceauPresent: boolean }) {
+export default function BlocParoles({ id, morceauPresent, surLeRefrain }: { id: string; morceauPresent: boolean; surLeRefrain?: (refrain: EtatDesParoles["refrain"]) => void }) {
   const [etat, setEtat] = useState<Etat | null>(null);
   const [lecture, setLecture] = useState<"chargement" | "erreur" | "ok">("chargement");
   const [texte, setTexte] = useState("");
@@ -31,11 +31,12 @@ export default function BlocParoles({ id, morceauPresent }: { id: string; morcea
           if (!garder()) return;
           if (!nouveau) return setLecture("erreur");
           setEtat(nouveau);
+          surLeRefrain?.(nouveau.refrain);
           setTexte((avant) => avant || nouveau.texte || nouveau.brouillon || "");
           setLecture("ok");
         })
         .catch(() => garder() && setLecture("erreur")),
-    [url],
+    [url, surLeRefrain],
   );
 
   useEffect(() => {

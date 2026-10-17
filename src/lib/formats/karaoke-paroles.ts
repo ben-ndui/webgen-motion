@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
+import { type Passage, passageDuRefrain } from "../../../remotion/film/karaoke/lecture";
 import type { ParolesDuKaraoke } from "../../../remotion/film/karaoke/spec";
 
 /**
@@ -21,20 +22,24 @@ export type EtatDesParoles = {
   texte: string | null;
   // Résumé des paroles calées : de quel texte, et quelle part des mots whisper a reconnus.
   calees: { source: string; reconnus: number; lignes: number } | null;
+  // Le refrain repéré dans les paroles calées (ligne la plus répétée) : de quoi caler le teaser.
+  refrain: Passage | null;
 };
 
 export function etatDesParoles(dossierPublic: string, cheminDesCalees: string): EtatDesParoles {
   const brutes = lire(join(dossierPublic, cheminDesCalees));
   let calees: EtatDesParoles["calees"] = null;
+  let refrain: Passage | null = null;
   if (brutes) {
     try {
       const paroles = JSON.parse(brutes) as ParolesDuKaraoke;
       calees = { source: paroles.source, reconnus: paroles.reconnus, lignes: paroles.lignes.length };
+      refrain = passageDuRefrain(paroles.lignes);
     } catch {
       calees = null;
     }
   }
-  return { brouillon: lire(join(dossierPublic, CHEMINS_DES_PAROLES.brouillon)), texte: lire(join(dossierPublic, CHEMINS_DES_PAROLES.texte)), calees };
+  return { brouillon: lire(join(dossierPublic, CHEMINS_DES_PAROLES.brouillon)), texte: lire(join(dossierPublic, CHEMINS_DES_PAROLES.texte)), calees, refrain };
 }
 
 /** Le texte de l'artiste, écrit de façon atomique. Trop long : refusé (ce ne sont pas des paroles). */

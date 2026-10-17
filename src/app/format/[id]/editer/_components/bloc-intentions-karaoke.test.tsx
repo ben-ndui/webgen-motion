@@ -10,14 +10,14 @@ import ChoixDuDecor from "./choix-du-decor";
 const spec = () => (projetDeDepart("karaoke", "clip") as { spec: KaraokeSpec }).spec;
 
 /** Rend le bloc et applique les changements à une copie, comme le ferait l'éditeur. */
-function bloc(depart: KaraokeSpec) {
+function bloc(depart: KaraokeSpec, refrain: { debut: number; fin: number } | null = null) {
   let courante = depart;
   const modifier = vi.fn((changement: (s: KaraokeSpec) => KaraokeSpec | void) => {
     const copie = structuredClone(courante);
     courante = changement(copie) ?? copie;
-    vue.rerender(<BlocIntentionsKaraoke spec={courante} modifier={modifier} />);
+    vue.rerender(<BlocIntentionsKaraoke spec={courante} modifier={modifier} refrain={refrain} />);
   });
-  const vue = render(<BlocIntentionsKaraoke spec={courante} modifier={modifier} />);
+  const vue = render(<BlocIntentionsKaraoke spec={courante} modifier={modifier} refrain={refrain} />);
   return { lire: () => courante };
 }
 
@@ -46,6 +46,16 @@ describe("ce que veut l'artiste", () => {
     const { teaser } = lire().morceau;
     expect(teaser && teaser.fin - teaser.debut).toBeLessThanOrEqual(30);
     expect(lire().declinaisons.map((d) => d.nom)).toEqual(["Karaoke-FR", "Karaoke-Court-FR"]);
+  });
+});
+
+describe("caler le teaser sur le refrain", () => {
+  it("sans paroles calées, le dit ; avec, le bouton cale le teaser sur le refrain repéré", async () => {
+    bloc(spec());
+    expect(screen.getByText(/Une fois tes paroles calées/)).toBeInTheDocument();
+    const { lire } = bloc(spec(), { debut: 16.94, fin: 33.53 });
+    await userEvent.setup().click(screen.getByRole("button", { name: "Caler le teaser sur ton refrain (17 s → 34 s)" }));
+    expect(lire().morceau.teaser).toEqual({ debut: 16.9, fin: 33.5 });
   });
 });
 

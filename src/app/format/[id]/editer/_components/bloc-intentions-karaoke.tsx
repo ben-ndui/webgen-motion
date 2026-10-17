@@ -1,10 +1,16 @@
 "use client";
 
 import { changerLesDeclinaisons, languesDesDeclinaisons, versionsDesDeclinaisons } from "@/lib/formats/declinaisons";
+import type { Passage as PassageDuMorceau } from "../../../../../../remotion/film/karaoke/lecture";
 import type { KaraokeSpec } from "../../../../../../remotion/film/karaoke/spec";
 import type { VersionDuFilm } from "../../../../../../remotion/film/spec";
 
-type Props = { spec: KaraokeSpec; modifier: (changement: (spec: KaraokeSpec) => KaraokeSpec | void) => void };
+type Props = {
+  spec: KaraokeSpec;
+  modifier: (changement: (spec: KaraokeSpec) => KaraokeSpec | void) => void;
+  // Le refrain repéré dans les paroles calées : absent tant qu'elles ne le sont pas.
+  refrain?: PassageDuMorceau | null;
+};
 
 function Passage({ libelle, debut, fin, onChange }: { libelle: string; debut: number; fin: number; onChange: (debut: number, fin: number) => void }) {
   return (
@@ -28,7 +34,7 @@ function Passage({ libelle, debut, fin, onChange }: { libelle: string; debut: nu
  * Ce que l'artiste veut : le CLIP COMPLET (16:9, YouTube, tout le morceau) et/ou
  * un TEASER (9:16, réseaux, le passage le plus fort). Chacun garde son passage.
  */
-export default function BlocIntentionsKaraoke({ spec, modifier }: Props) {
+export default function BlocIntentionsKaraoke({ spec, modifier, refrain = null }: Props) {
   const versions = versionsDesDeclinaisons(spec.declinaisons);
   const { morceau } = spec;
   const teaser = morceau.teaser ?? { debut: morceau.debut, fin: Math.min(morceau.debut + 30, morceau.fin) };
@@ -60,6 +66,14 @@ export default function BlocIntentionsKaraoke({ spec, modifier }: Props) {
           <Passage libelle="Le teaser" debut={teaser.debut} fin={teaser.fin}
             onChange={(debut, fin) => modifier((s) => { s.morceau.teaser = { debut, fin }; })} />
           <p className="champ-aide">Le passage le plus fort, souvent le refrain : 15 à 30 secondes.</p>
+          {refrain ? (
+            <button type="button" className="lien" data-wm-id="format.karaoke.teaser-refrain"
+              onClick={() => modifier((s) => { s.morceau.teaser = { debut: Math.round(refrain.debut * 10) / 10, fin: Math.round(refrain.fin * 10) / 10 }; })}>
+              Caler le teaser sur ton refrain ({Math.round(refrain.debut)} s → {Math.round(refrain.fin)} s)
+            </button>
+          ) : (
+            <p className="champ-aide">Une fois tes paroles calées, le teaser pourra se caler tout seul sur ton refrain.</p>
+          )}
         </>
       )}
     </section>

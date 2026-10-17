@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { calerLesParoles, estUnMarqueur, jumeaux, lignesChantees, normaliser, recalerSurLesFenetres, type MotEntendu } from "./alignement";
 import { KARAOKE } from "./ficheKaraoke";
-import { ANTICIPATION, SILENCE_MAX, ligneEnCours, lignesDuPassage, passageDe, remplissage } from "./lecture";
+import { ANTICIPATION, SILENCE_MAX, ligneEnCours, lignesDuPassage, passageDe, passageDuRefrain, remplissage } from "./lecture";
 import type { KaraokeSpec, ParolesDuKaraoke } from "./spec";
 import { DECORS } from "./spec";
 import { DECORS_CONNUS, erreursDesParoles, erreursDuKaraoke } from "./validerKaraoke";
@@ -73,6 +73,20 @@ describe("recaler sur les écoutes courtes", () => {
     const fausse = { debut: 10, fin: 40, mots: [{ texte: "a", debut: 19, fin: 19.2 }] };
     const recale = recalerSurLesFenetres(lisse.slice(0, 2), [fausse]);
     expect(recale[1]!.debut).toBeGreaterThanOrEqual(recale[0]!.debut);
+  });
+});
+
+describe("trouver le refrain, pour le teaser", () => {
+  const ligne = (texte: string, debut: number) => ({ mots: [{ texte, debut, fin: debut + 1 }] });
+
+  it("va de la première apparition de la ligne la plus répétée jusqu'à sa reprise", () => {
+    const lignes = [ligne("Intro", 5), ligne("On s'est donné rendez-vous", 17.4), ligne("Couplet", 25), ligne("On s'est donné rendez-vous,", 34.4), ligne("On s'est donné rendez-vous", 60)];
+    expect(passageDuRefrain(lignes)).toEqual({ debut: 16.9, fin: 33.9 });
+  });
+
+  it("ne dépasse pas 30 s, et ne propose rien si aucune ligne ne revient", () => {
+    expect(passageDuRefrain([ligne("refrain", 10), ligne("couplet", 20), ligne("refrain", 90)])).toEqual({ debut: 9.5, fin: 39.5 });
+    expect(passageDuRefrain([ligne("une", 1), ligne("deux", 2)])).toBeNull();
   });
 });
 
