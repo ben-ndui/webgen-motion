@@ -38,6 +38,8 @@ describe("le décor sur mesure d'un karaoké", () => {
     expect(corps.parameters).toMatchObject({ aspectRatio: "16:9", durationSeconds: 8 });
     expect(corps.instances[0].prompt).toMatch(/Scene: Une rue de Bangui sous la pluie, néons orange/);
     expect(corps.instances[0].prompt).toMatch(/Color palette: [\s\S]+Avoid: text, letters/);
+    // Nommer du texte fait écrire Veo : le prompt n'en parle jamais (hors liste des interdits).
+    expect(corps.instances[0].prompt.split("Avoid:")[0]).not.toMatch(/lyric|subtitle|text/i);
     expect(await suivreLeFond("clip", "long", lieux)).toEqual({ etat: "en-cours" });
     const pret = await suivreLeFond("clip", "long", lieux);
     expect(pret).toMatchObject({ etat: "pret" });

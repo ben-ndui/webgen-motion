@@ -1,3 +1,4 @@
+import { renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import type { KaraokeSpec } from "../../../remotion/film/karaoke/spec";
@@ -6,6 +7,7 @@ import { COUT_D_UN_PLAN_USD } from "../cinema/couts";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "../cinema/registre";
 import { API_VEO, type ClientVeo, lancerUnPlan, suivreUnPlan, telechargerLePlan } from "../cinema/veo";
 import { resolveVeoKey } from "../config-resolve";
+import { mettreEnBoucle } from "./fond-en-boucle";
 import { chargerProjet, enregistrerProjet, lireProjetBrut } from "./format-loader";
 import { getFormatPublicDir, getFormatsDir } from "./format-store";
 
@@ -39,11 +41,12 @@ export type Refus = { ok: false; statut: 400 | 404 | 409 | 412 | 502; raison: st
 export function promptDuFond(spec: KaraokeSpec, version: Version): string {
   const { couleurs } = spec.marque;
   return [
-    `Seamless looping ${version === "court" ? "vertical" : "widescreen"} background video for a music lyric video.`,
+    // Ni « lyrics » ni « subtitles » : nommer du texte fait écrire Veo (faux sous-titre au 1er essai réel).
+    `Seamless looping ${version === "court" ? "vertical" : "widescreen"} ambient background footage for a music video.`,
     `Scene: ${spec.fond?.description.trim()}`,
     `Color palette: ${paletteEnMots([couleurs.encre, couleurs.accent, couleurs.clair])}.`,
     "Slow, continuous, ambient motion that can loop without a visible cut. Static camera or very slow drift.",
-    "Leave the lower third calm and darker: lyrics will be displayed there.",
+    "Pure imagery only, clean frame. Keep the lower third calm and darker.",
   ].join(" ");
 }
 
@@ -105,7 +108,11 @@ export async function suivreLeFond(id: string, version: Version, partiel: Partia
     return { etat: "refuse", raison: suivi.raison };
   }
   const relatif = `fond/${version}-${Date.now()}.mp4`;
-  if (!(await telechargerLePlan(client, suivi.uri, join(lieux.public(id), relatif)))) return { etat: "en-cours" };
+  const brut = join(lieux.public(id), `${relatif}.brut.mp4`);
+  if (!(await telechargerLePlan(client, suivi.uri, brut))) return { etat: "en-cours" };
+  // La vidéo est payée : si la mise en boucle rate, on garde le plan tel quel plutôt que de le perdre.
+  if (mettreEnBoucle(brut, join(lieux.public(id), relatif))) rmSync(brut);
+  else renameSync(brut, join(lieux.public(id), relatif));
   const fiche = lireProjetBrut(id, lieux.fiches) as { format: "karaoke"; spec: KaraokeSpec };
   fiche.spec.fond = { description: fiche.spec.fond?.description ?? "", videos: { ...fiche.spec.fond?.videos, [version]: relatif } };
   enregistrerProjet(id, fiche, lieux.fiches, { videosDuServeur: true });
