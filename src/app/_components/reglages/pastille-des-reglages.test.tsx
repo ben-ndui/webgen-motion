@@ -5,9 +5,9 @@ import { etatDesReglages } from "@/lib/reglages/etat-des-reglages";
 
 import PastilleDesReglages from "./pastille-des-reglages";
 
-const RIEN_DE_REGLE = etatDesReglages({ claude: false, video: false, voix: false });
-const TOUT_REGLE = etatDesReglages({ claude: true, video: true, voix: true });
-const SANS_LA_VIDEO = etatDesReglages({ claude: true, video: false, voix: true });
+const RIEN_DE_REGLE = etatDesReglages({ claude: false, video: false, voix: false, paroles: false });
+const TOUT_REGLE = etatDesReglages({ claude: true, video: true, voix: true, paroles: true });
+const SANS_LA_VIDEO = etatDesReglages({ claude: true, video: false, voix: true, paroles: true });
 
 async function apresLeMontage() {
   await act(() => new Promise((fin) => requestAnimationFrame(() => fin(undefined))));
@@ -39,7 +39,7 @@ describe("Prépare ton studio", () => {
     render(<PastilleDesReglages reglages={RIEN_DE_REGLE} />);
     await apresLeMontage();
     expect(screen.queryByRole("dialog")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "3 réglages à faire" }));
+    fireEvent.click(screen.getByRole("button", { name: "4 réglages à faire" }));
     expect(screen.getByRole("dialog", { name: "Prépare ton studio" })).toBeInTheDocument();
   });
 

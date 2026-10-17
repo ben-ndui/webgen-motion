@@ -33,12 +33,12 @@ afterEach(() => {
 
 describe("lireLEtatDesReglages", () => {
   it("une app tout juste installée : rien n'est prêt", () => {
-    expect(etat()).toEqual({ claude: false, video: false, voix: false });
+    expect(etat()).toEqual({ claude: false, video: false, voix: false, paroles: false });
   });
 
   it("chaque clé posée dans les Réglages compte", () => {
     ecrireLaConfig({ agent: { provider: "anthropic", apiKey: "sk-ant-x" }, veo: { apiKey: "AIza-x" }, elevenlabs: { apiKey: "el", voiceId: "v" }, defaultBackend: "elevenlabs" });
-    expect(etat()).toEqual({ claude: true, video: true, voix: true });
+    expect(etat()).toEqual({ claude: true, video: true, voix: true, paroles: false });
   });
 
   it("une clé OpenAI ne rend pas Claude prêt : la série et l'assistant ne parlent qu'à Claude", () => {

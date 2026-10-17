@@ -67,7 +67,9 @@ export default function BlocParoles({ id, morceauPresent }: { id: string; morcea
     <section className="bloc" aria-labelledby="bloc-paroles" data-wm-id="format.karaoke.paroles">
       <h3 id="bloc-paroles" className="bloc-titre">Tes paroles</h3>
       {!etat.whisper.ok ? (
-        <p className="depot-erreur" role="alert">{etat.whisper.raison}</p>
+        <p className="depot-erreur" role="alert">
+          {etat.whisper.raison} <a className="lien" href="/setup/paroles">Régler l&apos;écoute locale</a>
+        </p>
       ) : !morceauPresent ? (
         <p className="champ-aide">Dépose d&apos;abord ton morceau : whisper l&apos;écoute pour te proposer un brouillon.</p>
       ) : (

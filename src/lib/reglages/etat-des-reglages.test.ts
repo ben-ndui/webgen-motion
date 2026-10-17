@@ -4,17 +4,18 @@ import { etatDesReglages, pageDuReglage, reglagesManquants } from "./etat-des-re
 
 describe("etatDesReglages", () => {
   it("dit, pour chaque réglage, s'il est prêt et où le faire", () => {
-    const reglages = etatDesReglages({ claude: true, video: false, voix: false });
+    const reglages = etatDesReglages({ claude: true, video: false, voix: false, paroles: false });
     expect(reglages.map((r) => [r.cle, r.pret, r.page])).toEqual([
       ["claude", true, "/setup/agent"],
       ["video", false, "/setup/video"],
       ["voix", false, "/setup"],
+      ["paroles", false, "/setup/paroles"],
     ]);
-    expect(reglagesManquants(reglages).map((r) => r.cle)).toEqual(["video", "voix"]);
+    expect(reglagesManquants(reglages).map((r) => r.cle)).toEqual(["video", "voix", "paroles"]);
   });
 
   it("rien ne manque : la liste des manquants est vide", () => {
-    expect(reglagesManquants(etatDesReglages({ claude: true, video: true, voix: true }))).toEqual([]);
+    expect(reglagesManquants(etatDesReglages({ claude: true, video: true, voix: true, paroles: true }))).toEqual([]);
   });
 });
 
@@ -23,5 +24,6 @@ describe("pageDuReglage", () => {
     expect(pageDuReglage("Aucune clé Gemini : ajoute-la dans les Réglages pour générer.")).toBe("/setup/video");
     expect(pageDuReglage("Aucune clé Claude : ajoute-la dans les Réglages pour te faire aider.")).toBe("/setup/agent");
     expect(pageDuReglage("Voix off non configurée")).toBe("/setup");
+    expect(pageDuReglage("whisper.cpp n'est pas installé")).toBe("/setup/paroles");
   });
 });
