@@ -101,7 +101,7 @@ if (!skipBuild) {
     // L'app est déjà signée et notarisée quand bundle_dmg.sh échoue au
     // démontage du volume : on termine le DMG au lieu de tout jeter.
     log(`tauri:build a échoué (exit ${build.status}) : reprise du DMG…`);
-    const repris = terminerLeDmg(BUNDLE_DMG_DIR, log);
+    const repris = terminerLeDmg([BUNDLE_APP_DIR, BUNDLE_DMG_DIR], BUNDLE_DMG_DIR, log);
     if (!repris) fail(`tauri:build a échoué (exit ${build.status}) et le DMG n'a pas pu être repris`);
     log(`✓ DMG repris : ${basename(repris)}`);
   } else {

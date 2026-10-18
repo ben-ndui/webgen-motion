@@ -65,22 +65,36 @@ export function nettoyerLesImagesDeTravail(dossiers, log) {
  * Après un échec de bundle_dmg.sh au démontage : termine son travail
  * (détacher avec patience, puis compresser). Rend le chemin du DMG, ou
  * null s'il n'y a rien à reprendre ou si la compression échoue.
+ *
+ * L'image de travail peut rester dans `bundle/macos/` OU `bundle/dmg/`
+ * selon où bundle_dmg.sh en était (vécu le 18/10/2026 : la 1re panne
+ * ne cherchait que `bundle/dmg/`, où l'image n'était pas encore arrivée,
+ * et déclarait la reprise impossible alors que l'app était déjà
+ * notarisée). Le DMG final va TOUJOURS dans `dossierCible`.
  */
-export function terminerLeDmg(dossierDmg, log) {
-  if (!existsSync(dossierDmg)) return null;
-  const travail = readdirSync(dossierDmg).find((f) => IMAGE_DE_TRAVAIL.test(f));
+export function terminerLeDmg(dossiersACherche, dossierCible, log) {
+  let dossierTrouve = null;
+  let travail = null;
+  for (const dossier of dossiersACherche.filter(existsSync)) {
+    const trouve = readdirSync(dossier).find((f) => IMAGE_DE_TRAVAIL.test(f));
+    if (trouve) {
+      dossierTrouve = dossier;
+      travail = trouve;
+      break;
+    }
+  }
   if (!travail) return null;
-  for (const disque of disquesMontes([dossierDmg])) {
+  for (const disque of disquesMontes([dossierTrouve])) {
     if (!detacher(disque, log)) return null;
   }
-  const final = join(dossierDmg, travail.match(IMAGE_DE_TRAVAIL)[1]);
+  const final = join(dossierCible, travail.match(IMAGE_DE_TRAVAIL)[1]);
   if (existsSync(final)) unlinkSync(final);
   const conversion = spawnSync(
     "hdiutil",
-    ["convert", join(dossierDmg, travail), "-format", "UDZO", "-imagekey", "zlib-level=9", "-o", final],
+    ["convert", join(dossierTrouve, travail), "-format", "UDZO", "-imagekey", "zlib-level=9", "-o", final],
     { stdio: "inherit" },
   );
   if (conversion.status !== 0) return null;
-  unlinkSync(join(dossierDmg, travail));
+  unlinkSync(join(dossierTrouve, travail));
   return final;
 }
