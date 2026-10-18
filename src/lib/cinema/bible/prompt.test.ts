@@ -38,4 +38,16 @@ describe("promptDeLaVue", () => {
       expect(prompt).toContain("No props, no text, no logo.");
     }
   });
+
+  it("un décor n'est PAS isolé sur un studio neutre : un lieu EST son fond, contrairement à un objet", () => {
+    const prompt = promptDeLaVue(decor, "image");
+    expect(prompt).not.toContain("studio background");
+    expect(prompt).toContain("wide establishing shot");
+    expect(prompt).toContain("full environment and depth");
+    expect(prompt).toContain("No props, no text, no logo.");
+  });
+
+  it("un décor n'invente ni personnage ni équipe de tournage dans l'image de référence", () => {
+    expect(promptDeLaVue(decor, "image")).toContain("No people, no characters, no camera or film equipment visible.");
+  });
 });
