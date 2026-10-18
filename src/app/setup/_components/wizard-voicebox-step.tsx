@@ -198,7 +198,7 @@ export default function WizardVoiceboxStep({
               onChange={(e) => onModelSize(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             >
-              <option value="0.6B">0.6B</option>
+              <option value="0.6B">0.6B (conseillé : 2,5× plus rapide)</option>
               <option value="1B">1B</option>
               <option value="1.7B">1.7B</option>
               <option value="3B">3B</option>

@@ -343,7 +343,7 @@ export default function VoiceOverrideCard({
                 className="mt-1 w-full rounded-lg border border-line-strong px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-accent bg-surface"
               >
                 <option value="">global</option>
-                <option value="0.6B">0.6B</option>
+                <option value="0.6B">0.6B (conseillé)</option>
                 <option value="1B">1B</option>
                 <option value="1.7B">1.7B</option>
                 <option value="3B">3B</option>

@@ -102,7 +102,9 @@ export interface MotionConfig {
 
 export const DEFAULT_VOICEBOX_URL = "http://127.0.0.1:17493";
 export const DEFAULT_VOICEBOX_ENGINE = "qwen";
-export const DEFAULT_VOICEBOX_MODEL_SIZE = "1.7B";
+// 0.6B : même note que 1.7B à l'écoute à l'aveugle (4,00 / 5, 18/10/2026), 2,5 fois plus
+// rapide (4,8 contre 11,6 s de calcul par seconde de voix sur un M1 Pro).
+export const DEFAULT_VOICEBOX_MODEL_SIZE = "0.6B";
 export const DEFAULT_VOICEBOX_LANGUAGE = "fr";
 /** La consigne de ton par défaut (voix/consigne.ts) ; Ben la change dans Réglages › Voicebox. */
 export const DEFAULT_VOICEBOX_INSTRUCT = CONSIGNE_DE_TON_CONSEILLEE;

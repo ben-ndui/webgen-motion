@@ -34,10 +34,12 @@ function put(corps: unknown) {
 }
 
 describe("la consigne de ton Voicebox", () => {
-  it("absente : la consigne conseillée (celle qui a gagné le banc d'écoute)", () => {
+  it("absente : la consigne conseillée (celle qui a gagné le banc d'écoute), avec Qwen 0.6B", () => {
     config({});
     const b = resolveVoiceBackend({ voiceBackend: "voicebox" });
     expect(b?.kind === "voicebox" && b.instruct).toBe(CONSIGNE_DE_TON_CONSEILLEE);
+    // 0.6B : même note à l'écoute que 1.7B, 2,5 fois plus rapide (banc du 18/10).
+    expect(b?.kind === "voicebox" && b.modelSize).toBe("0.6B");
   });
 
   it("vide : un CHOIX (voix neutre), pas un retour à la consigne par défaut", async () => {

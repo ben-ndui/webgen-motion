@@ -49,7 +49,7 @@ export default function SetupPage() {
   const [voiceboxUrl, setVoiceboxUrl] = useState("http://127.0.0.1:17493");
   const [voiceboxProfileId, setVoiceboxProfileId] = useState("");
   const [voiceboxEngine, setVoiceboxEngine] = useState("qwen");
-  const [voiceboxModelSize, setVoiceboxModelSize] = useState("1.7B");
+  const [voiceboxModelSize, setVoiceboxModelSize] = useState("0.6B");
   const [voiceboxProfiles, setVoiceboxProfiles] = useState<
     VoiceboxProfile[] | null
   >(null);
