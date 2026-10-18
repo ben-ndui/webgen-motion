@@ -82,7 +82,7 @@ export async function lancerLeFond(id: string, version: Version, partiel: Partia
     annulerSansFrais(lieux.dossier(id), planId);
     return { ok: false, statut: 502, raison: `${lancement.raison} Rien n'a été facturé.` };
   }
-  noterLeLancement(lieux.dossier(id), planId, lancement.operation);
+  noterLeLancement(lieux.dossier(id), planId, lancement.operation, "veo");
   return { ok: true, coutUsd: COUT_D_UN_FOND_USD };
 }
 
