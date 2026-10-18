@@ -30,9 +30,10 @@ export default function ChoixDeCases({ titre, options, valeurs, onChange, multip
   return (
     <fieldset className="flex flex-col gap-1.5">
       <legend className="text-xs font-medium text-muted mb-1.5">{titre}</legend>
-      {/* Colonnes posées en style : la fenêtre vit dans le hub, dont les styles
-          de boutons écrasaient la grille utilitaire. */}
-      <div className="gap-2" style={{ display: "grid", gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      {/* Colonnes posées en style : les styles de boutons du hub écrasaient la
+          grille utilitaire. auto-fit + minmax : les cases s'enroulent au lieu
+          de s'écraser (visible avec des vignettes, cf. l'écran « Style »). */}
+      <div className="gap-2" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
         {options.map((option) => {
           const choisie = valeurs.includes(option.valeur);
           return (

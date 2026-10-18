@@ -18,9 +18,8 @@ describe("HubFilms", () => {
   it("aucun film : dit comment en créer un", () => {
     render(<HubFilms films={[]} error={null} />);
     expect(screen.getByText("Aucun film de marque")).toBeInTheDocument();
-    // Plus de JSON à écrire à la main : le hub mène à l'assistant.
-    expect(screen.getByText(/Clique sur « Nouveau film »/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Nouveau film/ })).toBeInTheDocument();
+    // Plus de bouton dans la section : la création vit dans le « + Nouveau » du dashboard.
+    expect(screen.getByText(/« \+ Nouveau »/)).toBeInTheDocument();
   });
 
   it("dossier illisible : une erreur, pas « aucun film »", () => {

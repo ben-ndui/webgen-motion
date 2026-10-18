@@ -7,14 +7,12 @@ import type { Reglage } from "@/lib/reglages/etat-des-reglages";
 
 import HubConsole from "./hub-console";
 import PastilleDesReglages from "./reglages/pastille-des-reglages";
-import NewTourButton from "./new-tour-button";
 import ScaffoldFromProjectButton from "./scaffold-from-project-button";
 import GenerateWithAiButton from "./generate-with-ai-button";
 import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
 import HubFilms, { type HubFilm } from "./hub-films";
 import HubFormats, { type HubFormat } from "./hub-formats";
-import type { FormatProposable } from "./nouveau-format-bouton";
 import TourCard, { type HubTour } from "./hub-tour-card";
 
 export type { HubTour };
@@ -27,38 +25,54 @@ const Caret = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const Search = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" /></svg>;
 const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
 const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
+const FilmIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5" /></svg>;
+const FormatIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
 const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
 const SparkIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" /></svg>;
 
+/**
+ * Un seul bouton pour toute création (tour, film, format) : il contenait
+ * trois boutons séparés dans le dashboard avant le 18/10/2026, et le clic
+ * ouvrait un popup — remplacés par de vraies pages (porte orpheline +
+ * popup cassé signalés par Ben).
+ */
 function CreateControl() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const close = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
   return (
     <div className="create" ref={ref} data-wm-id="hub.action.create">
-      <NewTourButton
-        trigger={(openModal) => (
-          <button className="btn btn-primary" data-wm-id="hub.action.new" onClick={openModal}>
-            <Plus /> Nouveau tour
-          </button>
-        )}
-      />
-      <button className="create-caret" aria-label="Plus d'options" onClick={() => setOpen((o) => !o)}>
-        <Caret />
+      <button
+        className="btn btn-primary create-main"
+        data-wm-id="hub.action.new"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <Plus /> Nouveau <Caret />
       </button>
-      <div className={"menu" + (open ? " open" : "")}>
-        <NewTourButton
-          trigger={(openModal) => (
-            <button className="menu-item" data-wm-id="hub.action.new" onClick={() => { setOpen(false); openModal(); }}>
-              <span className="mi-ic"><NewTourIco /></span>
-              <span><span className="mi-t">Nouveau tour</span><span className="mi-d">Partir d&apos;une page blanche, étape par étape.</span></span>
-            </button>
-          )}
-        />
+      <div className={"menu" + (open ? " open" : "")} role="menu">
+        <Link href="/nouveau/tour" className="menu-item" data-wm-id="hub.action.new.tour" onClick={() => setOpen(false)}>
+          <span className="mi-ic"><NewTourIco /></span>
+          <span><span className="mi-t">Nouveau tour</span><span className="mi-d">Partir d&apos;une page blanche, étape par étape.</span></span>
+        </Link>
+        <Link href="/nouveau/film" className="menu-item" data-wm-id="hub.action.new.film" onClick={() => setOpen(false)}>
+          <span className="mi-ic"><FilmIco /></span>
+          <span><span className="mi-t">Nouveau film</span><span className="mi-d">Le film de ta marque, à partir de ton site.</span></span>
+        </Link>
+        <Link href="/nouveau/format" className="menu-item" data-wm-id="hub.action.new.format" onClick={() => setOpen(false)}>
+          <span className="mi-ic"><FormatIco /></span>
+          <span><span className="mi-t">Nouveau format</span><span className="mi-d">Explainer, conte à compteur, clip karaoké.</span></span>
+        </Link>
         <ScaffoldFromProjectButton
           trigger={(openModal) => (
             <button className="menu-item" data-wm-id="hub.action.scaffold" onClick={() => { setOpen(false); openModal(); }}>
@@ -96,7 +110,7 @@ export default function HubApp({
   films?: HubFilm[] | null;
   filmsError?: string | null;
   // Absent ou projets null : section masquée (vitrine publique).
-  formats?: { projets: HubFormat[] | null; formats: FormatProposable[]; error: string | null };
+  formats?: { projets: HubFormat[] | null; error: string | null };
 }) {
   const [fmt, setFmt] = useState<"all" | "16:9" | "9:16">("all");
   const [cat, setCat] = useState("all");
@@ -206,7 +220,7 @@ export default function HubApp({
         </div>
 
         {films !== null && <HubFilms films={films} error={filmsError} />}
-        {formats && formats.projets !== null && <HubFormats projets={formats.projets} formats={formats.formats} error={formats.error} />}
+        {formats && formats.projets !== null && <HubFormats projets={formats.projets} error={formats.error} />}
       </main>
 
       {/* Le bas de l'écran : la barre de navigation, ou la console IA à sa place. */}

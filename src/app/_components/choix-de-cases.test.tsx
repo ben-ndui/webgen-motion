@@ -29,4 +29,10 @@ describe("ChoixDeCases", () => {
     fireEvent.click(screen.getByRole("radio", { name: /Anglais/ }));
     expect(onChange).toHaveBeenLastCalledWith(["en"]);
   });
+
+  it("la grille s'enroule au lieu d'écraser ses colonnes (régression : 3 vignettes de style tenaient sur 150px)", () => {
+    const { container } = render(<ChoixDeCases titre="Style" options={LANGUES} valeurs={["fr"]} onChange={vi.fn()} />);
+    const grille = container.querySelector("fieldset > div");
+    expect(grille).toHaveStyle({ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" });
+  });
 });

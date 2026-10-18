@@ -14,8 +14,6 @@ import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import HubApp, { type HubTour } from "../_components/hub-app";
 import type { HubFilm } from "../_components/hub-films";
 import type { HubFormat } from "../_components/hub-formats";
-import type { FormatProposable } from "../_components/nouveau-format-bouton";
-import { CATALOGUE, FORMATS } from "@/lib/formats/catalogue";
 import { resumerProjet } from "@/lib/formats/format-etat";
 import { listerProjets } from "@/lib/formats/format-loader";
 
@@ -63,10 +61,10 @@ function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
 }
 
 // Les projets de format, même règle que les films : une lecture ratée est une
-// ERREUR à l'écran ; sur la vitrine publique, pas de section (`null`).
-function formatsDuHub(): { projets: HubFormat[] | null; formats: FormatProposable[]; error: string | null } {
-  const formats = FORMATS.map((nom) => ({ nom, libelle: CATALOGUE[nom].libelle, pourQui: CATALOGUE[nom].pourQui }));
-  if (isPublicWebRuntime(process.env)) return { projets: null, formats, error: null };
+// ERREUR à l'écran ; sur la vitrine publique, pas de section (`null`). Le
+// catalogue proposé à la création vit dans /nouveau/format (son propre fetch).
+function formatsDuHub(): { projets: HubFormat[] | null; error: string | null } {
+  if (isPublicWebRuntime(process.env)) return { projets: null, error: null };
   try {
     const projets = listerProjets().map((projet) => {
       const resume = resumerProjet(projet);
@@ -79,9 +77,9 @@ function formatsDuHub(): { projets: HubFormat[] | null; formats: FormatProposabl
         apercu: { video: rendue?.rendu?.url ?? null, portrait: (rendue ?? resume.declinaisons[0])?.version === "court" },
       };
     });
-    return { projets, formats, error: null };
+    return { projets, error: null };
   } catch (erreur) {
-    return { projets: [], formats, error: (erreur as Error).message };
+    return { projets: [], error: (erreur as Error).message };
   }
 }
 

@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import ApercuDuCadre from "./apercu-du-cadre";
-import NouveauFilmBouton from "./nouveau-film-bouton";
 
 /**
  * Section « Films de marque » du hub : une carte par fiche `films/<id>.json`,
@@ -86,7 +85,6 @@ export default function HubFilms({ films, error }: { films: HubFilm[]; error: st
         <h2 id="hub-films-title" className="section-title">
           Films de marque <span className="n">{error ? "" : films.length}</span>
         </h2>
-        <NouveauFilmBouton />
       </div>
       {error ? (
         <div className="films-note error" role="alert">
@@ -97,8 +95,8 @@ export default function HubFilms({ films, error }: { films: HubFilm[]; error: st
         <div className="films-note">
           <b>Aucun film de marque</b>
           <span>
-            Clique sur « Nouveau film » : tu donnes un nom, tu choisis un style, et GEN MOTION te guide
-            pour importer ton logo, ta musique et tes captures.
+            Clique sur « + Nouveau » en haut, puis « Nouveau film » : tu donnes un nom, tu choisis un style, et
+            GEN MOTION te guide pour importer ton logo, ta musique et tes captures.
           </span>
         </div>
       ) : (

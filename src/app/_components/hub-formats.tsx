@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import type { StatutDuProjet } from "@/lib/formats/format-etat";
 import ApercuDuCadre from "./apercu-du-cadre";
-import NouveauFormatBouton, { type FormatProposable } from "./nouveau-format-bouton";
 
 /**
  * Section « Formats » du hub : les vidéos du catalogue (explainer, conte,
@@ -50,16 +49,15 @@ function CarteDeFormat({ projet }: { projet: HubFormat }) {
   );
 }
 
-type Props = { projets: HubFormat[]; formats: FormatProposable[]; error: string | null };
+type Props = { projets: HubFormat[]; error: string | null };
 
-export default function HubFormats({ projets, formats, error }: Props) {
+export default function HubFormats({ projets, error }: Props) {
   return (
     <section id="formats" className="films-wrap" data-wm-id="hub.formats" aria-labelledby="hub-formats-title">
       <div className="films-head">
         <h2 id="hub-formats-title" className="section-title">
           Formats <span className="n">{error ? "" : projets.length}</span>
         </h2>
-        <NouveauFormatBouton formats={formats} />
       </div>
       {error ? (
         <div className="films-note error" role="alert">
@@ -71,7 +69,7 @@ export default function HubFormats({ projets, formats, error }: Props) {
           <b>Aucune vidéo de format</b>
           <span>
             Un explainer pour expliquer un sujet, un conte à compteur pour vendre avec un chiffre, un clip karaoké
-            pour un morceau : clique sur « Nouvelle vidéo ».
+            pour un morceau : clique sur « + Nouveau » en haut, puis « Nouveau format ».
           </span>
         </div>
       ) : (

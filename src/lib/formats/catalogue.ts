@@ -81,6 +81,13 @@ export function estNomDeFormat(valeur: unknown): valeur is NomDeFormat {
   return typeof valeur === "string" && (FORMATS as readonly string[]).includes(valeur);
 }
 
+/** Le catalogue tel qu'on le propose à la création (écran « Nouveau format »). */
+export type FormatProposable = { nom: string; libelle: string; pourQui: string };
+
+export function formatsProposables(): FormatProposable[] {
+  return FORMATS.map((nom) => ({ nom, libelle: CATALOGUE[nom].libelle, pourQui: CATALOGUE[nom].pourQui }));
+}
+
 /**
  * Un chemin de média écrit dans la fiche (donc venu du navigateur) reste DANS
  * le dossier public du projet : relatif, sans « .. », sans caractère exotique.

@@ -28,7 +28,7 @@ export default async function CreerUnFilmPage({
   if (!etat) {
     return (
       <CadreDuFilm nom={id}>
-        <EnTeteDuFilm id={id} titre="Film introuvable" sousTitre="Aucun film à ce nom : crée-le depuis le hub, bouton « Nouveau film »." />
+        <EnTeteDuFilm id={id} titre="Film introuvable" sousTitre="Aucun film à ce nom : crée-le depuis le dashboard, « + Nouveau » puis « Nouveau film »." />
       </CadreDuFilm>
     );
   }

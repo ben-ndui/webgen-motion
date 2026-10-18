@@ -62,4 +62,26 @@ describe("HubApp", () => {
     expect(links).toHaveLength(3);
     expect(links[0]).toHaveAttribute("href", "/tour/a");
   });
+
+  it("un seul bouton « + Nouveau » ouvre toute la création (tour, film, format)", async () => {
+    render(<HubApp tours={TOURS} edition="studio" />);
+    // Un seul déclencheur visible — plus de boutons « Nouveau film » / « Nouvelle vidéo » séparés.
+    expect(screen.queryAllByRole("button", { name: /^\+? ?Nouveau/ })).toHaveLength(1);
+    const declencheur = screen.getByRole("button", { name: /Nouveau/ });
+    expect(declencheur).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(declencheur);
+    expect(declencheur).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: /Nouveau tour/ })).toHaveAttribute("href", "/nouveau/tour");
+    expect(screen.getByRole("link", { name: /Nouveau film/ })).toHaveAttribute("href", "/nouveau/film");
+    expect(screen.getByRole("link", { name: /Nouveau format/ })).toHaveAttribute("href", "/nouveau/format");
+  });
+
+  it("Échap referme le menu « + Nouveau »", async () => {
+    render(<HubApp tours={TOURS} edition="studio" />);
+    const declencheur = screen.getByRole("button", { name: /Nouveau/ });
+    await userEvent.click(declencheur);
+    expect(declencheur).toHaveAttribute("aria-expanded", "true");
+    await userEvent.keyboard("{Escape}");
+    expect(declencheur).toHaveAttribute("aria-expanded", "false");
+  });
 });

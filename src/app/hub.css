@@ -47,10 +47,8 @@
 .gm-hub .btn-primary { background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow-sm); }
 .gm-hub .btn-primary:hover { background: var(--accent-hover); }
 .gm-hub .create { position: relative; display: flex; }
-.gm-hub .create .btn-primary { border-top-right-radius: 0; border-bottom-right-radius: 0; flex: 1; }
-.gm-hub .create-caret { background: var(--accent); color: var(--accent-ink); border: 0; border-left: 1px solid color-mix(in oklch, var(--accent-ink) 22%, transparent); border-radius: 0 var(--r-md) var(--r-md) 0; padding: 0 9px; cursor: pointer; display: grid; place-items: center; box-shadow: var(--shadow-sm); }
-.gm-hub .create-caret:hover { background: var(--accent-hover); }
-.gm-hub .create-caret svg { width: 15px; height: 15px; }
+.gm-hub .create-main { display: inline-flex; align-items: center; gap: 7px; }
+.gm-hub .create-main svg:last-child { width: 13px; height: 13px; opacity: .8; }
 .gm-hub .menu { position: absolute; top: calc(100% + 6px); right: 0; left: 0; z-index: 50; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-pop); padding: 6px; display: none; }
 .gm-hub .menu.open { display: block; }
 .gm-hub .menu-item { display: flex; align-items: flex-start; gap: 11px; padding: 9px 10px; border-radius: var(--r-sm); cursor: pointer; transition: background-color .12s; width: 100%; text-align: left; border: 0; background: transparent; font-family: inherit; }
