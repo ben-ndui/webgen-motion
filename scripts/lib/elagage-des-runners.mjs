@@ -39,6 +39,10 @@ export function elaguerLesModulesDesRunners(modules) {
     // sharp / lightningcss — frontend (Next/Image, Tailwind)
     "@img", "lightningcss-darwin-arm64", "lightningcss-darwin-x64",
     "lightningcss-linux-x64-gnu", "lightningcss-win32-x64-msvc",
+    // Stripe (checkout web) et PostHog (tracking web — JAMAIS dans
+    // l'app desktop, cf. SMOOTH_MANIFEST) : routes API Next, pas de
+    // runner ne les importe.
+    "stripe", "@posthog", "posthog-js", "posthog-node",
   ];
   let prunedMb = 0;
   for (const name of PRUNE_TOP_LEVEL) {
