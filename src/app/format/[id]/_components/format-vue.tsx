@@ -108,7 +108,7 @@ export default function FormatVue({ id, resume, pourQui, studio }: Props) {
                   declinaison={declinaison}
                   bloque={bloque}
                   studio={studio}
-                  etat={etats[declinaison.nom] ?? (declinaison.rendu ? { type: "fait", ...declinaison.rendu } : { type: "repos" })}
+                  etat={etats[declinaison.nom] ?? (declinaison.rendu ? { type: "fait", ...declinaison.rendu, duree: null } : { type: "repos" })}
                   occupe={enCours !== null}
                   onLancer={() => void lancer(declinaison.nom, { id, declinaison: declinaison.nom })}
                   onAnnuler={annuler}

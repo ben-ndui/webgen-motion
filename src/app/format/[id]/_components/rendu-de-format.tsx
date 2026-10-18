@@ -2,6 +2,8 @@
 
 import type { ResumeDuProjet } from "@/lib/formats/format-etat";
 import type { EtatDuRendu } from "@/lib/use-rendu-en-flux";
+import SuiviDuRendu from "@/app/_components/progression/suivi-du-rendu";
+import { direUneDuree } from "@/lib/suivi-du-rendu";
 
 const FORMAT: Record<string, string> = { long: "16:9 · 1920 × 1080", court: "9:16 · 1080 × 1920" };
 
@@ -19,7 +21,6 @@ type Props = {
 /** Une déclinaison : son bouton, sa progression, ses erreurs (avec la fin du journal), puis le lecteur. */
 export default function RenduDeFormat({ declinaison, bloque, studio, etat, occupe, onLancer, onAnnuler }: Props) {
   const enCours = etat.type === "en-cours";
-  const pourcentage = enCours && etat.total > 0 ? Math.round((etat.frames / etat.total) * 100) : null;
   return (
     <li className="film-block film-rendu" data-wm-id="format.rendu">
       <div className="film-rendu-head">
@@ -39,12 +40,7 @@ export default function RenduDeFormat({ declinaison, bloque, studio, etat, occup
           </button>
         )}
       </div>
-      {enCours && (
-        <div role="status" className="film-progress">
-          <span>{etat.label}</span>
-          <progress max={100} value={pourcentage ?? undefined} aria-label="Progression du rendu" />
-        </div>
-      )}
+      {etat.type === "en-cours" && <SuiviDuRendu etat={etat} />}
       {etat.type === "erreur" && (
         <div className="film-alert" role="alert">
           <b>{etat.message}</b>
@@ -62,7 +58,10 @@ export default function RenduDeFormat({ declinaison, bloque, studio, etat, occup
       {etat.type === "fait" && (
         <>
           <video className={`film-player film-player-${declinaison.version}`} controls preload="metadata" src={etat.url} />
-          <p className="film-muted">{(etat.octets / 1024 / 1024).toFixed(1)} Mo</p>
+          <p className="film-muted">
+            {typeof etat.duree === "number" && `Rendu en ${direUneDuree(etat.duree)} · `}
+            {(etat.octets / 1024 / 1024).toFixed(1)} Mo
+          </p>
         </>
       )}
     </li>

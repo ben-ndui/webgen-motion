@@ -1,0 +1,24 @@
+/* La barre de progression et le suivi de rendu de GEN MOTION (tous écrans). */
+.barre-de-progression { position: relative; width: 100%; height: 6px; border-radius: 999px; overflow: hidden; background: color-mix(in oklch, var(--ink) 10%, transparent); }
+.barre-de-progression-remplie { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, color-mix(in oklch, var(--accent) 70%, var(--surface)), var(--accent)); transition: width .4s cubic-bezier(.2, .7, .2, 1); }
+/* En attente : un reflet qui glisse, pour dire « ça travaille » sans inventer de pourcentage. */
+.barre-de-progression[data-en-attente="true"] .barre-de-progression-remplie { width: 35%; animation: barreEnAttente 1.4s ease-in-out infinite; }
+@keyframes barreEnAttente { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
+@media (prefers-reduced-motion: reduce) {
+  .barre-de-progression-remplie { transition: none; }
+  /* Immobile, une barre pleine se lirait « presque fini » : un tiers, estompé, dit « en cours ». */
+  .barre-de-progression[data-en-attente="true"] .barre-de-progression-remplie { animation: none; width: 33%; opacity: .5; }
+}
+
+.suivi-du-rendu { display: flex; flex-direction: column; gap: 10px; color: var(--ink); }
+.suivi-etapes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; }
+.suivi-etape { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); }
+.suivi-etape[data-etat="active"] { color: var(--ink); font-weight: 600; }
+.suivi-etape[data-etat="faite"] { color: var(--ink-soft, var(--muted)); }
+.suivi-etape-point { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-strong, var(--muted)); }
+.suivi-etape[data-etat="faite"] .suivi-etape-point { border-color: var(--accent); background: var(--accent); }
+.suivi-etape[data-etat="active"] .suivi-etape-point { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 25%, transparent); }
+.suivi-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 14px; }
+.suivi-libelle { min-width: 0; }
+.suivi-restant { flex: none; font-variant-numeric: tabular-nums; color: var(--muted); }
+.suivi-duree { margin: 0; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }

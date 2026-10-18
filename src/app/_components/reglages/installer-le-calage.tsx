@@ -5,6 +5,7 @@ import "./reglages.css";
 import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
 
+import BarreDeProgression from "@/app/_components/progression/barre-de-progression";
 import { MODELE_FRANCAIS } from "@/lib/karaoke-alignement/modele-francais";
 import { useTelechargementDeModele } from "@/lib/use-telechargement-de-modele";
 
@@ -33,7 +34,7 @@ export default function InstallerLeCalage({ installe = false, enCours = false }:
     const pourcent = Math.floor((etat.recus / etat.total) * 100);
     return (
       <span className="reglages-installation" role="status">
-        <progress max={100} value={pourcent} aria-label="Installation du calage mot à mot" />
+        <BarreDeProgression valeur={pourcent / 100} nom="Installation du calage mot à mot" />
         <span>{pourcent} % · {Math.round(etat.recus / MO)} / {Math.round(etat.total / MO)} Mo</span>
       </span>
     );

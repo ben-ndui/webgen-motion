@@ -73,5 +73,7 @@ describe("la page d'un projet de format", () => {
     expect(container.querySelector("video")?.getAttribute("src")).toBe(rendu.url);
     expect(screen.getByText("20.0 Mo")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rendre à nouveau" })).toBeEnabled();
+    // Un rendu lu sur le disque n'a pas de durée mesurée : on n'en invente pas.
+    expect(screen.queryByText(/Rendu en/)).not.toBeInTheDocument();
   });
 });

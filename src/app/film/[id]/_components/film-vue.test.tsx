@@ -147,6 +147,40 @@ describe("rendu d'une déclinaison", () => {
     expect(screen.getByRole("button", { name: "Rendre à nouveau" })).toBeEnabled();
   });
 
+  it("suit les étapes du flux, puis dit combien de temps le rendu a pris", async () => {
+    let horloge = 1_000_000;
+    vi.spyOn(Date, "now").mockImplementation(() => horloge);
+    let envoyer: (evenement: object) => void = () => {};
+    let fermer: () => void = () => {};
+    const flux = new ReadableStream<Uint8Array>({
+      start(controleur) {
+        envoyer = (evenement) => controleur.enqueue(new TextEncoder().encode(`${JSON.stringify(evenement)}\n`));
+        fermer = () => controleur.close();
+      },
+    });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(flux, { status: 200 }));
+    render(<FilmVue id="kotizo" resume={resume()} studio />);
+    await userEvent.click(screen.getByRole("button", { name: "Rendre" }));
+    // Dès le clic : la frise est là, sur « Préparation ».
+    expect(await screen.findByText("Préparation")).toHaveAttribute("aria-current", "step");
+
+    envoyer({ type: "phase", etape: "preparation", label: "Préparation de la composition · 40 %" });
+    envoyer({ type: "progress", etape: "images", frames: 454, total: 810, label: "Image 454 sur 810", restant: 80 });
+    expect(await screen.findByText("Image 454 sur 810")).toBeInTheDocument();
+    expect(screen.getByText("Images").closest("li")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByText("encore ~1 min 20")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "" })).toHaveTextContent("Rendu : Images");
+
+    envoyer({ type: "progress", etape: "encodage", frames: 10, total: 810, label: "Encodage de la vidéo · 10 sur 810", restant: null });
+    expect(await screen.findByText("Encodage de la vidéo · 10 sur 810")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "1");
+
+    horloge += 151_000;
+    envoyer({ type: "done", ok: true, url: "/api/motion/film/video?id=kotizo&declinaison=Court-FR&t=2", sizeBytes: 5 * 1024 * 1024 });
+    fermer();
+    expect(await screen.findByText(/Rendu en 2 min 31/)).toBeInTheDocument();
+  });
+
   it("un refus de la route affiche ses erreurs", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       Response.json({ error: "Rendu refusé", erreurs: ["capture absente : /x/a.png"] }, { status: 400 }),

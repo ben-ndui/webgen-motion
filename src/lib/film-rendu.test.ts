@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { deposerMedias, dossierJetable, ecrireFiche, ficheValide } from "./film-fixtures.test-utils";
-import { lireLigneDuRendu, lireRequeteDeRendu, preparerRendu } from "./film-rendu";
+import { lireRequeteDeRendu, preparerRendu } from "./film-rendu";
 
 describe("lireRequeteDeRendu (entrées de la route)", () => {
   it("accepte deux noms sûrs", () => {
@@ -82,22 +82,3 @@ describe("preparerRendu", () => {
   });
 });
 
-describe("lireLigneDuRendu", () => {
-  it("traduit la progression de Remotion", () => {
-    expect(lireLigneDuRendu("Rendered 12/1224, time remaining: 30s")).toEqual({
-      type: "progress",
-      frames: 12,
-      total: 1224,
-      label: "Rendu image par image · 12/1224",
-    });
-    expect(lireLigneDuRendu("Encoded 1224/1224")).toMatchObject({ type: "progress", frames: 1224 });
-    expect(lireLigneDuRendu("Bundling 40%")).toMatchObject({ type: "phase" });
-    expect(lireLigneDuRendu("▶ Film Court-FR (fr, court)")).toMatchObject({ type: "phase" });
-    expect(lireLigneDuRendu("✓ Done → /x/Court-FR.mp4")).toEqual({ type: "phase", label: "Finalisation…" });
-  });
-
-  it("ignore le reste", () => {
-    expect(lireLigneDuRendu("")).toBeNull();
-    expect(lireLigneDuRendu("  Public dir : /x")).toBeNull();
-  });
-});

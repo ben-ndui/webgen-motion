@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { type Stats, existsSync, statSync } from "node:fs";
 
 import { POIDS_MINIMUM_D_UN_RENDU } from "./film-etat";
-import { lireLigneDuRendu } from "./film-rendu";
+import { lireLigneDuRendu } from "./suivi-du-rendu";
 import { descendantsDe } from "./process-tree";
 import type { RunnerSpawn } from "./runner-spawn";
 

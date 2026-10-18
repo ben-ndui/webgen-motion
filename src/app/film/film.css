@@ -58,8 +58,6 @@
 .gm-film .film-btn:disabled { opacity: .45; cursor: not-allowed; }
 .gm-film .film-btn-ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
 .gm-film .film-btn-ghost:hover:not(:disabled) { background: var(--surface-2); }
-.gm-film .film-progress { display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
-.gm-film .film-progress progress { width: 100%; accent-color: var(--accent); }
 .gm-film .film-player { width: 100%; border-radius: var(--r-md); background: #000; }
 .gm-film .film-player-court { max-height: 480px; object-fit: contain; }
 .gm-film a.film-btn { display: inline-flex; align-items: center; text-decoration: none; width: fit-content; }

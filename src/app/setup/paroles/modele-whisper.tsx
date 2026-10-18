@@ -1,5 +1,6 @@
 "use client";
 
+import BarreDeProgression from "@/app/_components/progression/barre-de-progression";
 import { useTelechargementDeModele } from "@/lib/use-telechargement-de-modele";
 
 import type { EtatWhisper } from "./page";
@@ -34,7 +35,7 @@ export default function ModeleWhisper({ modele, onTelecharge }: { modele: EtatWh
       </div>
       {etat.type === "telechargement" && (
         <div role="status">
-          <progress className="w-full" max={100} value={pourcent} aria-label={`Téléchargement du modèle ${modele.nom}`} />
+          <BarreDeProgression valeur={pourcent / 100} nom={`Téléchargement du modèle ${modele.nom}`} />
           <p className="text-xs text-muted">{pourcent} % · {Math.round(etat.recus / MO)} / {Math.round(etat.total / MO)} Mo</p>
         </div>
       )}

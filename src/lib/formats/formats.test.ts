@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { lireLigneDuRendu } from "../film-rendu";
+import { lireLigneDuRendu } from "../suivi-du-rendu";
 import { CATALOGUE, FORMATS, erreursDuProjet, estCheminDeMediaSur } from "./catalogue";
 import { chargerProjet, creerProjet, enregistrerProjet, listerProjets, projetDeDepart } from "./format-loader";
 import { lireRequeteDeRenduDeFormat, preparerRenduDeFormat } from "./format-rendu";
