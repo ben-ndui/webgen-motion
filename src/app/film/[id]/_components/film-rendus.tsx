@@ -11,7 +11,7 @@ import { type EtatDuRendu, cleDuRendu, useRenduDeFilm } from "./use-rendu-de-fil
 // sinon ce que le disque disait au chargement.
 function etatAffiche(surDisque: EtatDuRenduSurDisque, etat: EtatDuRendu | undefined): EtatDuRendu {
   if (etat) return etat;
-  if (surDisque.rendu) return { type: "fait", url: surDisque.rendu.url, octets: surDisque.rendu.octets };
+  if (surDisque.rendu) return { type: "fait", url: surDisque.rendu.url, octets: surDisque.rendu.octets, duree: null };
   return { type: "repos" };
 }
 

@@ -5,27 +5,12 @@ import { type CouleursDeBase, paletteDuFilm, problemesDeLaPalette } from "@/lib/
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
 import ChoixDeCases from "../../../../_components/choix-de-cases";
 import { STYLES } from "../../../../_components/choix-du-film";
+import { POLICES } from "../../../../_components/polices-du-film";
 import { DIRECTION_PAR_DEFAUT } from "../../../../../../remotion/film/marque/direction";
 import type { DirectionDuFilm } from "../../../../../../remotion/film/spec";
 import BlocLanguesFormats from "./bloc-langues-formats";
 import CaseDeDepot from "./case-de-depot";
 import type { RoleDeDepot } from "./use-fiche-du-film";
-
-// Polices vérifiées dans le catalogue du rendu (@remotion/google-fonts).
-const POLICES = [
-  { nom: "Jost", allure: "géométrique, moderne" },
-  { nom: "Inter", allure: "neutre, très lisible" },
-  { nom: "Poppins", allure: "ronde, chaleureuse" },
-  { nom: "Montserrat", allure: "affirmée" },
-  { nom: "DM Sans", allure: "douce" },
-  { nom: "Manrope", allure: "tech, sobre" },
-  { nom: "Space Grotesk", allure: "tech, caractère" },
-  { nom: "Syne", allure: "créative" },
-  { nom: "Playfair Display", allure: "élégante, à empattements" },
-  { nom: "Fraunces", allure: "éditoriale" },
-  { nom: "Cormorant Garamond", allure: "luxe, classique" },
-  { nom: "Italiana", allure: "luxe, très fine" },
-];
 
 const COULEURS: { cle: keyof CouleursDeBase; libelle: string; aide: string }[] = [
   { cle: "encre", libelle: "Fond sombre", aide: "La couleur foncée de ta marque" },

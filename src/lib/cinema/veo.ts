@@ -24,7 +24,14 @@ function accepteUnNegatif(qualite: QualiteDeCinema, avecPortraits: boolean): boo
 /** Un portrait de personnage envoyé en référence, pour garder son visage. */
 export type ImageDeReference = { octets: Uint8Array; mimeType: "image/jpeg" | "image/png" };
 
-export type DemandeDePlan = { qualite: QualiteDeCinema; prompt: string; negatif: string; references?: ImageDeReference[] };
+export type DemandeDePlan = {
+  qualite: QualiteDeCinema;
+  prompt: string;
+  negatif: string;
+  references?: ImageDeReference[];
+  // Vertical par défaut (la série) ; le décor d'un clip YouTube se génère en 16:9.
+  format?: "9:16" | "16:9";
+};
 
 /** Le corps de la requête de lancement, selon ce que le modèle accepte. */
 export function corpsDuLancement(demande: DemandeDePlan): unknown {
@@ -33,7 +40,7 @@ export function corpsDuLancement(demande: DemandeDePlan): unknown {
   if (references.length > 0 && demande.qualite === "lite") {
     throw new Error("Veo Lite n'accepte pas de portrait en référence : ce plan doit passer en Fast.");
   }
-  const parametres = { aspectRatio: "9:16", resolution: "1080p", durationSeconds: 8 };
+  const parametres = { aspectRatio: demande.format ?? "9:16", resolution: "1080p", durationSeconds: 8 };
   const instance: Record<string, unknown> = { prompt: demande.prompt };
   if (references.length > 0) {
     instance.referenceImages = references.map((reference) => ({
@@ -71,6 +78,8 @@ export function raisonDuRefus(statut: number, corps: unknown): string {
     const detail = message ? ` Détail de Google : ${message}` : "";
     return `Quota Google atteint ou facturation coupée : attends une minute, sinon vérifie le crédit de ton projet Google AI Studio.${detail}`;
   }
+  // 402 : le compte n'a plus de crédit prépayé. Rien n'est facturé, il faut recharger.
+  if (statut === 402) return "Plus de crédit sur ton compte Google AI Studio : recharge-le, puis relance.";
   if (statut === 400 && message) return `Google refuse la demande : ${message}`;
   return `Google ne répond pas comme prévu (${statut}).`;
 }

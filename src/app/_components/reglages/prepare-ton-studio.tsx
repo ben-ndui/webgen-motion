@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { ArrowRight, Check, X } from "lucide-react";
 
-import { type Reglage, reglagesManquants } from "@/lib/reglages/etat-des-reglages";
+import { type Reglage, optionnelsAProposer, reglagesManquants } from "@/lib/reglages/etat-des-reglages";
+
+import InstallerLeCalage from "./installer-le-calage";
 
 type Props = { reglages: Reglage[]; fermer: () => void };
 
@@ -18,6 +20,7 @@ type Props = { reglages: Reglage[]; fermer: () => void };
 export default function PrepareTonStudio({ reglages, fermer }: Props) {
   const fenetre = useRef<HTMLDivElement>(null);
   const manquants = reglagesManquants(reglages).length;
+  const optionnels = optionnelsAProposer(reglages).length;
 
   useEffect(() => {
     fenetre.current?.focus();
@@ -67,6 +70,8 @@ export default function PrepareTonStudio({ reglages, fermer }: Props) {
               </span>
               {reglage.pret ? (
                 <span className="reglages-pret">Prêt</span>
+              ) : reglage.cle === "karaoke" ? (
+                <InstallerLeCalage />
               ) : (
                 <Link href={reglage.page} className="reglages-bouton">
                   Régler
@@ -79,7 +84,7 @@ export default function PrepareTonStudio({ reglages, fermer }: Props) {
 
         <footer className="reglages-pied">
           <button type="button" className="reglages-plus-tard" onClick={fermer}>
-            {manquants === 0 ? "Fermer" : "Plus tard"}
+            {manquants === 0 && optionnels === 0 ? "Fermer" : "Plus tard"}
           </button>
         </footer>
       </div>

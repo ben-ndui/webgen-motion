@@ -33,11 +33,7 @@ import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** du -sm wrapper — returns size in MB (integer). */
-function dirSizeMb(p) {
-  const r = spawnSync("du", ["-sm", p], { encoding: "utf-8" });
-  return parseInt((r.stdout ?? "0").split("\t")[0], 10) || 0;
-}
+import { elaguerLesModulesDesRunners } from "./lib/elagage-des-runners.mjs";
 
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -119,45 +115,7 @@ cpSync(src.node_modules, join(dst.runners, "node_modules"), {
   filter: (path) => !path.includes("/.cache/"),
 });
 
-// Prune dependencies the runners (capture-tour, audio-tour,
-// compose-tour, analyze-audio) never load. Pure frontend libs go
-// (React UI + Next + framer / icons / fonts / Tauri JS SDK), plus
-// dev + build-time tooling (TypeScript, ESLint, Prettier, Tailwind,
-// Webpack/Rspack, SWC, sharp/img). Cuts the bundled .dmg by roughly
-// 50%.
-console.log("[desktop-prepare] pruning runner node_modules…");
-const PRUNE_TOP_LEVEL = [
-  // Next.js stack — the Next *server* lives in standalone/, runners
-  // don't import any of this.
-  "next", "@next",
-  // Frontend UI / icons / animations / fonts / Tauri SDK
-  "react-icons", "lucide-react", "framer-motion", "geist",
-  "@tauri-apps",
-  // Dev tooling : TypeScript / ESLint / Prettier
-  "typescript", "@types",
-  "eslint", "@eslint", "@typescript-eslint",
-  "eslint-config-next", "eslint-plugin-react", "eslint-plugin-react-hooks",
-  "prettier",
-  // Build-time CSS / bundler / compiler
-  "tailwindcss", "@tailwindcss",
-  "webpack",
-  "@rspack", "@rsbuild",
-  "@swc",
-  // sharp / lightningcss — frontend (Next/Image, Tailwind)
-  "@img", "lightningcss-darwin-arm64", "lightningcss-darwin-x64",
-  "lightningcss-linux-x64-gnu", "lightningcss-win32-x64-msvc",
-];
-let prunedMb = 0;
-for (const name of PRUNE_TOP_LEVEL) {
-  const target = join(dst.runners, "node_modules", name);
-  if (existsSync(target)) {
-    const sizeBefore = dirSizeMb(target);
-    rmSync(target, { recursive: true, force: true });
-    prunedMb += sizeBefore;
-    console.log(`  - ${name} (${sizeBefore} MB)`);
-  }
-}
-console.log(`[desktop-prepare] pruned ${Math.round(prunedMb)} MB total`);
+elaguerLesModulesDesRunners(join(dst.runners, "node_modules"));
 
 // ─── frontendDist placeholder ──────────────────────────────────────
 writeFileSync(

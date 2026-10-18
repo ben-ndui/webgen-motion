@@ -104,36 +104,3 @@ export function preparerRendu(
     verrou: fichiers.verrou,
   };
 }
-
-export type EvenementDeRendu =
-  | { type: "phase"; label: string }
-  | { type: "progress"; frames: number; total: number; label: string };
-
-/**
- * Traduit une ligne de sortie du runner (bannières + CLI Remotion) en
- * événement NDJSON pour l'écran. `null` : ligne sans intérêt pour l'écran.
- */
-export function lireLigneDuRendu(ligne: string): EvenementDeRendu | null {
-  if (!ligne) return null;
-  if (ligne.startsWith("▶ Film")) return { type: "phase", label: "Préparation du rendu…" };
-
-  let m = ligne.match(/^Bundling (\d+)%/);
-  if (m) return { type: "phase", label: `Bundling de la composition · ${m[1]}%…` };
-
-  m = ligne.match(/^Rendered (\d+)\/(\d+)/);
-  if (m) {
-    const frames = parseInt(m[1], 10);
-    const total = parseInt(m[2], 10);
-    return { type: "progress", frames, total, label: `Rendu image par image · ${frames}/${total}` };
-  }
-
-  m = ligne.match(/^Encoded (\d+)\/(\d+)/);
-  if (m) {
-    const frames = parseInt(m[1], 10);
-    const total = parseInt(m[2], 10);
-    return { type: "progress", frames, total, label: `Encodage h264 · ${frames}/${total}` };
-  }
-
-  if (ligne.startsWith("✓ Done")) return { type: "phase", label: "Finalisation…" };
-  return null;
-}

@@ -1,9 +1,9 @@
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
-import { Telephone } from "../composants/Telephone";
+import { Appareil } from "../composants/Appareil";
 import { DecorDeDirection } from "../composants/DecorDeDirection";
-import { useSurface } from "../marque/MarqueDuFilm";
+import { useMarque, useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
 import { entre, progression } from "../lib/mouvement";
 import { imageDuTemps } from "../lib/tempo";
@@ -21,6 +21,17 @@ const MISE_EN_PAGE = {
   },
 } as const;
 
+// Avec une fenêtre d'ordinateur (largeur × AGRANDISSEMENT_ORDINATEUR) : à
+// droite en 16:9 sans sortir du cadre, centrée et au-dessus de la réserve basse en 9:16.
+const MISE_EN_PAGE_ORDINATEUR = {
+  paysage: { texte: { left: MARGE, top: 330 }, telephone: { left: 980, top: 140, largeur: 470 }, course: 760 },
+  portrait: {
+    texte: { left: MARGE_PORTRAIT, top: RESERVE_HAUT },
+    telephone: { left: (1080 - 836) / 2, top: 700, largeur: 440 },
+    course: 900,
+  },
+} as const;
+
 /**
  * Plan 6, la marque : une coda HONNÊTE, pas le climax. Trois mots, un par
  * temps, puis l'écran réel qui prouve la promesse monte du bas (chez Kotizo :
@@ -30,7 +41,8 @@ export function P6Marque({ tempo, textes, ecran, dossierDesEcrans }: Props) {
   const surface = useSurface("sombre");
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
-  const page = MISE_EN_PAGE[useFormat()];
+  const { appareil } = useMarque();
+  const page = (appareil?.type === "ordinateur" ? MISE_EN_PAGE_ORDINATEUR : MISE_EN_PAGE)[useFormat()];
   const montee = progression(image, temps(3), temps(3));
   const dernier = textes.mots.length - 1;
 
@@ -58,7 +70,7 @@ export function P6Marque({ tempo, textes, ecran, dossierDesEcrans }: Props) {
           transform: `translateY(${entre(page.course, 0, montee)}px)`,
         }}
       >
-        <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={page.telephone.largeur} debut={temps(3)} />
+        <Appareil ecran={`${dossierDesEcrans}/${ecran}`} largeur={page.telephone.largeur} debut={temps(3)} />
       </div>
     </AbsoluteFill>
   );

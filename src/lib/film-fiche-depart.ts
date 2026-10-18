@@ -41,8 +41,13 @@ export function problemesDuChoix(choix: Partial<ChoixDeDepart>): string[] {
 }
 
 /** « Maison Saya » → « maison-saya » : l'id sert de nom de fichier. */
+// Ces lettres ne se décomposent pas en « lettre + accent » : sans elles, « Wes Øf. » donnait « wes-f ».
+const LETTRES_SANS_DECOMPOSITION: Record<string, string> = { ø: "o", æ: "ae", œ: "oe", ß: "ss", ł: "l", đ: "d" };
+
 export function idDepuisNom(nom: string): string {
   return nom
+    .toLowerCase()
+    .replace(/[øæœßłđ]/g, (lettre) => LETTRES_SANS_DECOMPOSITION[lettre] ?? lettre)
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()

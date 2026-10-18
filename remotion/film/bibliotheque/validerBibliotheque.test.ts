@@ -5,13 +5,32 @@ import type { FilmSpec } from "../spec";
 import { erreursDeLaSpec } from "../validerSpec";
 import { erreursDeLaBibliotheque } from "./validerBibliotheque";
 
+// La fiche du film, plus une bibliothèque d'exemple (celle du gabarit) :
+// un film qui n'en sert pas (Kandidate) doit quand même éprouver ses règles.
 function copie(): FilmSpec {
-  return JSON.parse(JSON.stringify(FILM)) as FilmSpec;
+  const spec = JSON.parse(JSON.stringify(FILM)) as FilmSpec;
+  spec.bibliotheque = {
+    adresse: "exemple.fr",
+    ecranDeLAdresse: "site.png",
+    eventail: ["parcours-1.png", "parcours-2.png", "parcours-3.png", "parcours-4.png"],
+  };
+  spec.textes.fr.bibliotheque = {
+    mot: "Livrée.",
+    anneau: "Conçue · Codée · Livrée",
+    legendesEventail: ["La première étape", "La deuxième", "La troisième", "C'est réglé"],
+    signature: "La promesse, en une ligne.",
+  };
+  spec.textes.en.bibliotheque = {
+    mot: "Shipped.",
+    anneau: "Designed · Built · Shipped",
+    legendesEventail: ["The first step", "The second", "The third", "Sorted"],
+    signature: "The promise, in one line.",
+  };
+  return spec;
 }
 
 describe("erreursDeLaBibliotheque", () => {
   it("accepte la bibliothèque d'exemple, et la fiche reste valide pour le film", () => {
-    expect(FILM.bibliotheque).toBeDefined();
     expect(erreursDeLaBibliotheque(copie())).toEqual([]);
     expect(erreursDeLaSpec(copie())).toEqual([]);
   });

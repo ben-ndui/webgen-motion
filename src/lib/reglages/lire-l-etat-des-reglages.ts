@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 
 import { resolveAgent, resolveVeoKey, resolveVoiceBackend } from "../config-resolve";
+import { alignementPossibleIci, cheminDuModeleDAlignement } from "../karaoke-alignement/emplacement-du-modele";
+import { outilsWhisper } from "../whisper";
 import { type Reglage, etatDesReglages } from "./etat-des-reglages";
 
 /**
@@ -23,5 +25,7 @@ export function lireLEtatDesReglages(): Reglage[] {
     claude: resolveAgent()?.provider === "anthropic",
     video: resolveVeoKey() !== null,
     voix: laVoixEstPrete(),
+    paroles: outilsWhisper().ok,
+    karaoke: alignementPossibleIci() ? cheminDuModeleDAlignement("fr") !== null : null,
   });
 }

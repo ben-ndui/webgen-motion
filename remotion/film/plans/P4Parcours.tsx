@@ -1,7 +1,7 @@
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 
 import { Revele } from "../composants/Revele";
-import { Telephone, hauteurDuTelephone } from "../composants/Telephone";
+import { Appareil, useDimensionsDeLAppareil } from "../composants/Appareil";
 import { DecorDeDirection } from "../composants/DecorDeDirection";
 import { useCouleurs, useSurface } from "../marque/MarqueDuFilm";
 import { MARGE_PORTRAIT, RESERVE_HAUT, useFormat } from "../lib/format";
@@ -44,7 +44,7 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
   const image = useCurrentFrame();
   const temps = (n: number) => imageDuTemps(n, tempo);
   const { largeur, pas, foyer, legende: placeDeLaLegende } = MISE_EN_PAGE[useFormat()];
-  const hauteur = hauteurDuTelephone(largeur);
+  const { largeur: largeurReelle, hauteur } = useDimensionsDeLAppareil(largeur);
   const pasX = pas * Math.cos(Math.PI / 3);
   const pasY = -pas * Math.sin(Math.PI / 3);
 
@@ -80,13 +80,13 @@ export function P4Parcours({ tempo, legendes, ecrans, dossierDesEcrans }: Props)
               key={ecran}
               style={{
                 position: "absolute",
-                left: index * pasX - largeur / 2,
+                left: index * pasX - largeurReelle / 2,
                 top: index * pasY - hauteur / 2,
                 transform: `scale(${echelle})`,
               }}
             >
               {/* Filmé, l'écran défile quand la caméra arrive sur lui. */}
-              <Telephone ecran={`${dossierDesEcrans}/${ecran}`} largeur={largeur} debut={Math.max(0, temps(index * TEMPS_PAR_ETAPE) - temps(1))} />
+              <Appareil ecran={`${dossierDesEcrans}/${ecran}`} largeur={largeur} debut={Math.max(0, temps(index * TEMPS_PAR_ETAPE) - temps(1))} />
             </div>
           );
         })}

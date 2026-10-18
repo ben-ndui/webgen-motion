@@ -13,6 +13,8 @@ import GenerateWithAiButton from "./generate-with-ai-button";
 import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
 import HubFilms, { type HubFilm } from "./hub-films";
+import HubFormats, { type HubFormat } from "./hub-formats";
+import type { FormatProposable } from "./nouveau-format-bouton";
 import TourCard, { type HubTour } from "./hub-tour-card";
 
 export type { HubTour };
@@ -84,6 +86,7 @@ export default function HubApp({
   reglages,
   films = [],
   filmsError = null,
+  formats,
 }: {
   tours: HubTour[];
   edition: string;
@@ -92,6 +95,8 @@ export default function HubApp({
   // null : section masquée (vitrine publique).
   films?: HubFilm[] | null;
   filmsError?: string | null;
+  // Absent ou projets null : section masquée (vitrine publique).
+  formats?: { projets: HubFormat[] | null; formats: FormatProposable[]; error: string | null };
 }) {
   const [fmt, setFmt] = useState<"all" | "16:9" | "9:16">("all");
   const [cat, setCat] = useState("all");
@@ -201,6 +206,7 @@ export default function HubApp({
         </div>
 
         {films !== null && <HubFilms films={films} error={filmsError} />}
+        {formats && formats.projets !== null && <HubFormats projets={formats.projets} formats={formats.formats} error={formats.error} />}
       </main>
 
       {/* Le bas de l'écran : la barre de navigation, ou la console IA à sa place. */}

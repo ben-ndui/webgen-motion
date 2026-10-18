@@ -42,6 +42,9 @@ describe("fiche d'un nouveau film", () => {
   it("transforme un nom en id sûr, et dit ce qui manque dans le choix", () => {
     expect(idDepuisNom("Maison Saya Signature !")).toBe("maison-saya-signature");
     expect(idDepuisNom("Éclair & Thé")).toBe("eclair-the");
+    // Ø, Æ, Œ, ß ne se décomposent pas : sans table, « Wes Øf. » donnait « wes-f ».
+    expect(idDepuisNom("Wes Øf. 10 ANS")).toBe("wes-of-10-ans");
+    expect(idDepuisNom("Cœur Ærø Straße")).toBe("coeur-aero-strasse");
     expect(problemesDuChoix({ nom: "  ", langues: [], formats: [], direction: undefined })).toEqual([
       "Donne un nom à ton film",
       "Choisis au moins une langue",

@@ -3,6 +3,8 @@
 import type { ReactNode } from "react";
 import type { EtatDeDeclinaison, EtatDuRenduSurDisque } from "@/lib/film-etat";
 import type { EtatDuRendu } from "./use-rendu-de-film";
+import SuiviDuRendu from "@/app/_components/progression/suivi-du-rendu";
+import { direUneDuree } from "@/lib/suivi-du-rendu";
 
 const FORMAT = { long: "16:9 · 1920 × 1080", court: "9:16 · 1080 × 1920" } as const;
 
@@ -31,7 +33,6 @@ export default function CarteDeRendu({ declinaison, episode, surDisque, studio, 
   const titre = episode ? episode.titre : declinaison.nom;
   const version = episode ? "court" : declinaison.version;
   const enCours = etat.type === "en-cours";
-  const pourcentage = enCours && etat.total > 0 ? Math.round((etat.frames / etat.total) * 100) : null;
 
   return (
     <li className="film-block film-rendu" data-wm-id="film.rendu">
@@ -64,12 +65,7 @@ export default function CarteDeRendu({ declinaison, episode, surDisque, studio, 
         </ul>
       )}
 
-      {enCours && (
-        <div role="status" className="film-progress">
-          <span>{etat.label}</span>
-          <progress max={100} value={pourcentage ?? undefined} aria-label="Progression du rendu" />
-        </div>
-      )}
+      {etat.type === "en-cours" && <SuiviDuRendu etat={etat} />}
 
       {etat.type === "erreur" && (
         <div className="film-alert" role="alert">
@@ -89,7 +85,10 @@ export default function CarteDeRendu({ declinaison, episode, surDisque, studio, 
       {etat.type === "fait" && (
         <>
           <video className={`film-player film-player-${version}`} controls preload="metadata" src={etat.url} />
-          <p className="film-muted">{megaOctets(etat.octets)}</p>
+          <p className="film-muted">
+            {typeof etat.duree === "number" && `Rendu en ${direUneDuree(etat.duree)} · `}
+            {megaOctets(etat.octets)}
+          </p>
           {studio && exporter}
         </>
       )}

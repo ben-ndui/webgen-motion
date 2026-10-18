@@ -47,6 +47,17 @@ export function textes(erreurs: Erreurs, chemin: string, valeur: unknown, nombre
   valeur.forEach((element, index) => texte(erreurs, `${chemin}[${index}]`, element));
 }
 
+function verifierAppareil(erreurs: Erreurs, appareil: unknown): void {
+  if (appareil === undefined) return;
+  if (!estObjet(appareil) || !["telephone", "ordinateur"].includes(appareil.type as string)) {
+    erreurs.push("marque.appareil.type : « telephone » ou « ordinateur »");
+    return;
+  }
+  if (appareil.type === "ordinateur" && !(estNombre(appareil.rapport) && appareil.rapport > 0)) {
+    erreurs.push("marque.appareil.rapport : nombre positif attendu (hauteur / largeur des captures)");
+  }
+}
+
 function verifierMarque(erreurs: Erreurs, marque: unknown): void {
   if (!estObjet(marque)) {
     erreurs.push("marque : objet attendu");
@@ -64,6 +75,7 @@ function verifierMarque(erreurs: Erreurs, marque: unknown): void {
   if (typeof marque.contact !== "string") erreurs.push("marque.contact : texte attendu");
   if (marque.nom !== undefined && typeof marque.nom !== "string") erreurs.push("marque.nom : texte attendu");
   verifierLogo(erreurs, marque.logo);
+  verifierAppareil(erreurs, marque.appareil);
 }
 
 function verifierLogo(erreurs: Erreurs, logo: unknown): void {
@@ -253,6 +265,25 @@ function verifierVoix(erreurs: Erreurs, voix: unknown): void {
   }
 }
 
+/**
+ * Produit sur ordinateur : le problème se joue dans une boîte de réception, dont
+ * le titre et chaque expéditeur s'écrivent dans la langue du film (aucun texte
+ * par défaut dans le composant, sinon le film anglais afficherait du français).
+ */
+function verifierBoiteDeReception(erreurs: Erreurs, marque: unknown, tous: unknown): void {
+  if (!estObjet(marque) || !estObjet(marque.appareil) || marque.appareil.type !== "ordinateur") return;
+  if (!estObjet(tous)) return;
+  for (const langue of LANGUES) {
+    const t = tous[langue];
+    const probleme = estObjet(t) && estObjet(t.probleme) ? t.probleme : {};
+    texte(erreurs, `textes.${langue}.probleme.titreDeLaBoite`, probleme.titreDeLaBoite);
+    const messages = Array.isArray(probleme.messages) ? probleme.messages : [];
+    messages.forEach((message: unknown, index: number) => {
+      texte(erreurs, `textes.${langue}.probleme.messages[${index}].expediteur`, estObjet(message) ? message.expediteur : undefined);
+    });
+  }
+}
+
 /** Toutes les erreurs de la fiche ; liste vide = fiche valide. */
 export function erreursDeLaSpec(entree: unknown): string[] {
   const erreurs: Erreurs = [];
@@ -260,6 +291,7 @@ export function erreursDeLaSpec(entree: unknown): string[] {
   if (typeof entree.exemple !== "boolean") erreurs.push("exemple : vrai ou faux");
   verifierMarque(erreurs, entree.marque);
   verifierTextes(erreurs, entree.textes);
+  verifierBoiteDeReception(erreurs, entree.marque, entree.textes);
   verifierEcrans(erreurs, entree.ecrans);
   verifierMusique(erreurs, entree.musique);
   verifierDeclinaisons(erreurs, entree.declinaisons);

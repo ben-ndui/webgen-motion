@@ -63,3 +63,7 @@ claude-code-audit-prompt.md
 # Node Helper.app (LSUIElement) — rebuilt every `tauri build` by
 # scripts/desktop-prepare-node-helper.mjs
 /src-tauri/node-helper/
+
+# Les projets de format (explainer, conte, karaoké) sont des DONNÉES de la personne :
+# jamais dans le dépôt (l'app installée les lit dans ~/.webgen-motion/fiches-formats).
+/formats/
