@@ -83,6 +83,21 @@ function demandeSansHistorique(marque: MarqueDuFilm, cinema: CinemaDuFilm, deman
         message: `${ligneDeLaMarque(marque)}\n\n${leProduit(cinema)}\n\n${laBible(cinema)}\n\nWrite (or rewrite, more concrete) ${nom}'s description, consistent with the rest of the references above and with the brand. ${UNE_AUTRE_DESCRIPTION}`,
       };
     }
+    case "importer-bible": {
+      return {
+        systeme: [
+          "You read a client's full story bible for a vertical drama series (characters, world, episodes already written or summarized) and extract what a production tool needs to seed the series.",
+          "Extract EVERY character (person), creature, object and location that has any visual description, even brief. One entry each. Never invent someone or something that is not in the text.",
+          "For characters: an English one- or two-sentence physical description and outfit, the way a casting reference sheet would. For creatures/objects/locations, the same but matching their nature (anatomy, shape and material, or architecture and light).",
+          "Also extract a short brief for EVERY episode mentioned or summarized in the text, in story order: its title, and one or two sentences of what happens. Never invent an episode that is not in the text.",
+          `Already known, never repeat them: ${[...cinema.personnages.map((p) => p.nom), ...(cinema.elements ?? []).map((e) => e.nom)].join(", ") || "(nothing yet)"}.`,
+          `Episodes already written or already queued, never repeat them: ${[...cinema.episodes.map((e) => e.titre), ...(cinema.episodesAVenir ?? []).map((e) => e.titre)].join(", ") || "(none yet)"}.`,
+          "Write descriptions in ENGLISH (Veo follows it better). Keep episode titles and briefs in the language of the source text.",
+          'Answer with ONE JSON object and nothing else.\nFormat: {"personnages": [{"nom": string, "description": string}], "elements": [{"type": "creature" | "objet" | "decor", "nom": string, "description": string}], "episodes": [{"titre": string, "note": string}]}',
+        ].join("\n"),
+        message: `The client's bible, pasted below. Extract from it only:\n\n${demande.texte}`,
+      };
+    }
     case "episode-suivant": {
       const brief = demande.note?.trim()
         ? demande.note.trim()

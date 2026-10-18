@@ -113,6 +113,33 @@ describe("demanderALAssistant", () => {
     if (reponse.ok && reponse.proposition.type === "episode-suivant") expect(reponse.proposition.episode.scenes[0].plans[0].personnages).toEqual(["awa"]);
   });
 
+  it("l'épisode suivant : un nouveau personnage ne reprend pas l'id d'un élément déjà là (Sahor)", async () => {
+    const { lieux, cinema } = preparer();
+    cinema.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black wolf." }];
+    const { appeler } = fauxClaude({
+      titre: "La traque",
+      objet: null,
+      personnages: [{ nom: "Sahor", description: "x" }],
+      scenes: [{ decor: "A forest at dusk.", plans: [{ consigne: "Sahor walks through the trees.", personnages: ["Sahor"], objet: false, replique: null }] }],
+    });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "episode-suivant" }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: true });
+    if (reponse.ok && reponse.proposition.type === "episode-suivant") {
+      const id = reponse.proposition.nouveauxPersonnages[0]?.id;
+      expect(id).not.toBe("sahor");
+      expect(id).toBeDefined();
+    }
+  });
+
+  it("importer-bible demande plus de jetons à Claude qu'un geste ordinaire (une bible rend beaucoup de texte)", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler } = fauxClaude({ personnages: [{ nom: "Henrik", description: "x" }] });
+    await demanderALAssistant("saya", cinema, { type: "importer-bible", texte: "Henrik est un personnage important." }, lieux, AGENT, appeler);
+    await demanderALAssistant("saya", cinema, { type: "replique", episode: "ep1", plan: "rangement" }, lieux, AGENT, appeler);
+    expect((appeler as ReturnType<typeof vi.fn>).mock.calls[0]![3]).toBe(8192);
+    expect((appeler as ReturnType<typeof vi.fn>).mock.calls[1]![3]).toBeUndefined();
+  });
+
   it("décrire un personnage de la bible : le système nomme « a character », le message porte la bible, la marque ET le produit", async () => {
     const { lieux, cinema } = preparer();
     const { appeler, appels } = fauxClaude({ description: "A tall woman with a confident smile." });
@@ -161,12 +188,46 @@ describe("demanderALAssistant", () => {
     expect(appels).toHaveLength(0);
   });
 
+  it("importer-bible : extrait personnages, éléments et épisodes du texte collé, en écartant ce qui est déjà connu", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler, appels } = fauxClaude({
+      personnages: [{ nom: "Henrik", description: "A tall man with cold blue eyes." }, { nom: "Awa", description: "déjà connue, ignorée" }],
+      elements: [{ type: "creature", nom: "Sahor", description: "A black wolf." }],
+      episodes: [{ titre: "Le retour", note: "Henrik revient à Monaco." }],
+    });
+    const texte = "Henrik est le frère perdu d'Awa. Sahor le protège. Épisode 2 : Le retour.";
+    const reponse = await demanderALAssistant("saya", cinema, { type: "importer-bible", texte }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({
+      ok: true,
+      proposition: {
+        type: "importer-bible",
+        personnages: [{ id: "henrik", nom: "Henrik" }],
+        elements: [{ id: "sahor", type: "creature", nom: "Sahor" }],
+        episodes: [{ titre: "Le retour", note: "Henrik revient à Monaco." }],
+      },
+    });
+    expect(appels[0].message).toContain(texte);
+    expect(appels[0].systeme).toContain("Already known, never repeat them: Awa");
+    // Les titres déjà écrits suffisent à éviter les doublons : pas besoin du détail plan par plan (coûte des jetons pour rien).
+    expect(appels[0].systeme).toContain("Episodes already written or already queued, never repeat them: L'héritage");
+    expect(appels[0].message).not.toContain("perfume boutique");
+  });
+
+  it("importer-bible refuse si Claude n'extrait rien du texte", async () => {
+    const { lieux, cinema } = preparer();
+    const { appeler } = fauxClaude({ personnages: [], elements: [], episodes: [] });
+    const reponse = await demanderALAssistant("saya", cinema, { type: "importer-bible", texte: "Rien d'exploitable ici." }, lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: false, raison: expect.stringContaining("rien trouvé") });
+  });
+
   it("refuse une série invalide, une demande illisible, l'absence de clé, une réponse illisible", async () => {
     const { lieux, cinema } = preparer();
     const { appeler } = fauxClaude("pas du json");
     const demande = { type: "replique", episode: "ep1", plan: "rangement" };
     expect(await demanderALAssistant("saya", { personnages: "x" }, demande, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 400 });
     expect(await demanderALAssistant("saya", cinema, { type: "inconnu" }, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 400 });
+    expect(await demanderALAssistant("saya", cinema, { type: "importer-bible", texte: "   " }, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 400 });
+    expect(await demanderALAssistant("saya", cinema, { type: "importer-bible" }, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 400 });
     expect(await demanderALAssistant("saya", cinema, demande, lieux, null, appeler)).toMatchObject({ ok: false, statut: 412 });
     expect(await demanderALAssistant("saya", cinema, demande, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 502 });
     expect(await demanderALAssistant("inconnu", cinema, demande, lieux, AGENT, appeler)).toMatchObject({ ok: false, statut: 404 });

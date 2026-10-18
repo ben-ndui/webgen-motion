@@ -109,6 +109,12 @@
 .gm-film .photo-du-produit .film-btn.desactive { opacity: .45; cursor: not-allowed; }
 .gm-film .ecrire-avec-claude .film-btn { align-self: flex-start; }
 
+/* Importer la bible, et les épisodes pas encore écrits */
+.gm-film .importer-bible textarea { min-height: 120px; }
+.gm-film .episodes-a-venir ol { list-style: decimal; margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-3); }
+.gm-film .episode-a-venir { display: flex; flex-direction: column; gap: 4px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .episode-a-venir:first-child { padding-top: 0; border-top: 0; }
+
 /* L'aide de Claude : ses gestes, puis sa proposition à garder ou non. */
 .gm-film .aide-claude { display: flex; flex-direction: column; gap: var(--s-2); }
 .gm-film .aide-claude-gestes { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }

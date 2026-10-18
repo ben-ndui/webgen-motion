@@ -79,4 +79,17 @@ describe("CarteDeReference — « Décrire avec Claude »", () => {
     expect(screen.queryByRole("button", { name: "Réécrire avec Claude" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Décrire avec Claude" })).toBeNull();
   });
+
+  it("une proposition en attente disparaît si la référence est validée pendant que Claude écrivait", async () => {
+    const proposition = { type: "decrire-reference", reference: "awa", description: "Une autre description." };
+    vi.stubGlobal("fetch", repondre(200, { proposition }));
+    const { rerender } = render(<Banc depart={serieSaya()} fiche={{ statut: "propose", vues: {}, journal: [] }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Réécrire avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+
+    // La carte se verrouille (ex. dans un autre onglet, ou juste après) PENDANT que la proposition attend.
+    rerender(<Banc depart={serieSaya()} fiche={{ statut: "valide", vues: {}, journal: [] }} />);
+    expect(screen.queryByRole("region", { name: "Proposition de Claude" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Garder" })).toBeNull();
+  });
 });

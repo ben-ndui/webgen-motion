@@ -7,7 +7,9 @@ import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/typ
 import type { FilmSpec } from "../../../../../../../remotion/film/spec";
 import BibleDeLaSerie from "./bible-de-la-serie";
 import EcrireAvecClaude from "./ecrire-avec-claude";
+import EpisodesAVenir from "./episodes-a-venir";
 import EpisodesDeLaSerie from "./episodes-de-la-serie";
+import ImporterLaBible from "./importer-la-bible";
 import ObjetEtBudget from "./objet-et-budget";
 import { useBible } from "./use-bible";
 import { useSuiviDesPlans } from "./use-suivi-des-plans";
@@ -107,8 +109,10 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
         </p>
       )}
       <div className="blocs">
+        <ImporterLaBible filmId={id} cinema={cinema} modifierLaSerie={modifierLaSerie} />
         <BibleDeLaSerie filmId={id} cinema={cinema} modifierLaSerie={modifierLaSerie} bible={bible} />
         <ObjetEtBudget filmId={id} cinema={cinema} enregistrer={enregistrer} budget={budget} modifierLaSerie={modifierLaSerie} />
+        <EpisodesAVenir cinema={cinema} modifierLaSerie={modifierLaSerie} />
         {ecrire}
       </div>
       <EpisodesDeLaSerie

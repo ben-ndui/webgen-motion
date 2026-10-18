@@ -112,6 +112,17 @@ describe("erreursDuCinema — format série", () => {
     }
   });
 
+  it("accepte des épisodes à venir, refuse un titre ou une note trop longs", () => {
+    const serie = serieSaya();
+    (serie as unknown as { episodesAVenir: unknown }).episodesAVenir = [{ titre: "Le retour", note: "Henrik revient à Monaco." }];
+    expect(erreurs(serie)).toEqual([]);
+    (serie as unknown as { episodesAVenir: unknown }).episodesAVenir = [{ titre: "x".repeat(201), note: "x".repeat(2001) }];
+    expect(erreurs(serie)).toEqual([
+      "cinema.episodesAVenir[0].titre : 200 caractères au plus, 201 reçus",
+      "cinema.episodesAVenir[0].note : 2000 caractères au plus, 2001 reçus",
+    ]);
+  });
+
   it("refuse le format plat du lot 1 avec un message qui pointe le bon endroit", () => {
     expect(erreurs({ plans: [{ id: "jardin", role: "scene", consigne: "x" }] })).toEqual([
       "cinema.personnages : liste attendue (vide s'il n'y a personne)",

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ResolvedAgent } from "../config-resolve";
 import { filmDeTest } from "./film-de-test.test-utils";
-import { type AppelerClaude, ecrireUnEpisode } from "./scenario-claude";
+import { type AppelerClaude, appelerClaude, ecrireUnEpisode } from "./scenario-claude";
 
 const AGENT: ResolvedAgent = { provider: "anthropic", apiKey: "cle-de-test", model: "claude-sonnet-4-6" };
 const BRIEF = "Une cliente découvre que le parfum vient de la recette de sa grand-mère.";
@@ -56,5 +56,23 @@ describe("ecrireUnEpisode", () => {
   it("film inconnu : 404", async () => {
     const f = film();
     expect(await ecrireUnEpisode("inconnu", BRIEF, f.lieux, AGENT, vi.fn())).toMatchObject({ ok: false, statut: 404 });
+  });
+});
+
+describe("appelerClaude — max_tokens", () => {
+  it("envoie 6000 jetons par défaut, ou la valeur donnée pour un geste qui rend beaucoup de texte", async () => {
+    const appels: unknown[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, options: RequestInit) => {
+        appels.push(JSON.parse(String(options.body)));
+        return new Response(JSON.stringify({ content: [{ type: "text", text: "{}" }] }), { status: 200 });
+      }),
+    );
+    await appelerClaude(AGENT, "système", "message");
+    await appelerClaude(AGENT, "système", "message", 8192);
+    expect((appels[0] as { max_tokens: number }).max_tokens).toBe(6000);
+    expect((appels[1] as { max_tokens: number }).max_tokens).toBe(8192);
+    vi.unstubAllGlobals();
   });
 });

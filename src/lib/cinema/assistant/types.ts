@@ -1,4 +1,4 @@
-import type { EpisodeDeCinema, Personnage, RepliqueDuPlan } from "../../../../remotion/film/cinema/types";
+import type { ElementDeLaBible, EpisodeAVenir, EpisodeDeCinema, Personnage, RepliqueDuPlan } from "../../../../remotion/film/cinema/types";
 
 /**
  * Les gestes de l'assistant de la série, et ce que Claude propose en
@@ -14,7 +14,16 @@ export type DemandeALAssistant =
   | { type: "plan-suivant"; episode: string; scene: string; aEviter?: string[] }
   | { type: "episode-suivant"; note?: string; aEviter?: string[] }
   // Un personnage, une créature, un objet ou un décor de la bible visuelle.
-  | { type: "decrire-reference"; reference: string; aEviter?: string[] };
+  | { type: "decrire-reference"; reference: string; aEviter?: string[] }
+  // Le texte collé de la bible de production de la cliente (personnages, monde, épisodes).
+  | { type: "importer-bible"; texte: string; aEviter?: string[] };
+
+// Une bible de production tient souvent sur plusieurs pages (13 personnages,
+// une saison résumée) : plus large qu'un brief, borné pour rester lisible
+// par Claude en un seul appel. Le champ du formulaire porte la même borne
+// (maxLength) : la personne VOIT la limite avant d'envoyer, rien n'est coupé
+// en silence après coup.
+export const LONGUEUR_MAX_DE_LA_BIBLE_COLLEE = 50_000;
 
 export type PlanPropose = { consigne: string; personnages: string[]; objet: boolean; replique?: RepliqueDuPlan };
 
@@ -26,7 +35,8 @@ export type Proposition =
   | { type: "plan-suivant"; scene: string; plan: PlanPropose }
   // Le nouvel épisode, et les personnages qu'il crée (les autres existent déjà).
   | { type: "episode-suivant"; episode: EpisodeDeCinema; nouveauxPersonnages: Personnage[] }
-  | { type: "decrire-reference"; reference: string; description: string };
+  | { type: "decrire-reference"; reference: string; description: string }
+  | { type: "importer-bible"; personnages: Personnage[]; elements: ElementDeLaBible[]; episodes: EpisodeAVenir[] };
 
 /** Les textes d'une proposition, pour demander « autre chose » à Claude. */
 export function textesDe(proposition: Proposition): string[] {
@@ -43,10 +53,12 @@ export function textesDe(proposition: Proposition): string[] {
       return [proposition.episode.titre];
     case "decrire-reference":
       return [proposition.description];
+    case "importer-bible":
+      return [...proposition.personnages.map((p) => p.nom), ...proposition.elements.map((e) => e.nom), ...proposition.episodes.map((e) => e.titre)];
   }
 }
 
-const TYPES = ["replique", "consigne", "dialogues", "plan-suivant", "episode-suivant", "decrire-reference"] as const;
+const TYPES = ["replique", "consigne", "dialogues", "plan-suivant", "episode-suivant", "decrire-reference", "importer-bible"] as const;
 
 /** La demande envoyée par l'écran, ou null si elle ne tient pas. */
 export function lireLaDemande(brute: unknown): DemandeALAssistant | null {
@@ -58,6 +70,9 @@ export function lireLaDemande(brute: unknown): DemandeALAssistant | null {
   const aEviter = Array.isArray(d.aEviter) ? d.aEviter.filter((t): t is string => typeof t === "string").slice(-5).map((t) => t.slice(0, 600)) : undefined;
   if (d.type === "episode-suivant") return { type: "episode-suivant", note: typeof d.note === "string" ? d.note.slice(0, 2000) : undefined, aEviter };
   if (d.type === "decrire-reference" && chaine(d.reference)) return { type: "decrire-reference", reference: d.reference, aEviter };
+  if (d.type === "importer-bible" && typeof d.texte === "string" && d.texte.trim().length > 0) {
+    return { type: "importer-bible", texte: d.texte.slice(0, LONGUEUR_MAX_DE_LA_BIBLE_COLLEE), aEviter };
+  }
   if (!chaine(d.episode)) return null;
   if ((d.type === "replique" || d.type === "consigne") && chaine(d.plan)) return { type: d.type, episode: d.episode, plan: d.plan, aEviter };
   if ((d.type === "dialogues" || d.type === "plan-suivant") && chaine(d.scene)) return { type: d.type, episode: d.episode, scene: d.scene, aEviter };

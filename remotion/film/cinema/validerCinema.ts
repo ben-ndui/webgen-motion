@@ -23,6 +23,12 @@ export const BUDGET_D_IMAGES_PAR_DEFAUT = 100;
 // 110 références × 4 vues × quelques versions ; ~0,05 $ l'image.
 export const BUDGET_D_IMAGES_MAX = 2000;
 export const LONGUEUR_MAX_DU_CARTON = 120;
+// Un brief pas encore écrit (import de bible, ou ajouté à la main) : même
+// échelle qu'une saison pour le nombre, un peu plus large qu'une consigne de
+// plan pour le texte (c'est un résumé d'épisode, pas un plan).
+export const EPISODES_A_VENIR_MAX = 120;
+export const LONGUEUR_MAX_DU_TITRE_A_VENIR = 200;
+export const LONGUEUR_MAX_DE_LA_NOTE_A_VENIR = 2000;
 const PHOTO_DE_L_OBJET_SURE = /^cinema\/objet\.(jpg|png)$/;
 const LOGO_DU_CARTON_SUR = /^cinema\/fin\/logo\.(jpg|png)$/;
 
@@ -37,6 +43,23 @@ function verifierUnPlafond(erreurs: Erreurs, chemin: string, valeur: unknown, ma
   if (typeof valeur !== "number" || !Number.isInteger(valeur) || valeur < 1 || valeur > max) {
     erreurs.push(`${chemin} : nombre entier ${quoi}, de 1 à ${max}`);
   }
+}
+
+function verifierLesEpisodesAVenir(erreurs: Erreurs, episodesAVenir: unknown): void {
+  if (episodesAVenir === undefined) return;
+  if (!Array.isArray(episodesAVenir)) {
+    erreurs.push("cinema.episodesAVenir : liste attendue");
+    return;
+  }
+  if (episodesAVenir.length > EPISODES_A_VENIR_MAX) erreurs.push(`cinema.episodesAVenir : ${EPISODES_A_VENIR_MAX} au plus, ${episodesAVenir.length} reçus`);
+  episodesAVenir.forEach((brut: unknown, index: number) => {
+    const chemin = `cinema.episodesAVenir[${index}]`;
+    const e = estObjet(brut) ? brut : {};
+    texte(erreurs, `${chemin}.titre`, e.titre);
+    if (estTexte(e.titre) && e.titre.length > LONGUEUR_MAX_DU_TITRE_A_VENIR) erreurs.push(`${chemin}.titre : ${LONGUEUR_MAX_DU_TITRE_A_VENIR} caractères au plus, ${e.titre.length} reçus`);
+    texte(erreurs, `${chemin}.note`, e.note);
+    if (estTexte(e.note) && e.note.length > LONGUEUR_MAX_DE_LA_NOTE_A_VENIR) erreurs.push(`${chemin}.note : ${LONGUEUR_MAX_DE_LA_NOTE_A_VENIR} caractères au plus, ${e.note.length} reçus`);
+  });
 }
 
 function verifierLaFin(erreurs: Erreurs, fin: unknown, musique: unknown): void {
@@ -72,6 +95,7 @@ export function erreursDuCinema(spec: unknown): string[] {
   verifierUnPlafond(erreurs, "cinema.budget", cinema.budget, BUDGET_MAX, "de plans");
   verifierUnPlafond(erreurs, "cinema.budgetImages", cinema.budgetImages, BUDGET_D_IMAGES_MAX, "d'images");
   verifierLaFin(erreurs, cinema.fin, cinema.musique);
+  verifierLesEpisodesAVenir(erreurs, cinema.episodesAVenir);
   if (!Array.isArray(cinema.episodes)) {
     erreurs.push("cinema.episodes : liste attendue");
     return erreurs;

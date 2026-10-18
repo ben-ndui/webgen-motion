@@ -101,6 +101,11 @@ export type EpisodeDeCinema = {
   scenes: SceneDeCinema[];
 };
 
+// Un brief pas encore écrit, importé depuis la bible de la cliente (ou noté
+// à la main) : repris tel quel dans le brief de « Écrire l'épisode suivant »
+// quand on s'y attaque, puis retiré de la liste.
+export type EpisodeAVenir = { titre: string; note: string };
+
 export type CinemaDuFilm = {
   personnages: Personnage[];
   // Créatures, objets et décors de la bible visuelle. Absent : aucun.
@@ -113,6 +118,9 @@ export type CinemaDuFilm = {
   // au dépôt. Envoyée à Veo en référence : le produit n'est plus imaginé.
   photoDeLObjet?: string;
   episodes: EpisodeDeCinema[];
+  // Briefs d'épisodes pas encore écrits (import de la bible de la cliente,
+  // ou ajoutés à la main). Absente : aucun en attente.
+  episodesAVenir?: EpisodeAVenir[];
   // Plans payés au plus pour ce film, refus de Google non comptés. Absent : 20.
   budget?: number;
   // Images de référence générées au plus pour ce film. Absent : 100.

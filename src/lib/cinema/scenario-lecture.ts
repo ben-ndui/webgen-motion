@@ -16,7 +16,7 @@ const texte = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 const liste = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 
 /** Un id de fichier tiré du prénom (« Léa » → « lea »), libre dans la série. */
-function idDe(nom: string, pris: Set<string>): string {
+export function idDe(nom: string, pris: Set<string>): string {
   const sansAccents = nom.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const avecTirets = sansAccents.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const base = avecTirets || "personnage";
@@ -47,7 +47,10 @@ export function ajouterLEpisodeEcrit(actuel: CinemaDuFilm | undefined, reponse: 
   if (!estObjet(reponse)) return { ok: false, erreurs: ["la réponse n'est pas un objet JSON"] };
   const cinema: CinemaDuFilm = actuel ? structuredClone(actuel) : { personnages: [], episodes: [] };
   cinema.episodes = cinema.episodes.filter((e) => !estLEpisodeDeDepartVierge(e));
-  const idsPris = new Set(cinema.personnages.map((p) => p.id));
+  // Un id est unique parmi PERSONNAGES ET ÉLÉMENTS (bible.json s'en sert comme
+  // clé commune) : un nouveau personnage ne doit jamais reprendre l'id d'une
+  // créature, d'un objet ou d'un décor déjà là.
+  const idsPris = new Set([...cinema.personnages.map((p) => p.id), ...(cinema.elements ?? []).map((e) => e.id)]);
   const parPrenom = new Map(cinema.personnages.map((p) => [p.nom.toLowerCase(), p.id]));
 
   for (const brut of liste(reponse.personnages).filter(estObjet)) {

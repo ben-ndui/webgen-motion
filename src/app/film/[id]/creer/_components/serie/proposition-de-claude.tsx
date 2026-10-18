@@ -1,7 +1,7 @@
 "use client";
 
 import type { Proposition } from "@/lib/cinema/assistant/types";
-import { referencesDeLaSerie } from "@/lib/cinema/bible/etat";
+import { NOM_DU_TYPE, referencesDeLaSerie } from "@/lib/cinema/bible/etat";
 import type { CinemaDuFilm, RepliqueDuPlan } from "../../../../../../../remotion/film/cinema/types";
 
 type Props = { cinema: CinemaDuFilm; proposition: Proposition };
@@ -87,5 +87,39 @@ export default function PropositionDeClaude({ cinema, proposition }: Props) {
           <b>{nomDeLaReference(cinema, proposition.reference)}</b> : {proposition.description}
         </p>
       );
+    case "importer-bible": {
+      const { personnages, elements, episodes } = proposition;
+      return (
+        <>
+          <p>
+            {personnages.length} personnage{personnages.length > 1 ? "s" : ""}, {elements.length} élément{elements.length > 1 ? "s" : ""}, {episodes.length} épisode
+            {episodes.length > 1 ? "s" : ""} trouvés.
+          </p>
+          {(personnages.length > 0 || elements.length > 0) && (
+            <ul>
+              {personnages.map((p) => (
+                <li key={p.id}>
+                  <b>{p.nom}</b> (personnage) : <span lang="en">{p.description}</span>
+                </li>
+              ))}
+              {elements.map((e) => (
+                <li key={e.id}>
+                  <b>{e.nom}</b> ({NOM_DU_TYPE[e.type]}) : <span lang="en">{e.description}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {episodes.length > 0 && (
+            <ol>
+              {episodes.map((e, index) => (
+                <li key={`${e.titre}-${index}`}>
+                  <b>{e.titre}</b> : {e.note}
+                </li>
+              ))}
+            </ol>
+          )}
+        </>
+      );
+    }
   }
 }

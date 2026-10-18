@@ -15,24 +15,28 @@ import { ajouterLEpisodeEcrit } from "./scenario-lecture";
  */
 export const LONGUEUR_MAX_DU_BRIEF = 2000;
 
-// Envoie la demande et rend le texte de Claude (remplacé par un faux dans les tests).
-export type AppelerClaude = (agent: ResolvedAgent, systeme: string, message: string) => Promise<{ ok: true; texte: string } | { ok: false; raison: string }>;
+const MAX_TOKENS_PAR_DEFAUT = 6000;
 
-export const appelerClaude: AppelerClaude = async (agent, systeme, message) => {
+// Envoie la demande et rend le texte de Claude (remplacé par un faux dans les tests).
+// `maxTokens` : à monter pour un geste qui peut rendre beaucoup de texte (une
+// bible entière à extraire), sinon la réponse par défaut suffit.
+export type AppelerClaude = (agent: ResolvedAgent, systeme: string, message: string, maxTokens?: number) => Promise<{ ok: true; texte: string } | { ok: false; raison: string }>;
+
+export const appelerClaude: AppelerClaude = async (agent, systeme, message, maxTokens = MAX_TOKENS_PAR_DEFAUT) => {
   let reponse: Response;
   try {
     reponse = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": agent.apiKey, "anthropic-version": API_VERSION },
-      body: JSON.stringify({ model: agent.model, max_tokens: 6000, system: systeme, messages: [{ role: "user", content: message }], temperature: 0.7 }),
+      body: JSON.stringify({ model: agent.model, max_tokens: maxTokens, system: systeme, messages: [{ role: "user", content: message }], temperature: 0.7 }),
     });
   } catch {
     return { ok: false, raison: "Claude injoignable : vérifie ta connexion." };
   }
   if (!reponse.ok) return { ok: false, raison: `Claude a répondu ${reponse.status} : ${(await reponse.text()).slice(0, 200)}` };
   const corps = (await reponse.json()) as { stop_reason?: string; content?: { type: string; text?: string }[] };
-  // Une réponse coupée rend un JSON incomplet : refusée plutôt que prise pour un épisode court.
-  if (corps.stop_reason === "max_tokens") return { ok: false, raison: "La réponse de Claude a été coupée : raccourcis le brief." };
+  // Une réponse coupée rend un JSON incomplet : refusée plutôt que prise pour un résultat court.
+  if (corps.stop_reason === "max_tokens") return { ok: false, raison: "La réponse de Claude a été coupée : raccourcis le texte envoyé et réessaie." };
   return { ok: true, texte: (corps.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("\n") };
 };
 

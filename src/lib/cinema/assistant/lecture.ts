@@ -4,6 +4,7 @@ import { LONGUEUR_MAX_DE_DESCRIPTION } from "../../../../remotion/film/cinema/va
 import { LONGUEUR_MAX_DE_CONSIGNE, LONGUEUR_MAX_DE_REPLIQUE } from "../../../../remotion/film/cinema/validerPlan";
 import { referencesDeLaSerie } from "../bible/etat";
 import { ajouterLEpisodeEcrit } from "../scenario-lecture";
+import { lireLImportDeLaBible } from "./import-bible";
 import type { DemandeALAssistant, Proposition } from "./types";
 
 /**
@@ -103,6 +104,10 @@ export function lireLaReponse(cinema: CinemaDuFilm, demande: DemandeALAssistant,
       if (!referencesDeLaSerie(cinema).some((r) => r.id === demande.reference)) return refus("Cette référence a été retirée entre-temps.");
       const description = lireUneDescription(reponse.description);
       return typeof description === "string" ? { ok: true, proposition: { type: "decrire-reference", reference: demande.reference, description } } : refus(description.raison);
+    }
+    case "importer-bible": {
+      const lecture = lireLImportDeLaBible(cinema, reponse);
+      return lecture.ok ? { ok: true, proposition: { type: "importer-bible", ...lecture.proposition } } : refus(lecture.raison);
     }
     case "episode-suivant": {
       const lecture = ajouterLEpisodeEcrit(cinema, reponse);

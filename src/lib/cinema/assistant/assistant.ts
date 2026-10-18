@@ -45,7 +45,9 @@ export async function demanderALAssistant(
   if (fiche.etat === "invalide") return { ok: false, statut: 409, raison: "La fiche du film a des erreurs : corrige-les d'abord." };
 
   const { systeme, message } = demandeALAssistant({ marque: fiche.spec.marque, direction: fiche.spec.direction }, cinema, demande);
-  const reponse = await appeler(agent, systeme, message);
+  // Un import de bible peut rendre beaucoup de texte (personnages, éléments,
+  // épisodes) : plus de place que les autres gestes pour ne pas la couper.
+  const reponse = await appeler(agent, systeme, message, demande.type === "importer-bible" ? 8192 : undefined);
   if (!reponse.ok) return { ok: false, statut: 502, raison: reponse.raison };
   let json: unknown;
   try {
