@@ -85,8 +85,8 @@ export default function WizardBackendStep({
             </span>
           </div>
           <p className="text-xs text-muted leading-relaxed">
-            7 moteurs (qwen, kokoro, chatterbox…). Tourne via l&apos;app
-            desktop. Privacy totale, vitesse selon machine.
+            Ta voix clonée, en local (qwen conseillé). Mode narratif en français
+            (Mac Apple Silicon, calage mot à mot). Lent : ~12 s de calcul par seconde de voix.
           </p>
         </button>
         <button

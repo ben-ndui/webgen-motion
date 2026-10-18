@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import type { ResolvedVoiceBackend } from "../config-resolve";
 import { applyPronunciation } from "../pronunciation";
+import { consigneSuivie } from "./consigne";
 import { fetchElevenLabsTts, fetchGoogleTts, fetchVoiceboxTts } from "./moteurs";
 import { DEFAULT_VOICE_SETTINGS, type EffectiveVoiceSettings, type ElevenLabsAlignment } from "./types";
 
@@ -47,7 +48,7 @@ export async function ensureTts(
           effectiveSettings.useSpeakerBoost ? "1" : "0",
         ].join(",")}`
       : backend.kind === "voicebox"
-        ? `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}`
+        ? `voicebox|${backend.profileId}|${backend.engine}|${backend.modelSize}|${backend.language}|${consigneSuivie(backend)}`
         : `google|${backend.voice}|${backend.languageCode}|${backend.speakingRate}|${JSON.stringify(backend.pronunciation)}`;
   const hash = createHash("sha1")
     .update(`${backendKey}|${phonetic}`)

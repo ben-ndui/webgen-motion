@@ -1,5 +1,6 @@
 import {
   DEFAULT_VOICEBOX_ENGINE,
+  DEFAULT_VOICEBOX_INSTRUCT,
   DEFAULT_VOICEBOX_LANGUAGE,
   DEFAULT_VOICEBOX_MODEL_SIZE,
   DEFAULT_VOICEBOX_URL,
@@ -51,6 +52,8 @@ export type ResolvedVoiceBackend =
       engine: string;
       modelSize: string;
       language: string;
+      /** Consigne de ton ; "" = aucune. */
+      instruct: string;
     }
   | {
       kind: "google";
@@ -123,6 +126,7 @@ export function resolveVoiceBackend(tour?: {
         cfg.voicebox?.modelSize ||
         DEFAULT_VOICEBOX_MODEL_SIZE,
       language: cfg.voicebox?.language ?? DEFAULT_VOICEBOX_LANGUAGE,
+      instruct: cfg.voicebox?.instruct ?? DEFAULT_VOICEBOX_INSTRUCT,
     };
   }
 

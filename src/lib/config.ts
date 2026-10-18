@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { CONSIGNE_DE_TON_CONSEILLEE, LONGUEUR_MAX_CONSIGNE } from "./voix/consigne";
 
 /**
  * User-managed config stored in `~/.webgen-motion/config.json`.
@@ -53,6 +54,9 @@ export interface MotionConfig {
     modelSize?: string;
     /** Language code passed to /generate — Voicebox requires it. */
     language?: string;
+    /** Consigne de ton passée au moteur (`instruct`, 500 caractères au plus). Absente :
+     *  la consigne par défaut ; chaîne VIDE : aucune consigne (voix neutre). */
+    instruct?: string;
   };
   /** Google Cloud TTS (Neural2 FR) — voix GRATUITE dans le quota Google.
    *  Credentials via GOOGLE_APPLICATION_CREDENTIALS (service account JSON).
@@ -100,6 +104,9 @@ export const DEFAULT_VOICEBOX_URL = "http://127.0.0.1:17493";
 export const DEFAULT_VOICEBOX_ENGINE = "qwen";
 export const DEFAULT_VOICEBOX_MODEL_SIZE = "1.7B";
 export const DEFAULT_VOICEBOX_LANGUAGE = "fr";
+/** La consigne de ton par défaut (voix/consigne.ts) ; Ben la change dans Réglages › Voicebox. */
+export const DEFAULT_VOICEBOX_INSTRUCT = CONSIGNE_DE_TON_CONSEILLEE;
+export { LONGUEUR_MAX_CONSIGNE };
 
 function getConfigPath(): string {
   const dir = join(homedir(), ".webgen-motion");
@@ -160,7 +167,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
     !next.voicebox?.profileId &&
     !next.voicebox?.engine &&
     !next.voicebox?.modelSize &&
-    !next.voicebox?.language
+    !next.voicebox?.language &&
+    // La consigne vide (voix neutre) est un choix : son bloc se garde aussi.
+    next.voicebox?.instruct === undefined
   ) {
     delete next.voicebox;
   }

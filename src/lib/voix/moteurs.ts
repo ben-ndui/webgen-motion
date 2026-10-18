@@ -1,6 +1,8 @@
 import { marksToCharAlignment } from "../google-alignment";
 import type { ResolvedVoiceBackend } from "../config-resolve";
 import type { EffectiveVoiceSettings, ElevenLabsAlignment } from "./types";
+import { delaiDAttenteVoicebox, messageDelaiDepasse } from "./delai-voicebox";
+import { consigneSuivie } from "./consigne";
 
 /** Les trois fournisseurs de voix (voir synthese.ts pour le cache). SERVEUR SEULEMENT. */
 
@@ -99,10 +101,10 @@ export async function fetchElevenLabsTts(
  * poll /generate/{id}/status until completed, then download from
  * /audio/{id}.
  *
- * No char-level timestamps are returned today. The runner produces
- * `fetched.alignment = null` here ; narrative mode + Voicebox is
- * gated server-side (chunk A1.1 will reintroduce alignment via a
- * local Whisper forced-aligner pass).
+ * No char-level timestamps are returned : `fetched.alignment = null`.
+ * The narrative runner (scripts/audio-tour.ts) computes them afterwards
+ * by forced alignment (voix/alignement-de-la-voix.ts, French model
+ * installed from Réglages › Écoute locale).
  */
 export async function fetchVoiceboxTts(
   text: string,
@@ -119,6 +121,8 @@ export async function fetchVoiceboxTts(
       language: cfg.language,
       engine: cfg.engine,
       model_size: cfg.modelSize,
+      // La consigne de ton (« enjouée… ») ; absente du corps quand Ben n'en veut pas.
+      ...(consigneSuivie(cfg) ? { instruct: consigneSuivie(cfg) } : {}),
       normalize: true,
       crossfade_ms: 50,
     }),
@@ -142,9 +146,8 @@ export async function fetchVoiceboxTts(
   // Voicebox exposes status via **SSE**, not JSON polling — each event
   // is `data: {…}\n\n` and the stream closes on completed/failed.
   // We consume it once and break out as soon as a terminal status
-  // event lands. 120s abort fence so a stuck inference doesn't hang
-  // the whole pipeline.
-  const timeoutMs = 120_000;
+  // event lands. The abort fence follows the text length (delai-voicebox.ts).
+  const timeoutMs = delaiDAttenteVoicebox(text);
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), timeoutMs);
   let finalStatus = "generating";
@@ -195,6 +198,9 @@ export async function fetchVoiceboxTts(
         }
       }
     }
+  } catch (erreur) {
+    if (abort.signal.aborted) throw new Error(messageDelaiDepasse(timeoutMs));
+    throw erreur;
   } finally {
     clearTimeout(timer);
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Check, Loader2, Mic } from "lucide-react";
+import ConsigneDeTon from "./consigne-de-ton";
 import type { VoiceboxProfile } from "./wizard-types";
 
 /**
@@ -178,11 +179,11 @@ export default function WizardVoiceboxStep({
               onChange={(e) => onEngine(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-line bg-surface text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-1"
             >
-              <option value="qwen">qwen (qualité)</option>
+              <option value="qwen">qwen (conseillé : ta voix, suit la consigne de ton)</option>
               <option value="qwen_custom_voice">qwen_custom_voice</option>
-              <option value="kokoro">kokoro (rapide)</option>
-              <option value="chatterbox">chatterbox</option>
-              <option value="chatterbox_turbo">chatterbox_turbo</option>
+              <option value="kokoro">kokoro (rapide, voix toutes faites : ne clone pas)</option>
+              <option value="chatterbox">chatterbox (moins naturel en français)</option>
+              <option value="chatterbox_turbo">chatterbox_turbo (anglais seulement)</option>
               <option value="luxtts">luxtts</option>
               <option value="tada">tada</option>
             </select>
@@ -204,6 +205,7 @@ export default function WizardVoiceboxStep({
             </select>
           </div>
         </div>
+        <ConsigneDeTon />
       </div>
 
       {error && (

@@ -1,5 +1,6 @@
 import {
   DEFAULT_VOICEBOX_ENGINE,
+  DEFAULT_VOICEBOX_INSTRUCT,
   DEFAULT_VOICEBOX_LANGUAGE,
   DEFAULT_VOICEBOX_MODEL_SIZE,
   DEFAULT_VOICEBOX_URL,
@@ -29,6 +30,7 @@ export interface PublicConfig {
     engine: string;
     modelSize: string;
     language: string;
+    instruct: string;
   };
   google: {
     voice: string;
@@ -89,6 +91,7 @@ export function getPublicConfig(): PublicConfig {
       engine: cfg.voicebox?.engine ?? DEFAULT_VOICEBOX_ENGINE,
       modelSize: cfg.voicebox?.modelSize ?? DEFAULT_VOICEBOX_MODEL_SIZE,
       language: cfg.voicebox?.language ?? DEFAULT_VOICEBOX_LANGUAGE,
+      instruct: cfg.voicebox?.instruct ?? DEFAULT_VOICEBOX_INSTRUCT,
     },
     google: {
       voice: cfg.google?.voice ?? "fr-FR-Neural2-D",

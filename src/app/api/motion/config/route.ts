@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { saveConfig, type MotionConfig } from "@/lib/config";
+import { LONGUEUR_MAX_CONSIGNE, saveConfig, type MotionConfig } from "@/lib/config";
 import { getPublicConfig } from "@/lib/config-public";
 
 /**
@@ -49,6 +49,10 @@ export async function PUT(req: NextRequest) {
       if (typeof v === "string") {
         sanitized.voicebox[k] = v.trim() || undefined;
       }
+    }
+    // La consigne de ton : une chaîne VIDE est un choix (voix neutre), elle est gardée.
+    if (typeof body.voicebox.instruct === "string") {
+      sanitized.voicebox.instruct = body.voicebox.instruct.trim().slice(0, LONGUEUR_MAX_CONSIGNE);
     }
   }
   if (body.google) {

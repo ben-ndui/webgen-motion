@@ -54,6 +54,7 @@ import { join } from "node:path";
 import { getTour } from "../src/lib/tour-loader";
 import type { TourEntry, TourStep } from "../src/lib/types/tour";
 import { applyPronunciation } from "../src/lib/pronunciation";
+import { alignerLaVoix, raisonNonAlignable, voixAlignable } from "../src/lib/voix/alignement-de-la-voix";
 import { ensureTts } from "../src/lib/voix/synthese";
 import { DEFAULT_VOICE_SETTINGS, type EffectiveVoiceSettings, type ElevenLabsAlignment } from "../src/lib/voix/types";
 import { getVoCacheDir } from "../src/lib/motion-tour-store";
@@ -198,14 +199,9 @@ async function main(): Promise<void> {
       );
       process.exit(1);
     }
-    if (backend.kind === "voicebox") {
-      // Voicebox doesn't return char-level timings yet, so the
-      // Calibrer button can't recompute dwellMs from the audio.
-      // Chunk A1.1 will reintroduce narrative+voicebox via a local
-      // Whisper forced-aligner pass on the produced MP3.
-      console.error(
-        "Narrative mode is not supported with the Voicebox backend yet (no char-level timings). Use ElevenLabs for narrative tours, or switch this tour to per-step mode.",
-      );
+    // Voicebox ne donne pas de temps mot à mot : ils viennent du calage (voix/alignement-de-la-voix.ts).
+    if (backend.kind === "voicebox" && !voixAlignable(backend.language)) {
+      console.error(`Mode narratif avec Voicebox impossible : ${raisonNonAlignable(backend.language)}.`);
       process.exit(1);
     }
     await runNarrativeMode({
@@ -620,11 +616,11 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
   console.log(`  Clean text length: ${cleanText.length} chars`);
 
   const tts = await ensureTts(cleanText, cacheDir, backend, effectiveSettings);
-  if (!tts.alignment) {
-    throw new Error(
-      "ElevenLabs returned no alignment — narrative mode requires /with-timestamps to provide character timings",
-    );
-  }
+  // Le texte ENVOYÉ est phonétique (dico de prononciation) : c'est lui qu'on cale.
+  const alignment = tts.alignment ?? (backend?.kind === "voicebox"
+    ? await alignerLaVoix(tts.mp3Path, applyPronunciation(cleanText), backend.language, console.log)
+    : null);
+  if (!alignment) throw new Error("La voix n'a donné aucun temps mot à mot : le mode narratif ne peut pas caler les étapes.");
 
   // Re-encode the cached mono mp3 to stereo 44.1k so it matches the
   // layout used everywhere else (compose mux, future per-section
@@ -648,7 +644,7 @@ async function runNarrativeMode(input: NarrativeRunInput): Promise<void> {
   // script, so their charPosClean indexes the un-phonetic text. Apply
   // the same transformation to the marker offsets.
   const phoneticCleanText = applyPronunciation(cleanText);
-  const aligned = tts.alignment;
+  const aligned = alignment;
   const totalAudioSec =
     aligned.character_end_times_seconds[
       aligned.character_end_times_seconds.length - 1

@@ -351,10 +351,10 @@ export default function VoiceOverrideCard({
             </label>
           </div>
           <p className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5 leading-relaxed">
-            ⚠ Mode <strong>narrative</strong> non supporté avec Voicebox
-            tant que le forced-alignment local (chunk A1.1) n&apos;est pas
-            livré — passe en per-step, ou utilise <strong>Google</strong>{" "}
-            (gratuit) ou ElevenLabs pour les tours narratifs.
+            Mode <strong>narratif</strong> avec Voicebox : en français, les temps
+            mot à mot viennent du calage (Mac Apple Silicon, Réglages › Écoute locale).
+            C&apos;est lent : compte une dizaine de secondes de calcul par seconde
+            de voix ; <strong>Google</strong> (gratuit) reste le plus rapide.
           </p>
         </div>
       )}
