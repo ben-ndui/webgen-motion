@@ -7,15 +7,77 @@ Versioning : [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-10-18
+
+**La release « Catalogue de formats et bible visuelle »** : GEN MOTION ne
+filme plus seulement ta marque et ta série, il fabrique aussi un explainer,
+un conte à compteur ou un clip karaoké pour tes réseaux. Et dans la série,
+chaque visage et chaque décor restent reconnaissables d'un épisode à
+l'autre, grâce à une vraie bible visuelle.
+
+### Added
+
+- **Catalogue de formats** (Studio) : trois nouveaux formats courts pour tes
+  réseaux, à côté du film de marque — un explainer, un conte à compteur, un
+  clip karaoké pour artistes. Claude écrit les textes, chaque format a son
+  propre éditeur.
+- **Clip karaoké** : dépose ton morceau, les paroles se calent au mot près
+  sur l'audio (traitement 100 % local, rien n'est envoyé dans le cloud), un
+  décor parmi cinq propositions ou décrit à ta façon et généré par IA, un
+  teaser calé sur le refrain en un clic.
+- **Écoute locale** : le modèle qui cale les paroles se télécharge et tourne
+  entièrement sur ton ordinateur (Réglages › Écoute locale).
+- **Bible visuelle de la série** (Studio) : chaque personnage, créature,
+  objet ou décor a sa fiche avec plusieurs vues (face, trois-quarts, profil,
+  en pied), générées par IA ou importées, validées une fois pour toutes
+  avant d'être réutilisées dans tes plans. Fini le visage qui change d'un
+  épisode à l'autre.
+- **Prises multiples** : chaque génération d'un plan crée une nouvelle
+  prise sans écraser les précédentes ; une pellicule te laisse choisir la
+  meilleure et revenir en arrière.
+- **Importer la bible de production de ta cliente** : colle son texte
+  (personnages, monde, épisodes déjà écrits ou résumés), Claude en extrait
+  tout ce qu'il faut pour continuer la série dans son univers — jamais
+  appliqué sans ton accord.
+- **Un second fournisseur vidéo, Seedance** : certains plans de la série
+  peuvent partir chez Seedance plutôt que chez Google, au choix, plan par
+  plan.
+- **« Décrire avec Claude »** sur chaque fiche de la bible visuelle : Claude
+  propose une description depuis ta marque et ton produit.
+- **Suivi de rendu** : une barre de progression à la charte, le temps
+  restant et le temps déjà écoulé pendant qu'une vidéo se compose.
+- **Voix off Voicebox plus naturelle** : une consigne de ton (enjouée,
+  posée…), un modèle par défaut 2,5× plus rapide, et un mode narratif qui
+  cale enfin la voix sur tes tours (pas seulement sur la série).
+- **Export .otio d'un épisode** vers DaVinci Resolve (Studio), comme le
+  film de marque.
+- **« Tes écrans » avec Claude** : Claude choisit lui-même les pages de ton
+  site à filmer pour chaque moment de ton histoire.
+
 ### Changed
 
-- Les CGV décrivent ce qui est vraiment vendu : la licence à vie et les
-  abonnements mensuel et annuel (durée, renouvellement, résiliation à tout
-  moment). La Studio Edition est réservée aux professionnels : une case à
-  cocher précède le paiement.
+- **Studio réservé aux professionnels** : une case à cocher précède tout
+  achat ou abonnement, comme l'exigent les CGV. Les CGV décrivent ce qui
+  est vraiment vendu : licence à vie, abonnements mensuel et annuel (durée,
+  renouvellement, résiliation à tout moment).
 - Nouvelle page « Gérer mon abonnement » (genmotion.app/abonnement) pour
   résilier ; l'email de licence d'un abonné y mène.
 - Mentions légales à jour : adresse de Vallauris, SIREN, hébergeur exact.
+
+### Fixed
+
+- Le décor d'un plan n'est plus isolé sur un fond de studio neutre : il a
+  enfin sa propre lumière et sa propre ambiance, comme un vrai lieu.
+- Réglages › Vidéo IA (clés Google et fal.ai) était injoignable depuis le
+  menu Réglages.
+- Les images de la bible visuelle ne s'affichaient pas toujours.
+
+### Notes
+
+- Seedance se facture au token chez fal.ai, avec ta propre clé : pas de
+  prix fixe affiché avant le clic, contrairement à Veo.
+- Meshy (3D) et Kling restent hors catalogue pour cette release ; ce sera
+  un lot à part.
 
 ## [0.7.0] — 2026-10-15
 
