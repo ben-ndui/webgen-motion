@@ -42,9 +42,19 @@ describe("les fichiers de paroles d'un karaoké", () => {
     expect(etatDesParoles(dossier, CHEMINS_DES_PAROLES.calees)).toEqual({
       brouillon: "on s'est donné\n",
       texte: null,
-      calees: { source: "paroles.txt", reconnus: 0.99, lignes: 2 },
+      calees: { source: "paroles.txt", methode: "whisper", reconnus: 0.99, lignes: 2, etires: [] },
       refrain: null,
     });
+  });
+
+  it("nomme les mots étirés par l'alignement, avec leur ligne ; un numéro hors des paroles est ignoré", () => {
+    const dossier = jetable();
+    mkdirSync(join(dossier, "paroles"), { recursive: true });
+    const lignes = [{ mots: [{ texte: "On", debut: 0, fin: 9 }, { texte: "s'est", debut: 9, fin: 9.2 }] }, { mots: [{ texte: "Après", debut: 10, fin: 10.3 }] }];
+    writeFileSync(join(dossier, CHEMINS_DES_PAROLES.calees), JSON.stringify({ source: "paroles.txt", reconnus: 0.8, methode: "alignement", motsEtires: [{ ligne: 0, mot: 0 }, { ligne: 7, mot: 0 }, { ligne: 1, mot: 4 }], lignes }));
+    const calees = etatDesParoles(dossier, CHEMINS_DES_PAROLES.calees).calees;
+    expect(calees?.methode).toBe("alignement");
+    expect(calees?.etires).toEqual([{ mot: "On", ligne: "On s'est" }]);
   });
 
   it("enregistre le texte de l'artiste, et refuse ce qui ne peut pas être des paroles", () => {

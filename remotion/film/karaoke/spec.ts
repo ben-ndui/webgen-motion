@@ -50,9 +50,13 @@ export type TextesDuKaraoke = {
 export type ParolesDuKaraoke = {
   // Le fichier de paroles d'où elles viennent : un « brouillon » est refusé en livraison.
   source: string;
-  // Part des mots écrits que whisper a reconnus (0 à 1).
+  // Part des mots écrits que l'écoute a reconnus (0 à 1).
   reconnus: number;
   lignes: LigneCalee[];
+  // Comment elles ont été calées (absent sur les paroles calées avant le 18/10/2026 : whisper).
+  methode?: "whisper" | "alignement";
+  // Alignement seulement : les mots (ligne, mot, à partir de 0) qui s'étirent sur du chant non écrit.
+  motsEtires?: { ligne: number; mot: number }[];
 };
 
 export type KaraokeSpec = {

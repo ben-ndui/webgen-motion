@@ -17,8 +17,9 @@ function lireLigne(ligne: string): { type: string; label: string } | null {
 
 /**
  * POST /api/motion/formats/<id>/paroles/ecouter — { etape: "brouillon" | "calage", langue } :
- * whisper écoute le morceau EN LOCAL (scripts/caler-paroles.ts) ; progression en NDJSON,
- * même contrat que les rendus. Le calage prend 2 à 3 minutes pour un morceau entier.
+ * le morceau est écouté EN LOCAL (scripts/caler-paroles.ts) ; progression en NDJSON,
+ * même contrat que les rendus. Le brouillon et le calage par whisper prennent 2 à 3 minutes
+ * pour un morceau entier ; le calage par alignement (français, modèle installé) ~20 s.
  */
 export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;

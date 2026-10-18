@@ -17,14 +17,29 @@ function lire(fichier: string): string | null {
   return existsSync(fichier) ? readFileSync(fichier, "utf-8") : null;
 }
 
+/** Un mot étiré, dit avec ses mots : le mot lui-même, et sa ligne pour le retrouver. */
+export type MotEtireLisible = { mot: string; ligne: string };
+
 export type EtatDesParoles = {
   brouillon: string | null;
   texte: string | null;
-  // Résumé des paroles calées : de quel texte, et quelle part des mots whisper a reconnus.
-  calees: { source: string; reconnus: number; lignes: number } | null;
+  // Résumé des paroles calées : de quel texte, comment, quelle part des mots l'écoute a reconnus,
+  // et les mots après lesquels des paroles manquent probablement (alignement seulement).
+  calees: { source: string; methode: "whisper" | "alignement"; reconnus: number; lignes: number; etires: MotEtireLisible[] } | null;
   // Le refrain repéré dans les paroles calées (ligne la plus répétée) : de quoi caler le teaser.
   refrain: Passage | null;
 };
+
+function motsEtiresLisibles(paroles: ParolesDuKaraoke): MotEtireLisible[] {
+  const lisibles: MotEtireLisible[] = [];
+  for (const { ligne, mot } of paroles.motsEtires ?? []) {
+    const mots = paroles.lignes[ligne]?.mots;
+    const texte = mots?.[mot]?.texte;
+    // Un numéro hors des paroles (fichier retouché à la main) est ignoré, jamais affiché faux.
+    if (mots && texte) lisibles.push({ mot: texte, ligne: mots.map((m) => m.texte).join(" ") });
+  }
+  return lisibles;
+}
 
 export function etatDesParoles(dossierPublic: string, cheminDesCalees: string): EtatDesParoles {
   const brutes = lire(join(dossierPublic, cheminDesCalees));
@@ -33,7 +48,13 @@ export function etatDesParoles(dossierPublic: string, cheminDesCalees: string): 
   if (brutes) {
     try {
       const paroles = JSON.parse(brutes) as ParolesDuKaraoke;
-      calees = { source: paroles.source, reconnus: paroles.reconnus, lignes: paroles.lignes.length };
+      calees = {
+        source: paroles.source,
+        methode: paroles.methode ?? "whisper",
+        reconnus: paroles.reconnus,
+        lignes: paroles.lignes.length,
+        etires: motsEtiresLisibles(paroles),
+      };
       refrain = passageDuRefrain(paroles.lignes);
     } catch {
       calees = null;

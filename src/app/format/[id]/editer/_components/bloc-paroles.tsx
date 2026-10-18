@@ -5,6 +5,19 @@ import { useCallback, useEffect, useState } from "react";
 import type { EtatDesParoles } from "@/lib/formats/karaoke-paroles";
 import { useRenduEnFlux } from "@/lib/use-rendu-en-flux";
 
+import ParolesManquantes from "./paroles-manquantes";
+
+/**
+ * Le pourcentage de mots reconnus n'a de sens que pour whisper : l'alignement
+ * en donne 59 à 85 % pour de BONNES paroles (échelle différente), on ne l'affiche pas.
+ */
+function resumeDuCalage(calees: NonNullable<EtatDesParoles["calees"]>): string {
+  const resume = calees.methode === "alignement"
+    ? `Calées mot à mot sur ton morceau : ${calees.lignes} lignes`
+    : `Calées : ${calees.lignes} lignes, ${Math.round(calees.reconnus * 100)} % des mots reconnus`;
+  return calees.source.includes("brouillon") ? `${resume} (sur le brouillon de whisper : le rendu le refusera)` : `${resume}.`;
+}
+
 type Etat = EtatDesParoles & { whisper: { ok: boolean; raison?: string } };
 const LANGUES_CHANTEES = [{ valeur: "fr", libelle: "Français" }, { valeur: "en", libelle: "Anglais" }, { valeur: "auto", libelle: "Autre (détectée)" }];
 
@@ -102,10 +115,10 @@ export default function BlocParoles({ id, morceauPresent, surLeRefrain }: { id: 
       )}
       {etat.calees && (
         <p className="film-muted" role="status" data-wm-id="format.karaoke.calees">
-          Calées : {etat.calees.lignes} lignes, {Math.round(etat.calees.reconnus * 100)} % des mots reconnus
-          {etat.calees.source.includes("brouillon") ? " (sur le brouillon de whisper : le rendu le refusera)" : "."}
+          {resumeDuCalage(etat.calees)}
         </p>
       )}
+      {etat.calees && <ParolesManquantes etires={etat.calees.etires} />}
     </section>
   );
 }

@@ -33,6 +33,7 @@
     "geist": "^1.7.0",
     "lucide-react": "^1.14.0",
     "next": "16.2.6",
+    "onnxruntime-node": "^1.30.0",
     "posthog-js": "^1.386.6",
     "posthog-node": "^5.37.0",
     "puppeteer": "^24.43.0",

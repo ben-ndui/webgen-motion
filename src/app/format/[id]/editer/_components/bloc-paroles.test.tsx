@@ -38,9 +38,32 @@ describe("les paroles d'un karaoké", () => {
   });
 
   it("des paroles calées sur le brouillon sont signalées : le rendu les refusera", async () => {
-    serveur({ ...SANS_RIEN, texte: "x", calees: { source: "paroles-brouillon.txt", reconnus: 1, lignes: 78 } });
+    serveur({ ...SANS_RIEN, texte: "x", calees: { source: "paroles-brouillon.txt", methode: "whisper", reconnus: 1, lignes: 78, etires: [] } });
     render(<BlocParoles id="clip" morceauPresent />);
     expect(await screen.findByText(/78 lignes, 100 % des mots reconnus \(sur le brouillon de whisper : le rendu le refusera\)/)).toBeInTheDocument();
+  });
+
+  it("nomme le mot qui s'étire sur du chant non écrit, et sa ligne, pour que l'artiste complète au bon endroit", async () => {
+    const etires = [{ mot: "s'est", ligne: "On s'est donné rendez-vous y a dix ans" }];
+    serveur({ ...SANS_RIEN, texte: "x", calees: { source: "paroles.txt", methode: "alignement", reconnus: 0.76, lignes: 72, etires } });
+    render(<BlocParoles id="clip" morceauPresent />);
+    const alerte = await screen.findByRole("alert");
+    expect(alerte).toHaveTextContent("ce mot s'étire sur du chant que tu n'as pas écrit");
+    expect(alerte).toHaveTextContent("Juste après « s'est », dans « On s'est donné rendez-vous y a dix ans »");
+  });
+
+  it("un calage par alignement ne montre pas un pourcentage qui n'a pas l'échelle de whisper", async () => {
+    serveur({ ...SANS_RIEN, texte: "x", calees: { source: "paroles.txt", methode: "alignement", reconnus: 0.59, lignes: 3, etires: [] } });
+    render(<BlocParoles id="clip" morceauPresent />);
+    expect(await screen.findByText("Calées mot à mot sur ton morceau : 3 lignes.")).toBeInTheDocument();
+    expect(screen.queryByText(/59 %/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("un calage par whisper garde son pourcentage", async () => {
+    serveur({ ...SANS_RIEN, texte: "x", calees: { source: "paroles.txt", methode: "whisper", reconnus: 0.9, lignes: 3, etires: [] } });
+    render(<BlocParoles id="clip" morceauPresent />);
+    expect(await screen.findByText(/3 lignes, 90 % des mots reconnus\./)).toBeInTheDocument();
   });
 
   it("une lecture ratée se dit, jamais comme des paroles vides", async () => {
