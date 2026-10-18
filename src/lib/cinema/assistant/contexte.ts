@@ -1,6 +1,7 @@
 import { estUnExemple } from "../../../../remotion/film/cinema/exemples";
 import type { CinemaDuFilm, EpisodeDeCinema, PlanDeCinema } from "../../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../../remotion/film/spec";
+import { referencesDeLaSerie } from "../bible/etat";
 import { paletteEnMots } from "../couleurs";
 
 /**
@@ -25,6 +26,20 @@ export function ligneDeLaMarque({ marque, direction }: MarqueDuFilm): string {
 export function leCasting(cinema: CinemaDuFilm): string {
   if (cinema.personnages.length === 0) return "No characters yet.";
   return `Characters:\n${cinema.personnages.map((p) => `- ${p.nom}: ${estUnExemple("description", p.description) ? VIDE : p.description}`).join("\n")}`;
+}
+
+const NOM_DU_TYPE_EN: Record<ReturnType<typeof referencesDeLaSerie>[number]["type"], string> = {
+  personnage: "Character",
+  creature: "Creature",
+  objet: "Object",
+  decor: "Location",
+};
+
+/** La bible visuelle entière (personnages ET éléments) : pour décrire l'un d'eux sans répéter les autres. */
+export function laBible(cinema: CinemaDuFilm): string {
+  const references = referencesDeLaSerie(cinema);
+  if (references.length === 0) return "No reference yet.";
+  return `References:\n${references.map((r) => `- [${NOM_DU_TYPE_EN[r.type]}] ${r.nom}: ${estUnExemple("description", r.description) ? VIDE : r.description}`).join("\n")}`;
 }
 
 export function leProduit(cinema: CinemaDuFilm): string {

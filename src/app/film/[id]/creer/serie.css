@@ -9,15 +9,32 @@
 .gm-film .serie-vide { max-width: 640px; }
 .gm-film .serie-vide .film-btn { align-self: flex-start; }
 
-/* Casting */
-.gm-film .personnage { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-4); padding-top: var(--s-3); border-top: 1px solid var(--line-soft); }
-.gm-film .personnage-portrait { aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
-.gm-film .personnage-portrait img { width: 100%; height: 100%; object-fit: cover; }
-.gm-film .personnage-sans-portrait { font-size: var(--t-xs); color: var(--muted); text-align: center; padding: var(--s-2); }
-.gm-film .personnage-portrait.en-cours { border-color: var(--accent); }
-.gm-film .personnage-champs { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
-.gm-film .personnage-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); }
-@container (max-width: 420px) { .gm-film .personnage { grid-template-columns: 1fr; } .gm-film .personnage-portrait { width: 120px; } }
+/* La bible visuelle */
+.gm-film .bible { display: flex; flex-direction: column; gap: var(--s-4); }
+.gm-film .bible-ajouts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.gm-film .reference-bible { display: flex; flex-direction: column; gap: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line-soft); }
+.gm-film .reference-bible-entete { display: flex; align-items: flex-end; gap: var(--s-3); }
+.gm-film .reference-bible-type { font-size: var(--t-xs); color: var(--muted); padding: 4px 10px; border-radius: var(--r-full); background: var(--surface-2); white-space: nowrap; }
+.gm-film .reference-bible-entete .champ { flex: 1; min-width: 0; }
+.gm-film .reference-bible-vues { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.gm-film .reference-bible-verrou { display: flex; flex-direction: column; gap: 6px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .reference-bible-deverrouiller { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+.gm-film .vue-bible { display: flex; flex-direction: column; gap: 6px; width: 140px; }
+.gm-film .vue-bible-image { aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); color: var(--pellicule-texte); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
+.gm-film .vue-bible-image img { width: 100%; height: 100%; object-fit: cover; }
+.gm-film .vue-bible-vide { font-size: var(--t-xs); text-align: center; padding: var(--s-2); opacity: .85; }
+.gm-film .vue-bible-image.en-cours { border-color: var(--accent); }
+.gm-film .vue-bible-legende { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: var(--t-xs); }
+.gm-film .vue-bible-legende b { font-weight: 600; }
+.gm-film .vue-bible-legende .lien { font-size: inherit; }
+.gm-film .vue-bible-versions { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; flex-wrap: wrap; }
+.gm-film .vue-bible-version { padding: 0; border: 1px solid var(--line); border-radius: var(--r-sm); width: 32px; height: 32px; overflow: hidden; cursor: pointer; outline-offset: 2px; }
+.gm-film .vue-bible-version img { width: 100%; height: 100%; object-fit: cover; }
+.gm-film .vue-bible-version.choisie { border-color: var(--accent); border-width: 2px; }
+.gm-film .vue-bible-version:disabled { opacity: .5; cursor: not-allowed; }
+.gm-film .vue-bible-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+@container (max-width: 420px) { .gm-film .vue-bible { width: 112px; } }
 
 /* Épisodes et scènes */
 .gm-film .episodes { display: flex; flex-direction: column; gap: var(--s-5); }
@@ -74,11 +91,29 @@
 .gm-film .decoupe-planche { width: 100%; border-radius: var(--r-sm); cursor: pointer; background: var(--pellicule); }
 .gm-film .decoupe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
 
+/* Les prises d'un plan régénéré */
+.gm-film .prises { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .prises-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.gm-film .prises-liste > li { width: 112px; display: flex; flex-direction: column; gap: 6px; }
+.gm-film .prises-liste > li.retenue .prises-video { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gm-film .prises-video { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); object-fit: cover; }
+.gm-film .prises-absente { display: block; aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--surface-2); color: var(--muted); font-size: var(--t-xs); text-align: center; padding: var(--s-2); }
+.gm-film .prises-actions { display: flex; flex-direction: column; gap: 2px; font-size: var(--t-xs); }
+.gm-film .prises-numero { color: var(--muted); }
+.gm-film .prises-retenue-etiquette { color: var(--accent); font-weight: 600; }
+.gm-film .prises-actions .lien { font-size: inherit; }
+
 /* La photo du vrai produit, Claude */
 .gm-film .photo-du-produit-apercu { width: 120px; aspect-ratio: 1; object-fit: contain; border-radius: var(--r-md); background: var(--surface-2); border: 1px solid var(--line); }
 .gm-film .photo-du-produit .film-btn { cursor: pointer; }
 .gm-film .photo-du-produit .film-btn.desactive { opacity: .45; cursor: not-allowed; }
 .gm-film .ecrire-avec-claude .film-btn { align-self: flex-start; }
+
+/* Importer la bible, et les épisodes pas encore écrits */
+.gm-film .importer-bible textarea { min-height: 120px; }
+.gm-film .episodes-a-venir ol { list-style: decimal; margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-3); }
+.gm-film .episode-a-venir { display: flex; flex-direction: column; gap: 4px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
+.gm-film .episode-a-venir:first-child { padding-top: 0; border-top: 0; }
 
 /* L'aide de Claude : ses gestes, puis sa proposition à garder ou non. */
 .gm-film .aide-claude { display: flex; flex-direction: column; gap: var(--s-2); }

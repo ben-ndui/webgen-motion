@@ -184,3 +184,13 @@ export function resolveVeoKey(): string | null {
   const cle = getConfig().veo?.apiKey ?? process.env.GEMINI_API_KEY;
   return cle && cle.trim() ? cle.trim() : null;
 }
+
+/**
+ * La clé fal.ai qui paie les plans Seedance (second fournisseur du cinéma).
+ * Config d'abord, puis `FAL_KEY` (variable d'environnement standard de
+ * fal.ai). null : Seedance indisponible, Veo reste utilisable seul.
+ */
+export function resolveFalKey(): string | null {
+  const cle = getConfig().fal?.apiKey ?? process.env.FAL_KEY;
+  return cle && cle.trim() ? cle.trim() : null;
+}

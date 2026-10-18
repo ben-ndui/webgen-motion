@@ -1,16 +1,18 @@
 "use client";
 
-import { COUT_D_UN_PLAN_USD, enDollars } from "@/lib/cinema/couts";
-import { basculerUnPersonnage } from "@/lib/cinema/edition-serie";
-import { choisirLeModele } from "@/lib/cinema/plans";
+import { coutDuModele, enDollars } from "@/lib/cinema/couts";
+import { basculerUneReference } from "@/lib/cinema/edition-serie";
+import { type ChoixDuModele, choisirLeModele } from "@/lib/cinema/plans";
 import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
-import { type CinemaDuFilm, PERSONNAGES_PAR_PLAN_MAX, type PlanDeCinema, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
+import { type CinemaDuFilm, type PlanDeCinema, REFERENCES_PAR_PLAN_MAX, type SceneDeCinema } from "../../../../../../../remotion/film/cinema/types";
 import { raisonDeNePasGenerer } from "./raison-de-ne-pas-generer";
+import type { ReferenceAffichee } from "./use-bible";
 import type { SuiviDUnPlan } from "./use-suivi-des-plans";
 import AideDeClaude, { type GesteDeClaude } from "./aide-de-claude";
 import ChampReplique from "./champ-replique";
 import ControleDeLaReplique from "./controle-de-la-replique";
 import DecoupeDuPlan from "./decoupe-du-plan";
+import PrisesDuPlan from "./prises-du-plan";
 import { episodeDeLaScene, useAssistant } from "./use-assistant";
 import ZoneTexte from "./zone-texte";
 
@@ -24,24 +26,35 @@ type Props = {
   // Change quand une nouvelle vidéo du plan arrive.
   version: number;
   blocage: string | null;
+  // La bible visuelle : null tant qu'elle n'a pas fini de se charger.
+  references: ReferenceAffichee[] | null;
   modifierLePlan: (changement: (plan: PlanDeCinema) => void) => void;
   // Pour poser une proposition de Claude gardée.
   modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   onGenerer: () => void;
+  onRafraichir: () => void;
   onRetirer: () => void;
 };
 
+const NOM_DU_FOURNISSEUR: Record<ChoixDuModele["fournisseur"], string> = { veo: "Google", seedance: "fal.ai" };
+
 const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
-  "en-cours": "Google génère ce plan : une à trois minutes. Tu peux continuer à écrire les autres.",
   pret: "Plan prêt.",
 };
 
 /** Le plan choisi sur la pellicule : ce qui s'y passe, qui est à l'image, qui parle, et le bouton qui le génère. */
-export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, modifierLePlan, modifierLaSerie, onGenerer, onRetirer }: Props) {
+export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, suivi, version, blocage, references, modifierLePlan, modifierLaSerie, onGenerer, onRafraichir, onRetirer }: Props) {
   const choix = choisirLeModele(cinema, plan);
-  const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage);
+  const coutUsd = coutDuModele(choix);
+  const raison = raisonDeNePasGenerer(cinema, scene, plan, suivi, blocage, references);
   const presents = cinema.personnages.filter((p) => plan.personnages.includes(p.id));
-  const message = suivi && "raison" in suivi ? suivi.raison : suivi ? MESSAGES[suivi.etat] : undefined;
+  const choisies = plan.references ?? plan.personnages;
+  const creatures = (cinema.elements ?? []).filter((e) => e.type === "creature");
+  // Le choix d'aujourd'hui, pas forcément celui de la génération déjà en vol
+  // (elle a pu être lancée avant un changement de fournisseur) : approximation
+  // acceptée, le libellé décrit le choix actuel plutôt que Google par défaut.
+  const messageEnCours = `${NOM_DU_FOURNISSEUR[choix.fournisseur]} génère ce plan : une à trois minutes. Tu peux continuer à écrire les autres.`;
+  const message = suivi && "raison" in suivi ? suivi.raison : suivi?.etat === "en-cours" ? messageEnCours : suivi ? MESSAGES[suivi.etat] : undefined;
   const dejaGenere = suivi?.etat === "pret";
   const assistant = useAssistant(filmId, cinema, modifierLaSerie);
   const episode = episodeDeLaScene(cinema, scene.id);
@@ -65,15 +78,15 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
       />
 
       <fieldset className="champ choix-personnages">
-        <legend className="champ-question">Qui est à l&apos;image ?</legend>
-        {cinema.personnages.length === 0 && <p className="champ-aide">Personne pour l&apos;instant : ajoute un personnage dans le casting.</p>}
+        <legend className="champ-question">Qui (ou quoi) est à l&apos;image ?</legend>
+        {cinema.personnages.length === 0 && creatures.length === 0 && <p className="champ-aide">Personne pour l&apos;instant : ajoute un personnage ou une créature dans la bible.</p>}
         <div className="puces">
-          {cinema.personnages.map((personnage) => {
-            const present = plan.personnages.includes(personnage.id);
-            const plein = !present && plan.personnages.length >= PERSONNAGES_PAR_PLAN_MAX;
+          {[...cinema.personnages, ...creatures].map((reference) => {
+            const present = choisies.includes(reference.id);
+            const plein = !present && choisies.length >= REFERENCES_PAR_PLAN_MAX;
             return (
-              <button key={personnage.id} type="button" className="puce" aria-pressed={present} disabled={plein} onClick={() => modifierLePlan((p) => basculerUnPersonnage(p, personnage.id))}>
-                {personnage.nom}
+              <button key={reference.id} type="button" className="puce" aria-pressed={present} disabled={plein} onClick={() => modifierLePlan((p) => basculerUneReference(cinema, p, reference.id))}>
+                {reference.nom}
               </button>
             );
           })}
@@ -93,12 +106,53 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
       {suivi?.etat === "pret" && (
         <DecoupeDuPlan key={version} filmId={filmId} plan={plan} fichier={suivi.fichier} version={version} modifierLePlan={modifierLePlan} />
       )}
+      {suivi?.etat === "pret" && (
+        <PrisesDuPlan
+          key={`prises-${version}`}
+          filmId={filmId}
+          planId={plan.id}
+          version={version}
+          onPlanChange={(citee) => {
+            // La découpe n'est PAS reprise du disque à l'enregistrement (contrairement au
+            // fichier) : sans la recopier ici, la prochaine frappe réécrirait celle de
+            // l'ancienne prise par-dessus celle de la prise qu'on vient de choisir.
+            modifierLePlan((p) => {
+              if (citee.decoupe) p.decoupe = citee.decoupe;
+              else delete p.decoupe;
+              if (citee.produitReel) p.produitReel = true;
+              else delete p.produitReel;
+            });
+            // Le lecteur vidéo suit `suivi.fichier`, pas la fiche : on ne relit (et ne
+            // remonte le composant) que si le fichier a vraiment changé — supprimer une
+            // prise qui n'était pas retenue ne doit rien faire sauter à l'écran.
+            if (citee.fichier && citee.fichier !== suivi.fichier) onRafraichir();
+          }}
+        />
+      )}
+
+      <fieldset className="champ choix-fournisseur">
+        <legend className="champ-question">Qui génère ce plan ?</legend>
+        <div className="puces">
+          <button type="button" className="puce" aria-pressed={choix.fournisseur === "veo"} onClick={() => modifierLePlan((p) => delete p.fournisseur)}>
+            Veo
+          </button>
+          <button type="button" className="puce" aria-pressed={choix.fournisseur === "seedance"} onClick={() => modifierLePlan((p) => void (p.fournisseur = "seedance"))}>
+            Seedance
+          </button>
+        </div>
+      </fieldset>
 
       <div className="generer">
         <button type="button" className="film-btn" disabled={raison !== null} onClick={onGenerer}>
-          {dejaGenere ? "Refaire ce plan" : "Générer ce plan"} ({enDollars(COUT_D_UN_PLAN_USD[choix.qualite])})
+          {dejaGenere ? "Refaire ce plan" : "Générer ce plan"}
+          {coutUsd !== null ? ` (${enDollars(coutUsd)})` : ""}
         </button>
-        <p className="champ-aide">{raison ?? `Veo ${choix.qualite === "fast" ? "Fast" : "Lite"} : ${choix.pourquoi}`}</p>
+        <p className="champ-aide">
+          {raison ??
+            (choix.fournisseur === "veo"
+              ? `Veo ${choix.qualite === "fast" ? "Fast" : "Lite"} : ${choix.pourquoi}`
+              : `Seedance : ${choix.pourquoi}`)}
+        </p>
       </div>
       {message && (
         <p className={suivi?.etat === "refuse" || suivi?.etat === "erreur" ? "depot-erreur" : "champ-aide"} role={suivi?.etat === "refuse" || suivi?.etat === "erreur" ? "alert" : "status"}>

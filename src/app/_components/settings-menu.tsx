@@ -7,6 +7,7 @@ import {
   Box,
   ChevronDown,
   ExternalLink,
+  Film,
   HelpCircle,
   KeyRound,
   Mic,
@@ -22,6 +23,9 @@ import {
  *  - Voix off (/setup) — wizard ElevenLabs / Voicebox
  *  - Agent IA (/setup/agent) — clé Anthropic
  *  - Models 3D (/setup/models) — drop GLB Sketchfab
+ *  - Vidéo IA (/setup/video) — clés Google (Veo) et fal.ai (Seedance) ;
+ *    la page existait sans aucun lien pour y arriver (porte orpheline,
+ *    corrigé le 18/10/2026)
  *  - Notary (/notary) — soumissions Apple
  *
  * Future-friendly : on ajoute juste un item ici quand on ship une
@@ -94,6 +98,13 @@ export default function SettingsMenu() {
             label="Models 3D"
             hint="Drop GLB Sketchfab"
             badge="Studio"
+            onClick={() => setOpen(false)}
+          />
+          <MenuLink
+            href="/setup/video"
+            icon={<Film className="w-3.5 h-3.5" />}
+            label="Vidéo IA"
+            hint="Clé Google (Veo) · fal.ai (Seedance)"
             onClick={() => setOpen(false)}
           />
           <MenuLink

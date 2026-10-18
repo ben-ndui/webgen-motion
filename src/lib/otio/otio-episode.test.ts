@@ -42,7 +42,7 @@ describe("timelineDeLEpisode", () => {
     expect(dureeDeLaPiste(plans.children)).toBe(e.montage.duree);
     expect(dureeDeLaPiste(musique.children)).toBe(e.montage.duree);
     // Le son des plans s'arrête où le logo commence.
-    expect(dureeDeLaPiste(son.children)).toBe(e.montage.debutDuLogo);
+    expect(dureeDeLaPiste(son.children)).toBe(e.montage.debutDeLaFin);
   });
 
   it("chaque morceau garde sa découpe : il commence dans la vidéo là où GEN MOTION le fait partir", () => {
@@ -70,7 +70,7 @@ describe("timelineDeLEpisode", () => {
     const enfants = timelineDeLEpisode(e).tracks.children[0].children;
     const logo = enfants[enfants.length - 1] as OtioClip;
     expect(logo.media_references.DEFAULT_MEDIA.target_url).toBe("file:///films/saya/out/Court-FR.episode-ep1.mp4");
-    expect(logo.source_range.start_time.value).toBe(e.montage.debutDuLogo);
+    expect(logo.source_range.start_time.value).toBe(e.montage.debutDeLaFin);
   });
 
   it("sans rendu, le logo est un emplacement repéré qui dit quoi faire", () => {

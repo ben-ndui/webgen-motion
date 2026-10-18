@@ -1,7 +1,10 @@
 import type { CinemaDuFilm, PlanDeCinema, RepliqueDuPlan } from "../../../../remotion/film/cinema/types";
 import { PERSONNAGES_PAR_PLAN_MAX } from "../../../../remotion/film/cinema/types";
+import { LONGUEUR_MAX_DE_DESCRIPTION } from "../../../../remotion/film/cinema/validerReferences";
 import { LONGUEUR_MAX_DE_CONSIGNE, LONGUEUR_MAX_DE_REPLIQUE } from "../../../../remotion/film/cinema/validerPlan";
+import { referencesDeLaSerie } from "../bible/etat";
 import { ajouterLEpisodeEcrit } from "../scenario-lecture";
+import { lireLImportDeLaBible } from "./import-bible";
 import type { DemandeALAssistant, Proposition } from "./types";
 
 /**
@@ -41,6 +44,14 @@ function lireUneConsigne(brute: unknown): string | { raison: string } {
   if (!consigne) return { raison: "Claude a proposé une consigne vide." };
   if (consigne.length > LONGUEUR_MAX_DE_CONSIGNE) return { raison: `La consigne proposée fait ${consigne.length} caractères (${LONGUEUR_MAX_DE_CONSIGNE} au plus) : redemande.` };
   return consigne;
+}
+
+/** La description proposée pour une référence de la bible, si elle tient ; sinon la raison. */
+function lireUneDescription(brute: unknown): string | { raison: string } {
+  const description = texte(brute);
+  if (!description) return { raison: "Claude a proposé une description vide." };
+  if (description.length > LONGUEUR_MAX_DE_DESCRIPTION) return { raison: `La description proposée fait ${description.length} caractères (${LONGUEUR_MAX_DE_DESCRIPTION} au plus) : redemande.` };
+  return description;
 }
 
 function lireLePlanSuivant(cinema: CinemaDuFilm, sceneId: string, reponse: Objet): LectureDeLAssistant {
@@ -89,6 +100,15 @@ export function lireLaReponse(cinema: CinemaDuFilm, demande: DemandeALAssistant,
       return lireLesDialogues(cinema, demande.scene, reponse);
     case "plan-suivant":
       return lireLePlanSuivant(cinema, demande.scene, reponse);
+    case "decrire-reference": {
+      if (!referencesDeLaSerie(cinema).some((r) => r.id === demande.reference)) return refus("Cette référence a été retirée entre-temps.");
+      const description = lireUneDescription(reponse.description);
+      return typeof description === "string" ? { ok: true, proposition: { type: "decrire-reference", reference: demande.reference, description } } : refus(description.raison);
+    }
+    case "importer-bible": {
+      const lecture = lireLImportDeLaBible(cinema, reponse);
+      return lecture.ok ? { ok: true, proposition: { type: "importer-bible", ...lecture.proposition } } : refus(lecture.raison);
+    }
     case "episode-suivant": {
       const lecture = ajouterLEpisodeEcrit(cinema, reponse);
       if (!lecture.ok) return refus(`L'épisode proposé ne tient pas : ${lecture.erreurs.slice(0, 3).join(" ; ")}`);

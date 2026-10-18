@@ -77,6 +77,16 @@ describe("composerLePrompt — série", () => {
     expect(promptDe("confidence").prompt).toContain(description);
   });
 
+  it("une créature citée par plan.references est nommée comme un personnage, mais ne parle jamais", () => {
+    const serie = serieSaya();
+    serie.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black and silver wolf." }];
+    serie.episodes[0].scenes[0].plans[0].references = ["awa", "sahor"];
+    const { prompt } = promptDe("rangement", saya(serie));
+    expect(prompt).toContain("Awa (reference image 1)");
+    expect(prompt).toContain("Sahor (reference image 2): A black and silver wolf.");
+    expect(prompt).not.toContain("Sahor says");
+  });
+
   it("refuse une fiche sans cinéma", () => {
     const spec = saya();
     const situe = trouverLePlan(spec.cinema!, "flacon")!;
@@ -88,8 +98,8 @@ describe("composerLePrompt — série", () => {
 describe("choisirLeModele", () => {
   it("Fast dès qu'un personnage est à l'image (Lite refuse les portraits), en disant pourquoi", () => {
     const serie = serieSaya();
-    expect(choisirLeModele(serie, trouverLePlan(serie, "rangement")!.plan)).toEqual({ qualite: "fast", pourquoi: "Awa est à l'image : Fast garde le même visage." });
-    expect(choisirLeModele(serie, trouverLePlan(serie, "flacon")!.plan)).toEqual({ qualite: "lite", pourquoi: "Aucun personnage à l'image : le modèle Lite suffit." });
+    expect(choisirLeModele(serie, trouverLePlan(serie, "rangement")!.plan)).toEqual({ fournisseur: "veo", qualite: "fast", pourquoi: "Awa est à l'image : Fast garde le même visage." });
+    expect(choisirLeModele(serie, trouverLePlan(serie, "flacon")!.plan)).toEqual({ fournisseur: "veo", qualite: "lite", pourquoi: "Aucune référence à l'image : le modèle Lite suffit." });
   });
 
   it("trouverLePlan cherche dans toutes les scènes et rend null pour un plan inconnu", () => {

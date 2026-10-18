@@ -101,5 +101,14 @@ export function useSuiviDesPlans(
     [avantDeGenerer, lire],
   );
 
-  return { suivis, versions, budget, blocage, generer };
+  /** Relit l'état du plan sans rien lancer : après qu'une autre prise a été choisie, par exemple. */
+  const rafraichir = useCallback(
+    (planId: string) => {
+      setVersions((avant) => ({ ...avant, [planId]: Date.now() }));
+      return lire(planId, "GET");
+    },
+    [lire],
+  );
+
+  return { suivis, versions, budget, blocage, generer, rafraichir };
 }

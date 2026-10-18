@@ -26,6 +26,15 @@ describe("erreursDuCinema — format série", () => {
     expect(erreurs(serie)).toEqual([]);
   });
 
+  it("accepte un plan confié à Seedance, refuse un fournisseur qui n'existe pas", () => {
+    const serie = serieSaya();
+    const plan = serie.episodes[0].scenes[0].plans[0] as { fournisseur?: string };
+    plan.fournisseur = "seedance";
+    expect(erreurs(serie)).toEqual([]);
+    plan.fournisseur = "sora";
+    expect(erreurs(serie)).toEqual(["cinema.episodes[0].scenes[0].plans[0].fournisseur : « veo » ou « seedance » (absent : Veo)"]);
+  });
+
   it("accepte un Reel sans personnage : un épisode, une scène, un plan", () => {
     const reel = { personnages: [], episodes: [{ id: "reel", titre: "Reel", scenes: [{ id: "mer", decor: "The sea at dawn.", plans: [{ id: "vagues", consigne: "Waves.", personnages: [], objet: false }] }] }] };
     expect(erreurs(reel)).toEqual([]);
@@ -83,24 +92,35 @@ describe("erreursDuCinema — format série", () => {
     const liste = erreurs(serie);
     expect(liste).toContain("cinema.personnages[0].id : lettres, chiffres, _ et - seulement");
     expect(liste).toContain("cinema.personnages[0].portrait : cinema/personnages/<id>.jpg ou .png (posé par GEN MOTION)");
-    expect(liste).toContain("cinema.episodes[0].scenes[0].plans[0].fichier : cinema/<plan>.mp4 (posé par GEN MOTION)");
+    expect(liste).toContain("cinema.episodes[0].scenes[0].plans[0].fichier : cinema/<plan>/prise-<n>.mp4 (posé par GEN MOTION)");
   });
 
   it("borne les épisodes, les scènes et les plans ; vide est refusé à chaque niveau", () => {
-    expect(erreurs({ personnages: [], episodes: [] })).toEqual(["cinema.episodes : 1 à 12 épisodes, 0 reçus"]);
+    expect(erreurs({ personnages: [], episodes: [] })).toEqual(["cinema.episodes : 1 à 120 épisodes, 0 reçus"]);
     const serie = serieSaya();
     serie.episodes[0].scenes[1].plans = [];
     serie.episodes.push({ id: "ep2", titre: "Suite", scenes: [] });
     expect(erreurs(serie)).toEqual([
-      "cinema.episodes[0].scenes[1].plans : 1 à 6 plans, 0 reçus",
-      "cinema.episodes[1].scenes : 1 à 4 scènes, 0 reçus",
+      "cinema.episodes[0].scenes[1].plans : 1 à 20 plans, 0 reçus",
+      "cinema.episodes[1].scenes : 1 à 12 scènes, 0 reçus",
     ]);
   });
 
-  it("borne le budget : 0, 600 et 2,5 sont refusés", () => {
-    for (const budget of [0, 600, 2.5]) {
-      expect(erreurs({ ...serieSaya(), budget })).toEqual(["cinema.budget : nombre entier de plans, de 1 à 60"]);
+  it("borne le budget : 0, 1200 et 2,5 sont refusés", () => {
+    for (const budget of [0, 1200, 2.5]) {
+      expect(erreurs({ ...serieSaya(), budget })).toEqual(["cinema.budget : nombre entier de plans, de 1 à 1000"]);
     }
+  });
+
+  it("accepte des épisodes à venir, refuse un titre ou une note trop longs", () => {
+    const serie = serieSaya();
+    (serie as unknown as { episodesAVenir: unknown }).episodesAVenir = [{ titre: "Le retour", note: "Henrik revient à Monaco." }];
+    expect(erreurs(serie)).toEqual([]);
+    (serie as unknown as { episodesAVenir: unknown }).episodesAVenir = [{ titre: "x".repeat(201), note: "x".repeat(2001) }];
+    expect(erreurs(serie)).toEqual([
+      "cinema.episodesAVenir[0].titre : 200 caractères au plus, 201 reçus",
+      "cinema.episodesAVenir[0].note : 2000 caractères au plus, 2001 reçus",
+    ]);
   });
 
   it("refuse le format plat du lot 1 avec un message qui pointe le bon endroit", () => {

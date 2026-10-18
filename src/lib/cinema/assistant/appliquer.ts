@@ -1,5 +1,7 @@
 import type { CinemaDuFilm, EpisodeDeCinema, PlanDeCinema } from "../../../../remotion/film/cinema/types";
+import { ELEMENTS_MAX, EPISODES_A_VENIR_MAX, PERSONNAGES_MAX } from "../../../../remotion/film/cinema/validerCinema";
 import { ajouterUnPlan } from "../edition-serie";
+import { normalise } from "./import-bible";
 import type { Proposition } from "./types";
 
 /**
@@ -74,6 +76,34 @@ export function appliquerLaProposition(cinema: CinemaDuFilm, proposition: Propos
       const connus = new Set(cinema.personnages.map((p) => p.id));
       cinema.personnages.push(...proposition.nouveauxPersonnages.filter((p) => !connus.has(p.id)));
       cinema.episodes.push(renumeroter(cinema, proposition.episode));
+      return null;
+    }
+    case "importer-bible": {
+      // Reconfirmé ici : la série a pu bouger entre la réponse de Claude et le
+      // clic sur « Garder » (renommage, ajout à la main, autre import) : id,
+      // nom (sans accent ni casse) ET plafonds sont revérifiés, pas seulement l'id.
+      const idsConnus = new Set([...cinema.personnages.map((p) => p.id), ...(cinema.elements ?? []).map((e) => e.id)]);
+      const nomsConnus = new Set([...cinema.personnages.map((p) => normalise(p.nom)), ...(cinema.elements ?? []).map((e) => normalise(e.nom))]);
+      const titresConnus = new Set([...cinema.episodes.map((e) => normalise(e.titre)), ...(cinema.episodesAVenir ?? []).map((e) => normalise(e.titre))]);
+
+      const placePersonnages = Math.max(0, PERSONNAGES_MAX - cinema.personnages.length);
+      const nouveauxPersonnages = proposition.personnages.filter((p) => !idsConnus.has(p.id) && !nomsConnus.has(normalise(p.nom))).slice(0, placePersonnages);
+      cinema.personnages.push(...nouveauxPersonnages);
+
+      const placeElements = Math.max(0, ELEMENTS_MAX - (cinema.elements ?? []).length);
+      const nouveauxElements = proposition.elements.filter((e) => !idsConnus.has(e.id) && !nomsConnus.has(normalise(e.nom))).slice(0, placeElements);
+      cinema.elements = [...(cinema.elements ?? []), ...nouveauxElements];
+
+      const placeEpisodes = Math.max(0, EPISODES_A_VENIR_MAX - (cinema.episodesAVenir ?? []).length);
+      const nouveauxEpisodes = proposition.episodes.filter((e) => !titresConnus.has(normalise(e.titre))).slice(0, placeEpisodes);
+      cinema.episodesAVenir = [...(cinema.episodesAVenir ?? []), ...nouveauxEpisodes];
+      return null;
+    }
+    case "decrire-reference": {
+      const personnage = cinema.personnages.find((p) => p.id === proposition.reference);
+      const element = (cinema.elements ?? []).find((e) => e.id === proposition.reference);
+      if (!personnage && !element) return "Cette référence a été retirée entre-temps.";
+      (personnage ?? element!).description = proposition.description;
       return null;
     }
   }

@@ -54,7 +54,7 @@ function pistesDesPlans(entree: EntreeDeLEpisode): { image: OtioTrackChild[]; so
     const suivant = montage.morceaux[index + 1];
     // La coupe tombe là où le morceau suivant (ou le logo) commence ; le fondu
     // déborde ensuite sur les images du plan qui sort, au-delà de la coupe.
-    const coupe = suivant ? suivant.debut : montage.debutDuLogo;
+    const coupe = suivant ? suivant.debut : montage.debutDeLaFin;
     const visible = Math.max(1, coupe - morceau.debut);
     const media = entree.mediaDuPlan(morceau.fichier);
     const reperes: OtioMarker[] = [];
@@ -72,18 +72,20 @@ function pistesDesPlans(entree: EntreeDeLEpisode): { image: OtioTrackChild[]; so
   return { image, son };
 }
 
-function logo(entree: EntreeDeLEpisode): OtioTrackChild {
+const NOM_DE_LA_FIN = { "logo-de-la-marque": "Logo", carton: "Carton de fin" } as const;
+
+/** Le logo ou le carton de fin, repris du rendu de l'épisode ; rien quand l'épisode n'a pas de fin. */
+function fin(entree: EntreeDeLEpisode): OtioTrackChild[] {
   const { fps, montage, rendu } = entree;
-  const debutSec = montage.debutDuLogo / fps;
-  const dureeSec = (montage.duree - montage.debutDuLogo) / fps;
+  if (montage.fin === "aucune") return [];
+  const nom = NOM_DE_LA_FIN[montage.fin];
+  const debutSec = montage.debutDeLaFin / fps;
+  const dureeSec = (montage.duree - montage.debutDeLaFin) / fps;
   if (!rendu) {
-    return gap(fps, dureeSec, "Logo", [
-      marker(fps, "Logo : rends l'épisode dans GEN MOTION pour qu'il apparaisse ici", 0, VIOLET),
-    ]);
+    return [gap(fps, dureeSec, nom, [marker(fps, `${nom} : rends l'épisode dans GEN MOTION pour qu'il apparaisse ici`, 0, VIOLET)])];
   }
-  return clip(fps, "Logo (rendu GEN MOTION)", rendu.chemin, debutSec, dureeSec, rendu.dureeSec, [
-    marker(fps, "Le logo se construit : animation reprise du rendu de l'épisode", debutSec, VIOLET),
-  ]);
+  const repere = montage.fin === "carton" ? "Le carton de fin : repris du rendu de l'épisode" : "Le logo se construit : animation reprise du rendu de l'épisode";
+  return [clip(fps, `${nom} (rendu GEN MOTION)`, rendu.chemin, debutSec, dureeSec, rendu.dureeSec, [marker(fps, repere, debutSec, VIOLET)])];
 }
 
 function pisteDeMusique(entree: EntreeDeLEpisode): OtioTrackChild[] {
@@ -103,7 +105,7 @@ function pisteDeMusique(entree: EntreeDeLEpisode): OtioTrackChild[] {
 export function timelineDeLEpisode(entree: EntreeDeLEpisode): OtioTimeline {
   const { image, son } = pistesDesPlans(entree);
   const musique = pisteDeMusique(entree);
-  const pistes = [track("Video", "Plans", [...image, logo(entree)]), track("Audio", "Son des plans", son)];
+  const pistes = [track("Video", "Plans", [...image, ...fin(entree)]), track("Audio", "Son des plans", son)];
   if (musique.length > 0) pistes.push(track("Audio", "Musique", musique));
   return timeline(entree.fps, entree.nom, { episode: entree.nom }, pistes);
 }

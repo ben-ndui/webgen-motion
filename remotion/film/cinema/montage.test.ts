@@ -33,8 +33,16 @@ describe("monterLEpisode", () => {
       // Nouvelle scène : elle commence AVANT la fin de la précédente, le temps du fondu.
       { planId: "confidence", debut: 480 - FONDU_ENTRE_SCENES, duree: 240, fondu: FONDU_ENTRE_SCENES },
     ]);
-    expect(montage.debutDuLogo).toBe(708 - FONDU_VERS_LE_LOGO);
+    expect(montage.fin).toBe("logo-de-la-marque");
+    expect(montage.debutDeLaFin).toBe(708 - FONDU_VERS_LE_LOGO);
     expect(montage.duree).toBe(708 - FONDU_VERS_LE_LOGO + imageDeLaMesure(2, TEMPO));
+  });
+
+  it("fin configurable : un carton de 3 s, ou rien après le dernier plan", () => {
+    const carton = { ...serieGeneree(), fin: { type: "carton" as const, texte: "Studio Nébuleuse" } };
+    expect(monterLEpisode(carton, "ep1", TEMPO, FPS)).toMatchObject({ fin: "carton", debutDeLaFin: 708 - FONDU_VERS_LE_LOGO, duree: 708 - FONDU_VERS_LE_LOGO + 90 });
+    const sansFin = { ...serieGeneree(), fin: { type: "aucune" as const } };
+    expect(monterLEpisode(sansFin, "ep1", TEMPO, FPS)).toMatchObject({ fin: "aucune", debutDeLaFin: 708, duree: 708 });
   });
 
   it("une découpe avec coupe donne deux morceaux bout à bout, chacun repris au bon endroit de la vidéo", () => {

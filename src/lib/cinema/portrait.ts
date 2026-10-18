@@ -1,28 +1,15 @@
-import type { Personnage } from "../../../remotion/film/cinema/types";
 import { genreDImage } from "../film-fichiers-deposes";
 import { type ClientVeo, raisonDuRefus } from "./veo";
 
 /**
- * Le portrait de référence d'un personnage, généré par Gemini (image). Il est
- * fait UNE fois, puis envoyé à Veo avec chaque plan où le personnage apparaît :
- * c'est lui qui garde le même visage d'un décor à l'autre (recette du 14/10).
- * Même clé et même serveur que Veo. SERVEUR SEULEMENT.
+ * Le client Gemini (image) : envoie un prompt déjà composé, rend l'image.
+ * Le prompt lui-même vient de `bible/prompt.ts` (une vue de la bible :
+ * personnage, créature, objet ou décor). Même clé et même serveur que Veo.
+ * SERVEUR SEULEMENT.
  */
 export const MODELE_DE_PORTRAIT = "gemini-3.1-flash-image";
 
 export type Portrait = { ok: true; octets: Uint8Array; extension: "jpg" | "png" } | { ok: false; statut: number; raison: string };
-
-// Recette du 14/10 : un portrait assis sur un fond coloré, Veo l'a recopié tel
-// quel dans un gros plan (pose et fond) au lieu du décor demandé. Le portrait
-// est donc une fiche de personnage neutre : en pied, debout, fond studio gris
-// clair, qui ne ressemble à aucun décor.
-export function promptDuPortrait(personnage: Pick<Personnage, "description">): string {
-  return (
-    "Photorealistic full-body character reference, standing, front view, arms relaxed, " +
-    `even soft studio light, plain light grey seamless studio background. ${personnage.description.trim()} ` +
-    "Neutral calm expression, looking at the camera. Natural skin texture. No props, no text, no logo."
-  );
-}
 
 type ReponseGemini = { candidates?: { content?: { parts?: { inlineData?: { data?: string } }[] } }[] };
 

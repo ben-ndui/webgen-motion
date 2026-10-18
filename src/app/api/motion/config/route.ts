@@ -90,6 +90,9 @@ export async function PUT(req: NextRequest) {
   if (body.veo && typeof body.veo.apiKey === "string") {
     sanitized.veo = { apiKey: body.veo.apiKey.trim() || undefined };
   }
+  if (body.fal && typeof body.fal.apiKey === "string") {
+    sanitized.fal = { apiKey: body.fal.apiKey.trim() || undefined };
+  }
   if (body.telemetry && typeof body.telemetry.enabled === "boolean") {
     sanitized.telemetry = { enabled: body.telemetry.enabled };
   }

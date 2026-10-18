@@ -18,14 +18,21 @@ type Props = {
   autre: () => void;
   // Le rappel « Claude propose, tu décides » : une fois par écran suffit.
   avecRappel?: boolean;
+  // Un formulaire EXTERNE (pas un geste à soi) déclenche `demander` : on se
+  // montre quand même tant qu'il y a quelque chose à dire. Par défaut, sans
+  // geste à soi ET au repos, on ne s'affiche pas (comportement historique).
+  visibleSansGeste?: boolean;
+  // « Autre proposition » redemande en écartant ce qui vient d'être proposé :
+  // n'a pas de sens pour une EXTRACTION (elle inventerait ou en perdrait).
+  permettreAutre?: boolean;
 };
 
 /**
  * Les gestes où Claude peut aider à cet endroit (un plan, une scène, la
  * série), et sa proposition à garder ou non. Rien n'est remplacé sans clic.
  */
-export default function AideDeClaude({ cinema, gestes, etat, demander, garder, refuser, autre, avecRappel = false }: Props) {
-  if (gestes.length === 0) return null;
+export default function AideDeClaude({ cinema, gestes, etat, demander, garder, refuser, autre, avecRappel = false, visibleSansGeste = false, permettreAutre = true }: Props) {
+  if (gestes.length === 0 && !(visibleSansGeste && etat.type !== "repos")) return null;
   const enCours = etat.type === "en-cours";
 
   return (
@@ -55,9 +62,11 @@ export default function AideDeClaude({ cinema, gestes, etat, demander, garder, r
             <button type="button" className="film-btn" onClick={garder}>
               Garder
             </button>
-            <button type="button" className="film-btn film-btn-ghost" onClick={autre}>
-              Autre proposition
-            </button>
+            {permettreAutre && (
+              <button type="button" className="film-btn film-btn-ghost" onClick={autre}>
+                Autre proposition
+              </button>
+            )}
             <button type="button" className="lien" onClick={refuser}>
               Non merci
             </button>

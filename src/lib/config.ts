@@ -87,6 +87,12 @@ export interface MotionConfig {
   veo?: {
     apiKey?: string;
   };
+  /** Seedance (ByteDance, via fal.ai) : second fournisseur vidéo du cinéma,
+   *  choisi plan par plan. Même principe que Veo : clé du user, facturée
+   *  directement par fal.ai. */
+  fal?: {
+    apiKey?: string;
+  };
   /** Télémétrie anonyme d'activation (opt-out). Un seul event anonyme
    *  'activated' à la 1ère compose réussie — jamais de contenu ni d'email.
    *  cf. src/lib/telemetry.ts. */
@@ -155,6 +161,10 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
       ...current.veo,
       ...partial.veo,
     },
+    fal: {
+      ...current.fal,
+      ...partial.fal,
+    },
   };
   // Drop empty sub-objects so the JSON file stays clean.
   if (
@@ -180,6 +190,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
   }
   if (!next.veo?.apiKey) {
     delete next.veo;
+  }
+  if (!next.fal?.apiKey) {
+    delete next.fal;
   }
   if (next.telemetry && Object.keys(next.telemetry).length === 0) {
     delete next.telemetry;

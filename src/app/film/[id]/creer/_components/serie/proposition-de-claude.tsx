@@ -1,12 +1,17 @@
 "use client";
 
 import type { Proposition } from "@/lib/cinema/assistant/types";
+import { NOM_DU_TYPE, referencesDeLaSerie } from "@/lib/cinema/bible/etat";
 import type { CinemaDuFilm, RepliqueDuPlan } from "../../../../../../../remotion/film/cinema/types";
 
 type Props = { cinema: CinemaDuFilm; proposition: Proposition };
 
 function nom(cinema: CinemaDuFilm, id: string): string {
   return cinema.personnages.find((p) => p.id === id)?.nom ?? id;
+}
+
+function nomDeLaReference(cinema: CinemaDuFilm, id: string): string {
+  return referencesDeLaSerie(cinema).find((r) => r.id === id)?.nom ?? id;
 }
 
 function Replique({ cinema, replique }: { cinema: CinemaDuFilm; replique: RepliqueDuPlan }) {
@@ -73,6 +78,46 @@ export default function PropositionDeClaude({ cinema, proposition }: Props) {
             ))}
           </ol>
           {nouveauxPersonnages.length > 0 && <p className="champ-aide">Nouveaux personnages : {nouveauxPersonnages.map((p) => p.nom).join(", ")} (portrait à générer).</p>}
+        </>
+      );
+    }
+    case "decrire-reference":
+      return (
+        <p lang="en">
+          <b>{nomDeLaReference(cinema, proposition.reference)}</b> : {proposition.description}
+        </p>
+      );
+    case "importer-bible": {
+      const { personnages, elements, episodes } = proposition;
+      return (
+        <>
+          <p>
+            {personnages.length} personnage{personnages.length > 1 ? "s" : ""}, {elements.length} élément{elements.length > 1 ? "s" : ""}, {episodes.length} épisode
+            {episodes.length > 1 ? "s" : ""} trouvés.
+          </p>
+          {(personnages.length > 0 || elements.length > 0) && (
+            <ul>
+              {personnages.map((p) => (
+                <li key={p.id}>
+                  <b>{p.nom}</b> (personnage) : <span lang="en">{p.description}</span>
+                </li>
+              ))}
+              {elements.map((e) => (
+                <li key={e.id}>
+                  <b>{e.nom}</b> ({NOM_DU_TYPE[e.type]}) : <span lang="en">{e.description}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {episodes.length > 0 && (
+            <ol>
+              {episodes.map((e, index) => (
+                <li key={`${e.titre}-${index}`}>
+                  <b>{e.titre}</b> : {e.note}
+                </li>
+              ))}
+            </ol>
+          )}
         </>
       );
     }

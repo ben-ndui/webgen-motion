@@ -15,10 +15,18 @@ describe("registre du cinéma", () => {
     const dossier = dossierJetable("registre");
     expect(reserver(dossier, "jardin", 6)).toEqual({ ok: true });
     expect(lireLeRegistre(dossier).operations.jardin.nom).toBeNull();
-    noterLeLancement(dossier, "jardin", "operations/abc");
+    noterLeLancement(dossier, "jardin", "operations/abc", "veo");
     expect(lireLeRegistre(dossier).operations.jardin.nom).toBe("operations/abc");
+    expect(lireLeRegistre(dossier).operations.jardin.fournisseur).toBe("veo");
     terminer(dossier, "jardin");
     expect(lireLeRegistre(dossier)).toEqual({ utilises: 1, operations: {} });
+  });
+
+  it("garde le fournisseur du lancement : c'est lui qui sera suivi, même si le plan change d'avis ensuite", () => {
+    const dossier = dossierJetable("registre");
+    reserver(dossier, "jardin", 6);
+    noterLeLancement(dossier, "jardin", "7a1b2c3d", "seedance");
+    expect(lireLeRegistre(dossier).operations.jardin.fournisseur).toBe("seedance");
   });
 
   it("refuse de relancer un plan déjà en cours (le double clic ne paie pas deux fois)", () => {
@@ -56,7 +64,7 @@ describe("registre du cinéma", () => {
     const dossier = dossierJetable("registre");
     const avant = Date.parse("2026-10-14T10:00:00Z");
     reserver(dossier, "jardin", 6, avant);
-    noterLeLancement(dossier, "jardin", "operations/abc");
+    noterLeLancement(dossier, "jardin", "operations/abc", "veo");
     expect(reserver(dossier, "jardin", 6, avant + 24 * 3_600_000)).toEqual({ ok: false, raison: "en-cours" });
   });
 

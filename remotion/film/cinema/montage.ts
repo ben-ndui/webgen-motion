@@ -1,14 +1,16 @@
 // Le montage d'un épisode : où tombe chaque morceau de plan, en images.
 // Module pur (testé) : la composition Episode.tsx ne fait que le jouer.
 import { imageDeLaMesure } from "../lib/tempo";
-import { type CinemaDuFilm, DUREE_D_UN_PLAN, type PlanDeCinema } from "./types";
+import { type CinemaDuFilm, DUREE_D_UN_PLAN, type FinDeLEpisode, type PlanDeCinema } from "./types";
 
 // Fondu entre deux scènes (0,4 s à 30 i/s) ; dans une scène, coupe franche.
 export const FONDU_ENTRE_SCENES = 12;
-// Fondu du dernier plan vers le logo.
+// Fondu du dernier plan vers le logo ou le carton de fin.
 export const FONDU_VERS_LE_LOGO = 15;
 // Le logo se construit sur deux mesures de la musique (comme dans la bibliothèque).
 export const MESURES_DU_LOGO = 2;
+// Le carton de fin (texte et logo du studio) reste trois secondes.
+export const SECONDES_DU_CARTON = 3;
 // La musique sous une réplique : assez basse pour qu'on comprenne chaque mot.
 export const MUSIQUE_SOUS_UNE_REPLIQUE = 0.25;
 // Fondu de sortie de la musique, en images.
@@ -31,8 +33,10 @@ export type Morceau = {
 
 export type MontageDeLEpisode = {
   morceaux: Morceau[];
-  // Images où commence le logo, et durée totale de l'épisode.
-  debutDuLogo: number;
+  // Ce qui suit le dernier plan (absente de la fiche : le logo de la marque).
+  fin: FinDeLEpisode["type"];
+  // Image où commence la fin (= la durée quand il n'y en a pas), et durée totale.
+  debutDeLaFin: number;
   duree: number;
   // Un plan montre l'objet imaginé (sans photo réelle) : le rendu porte « APERÇU ».
   objetImagine: boolean;
@@ -67,6 +71,9 @@ export function monterLEpisode(cinema: CinemaDuFilm, episodeId: string, tempo: n
     });
   });
 
-  const debutDuLogo = curseur - FONDU_VERS_LE_LOGO;
-  return { morceaux, debutDuLogo, duree: debutDuLogo + imageDeLaMesure(MESURES_DU_LOGO, tempo), objetImagine };
+  const fin = cinema.fin?.type ?? "logo-de-la-marque";
+  if (fin === "aucune") return { morceaux, fin, debutDeLaFin: curseur, duree: curseur, objetImagine };
+  const debutDeLaFin = curseur - FONDU_VERS_LE_LOGO;
+  const dureeDeLaFin = fin === "carton" ? Math.round(SECONDES_DU_CARTON * fps) : imageDeLaMesure(MESURES_DU_LOGO, tempo);
+  return { morceaux, fin, debutDeLaFin, duree: debutDeLaFin + dureeDeLaFin, objetImagine };
 }

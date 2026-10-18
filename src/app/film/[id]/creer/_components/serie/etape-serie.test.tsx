@@ -37,7 +37,10 @@ function serveur(routes: Record<string, Reponse[]>) {
   });
 }
 const plan = (id: string) => `/api/motion/film/saya/cinema/plans/${id}`;
+const bibleRoute = "/api/motion/film/saya/cinema/bible";
 const vide = (): Reponse => ({ corps: { plan: { etat: "vide" }, budget: BUDGET } });
+// La bible vide : aucune route de bible n'est testée ici si elle n'est pas précisée.
+const bibleVide = (): Reponse => ({ corps: { references: [] } });
 // Les deux scènes ont chacune un plan ouvert : on vise la scène 1.
 const scene1 = () => within(screen.getByRole("region", { name: "Scène 1" }));
 const avecPortrait = () => {
@@ -61,19 +64,48 @@ describe("étape « Série »", () => {
   });
 
   it("le coût et le modèle sont affichés AVANT le clic : Fast avec Awa, Lite pour l'objet seul", async () => {
-    serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${plan("flacon")}`]: [vide()], [`GET ${plan("confidence")}`]: [vide()] });
+    serveur({
+      [`GET ${plan("rangement")}`]: [vide()],
+      [`GET ${plan("flacon")}`]: [vide()],
+      [`GET ${plan("confidence")}`]: [vide()],
+      [`GET ${bibleRoute}`]: [bibleVide()],
+    });
     render(<Banc cinema={avecPortrait()} />);
+    // Laisse la bible (fetch async) se résoudre avant la suite : sinon sa mise à jour d'état fuit sur le test suivant.
+    await screen.findByRole("heading", { name: "La bible visuelle" });
     expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeEnabled();
     expect(scene1().getByText("Veo Fast : Awa est à l'image : Fast garde le même visage.")).toBeInTheDocument();
     fireEvent.click(within(screen.getByRole("list", { name: "Plans de la scène 1" })).getByRole("button", { name: /Plan 2/ }));
     expect(scene1().getByRole("button", { name: "Générer ce plan (0,64 $)" })).toBeInTheDocument();
   });
 
-  it("sans portrait, le bouton est grisé et dit quoi faire", () => {
-    serveur({ [`GET ${plan("rangement")}`]: [vide()] });
+  it("une référence connue de la bible mais pas encore validée grise le bouton AVANT le clic", async () => {
+    const propose = { id: "awa", type: "personnage", nom: "Awa", description: serieSaya().personnages[0].description, fiche: { statut: "propose", vues: {}, journal: [] } };
+    serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [{ corps: { references: [propose] } }] });
     render(<Banc cinema={serieSaya()} />);
-    expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeDisabled();
-    expect(scene1().getByText("Awa n'a pas encore de portrait : génère-le dans le casting.")).toBeInTheDocument();
+    await screen.findByRole("article", { name: "Personnage Awa" });
+    await waitFor(() => expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeDisabled());
+    expect(scene1().getByText("Awa n'a pas encore d'image validée dans la bible.")).toBeInTheDocument();
+  });
+
+  it("au premier affichage, l'enregistrement est forcé AVANT de lire la bible (une série tout juste commencée n'existe pas encore sur le disque)", async () => {
+    const enregistrer = vi.fn(async () => true);
+    serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
+    render(<Banc cinema={avecPortrait()} enregistrer={enregistrer} />);
+    await screen.findByRole("heading", { name: "La bible visuelle" });
+    await waitFor(() => expect(enregistrer).toHaveBeenCalled());
+  });
+
+  it("bible pas encore chargée (fetch en vol) : le clic affiche le refus que le serveur renvoie", async () => {
+    serveur({
+      [`GET ${plan("rangement")}`]: [vide()],
+      [`GET ${bibleRoute}`]: [{ statut: 500, corps: { erreur: "injoignable" } }],
+      [`POST ${plan("rangement")}`]: [{ statut: 409, corps: { erreur: "Awa n'a pas encore d'image validée dans la bible : valide-la d'abord, sinon son visage changerait d'un plan à l'autre." } }],
+    });
+    render(<Banc cinema={serieSaya()} />);
+    await waitFor(() => expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeEnabled());
+    fireEvent.click(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" }));
+    expect(await screen.findByText(/n'a pas encore d'image validée dans la bible/)).toBeInTheDocument();
   });
 
   it("générer enregistre d'abord, lance, puis suit le plan jusqu'à sa vidéo", async () => {
@@ -81,6 +113,7 @@ describe("étape « Série »", () => {
     const appels = serveur({
       [`GET ${plan("rangement")}`]: [vide(), { corps: { plan: { etat: "en-cours" }, budget: BUDGET } }, { corps: { plan: { etat: "pret", fichier: "cinema/rangement.mp4" }, budget: { utilises: 1, plafond: 20 } } }],
       [`POST ${plan("rangement")}`]: [{ corps: { plan: { etat: "en-cours" }, budget: { utilises: 1, plafond: 20 } } }],
+      [`GET ${bibleRoute}`]: [bibleVide()],
     });
     const enregistrer = vi.fn(async () => true);
     const { container } = render(<Banc cinema={avecPortrait()} enregistrer={enregistrer} />);
@@ -99,7 +132,7 @@ describe("étape « Série »", () => {
   });
 
   it("un enregistrement raté ne lance rien (on ne paie pas un plan sur une consigne périmée)", async () => {
-    const appels = serveur({ [`GET ${plan("rangement")}`]: [vide()] });
+    const appels = serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
     render(<Banc cinema={avecPortrait()} enregistrer={async () => false} />);
     await waitFor(() => expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeEnabled());
     fireEvent.click(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" }));
@@ -108,7 +141,10 @@ describe("étape « Série »", () => {
   });
 
   it("Studio absent ou clé manquante : un seul message en haut, et les boutons grisés", async () => {
-    serveur({ [`GET ${plan("rangement")}`]: [{ statut: 412, corps: { erreur: "Aucune clé Gemini : ajoute-la dans les Réglages pour générer." } }] });
+    serveur({
+      [`GET ${plan("rangement")}`]: [{ statut: 412, corps: { erreur: "Aucune clé Gemini : ajoute-la dans les Réglages pour générer." } }],
+      [`GET ${bibleRoute}`]: [bibleVide()],
+    });
     render(<Banc cinema={avecPortrait()} />);
     const alerte = (await screen.findAllByRole("alert")).find((element) => element.closest(".serie") && !element.closest(".bloc"))!;
     expect(alerte).toHaveTextContent("Aucune clé Gemini");
@@ -116,19 +152,59 @@ describe("étape « Série »", () => {
     expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeDisabled();
   });
 
-  it("le portrait généré s'affiche et entre dans la fiche", async () => {
+  it("la bible visuelle liste les personnages, et génère une vue au clic", async () => {
+    const reference = { id: "awa", type: "personnage", nom: "Awa", description: avecPortrait().personnages[0].description, fiche: { statut: "propose", vues: {}, journal: [] } };
     serveur({
       [`GET ${plan("rangement")}`]: [vide()],
-      ["POST /api/motion/film/saya/cinema/personnages/awa/portrait"]: [{ corps: { portrait: "cinema/personnages/awa.jpg" } }],
+      [`GET ${bibleRoute}`]: [{ corps: { references: [reference] } }, { corps: { references: [{ ...reference, fiche: { statut: "propose", vues: { "en-pied": { versions: [{ n: 1, fichier: "cinema/bible/awa/en-pied-v1.jpg", origine: "generee", creeeLe: null }], retenue: 1 } }, journal: [] } }] } }],
+      [`POST ${bibleRoute}/awa/en-pied`]: [{ corps: { fichier: "cinema/bible/awa/en-pied-v1.jpg" } }],
     });
     render(<Banc cinema={serieSaya()} />);
-    fireEvent.click(screen.getByRole("button", { name: "Générer son portrait (0,05 $)" }));
-    expect(await screen.findByRole("img", { name: "Portrait de Awa" })).toBeInTheDocument();
-    expect(ficheCourante.cinema?.personnages[0].portrait).toBe("cinema/personnages/awa.jpg");
+    expect(await screen.findByRole("article", { name: "Personnage Awa" })).toBeInTheDocument();
+    // En pied est la première vue d'un personnage (VUES_DU_TYPE) : son bouton Générer est le premier.
+    fireEvent.click(within(screen.getByRole("article", { name: "Personnage Awa" })).getAllByRole("button", { name: /Générer/ })[0]);
+    expect(await screen.findByRole("img", { name: "En pied, version 1" })).toBeInTheDocument();
+  });
+
+  it("choisir une autre prise recopie SA découpe dans la fiche locale (sinon le prochain enregistrement écraserait celle du serveur)", async () => {
+    const serie = avecPortrait();
+    serie.episodes[0].scenes[0].plans[0].fichier = "cinema/rangement/prise-1.mp4";
+    serie.episodes[0].scenes[0].plans[0].decoupe = { debut: 1, fin: 7 };
+    const prisesRoute = `${plan("rangement")}/prises`;
+    serveur({
+      [`GET ${plan("rangement")}`]: [{ corps: { plan: { etat: "pret", fichier: "cinema/rangement/prise-1.mp4" }, budget: BUDGET } }],
+      [`GET ${bibleRoute}`]: [bibleVide()],
+      [`GET ${prisesRoute}`]: [
+        {
+          corps: {
+            prises: [
+              { n: 1, fichier: "cinema/rangement/prise-1.mp4", retenue: true, presente: true, creeeLe: null },
+              { n: 2, fichier: "cinema/rangement/prise-2.mp4", retenue: false, presente: true, creeeLe: null },
+            ],
+          },
+        },
+      ],
+      [`POST ${prisesRoute}/2`]: [
+        {
+          corps: {
+            prises: [
+              { n: 1, fichier: "cinema/rangement/prise-1.mp4", retenue: false, presente: true, creeeLe: null },
+              { n: 2, fichier: "cinema/rangement/prise-2.mp4", retenue: true, presente: true, creeeLe: null },
+            ],
+            // La prise 2 n'a pas de découpe propre : le plan ne doit plus en citer après ce choix.
+            plan: { fichier: "cinema/rangement/prise-2.mp4" },
+          },
+        },
+      ],
+    });
+    render(<Banc cinema={serie} />);
+    expect(await screen.findByText("Ses prises (2)")).toBeInTheDocument();
+    fireEvent.click(scene1().getByRole("button", { name: "Garder celle-ci" }));
+    await waitFor(() => expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].decoupe).toBeUndefined());
   });
 
   it("un plan neuf, pas encore enregistré, est « à écrire », pas en erreur", async () => {
-    serveur({ [`GET ${plan("rangement")}`]: [vide()] });
+    serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
     render(<Banc cinema={avecPortrait()} />);
     fireEvent.click(within(screen.getByRole("list", { name: "Plans de la scène 1" })).getByRole("button", { name: "Ajouter un plan" }));
     expect(await screen.findByRole("region", { name: "Plan 3" })).toBeInTheDocument();

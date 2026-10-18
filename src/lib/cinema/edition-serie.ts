@@ -1,5 +1,5 @@
 import { EXEMPLES_DE_SERIE } from "../../../remotion/film/cinema/exemples";
-import { type CinemaDuFilm, DUREE_D_UN_PLAN, type PlanDeCinema, type SceneDeCinema } from "../../../remotion/film/cinema/types";
+import { type CinemaDuFilm, DUREE_D_UN_PLAN, type PlanDeCinema, type SceneDeCinema, type TypeDElement } from "../../../remotion/film/cinema/types";
 
 /**
  * Les gestes d'édition de la série, sur une COPIE de la fiche (l'assistant
@@ -44,13 +44,37 @@ export function ajouterUnPersonnage(cinema: CinemaDuFilm): void {
   cinema.personnages.push({ id: `personnage-${numero}`, nom: `Personnage ${numero}`, description: EXEMPLES_DE_SERIE.description });
 }
 
+/** Retire l'id de tout ce qui pourrait le citer, pour garder la fiche valide. */
+function retirerLaReferencePartout(cinema: CinemaDuFilm, id: string): void {
+  for (const plan of tousLesPlans(cinema)) {
+    if (plan.references) plan.references = plan.references.filter((r) => r !== id);
+  }
+}
+
 /** Retire le personnage ET tout ce qui le cite : sinon la fiche deviendrait invalide. */
 export function retirerUnPersonnage(cinema: CinemaDuFilm, personnageId: string): void {
   cinema.personnages = cinema.personnages.filter((p) => p.id !== personnageId);
+  retirerLaReferencePartout(cinema, personnageId);
   for (const plan of tousLesPlans(cinema)) {
     plan.personnages = plan.personnages.filter((id) => id !== personnageId);
     if (plan.replique?.personnage === personnageId) delete plan.replique;
   }
+}
+
+const PREFIXE_DU_TYPE: Record<TypeDElement, string> = { creature: "creature-", objet: "objet-", decor: "decor-" };
+const NOM_DU_TYPE_D_ELEMENT: Record<TypeDElement, string> = { creature: "Créature", objet: "Objet", decor: "Décor" };
+
+export function ajouterUnElement(cinema: CinemaDuFilm, type: TypeDElement): void {
+  const prefixe = PREFIXE_DU_TYPE[type];
+  const numero = prochainNumero((cinema.elements ?? []).map((e) => e.id), prefixe);
+  const element = { id: `${prefixe}${numero}`, type, nom: `${NOM_DU_TYPE_D_ELEMENT[type]} ${numero}`, description: EXEMPLES_DE_SERIE.description };
+  cinema.elements = [...(cinema.elements ?? []), element];
+}
+
+/** Retire l'élément ET tout ce qui le cite : sinon la fiche deviendrait invalide. */
+export function retirerUnElement(cinema: CinemaDuFilm, elementId: string): void {
+  cinema.elements = (cinema.elements ?? []).filter((e) => e.id !== elementId);
+  retirerLaReferencePartout(cinema, elementId);
 }
 
 export function ajouterUneScene(cinema: CinemaDuFilm, episodeId: string): void {
@@ -73,14 +97,19 @@ export function retirerUnPlan(cinema: CinemaDuFilm, planId: string): void {
   cinema.episodes = restants.length > 0 ? restants : serieDeDepart().episodes;
 }
 
-/** Montre ou retire un personnage d'un plan ; un personnage qui sort ne garde pas sa réplique. */
-export function basculerUnPersonnage(plan: PlanDeCinema, personnageId: string): void {
-  if (plan.personnages.includes(personnageId)) {
-    plan.personnages = plan.personnages.filter((id) => id !== personnageId);
-    if (plan.replique?.personnage === personnageId) delete plan.replique;
-  } else {
-    plan.personnages.push(personnageId);
-  }
+/**
+ * Montre ou retire une référence (personnage OU créature) d'un plan.
+ * `plan.personnages` et `plan.references` restent synchronisés : le premier
+ * ne garde que les personnages (qui parlent, qui ont une réplique), le
+ * second sert tel quel à Veo, dans l'ordre choisi.
+ */
+export function basculerUneReference(cinema: CinemaDuFilm, plan: PlanDeCinema, id: string): void {
+  const actuelles = plan.references ?? plan.personnages;
+  const dedans = actuelles.includes(id);
+  const prochaines = dedans ? actuelles.filter((reference) => reference !== id) : [...actuelles, id];
+  plan.references = prochaines;
+  plan.personnages = prochaines.filter((candidat) => cinema.personnages.some((personnage) => personnage.id === candidat));
+  if (dedans && plan.replique?.personnage === id) delete plan.replique;
 }
 
 const auDixieme = (secondes: number) => Math.round(secondes * 10) / 10;

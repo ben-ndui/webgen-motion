@@ -3,10 +3,13 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { serieSaya } from "../../../remotion/film/cinema/serie-exemple.test-utils";
+import { modifierLaBible } from "./bible/stockage";
 import { creerFilm, enregistrerFilm } from "../film-ecriture";
+import { ecrireAtomiquement } from "../film-fichiers-deposes";
 import { ficheValide } from "../film-fixtures.test-utils";
 import { type FilmDeTest, filmDeTest } from "./film-de-test.test-utils";
 import { VIDEO_GARDEE_PAR_GOOGLE_MS, genererUnPlan, suivreLePlan } from "./generation";
+import { REQUEST_ID, type FalLocal, demarrerFalLocal, enFile as seedanceEnFile, soumissionAcceptee, termine as seedanceTermine } from "./seedance-local.test-utils";
 import { type GoogleLocal, demarrerGoogleLocal, enCours, lancementAccepte, portraitJpeg, termine, videoMp4 } from "./veo-local.test-utils";
 
 let google: GoogleLocal;
@@ -39,24 +42,23 @@ describe("plans avec personnage", () => {
     expect(corpsDuLancement().parameters.negativePrompt).toBeUndefined();
 
     expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "en-cours" } });
-    expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/rangement.mp4" } });
-    expect(readFileSync(join(film.lieux.public("saya"), "cinema", "rangement.mp4")).equals(videoMp4())).toBe(true);
-    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[0].fichier).toBe("cinema/rangement.mp4");
+    expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/rangement/prise-1.mp4" } });
+    expect(readFileSync(join(film.lieux.public("saya"), "cinema", "rangement", "prise-1.mp4")).equals(videoMp4())).toBe(true);
+    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[0].fichier).toBe("cinema/rangement/prise-1.mp4");
     expect(film.registre()).toEqual({ utilises: 1, operations: {} });
   });
 
-  it("sans portrait d'Awa : refusé AVANT de réserver et d'appeler Google (son visage changerait)", async () => {
+  it("sans image validée dans la bible pour Awa : refusé AVANT de réserver et d'appeler Google (son visage changerait)", async () => {
     film.creer();
-    expect(await genererUnPlan("saya", "rangement", film.lieux)).toEqual({ ok: false, statut: 409, raison: expect.stringContaining("Awa n'a pas encore de portrait") });
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toEqual({ ok: false, statut: 409, raison: expect.stringContaining("Awa n'a pas encore d'image validée dans la bible") });
     expect(google.appels).toHaveLength(0);
     expect(film.registre().utilises).toBe(0);
   });
 
-  it("un portrait cité par la fiche mais absent du disque est traité comme manquant", async () => {
-    const serie = serieSaya();
-    serie.personnages[0].portrait = "cinema/personnages/awa.jpg";
-    film.creer(serie);
-    expect(await genererUnPlan("saya", "confidence", film.lieux)).toMatchObject({ ok: false, statut: 409 });
+  it("une image validée dans la bible mais absente du disque est traitée comme manquante", async () => {
+    film.creer();
+    film.validerLaBiblePour("awa");
+    expect(await genererUnPlan("saya", "confidence", film.lieux)).toMatchObject({ ok: false, statut: 409, raison: expect.stringContaining("absente du disque") });
     expect(google.appels).toHaveLength(0);
   });
 
@@ -65,6 +67,43 @@ describe("plans avec personnage", () => {
     google.repondre(lancementAccepte());
     await genererUnPlan("saya", "confidence", film.lieux);
     expect(corpsDuLancement().instances[0].prompt).toContain("Awa says softly in French: « Ce parfum, c'est l'histoire de ma grand-mère. »");
+  });
+});
+
+describe("plans avec une créature citée par references", () => {
+  function avecSahorValide() {
+    const serie = film.donnerUnPortraitAAwa();
+    serie.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black and silver supernatural wolf, violet eyes." }];
+    serie.episodes[0].scenes[0].plans[0].references = ["awa", "sahor"];
+    ecrireAtomiquement(join(film.lieux.public("saya"), "cinema", "bible", "sahor", "face-v1.jpg"), portraitJpeg());
+    modifierLaBible(film.lieux.dossier("saya"), (bible) => {
+      bible.references.sahor = {
+        statut: "valide",
+        vues: { face: { versions: [{ n: 1, fichier: "cinema/bible/sahor/face-v1.jpg", origine: "generee", creeeLe: "2026-10-17" }], retenue: 1 } },
+        journal: [{ action: "validation", le: "2026-10-17" }],
+      };
+    });
+    return serie;
+  }
+
+  it("envoie les deux images de référence (Awa puis Sahor) et nomme Sahor dans le prompt", async () => {
+    film.creer(avecSahorValide());
+    google.repondre(lancementAccepte());
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: true, modele: { qualite: "fast" } });
+    const instance = corpsDuLancement().instances[0];
+    expect(instance.referenceImages).toHaveLength(2);
+    expect(instance.prompt).toContain("Awa (reference image 1)");
+    expect(instance.prompt).toContain("Sahor (reference image 2)");
+    expect(instance.prompt).toContain("supernatural wolf");
+  });
+
+  it("Sahor sans image validée refuse le plan, même si Awa l'est", async () => {
+    const serie = film.donnerUnPortraitAAwa();
+    serie.elements = [{ id: "sahor", type: "creature", nom: "Sahor", description: "A black and silver supernatural wolf." }];
+    serie.episodes[0].scenes[0].plans[0].references = ["awa", "sahor"];
+    film.creer(serie);
+    expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: false, statut: 409, raison: expect.stringContaining("Sahor n'a pas encore d'image validée") });
+    expect(google.appels).toHaveLength(0);
   });
 });
 
@@ -183,6 +222,21 @@ describe("la fiche pendant la génération", () => {
     expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].decoupe).toBeUndefined();
   });
 
+  it("refaire un plan déjà généré garde l'ancienne prise dans l'historique et retient la nouvelle", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fichier = "cinema/flacon.mp4";
+    film.creer(serie);
+    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, video: true });
+    await genererUnPlan("saya", "flacon", film.lieux);
+
+    expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/flacon/prise-2.mp4" } });
+    expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].fichier).toBe("cinema/flacon/prise-2.mp4");
+    const prises = film.prises().plans.flacon;
+    expect(prises.map((p) => p.n)).toEqual([1, 2]);
+    expect(prises.find((p) => p.n === 1)?.fichier).toBe("cinema/flacon.mp4");
+    expect(prises.find((p) => p.n === 2)?.fichier).toBe("cinema/flacon/prise-2.mp4");
+  });
+
   it("une fiche qui cite une vidéo absente du disque n'annonce pas un plan prêt", async () => {
     const serie = serieSaya();
     serie.episodes[0].scenes[0].plans[1].fichier = "cinema/flacon.mp4";
@@ -209,5 +263,78 @@ describe("la fiche pendant la génération", () => {
     film.creer();
     expect(await genererUnPlan("saya", "fenetre", film.lieux)).toMatchObject({ ok: false, statut: 404 });
     expect(google.appels).toHaveLength(0);
+  });
+});
+
+describe("Seedance (fournisseur explicite sur le plan)", () => {
+  let fal: FalLocal;
+  let filmAvecFal: FilmDeTest;
+  beforeEach(async () => {
+    fal = await demarrerFalLocal();
+    filmAvecFal = filmDeTest(google.base, fal.base);
+  });
+  afterEach(() => fal.fermer());
+
+  it("le parcours complet : lancé, suivi et téléchargé chez fal.ai, pas de prix fixe affiché", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+
+    const lancement = await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+    expect(lancement).toMatchObject({ ok: true, plan: { etat: "en-cours" }, modele: { fournisseur: "seedance", coutUsd: null } });
+    expect(fal.appels[0].chemin).toBe("/bytedance/seedance-2.5/us/reference-to-video");
+    expect(google.appels).toHaveLength(0);
+
+    fal.repondre(seedanceEnFile());
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "en-cours" } });
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/flacon/prise-1.mp4" } });
+    expect(readFileSync(join(filmAvecFal.lieux.public("saya"), "cinema", "flacon", "prise-1.mp4")).equals(videoMp4())).toBe(true);
+    expect(filmAvecFal.registre()).toEqual({ utilises: 1, operations: {} });
+  });
+
+  it("sans clé fal.ai : 412, et rien n'est réservé — Veo reste intact", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    expect(await genererUnPlan("saya", "flacon", { ...filmAvecFal.lieux, fal: () => null })).toMatchObject({ ok: false, statut: 412, raison: expect.stringContaining("fal.ai") });
+    expect(filmAvecFal.registre().utilises).toBe(0);
+    expect(fal.appels).toHaveLength(0);
+  });
+
+  it("le suivi reste chez fal.ai même si le plan repasse sur Veo entre-temps (le lancement fait foi)", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+    await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+
+    // La personne change d'avis sur l'écran AVANT que la génération ne finisse.
+    const fiche = filmAvecFal.fiche();
+    fiche.cinema!.episodes[0].scenes[0].plans[1].fournisseur = "veo";
+    enregistrerFilm("saya", fiche, filmAvecFal.lieux.fiches);
+
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret" } });
+    expect(google.appels).toHaveLength(0);
+  });
+
+  it("une panne PASSAGÈRE de fal.ai sur un plan déjà terminé (donc facturé) ne le rend PAS au budget", async () => {
+    const serie = serieSaya();
+    serie.episodes[0].scenes[0].plans[1].fournisseur = "seedance";
+    filmAvecFal.creer(serie);
+    fal.repondre(soumissionAcceptee());
+    await genererUnPlan("saya", "flacon", filmAvecFal.lieux);
+
+    fal.repondre({ statut: 200, corps: { status: "COMPLETED" } }, { statut: 502, corps: null });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "injoignable" } });
+    // Toujours compté : une panne passagère chez fal.ai n'efface pas un plan payé.
+    expect(filmAvecFal.registre().utilises).toBe(1);
+    expect(filmAvecFal.registre().operations.flacon.nom).toBe(REQUEST_ID);
+
+    fal.repondre(...seedanceTermine(fal.base), { statut: 200, video: true });
+    expect(await suivreLePlan("saya", "flacon", filmAvecFal.lieux)).toMatchObject({ plan: { etat: "pret" } });
+    expect(filmAvecFal.registre()).toEqual({ utilises: 1, operations: {} });
   });
 });

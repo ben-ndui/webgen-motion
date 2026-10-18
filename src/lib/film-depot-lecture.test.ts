@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { serieSaya } from "../../remotion/film/cinema/serie-exemple.test-utils";
+import { modifierLaBible } from "./cinema/bible/stockage";
 import { cheminDUnMediaAttendu } from "./film-depot-lecture";
 import { filmDeTest } from "./cinema/film-de-test.test-utils";
 import { ecrireAtomiquement } from "./film-fichiers-deposes";
@@ -34,5 +35,24 @@ describe("cheminDUnMediaAttendu — fichiers de la série", () => {
     const film = filmAvecSerie();
     expect(cheminDUnMediaAttendu("saya", "cinema/rangement.mp4", film.lieux)).toBeNull();
     expect(cheminDUnMediaAttendu("saya", "cinema/../../fiches/saya.json", film.lieux)).toBeNull();
+  });
+
+  it("sert une image de la bible visuelle, citée dans bible.json (pas dans la fiche elle-même)", () => {
+    const film = filmAvecSerie();
+    const fichier = "cinema/bible/awa/face-v1.jpg";
+    modifierLaBible(film.lieux.dossier("saya"), (bible) => {
+      bible.references.awa = { statut: "propose", vues: { face: { versions: [{ n: 1, fichier, origine: "generee", creeeLe: null }], retenue: 1 } }, journal: [] };
+    });
+    ecrireAtomiquement(join(film.lieux.public("saya"), "cinema", "bible", "awa", "face-v1.jpg"), videoMp4());
+    expect(cheminDUnMediaAttendu("saya", fichier, film.lieux)).toBe(join(film.lieux.public("saya"), fichier));
+  });
+
+  it("refuse une image de la bible citée mais absente du disque", () => {
+    const film = filmAvecSerie();
+    const fichier = "cinema/bible/awa/face-v1.jpg";
+    modifierLaBible(film.lieux.dossier("saya"), (bible) => {
+      bible.references.awa = { statut: "propose", vues: { face: { versions: [{ n: 1, fichier, origine: "generee", creeeLe: null }], retenue: 1 } }, journal: [] };
+    });
+    expect(cheminDUnMediaAttendu("saya", fichier, film.lieux)).toBeNull();
   });
 });
