@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readdirSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { type ModeleWhisper, telechargerUnModele } from "./modeles-whisper";
+import { type ModeleWhisper, modelePresent, telechargerUnModele } from "./modeles-whisper";
 
 const CONTENU = new TextEncoder().encode("un modèle whisper miniature");
 const MODELE: ModeleWhisper = {
@@ -46,5 +46,41 @@ describe("télécharger un modèle whisper", () => {
     const dossier = mkdtempSync(join(tmpdir(), "modeles-"));
     const coupe = async () => { throw new TypeError("fetch failed"); };
     expect(await telechargerUnModele(MODELE, () => {}, { dossier, recuperer: coupe as typeof fetch })).toEqual({ ok: false, raison: "Téléchargement impossible : vérifie ta connexion." });
+  });
+});
+
+describe("télécharger le modèle d'alignement du karaoké", () => {
+  it("va chercher le fichier à SON adresse, et le vérifie de la même façon", async () => {
+    const dossier = mkdtempSync(join(tmpdir(), "modeles-"));
+    const recuperer = vi.fn(servir(CONTENU));
+    const modele = { fichier: "alignement-essai.onnx", octets: CONTENU.byteLength, sha256: MODELE.sha256, adresse: "https://exemple.test/alignement.onnx" };
+    expect(await telechargerUnModele(modele, () => {}, { dossier, recuperer: recuperer as unknown as typeof fetch })).toEqual({ ok: true, chemin: join(dossier, "alignement-essai.onnx") });
+    expect(recuperer).toHaveBeenCalledWith("https://exemple.test/alignement.onnx");
+  });
+});
+
+describe("un téléchargement qui ne peut pas s'écrire", () => {
+  it("finit en refus clair, sans rester bloqué ni laisser de .part", async () => {
+    const parent = mkdtempSync(join(tmpdir(), "modeles-"));
+    const dossier = join(parent, "verrouille");
+    mkdirSync(dossier);
+    chmodSync(dossier, 0o500);
+    try {
+      const resultat = await telechargerUnModele(MODELE, () => {}, { dossier, recuperer: servir(CONTENU) });
+      expect(resultat).toEqual({ ok: false, raison: "Téléchargement interrompu : relance-le." });
+      expect(readdirSync(dossier)).toEqual([]);
+    } finally {
+      chmodSync(dossier, 0o700);
+    }
+  });
+});
+
+describe("un modèle présent est un modèle ENTIER", () => {
+  it("un fichier tronqué ou d'une autre taille n'est pas « présent »", () => {
+    const dossier = mkdtempSync(join(tmpdir(), "modeles-"));
+    writeFileSync(join(dossier, MODELE.fichier), "x");
+    expect(modelePresent(MODELE, dossier)).toBe(false);
+    writeFileSync(join(dossier, MODELE.fichier), CONTENU);
+    expect(modelePresent(MODELE, dossier)).toBe(true);
   });
 });

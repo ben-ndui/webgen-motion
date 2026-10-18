@@ -20,7 +20,8 @@ import { getFormatPublicDir } from "../src/lib/formats/format-store";
 import { SEUIL_DE_RECONNAISSANCE, calerLesParolesDuMorceau, ecrireLeBrouillon } from "../src/lib/formats/karaoke-ecoute";
 import { CHEMINS_DES_PAROLES } from "../src/lib/formats/karaoke-paroles";
 import { type MotEtire, SEUIL_DE_RECONNAISSANCE_ALIGNEE } from "../src/lib/karaoke-alignement/aligner-les-paroles";
-import { calerParAlignement, cheminDuModeleDAlignement } from "../src/lib/karaoke-alignement/caler-par-alignement";
+import { calerParAlignement } from "../src/lib/karaoke-alignement/caler-par-alignement";
+import { cheminDuModeleDAlignement } from "../src/lib/karaoke-alignement/emplacement-du-modele";
 import { type OutilsWhisper, outilsWhisper } from "../src/lib/whisper";
 import { argument, arreter } from "./lib/rendu-remotion";
 

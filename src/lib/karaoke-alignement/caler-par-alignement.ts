@@ -1,7 +1,4 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
 
 import { ffmpeg } from "../binaires-video";
 import { type ParolesAlignees, alignerLesParoles } from "./aligner-les-paroles";
@@ -14,17 +11,6 @@ import { ALPHABET_FRANCAIS, MODELE_FRANCAIS } from "./modele-francais";
  * EN LOCAL, SERVEUR SEULEMENT. Seul le français a son modèle pour l'instant :
  * les autres langues gardent le calage par whisper (karaoke-ecoute.ts).
  */
-
-/** Calculé à chaque appel (HOME du moment), comme le dossier des modèles whisper. */
-export function dossierDesModelesDAlignement(): string {
-  return join(homedir(), ".webgen-motion", "modeles");
-}
-
-export function cheminDuModeleDAlignement(langue: string, dossier: string = dossierDesModelesDAlignement()): string | null {
-  if (langue !== MODELE_FRANCAIS.langue) return null;
-  const chemin = join(dossier, MODELE_FRANCAIS.fichier);
-  return existsSync(chemin) ? chemin : null;
-}
 
 function ondeDuMorceau(morceau: string): Float32Array {
   const sortie = spawnSync(ffmpeg(), ["-v", "error", "-i", morceau, "-ar", String(TAUX), "-ac", "1", "-f", "f32le", "-"], {

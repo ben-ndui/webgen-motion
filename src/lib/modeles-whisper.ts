@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
+import { createWriteStream, existsSync, mkdirSync, renameSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { dossierDesModeles } from "./whisper";
@@ -15,7 +15,9 @@ import { dossierDesModeles } from "./whisper";
  * concorde : un téléchargement interrompu ne laisse jamais un faux modèle.
  */
 
-export type ModeleWhisper = { nom: "medium" | "small"; fichier: string; octets: number; sha256: string; libelle: string };
+/** Ce qu'il faut pour télécharger un modèle et prouver que c'est le bon. */
+export type ModeleATelecharger = { fichier: string; octets: number; sha256: string };
+export type ModeleWhisper = ModeleATelecharger & { nom: "medium" | "small"; libelle: string };
 
 export const MODELES_WHISPER: Record<ModeleWhisper["nom"], ModeleWhisper> = {
   medium: {
@@ -41,8 +43,9 @@ export function adresseDuModele(modele: ModeleWhisper): string {
 export type Progression = (recus: number, total: number) => void;
 export type ResultatDuTelechargement = { ok: true; chemin: string } | { ok: false; raison: string };
 
+/** Sert aussi au modèle d'alignement du karaoké (karaoke-alignement/), qui passe son `adresse`. */
 export async function telechargerUnModele(
-  modele: ModeleWhisper,
+  modele: ModeleWhisper | (ModeleATelecharger & { adresse: string }),
   surProgression: Progression = () => {},
   options: { dossier?: string; recuperer?: typeof fetch; adresse?: string } = {},
 ): Promise<ResultatDuTelechargement> {
@@ -52,7 +55,8 @@ export async function telechargerUnModele(
   mkdirSync(dossier, { recursive: true });
   let reponse: Response;
   try {
-    reponse = await (options.recuperer ?? fetch)(options.adresse ?? adresseDuModele(modele));
+    const adresse = options.adresse ?? ("adresse" in modele ? modele.adresse : adresseDuModele(modele));
+    reponse = await (options.recuperer ?? fetch)(adresse);
   } catch {
     return { ok: false, raison: "Téléchargement impossible : vérifie ta connexion." };
   }
@@ -60,6 +64,11 @@ export async function telechargerUnModele(
 
   const empreinte = createHash("sha256");
   const sortie = createWriteStream(partiel);
+  // Disque plein, dossier interdit : sans cet écouteur, l'erreur d'écriture plantait
+  // le serveur et l'attente de « drain » ne finissait jamais (verrou posé jusqu'au
+  // redémarrage, relecture du 18/10/2026). Elle fait maintenant échouer chaque attente.
+  const ecritureRatee = new Promise<never>((_, echec) => sortie.once("error", echec));
+  ecritureRatee.catch(() => {});
   let recus = 0;
   try {
     const lecteur = reponse.body.getReader();
@@ -68,14 +77,16 @@ export async function telechargerUnModele(
       if (done) break;
       empreinte.update(value);
       recus += value.byteLength;
-      if (!sortie.write(value)) await new Promise<void>((suite) => sortie.once("drain", () => suite()));
+      if (!sortie.write(value)) await Promise.race([new Promise<void>((suite) => sortie.once("drain", () => suite())), ecritureRatee]);
       surProgression(recus, modele.octets);
     }
-    await new Promise<void>((suite, echec) => sortie.end((erreur?: Error | null) => (erreur ? echec(erreur) : suite())));
-  } catch {
+    const fin = new Promise<void>((suite, echec) => sortie.end((erreur?: Error | null) => (erreur ? echec(erreur) : suite())));
+    await Promise.race([fin, ecritureRatee]);
+  } catch (erreur) {
     sortie.destroy();
     rmSync(partiel, { force: true });
-    return { ok: false, raison: "Téléchargement interrompu : relance-le." };
+    const disquePlein = (erreur as NodeJS.ErrnoException | undefined)?.code === "ENOSPC";
+    return { ok: false, raison: disquePlein ? "Plus assez de place sur le disque : libère de l'espace, puis relance." : "Téléchargement interrompu : relance-le." };
   }
 
   if (recus !== modele.octets || empreinte.digest("hex") !== modele.sha256) {
@@ -86,7 +97,12 @@ export async function telechargerUnModele(
   return { ok: true, chemin };
 }
 
-/** Le modèle est-il déjà là ? (Sa présence suffit : il n'arrive qu'après vérification.) */
-export function modelePresent(modele: ModeleWhisper, dossier: string = dossierDesModeles()): boolean {
-  return existsSync(join(dossier, modele.fichier));
+/**
+ * Le modèle est-il là, ENTIER ? Il n'arrive qu'après vérification quand l'app le
+ * télécharge ; la taille écarte en plus un fichier copié à la main, tronqué ou
+ * d'une autre version, qui s'afficherait « Installé » sans jamais servir.
+ */
+export function modelePresent(modele: ModeleATelecharger, dossier: string = dossierDesModeles()): boolean {
+  const chemin = join(dossier, modele.fichier);
+  return existsSync(chemin) && statSync(chemin).size === modele.octets;
 }

@@ -1,10 +1,11 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { alignerLesParoles } from "./aligner-les-paroles";
-import { cheminDuModeleDAlignement } from "./caler-par-alignement";
+import { alignementPossibleIci, cheminDuModeleDAlignement } from "./emplacement-du-modele";
+import { MODELE_FRANCAIS } from "./modele-francais";
 import type { Emission } from "./viterbi-ctc";
 
 // Un alphabet de poche : 0 = blanc, puis o, u, i, a.
@@ -74,13 +75,23 @@ describe("poser les paroles écrites sur le morceau", () => {
 });
 
 describe("le modèle d'alignement sur l'ordinateur", () => {
-  it("français seulement, et seulement s'il est là : sinon le calage reste à whisper", () => {
+  it("français seulement, et seulement s'il est là ENTIER : sinon le calage reste à whisper", () => {
     const dossier = mkdtempSync(join(tmpdir(), "modeles-"));
+    const fichier = join(dossier, MODELE_FRANCAIS.fichier);
     expect(cheminDuModeleDAlignement("fr", dossier)).toBeNull();
-    mkdirSync(dossier, { recursive: true });
-    writeFileSync(join(dossier, "alignement-fr-int8.onnx"), "x");
-    expect(cheminDuModeleDAlignement("fr", dossier)).toBe(join(dossier, "alignement-fr-int8.onnx"));
+    writeFileSync(fichier, "x");
+    expect(cheminDuModeleDAlignement("fr", dossier)).toBeNull();
+    // Fichier creux de la bonne taille : rien n'est écrit sur le disque.
+    truncateSync(fichier, MODELE_FRANCAIS.octets);
+    expect(cheminDuModeleDAlignement("fr", dossier)).toBe(fichier);
     expect(cheminDuModeleDAlignement("en", dossier)).toBeNull();
     expect(cheminDuModeleDAlignement("auto", dossier)).toBeNull();
+  });
+
+  it("ne tourne pas sur un Mac Intel (onnxruntime n'y a pas de binaire), partout ailleurs oui", () => {
+    expect(alignementPossibleIci("darwin", "x64")).toBe(false);
+    expect(alignementPossibleIci("darwin", "arm64")).toBe(true);
+    expect(alignementPossibleIci("linux", "x64")).toBe(true);
+    expect(alignementPossibleIci("win32", "x64")).toBe(true);
   });
 });

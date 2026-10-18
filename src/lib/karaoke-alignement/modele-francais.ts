@@ -21,9 +21,20 @@ export const ALPHABET_FRANCAIS: Alphabet = {
   š: 57, ș: 58,
 };
 
+/**
+ * Où le télécharger, et comment prouver que c'est le bon : dépôt Smooth & Design
+ * sur Hugging Face, adresse ÉPINGLÉE au commit de publication (le fichier ne
+ * peut pas changer sous l'app), taille et empreinte relevées le 18/10/2026.
+ */
+export const ADRESSE_DU_MODELE_FRANCAIS =
+  "https://huggingface.co/smoothandesign/genmotion-alignement-fr/resolve/523837c9271669841dad6738d2213444bc74295f/alignement-fr-int8.onnx";
+
 export const MODELE_FRANCAIS = {
   langue: "fr",
   fichier: "alignement-fr-int8.onnx",
+  octets: 356_211_531,
+  sha256: "e586fad466173fd8e31991c9fe8948e83be69ea1bd53019197af6ca556832286",
+  adresse: ADRESSE_DU_MODELE_FRANCAIS,
   blanc: 0,
   classes: 59,
   /** Une trame toutes les 320 échantillons à 16 kHz : 20 ms. */

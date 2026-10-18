@@ -44,3 +44,11 @@
   .reglages-ligne { flex-wrap: wrap; }
   .reglages-bouton, .reglages-pret { margin-left: 38px; }
 }
+
+/* Sur téléphone, le bouton d'installation écrasait le texte à un mot par ligne :
+   le texte garde 180 px au moins, et le bouton passe dessous quand la place manque. */
+.reglages-ligne:has(.reglages-installation) { flex-wrap: wrap; }
+.reglages-ligne:has(.reglages-installation) .reglages-ligne-texte { flex: 1 1 180px; }
+.reglages-installation { flex: none; margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: var(--t-xs); color: var(--muted); }
+.reglages-installation progress { width: 140px; accent-color: var(--accent); }
+.reglages-installation-erreur { max-width: 200px; text-align: right; color: var(--ink); }

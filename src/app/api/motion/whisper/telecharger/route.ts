@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { diffuserUnTelechargement } from "@/lib/flux-de-telechargement";
 import { MODELES_WHISPER, telechargerUnModele } from "@/lib/modeles-whisper";
 
 /**
@@ -22,29 +23,10 @@ export async function POST(req: NextRequest) {
   if (enCours) return NextResponse.json({ error: "Un téléchargement est déjà en cours." }, { status: 409 });
   enCours = true;
 
-  const encodeur = new TextEncoder();
-  const flux = new ReadableStream({
-    async start(controller) {
-      const emettre = (evenement: Record<string, unknown>) => {
-        try {
-          controller.enqueue(encodeur.encode(`${JSON.stringify(evenement)}\n`));
-        } catch {}
-      };
-      // Une ligne tous les 1 % : assez pour une barre fluide, sans noyer l'écran de 1,5 Go de messages.
-      let dernierPourcent = -1;
-      const resultat = await telechargerUnModele(modele, (recus, total) => {
-        const pourcent = Math.floor((recus / total) * 100);
-        if (pourcent !== dernierPourcent) {
-          dernierPourcent = pourcent;
-          emettre({ type: "progress", recus, total });
-        }
-      });
+  return diffuserUnTelechargement(
+    (surProgression) => telechargerUnModele(modele, surProgression),
+    () => {
       enCours = false;
-      emettre(resultat.ok ? { type: "done", ok: true } : { type: "error", message: resultat.raison });
-      try {
-        controller.close();
-      } catch {}
     },
-  });
-  return new Response(flux, { headers: { "Content-Type": "application/x-ndjson", "Cache-Control": "no-store", "X-Accel-Buffering": "no" } });
+  );
 }

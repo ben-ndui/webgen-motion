@@ -1,8 +1,9 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, truncateSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { MODELE_FRANCAIS } from "../karaoke-alignement/modele-francais";
 import { lireLEtatDesReglages } from "./lire-l-etat-des-reglages";
 
 // os.homedir() lit HOME : chaque test a son propre ~/.webgen-motion jetable,
@@ -33,12 +34,21 @@ afterEach(() => {
 
 describe("lireLEtatDesReglages", () => {
   it("une app tout juste installée : rien n'est prêt", () => {
-    expect(etat()).toEqual({ claude: false, video: false, voix: false, paroles: false });
+    expect(etat()).toEqual({ claude: false, video: false, voix: false, paroles: false, karaoke: false });
   });
 
   it("chaque clé posée dans les Réglages compte", () => {
     ecrireLaConfig({ agent: { provider: "anthropic", apiKey: "sk-ant-x" }, veo: { apiKey: "AIza-x" }, elevenlabs: { apiKey: "el", voiceId: "v" }, defaultBackend: "elevenlabs" });
-    expect(etat()).toEqual({ claude: true, video: true, voix: true, paroles: false });
+    expect(etat()).toEqual({ claude: true, video: true, voix: true, paroles: false, karaoke: false });
+  });
+
+  it("le calage mot à mot est prêt quand son modèle est là, entier (un fichier tronqué ne compte pas)", () => {
+    mkdirSync(join(maison, ".webgen-motion", "modeles"), { recursive: true });
+    const fichier = join(maison, ".webgen-motion", "modeles", "alignement-fr-int8.onnx");
+    writeFileSync(fichier, "x");
+    expect(etat().karaoke).toBe(false);
+    truncateSync(fichier, MODELE_FRANCAIS.octets);
+    expect(etat().karaoke).toBe(true);
   });
 
   it("une clé OpenAI ne rend pas Claude prêt : la série et l'assistant ne parlent qu'à Claude", () => {

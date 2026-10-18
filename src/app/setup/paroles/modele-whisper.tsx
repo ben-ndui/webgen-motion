@@ -1,52 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useTelechargementDeModele } from "@/lib/use-telechargement-de-modele";
 
 import type { EtatWhisper } from "./page";
 
-type Etat = { type: "repos" } | { type: "telechargement"; recus: number; total: number } | { type: "erreur"; message: string };
-
-const MO = 1024 * 1024;
+// Mo décimaux, comme les libellés (« 490 Mo ») et le compteur du calage mot à mot.
+const MO = 1_000_000;
 
 /** Un modèle : présent, ou à télécharger avec sa progression et ses refus dits en clair. */
 export default function ModeleWhisper({ modele, onTelecharge }: { modele: EtatWhisper["modeles"][number]; onTelecharge: () => void }) {
-  const [etat, setEtat] = useState<Etat>({ type: "repos" });
+  const { etat, telecharger: lancer } = useTelechargementDeModele("/api/motion/whisper/telecharger", modele.octets, { modele: modele.nom });
 
   async function telecharger() {
-    setEtat({ type: "telechargement", recus: 0, total: modele.octets });
-    let conclu = false;
-    try {
-      const reponse = await fetch("/api/motion/whisper/telecharger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modele: modele.nom }),
-      });
-      if (!reponse.ok || !reponse.body) {
-        const corps = (await reponse.json().catch(() => ({}))) as { error?: string };
-        setEtat({ type: "erreur", message: corps.error ?? `Téléchargement refusé (${reponse.status}).` });
-        return;
-      }
-      const lecteur = reponse.body.getReader();
-      const decodeur = new TextDecoder();
-      let tampon = "";
-      for (;;) {
-        const { done, value } = await lecteur.read();
-        if (done) break;
-        tampon += decodeur.decode(value, { stream: true });
-        const lignes = tampon.split("\n");
-        tampon = lignes.pop() ?? "";
-        for (const ligne of lignes.filter(Boolean)) {
-          const evenement = JSON.parse(ligne) as { type: string; recus?: number; total?: number; message?: string };
-          if (evenement.type === "progress") setEtat({ type: "telechargement", recus: evenement.recus ?? 0, total: evenement.total ?? modele.octets });
-          if (evenement.type === "error") { conclu = true; setEtat({ type: "erreur", message: evenement.message ?? "Téléchargement en échec." }); }
-          if (evenement.type === "done") { conclu = true; setEtat({ type: "repos" }); onTelecharge(); }
-        }
-      }
-      // Un flux fermé sans « done » ni « error » n'est pas un succès.
-      if (!conclu) setEtat({ type: "erreur", message: "Le téléchargement s'est arrêté sans résultat : relance-le." });
-    } catch {
-      setEtat({ type: "erreur", message: "GEN MOTION ne répond pas : vérifie que l'application est lancée." });
-    }
+    if (await lancer()) onTelecharge();
   }
 
   const pourcent = etat.type === "telechargement" ? Math.floor((etat.recus / etat.total) * 100) : 0;

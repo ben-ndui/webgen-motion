@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import CalageMotAMot from "./calage-mot-a-mot";
 import ModeleWhisper from "./modele-whisper";
 
 export type EtatWhisper = {
@@ -106,6 +107,8 @@ export default function ReglageParoles() {
             </ul>
           )}
         </section>
+
+        <CalageMotAMot />
       </main>
     </div>
   );
