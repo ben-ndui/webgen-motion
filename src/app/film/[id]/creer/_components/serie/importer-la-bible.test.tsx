@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -107,5 +107,64 @@ describe("ImporterLaBible", () => {
     render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
     fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), { target: { value: "Henrik." } });
     expect(screen.getByText("7 / 50000")).toBeInTheDocument();
+  });
+
+  it("déposer un PDF remplit le champ de texte avec ce que le serveur en a extrait", async () => {
+    const appel = vi.fn(async (url: string) => {
+      expect(url).toBe("/api/motion/cinema/bible/pdf");
+      return new Response(JSON.stringify({ texte: "Henrik est le frère perdu d'Awa." }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", appel);
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    const champ = screen.getByPlaceholderText("Colle ici le texte de sa bible…");
+    const pdf = new File(["%PDF-1.4 ..."], "bible.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("Déposer un PDF"), { target: { files: [pdf] } });
+    await waitFor(() => expect(champ).toHaveValue("Henrik est le frère perdu d'Awa."));
+    expect(appel).toHaveBeenCalledTimes(1);
+  });
+
+  it("un PDF illisible affiche l'erreur du serveur sans toucher au champ de texte", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ erreur: "Ce PDF ne contient pas de texte exploitable." }), { status: 422 })));
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    const champ = screen.getByPlaceholderText("Colle ici le texte de sa bible…");
+    const pdf = new File(["%PDF-1.4 ..."], "bible.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("Déposer un PDF"), { target: { files: [pdf] } });
+    expect(await screen.findByRole("alert")).toHaveTextContent("Ce PDF ne contient pas de texte exploitable.");
+    expect(champ).toHaveValue("");
+  });
+
+  it("un PDF trop gros est refusé avant tout envoi réseau", () => {
+    const appel = vi.fn();
+    vi.stubGlobal("fetch", appel);
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    const gros = new File([new Uint8Array(9 * 1024 * 1024)], "bible.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("Déposer un PDF"), { target: { files: [gros] } });
+    expect(screen.getByRole("alert")).toHaveTextContent("Fichier trop gros");
+    expect(appel).not.toHaveBeenCalled();
+  });
+
+  it("déposer un PDF alors que du texte est déjà là demande confirmation avant de l'écraser", async () => {
+    const appel = vi.fn(async () => new Response(JSON.stringify({ texte: "Depuis le PDF." }), { status: 200 }));
+    vi.stubGlobal("fetch", appel);
+    const confirmation = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    const champ = screen.getByPlaceholderText("Colle ici le texte de sa bible…");
+    fireEvent.change(champ, { target: { value: "Texte déjà tapé à la main." } });
+    const pdf = new File(["%PDF-1.4 ..."], "bible.pdf", { type: "application/pdf" });
+    fireEvent.change(screen.getByLabelText("Déposer un PDF"), { target: { files: [pdf] } });
+    expect(confirmation).toHaveBeenCalled();
+    expect(appel).not.toHaveBeenCalled();
+    expect(champ).toHaveValue("Texte déjà tapé à la main.");
+    confirmation.mockRestore();
+  });
+
+  it("le dépôt de PDF est bloqué tant qu'une proposition de Claude attend une réponse", async () => {
+    vi.stubGlobal("fetch", repondre(200, { proposition: PROPOSITION }));
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), { target: { value: "Henrik est le frère perdu d'Awa, protégé par Sahor." } });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    expect(screen.getByLabelText("Déposer un PDF")).toBeDisabled();
+    expect(screen.getByText("Réponds à la proposition de Claude ci-dessous avant de déposer un autre PDF.")).toBeInTheDocument();
   });
 });

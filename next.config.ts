@@ -65,7 +65,22 @@ const nextConfig: NextConfig = {
     "@remotion/cli",
     "@remotion/bundler",
     "@remotion/renderer",
+    // pdf-parse embarque pdf.js, qui va chercher son worker à un chemin
+    // relatif (pdf.worker.mjs) : bundlé dans un chunk serveur, ce fichier
+    // n'existe plus à côté, et toute lecture de PDF échoue en prod/standalone.
+    // Externalisé, require() le résout depuis node_modules tel quel.
+    "pdf-parse",
+    "pdfjs-dist",
+    "@napi-rs/canvas",
   ],
+  // Externaliser ne suffit pas : le worker (pdf.worker.mjs) est chargé par un
+  // chemin construit à l'exécution, que le traceur de fichiers ne détecte
+  // pas statiquement — sans ce forçage, le build standalone l'omet et toute
+  // lecture de PDF échoue (« Cannot find module ... pdf.worker.mjs »),
+  // vérifié en lançant .next/standalone/server.js en vrai.
+  outputFileTracingIncludes: {
+    "*": ["node_modules/pdfjs-dist/**/*", "node_modules/pdf-parse/**/*", "node_modules/@napi-rs/canvas/**/*"],
+  },
 };
 
 export default nextConfig;

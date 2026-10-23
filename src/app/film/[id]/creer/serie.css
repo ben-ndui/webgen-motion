@@ -111,6 +111,8 @@
 
 /* Importer la bible, et les épisodes pas encore écrits */
 .gm-film .importer-bible textarea { min-height: 120px; }
+.gm-film .importer-bible .film-btn { cursor: pointer; }
+.gm-film .importer-bible .film-btn.desactive { opacity: .45; cursor: not-allowed; }
 .gm-film .episodes-a-venir ol { list-style: decimal; margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-3); }
 .gm-film .episode-a-venir { display: flex; flex-direction: column; gap: 4px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
 .gm-film .episode-a-venir:first-child { padding-top: 0; border-top: 0; }
