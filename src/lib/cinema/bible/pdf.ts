@@ -1,6 +1,7 @@
 import { InvalidPDFException, PasswordException, PDFParse } from "pdf-parse";
 
 import { LONGUEUR_MAX_DE_LA_BIBLE_COLLEE } from "../assistant/types";
+import { couperProprement } from "./troncature";
 
 /**
  * Extraction du texte d'un PDF déposé, pour nourrir l'import de bible sans
@@ -26,20 +27,6 @@ function raisonDeLException(erreur: unknown): string {
   return `Le PDF n'a pas pu être lu : ${(erreur as Error).message}`;
 }
 
-// Coupe sur la dernière fin de paragraphe avant la limite ; à défaut, sur la
-// dernière fin de ligne ; seulement à défaut des deux, en plein texte. Les
-// deux premiers cas ne s'appliquent que si le repère est assez proche de la
-// limite (pas dans la première moitié du texte).
-function couperProprement(texte: string, limite: number): string {
-  if (texte.length <= limite) return texte;
-  const coupe = texte.slice(0, limite);
-  const dernierParagraphe = coupe.lastIndexOf("\n\n");
-  if (dernierParagraphe > limite * 0.5) return coupe.slice(0, dernierParagraphe);
-  const derniereLigne = coupe.lastIndexOf("\n");
-  if (derniereLigne > limite * 0.5) return coupe.slice(0, derniereLigne);
-  return coupe;
-}
-
 export async function extraireLeTexteDuPdf(octets: Uint8Array): Promise<LectureDuPdf> {
   if (!Buffer.from(octets.subarray(0, SIGNATURE_PDF.length)).equals(SIGNATURE_PDF)) {
     return { ok: false, raison: "Le fichier déposé n'est pas un PDF." };
@@ -61,8 +48,7 @@ export async function extraireLeTexteDuPdf(octets: Uint8Array): Promise<LectureD
       return { ok: false, raison: "Ce PDF ne contient pas de texte exploitable : vérifie qu'il n'est pas composé d'images scannées." };
     }
 
-    const coupe = couperProprement(texte, LONGUEUR_MAX_DE_LA_BIBLE_COLLEE);
-    return { ok: true, texte: coupe, tronque: coupe.length < texte.length, longueurOriginale: texte.length };
+    return { ok: true, ...couperProprement(texte, LONGUEUR_MAX_DE_LA_BIBLE_COLLEE) };
   } catch (erreur) {
     return { ok: false, raison: raisonDeLException(erreur) };
   } finally {

@@ -72,14 +72,32 @@ const nextConfig: NextConfig = {
     "pdf-parse",
     "pdfjs-dist",
     "@napi-rs/canvas",
+    // mammoth (docx) n'a pas de chemin dynamique comme pdf.js, mais le
+    // traceur l'omettait quand même du standalone : même traitement.
+    "mammoth",
   ],
   // Externaliser ne suffit pas : le worker (pdf.worker.mjs) est chargé par un
   // chemin construit à l'exécution, que le traceur de fichiers ne détecte
   // pas statiquement — sans ce forçage, le build standalone l'omet et toute
-  // lecture de PDF échoue (« Cannot find module ... pdf.worker.mjs »),
-  // vérifié en lançant .next/standalone/server.js en vrai.
+  // lecture de PDF échoue (« Cannot find module ... pdf.worker.mjs »).
+  // `@napi-rs/canvas` publie son binaire natif dans un paquet FRÈRE par
+  // architecture (`@napi-rs/canvas-darwin-arm64`, pas sous `canvas/`) : un
+  // glob trop étroit sur `canvas/**` le manque, et pdf.js plante alors au
+  // chargement (« DOMMatrix is not defined ») — testé une fois dans le repo
+  // (faux vert : retombe sur le vrai node_modules du projet) puis une
+  // seconde fois sur une copie isolée de .next/standalone, comme le fait
+  // réellement l'app empaquetée par Tauri.
   outputFileTracingIncludes: {
-    "*": ["node_modules/pdfjs-dist/**/*", "node_modules/pdf-parse/**/*", "node_modules/@napi-rs/canvas/**/*"],
+    "*": ["node_modules/pdfjs-dist/**/*", "node_modules/pdf-parse/**/*", "node_modules/@napi-rs/**/*", "node_modules/mammoth/**/*"],
+  },
+  // Next coupe silencieusement tout corps de requête /api/motion/** à 10 Mo
+  // par défaut (middleware.ts) : ça cassait déjà l'upload de modèles 3D
+  // (models/upload annonce 50 Mo dans son propre code, jamais atteignable).
+  // Sans risque d'exposition publique : ces routes sont refusées en bloc sur
+  // le déploiement web (desktop-guard.ts, raison "public-web"), donc ce
+  // plafond ne protège que le serveur local de la personne contre elle-même.
+  experimental: {
+    proxyClientMaxBodySize: "50mb",
   },
 };
 
