@@ -46,81 +46,87 @@ export default function CarteDeReference({ filmId, cinema, id, type, nom, descri
   // Verrouillée : c'est cette description, mot pour mot, qui part avec l'image validée à Veo.
   const gestes = verrouillee ? [] : [{ libelle: descriptionAEcrire ? "Décrire avec Claude" : "Réécrire avec Claude", demande: { type: "decrire-reference" as const, reference: id } }];
 
+  const statut = verrouillee ? "validée" : aUneImage ? "image à valider" : "pas encore d'image";
+
   return (
     <article className="reference-bible" aria-label={`${NOM_DU_TYPE[type]} ${nom}`}>
-      <div className="reference-bible-entete">
-        <span className="reference-bible-type">{NOM_DU_TYPE[type]}</span>
+      {/* Repliée par défaut : une bible de 8-10 personnages rendait la page
+          interminable, une carte complète après l'autre. */}
+      <details className="film-details reference-bible-details">
+        <summary>
+          <span className="reference-bible-type">{NOM_DU_TYPE[type]}</span> {nom} — {statut}
+        </summary>
         <label className="champ">
           <span className="champ-question">Son nom</span>
           <input className="champ-saisie" value={nom} onChange={(e) => modifierLesTextes(e.target.value.trim() === "" ? nom : e.target.value, description)} />
         </label>
-      </div>
-      <ZoneTexte
-        question="À quoi ressemble-t-il ?"
-        aide="En une phrase, en anglais (Veo suit mieux l'anglais) : répétée mot pour mot pour garder le même visage ou le même objet."
-        exemple={EXEMPLES_DE_SERIE.description}
-        valeur={description}
-        max={800}
-        onChange={(valeur) => modifierLesTextes(nom, valeur)}
-      />
-      <AideDeClaude cinema={cinema} gestes={gestes} etat={assistant.etat} demander={(d) => void assistant.demander(d)} garder={() => assistant.garder()} refuser={assistant.refuser} autre={assistant.autre} />
-      {descriptionAEcrire ? (
-        <p className="champ-aide">Décris-le d&apos;abord : les vues se génèrent à partir de la description.</p>
-      ) : (
-        <div className="reference-bible-vues">
-          {vues.map((vue) => (
-            <VueDeLaBible
-              key={vue}
-              filmId={filmId}
-              vue={vue}
-              etatDeLaVue={fiche.vues[vue]}
-              principale={fiche.principale === vue || (fiche.principale === undefined && vues.find((v) => fiche.vues[v]?.versions.length) === vue)}
-              plusieursVues={vues.length > 1}
-              etat={etats[`${id}/${vue}`] ?? { etat: "repos" }}
-              verrouillee={verrouillee}
-              onGenerer={() => onGenerer(vue)}
-              onImporter={(fichier, droits) => onImporter(vue, fichier, droits)}
-              onRetenir={(n) => onRetenir(vue, n)}
-              onChoisirPrincipale={() => onChoisirPrincipale(vue)}
-            />
-          ))}
-        </div>
-      )}
-      <div className="reference-bible-verrou">
-        {verrouillee ? (
-          motif === null ? (
-            <button type="button" className="film-btn film-btn-ghost" onClick={() => setMotif("")}>
-              Déverrouiller
-            </button>
-          ) : (
-            <div className="reference-bible-deverrouiller">
-              <input className="champ-saisie" placeholder="Pourquoi déverrouiller ? (reste dans l'historique)" value={motif} onChange={(e) => setMotif(e.target.value)} />
-              <button
-                type="button"
-                className="film-btn film-btn-ghost"
-                disabled={motif.trim() === ""}
-                onClick={() => {
-                  onDeverrouiller(motif);
-                  setMotif(null);
-                }}
-              >
-                Confirmer
-              </button>
-              <button type="button" className="lien" onClick={() => setMotif(null)}>
-                Annuler
-              </button>
-            </div>
-          )
+        <ZoneTexte
+          question="À quoi ressemble-t-il ?"
+          aide="En une phrase, en anglais (Veo suit mieux l'anglais) : répétée mot pour mot pour garder le même visage ou le même objet."
+          exemple={EXEMPLES_DE_SERIE.description}
+          valeur={description}
+          max={800}
+          onChange={(valeur) => modifierLesTextes(nom, valeur)}
+        />
+        <AideDeClaude cinema={cinema} gestes={gestes} etat={assistant.etat} demander={(d) => void assistant.demander(d)} garder={() => assistant.garder()} refuser={assistant.refuser} autre={assistant.autre} />
+        {descriptionAEcrire ? (
+          <p className="champ-aide">Décris-le d&apos;abord : les vues se génèrent à partir de la description.</p>
         ) : (
-          <button type="button" className="film-btn" disabled={!aUneImage} onClick={onValider}>
-            Valider : c&apos;est elle qui part en génération
-          </button>
+          <div className="reference-bible-vues">
+            {vues.map((vue) => (
+              <VueDeLaBible
+                key={vue}
+                filmId={filmId}
+                vue={vue}
+                etatDeLaVue={fiche.vues[vue]}
+                principale={fiche.principale === vue || (fiche.principale === undefined && vues.find((v) => fiche.vues[v]?.versions.length) === vue)}
+                plusieursVues={vues.length > 1}
+                etat={etats[`${id}/${vue}`] ?? { etat: "repos" }}
+                verrouillee={verrouillee}
+                onGenerer={() => onGenerer(vue)}
+                onImporter={(fichier, droits) => onImporter(vue, fichier, droits)}
+                onRetenir={(n) => onRetenir(vue, n)}
+                onChoisirPrincipale={() => onChoisirPrincipale(vue)}
+              />
+            ))}
+          </div>
         )}
-        {!verrouillee && !aUneImage && <p className="champ-aide">Génère ou importe au moins une image avant de valider.</p>}
-      </div>
-      <button type="button" className="lien" onClick={onRetirer}>
-        Retirer {type === "personnage" ? "ce personnage" : "cet élément"}
-      </button>
+        <div className="reference-bible-verrou">
+          {verrouillee ? (
+            motif === null ? (
+              <button type="button" className="film-btn film-btn-ghost" onClick={() => setMotif("")}>
+                Déverrouiller
+              </button>
+            ) : (
+              <div className="reference-bible-deverrouiller">
+                <input className="champ-saisie" placeholder="Pourquoi déverrouiller ? (reste dans l'historique)" value={motif} onChange={(e) => setMotif(e.target.value)} />
+                <button
+                  type="button"
+                  className="film-btn film-btn-ghost"
+                  disabled={motif.trim() === ""}
+                  onClick={() => {
+                    onDeverrouiller(motif);
+                    setMotif(null);
+                  }}
+                >
+                  Confirmer
+                </button>
+                <button type="button" className="lien" onClick={() => setMotif(null)}>
+                  Annuler
+                </button>
+              </div>
+            )
+          ) : (
+            <button type="button" className="film-btn" disabled={!aUneImage} onClick={onValider}>
+              Valider : c&apos;est elle qui part en génération
+            </button>
+          )}
+          {!verrouillee && !aUneImage && <p className="champ-aide">Génère ou importe au moins une image avant de valider.</p>}
+        </div>
+        <button type="button" className="lien" onClick={onRetirer}>
+          Retirer {type === "personnage" ? "ce personnage" : "cet élément"}
+        </button>
+      </details>
     </article>
   );
 }
