@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { serieDeDepart } from "@/lib/cinema/edition-serie";
 import { serieSaya } from "../../../../remotion/film/cinema/serie-exemple.test-utils";
 import { erreursDuCinema } from "../../../../remotion/film/cinema/validerCinema";
 import { appliquerLaProposition } from "./appliquer";
@@ -117,6 +118,12 @@ describe("appliquerLaProposition", () => {
       episodes: [{ titre: "L'héritage", note: "déjà écrit" }, { titre: "Le retour", note: "déjà en attente" }, { titre: "La trahison", note: "nouveau" }],
     });
     expect(cinema.episodesAVenir).toEqual([{ titre: "Le retour", note: "x" }, { titre: "La trahison", note: "nouveau" }]);
+  });
+
+  it("importer-bible sur une série tout juste créée n'écarte pas le vrai « Épisode 1 » à cause de l'épisode d'exemple", () => {
+    const cinema = serieDeDepart(); // episodes[0].titre === "Épisode 1" (exemple)
+    appliquerLaProposition(cinema, { type: "importer-bible", personnages: [], elements: [], episodes: [{ titre: "Épisode 1", note: "Henrik découvre son héritage." }] });
+    expect(cinema.episodesAVenir).toEqual([{ titre: "Épisode 1", note: "Henrik découvre son héritage." }]);
   });
 
   it("l'épisode suivant reprend des ids libres, même si la série a grandi entre-temps", () => {

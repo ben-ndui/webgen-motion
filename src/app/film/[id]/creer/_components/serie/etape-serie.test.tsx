@@ -63,6 +63,70 @@ describe("étape « Série »", () => {
     expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
   });
 
+  it("cliquer « Commencer la série à la main » pendant qu'une proposition de Claude est en attente ne la fait pas disparaître", async () => {
+    // « Commencer » fait aussitôt apparaître SerieDuFilm, qui lance ses propres
+    // fetch (bible, suivi des plans) : seule la requête à l'assistant doit
+    // rester en attente, les autres répondent tout de suite pour ne pas
+    // bloquer le reste de l'écran.
+    let resoudreAssistant!: (reponse: Response) => void;
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options) => {
+      if (String(url) === assistantRoute && options?.method === "POST") {
+        return new Promise((resolve) => void (resoudreAssistant = resolve));
+      }
+      return new Response(JSON.stringify({ references: [] }), { status: 200 });
+    });
+    render(<Banc />);
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), {
+      target: { value: "Henrik est un personnage de la bible de production." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    // La demande à Claude est en vol (pas encore résolue) : la série est créée entre-temps par l'autre bouton.
+    fireEvent.click(screen.getByRole("button", { name: "Commencer la série à la main" }));
+    expect(ficheCourante.cinema).toBeDefined();
+    resoudreAssistant(
+      new Response(
+        JSON.stringify({ proposition: { type: "importer-bible", personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }], elements: [], episodes: [] } }),
+        { status: 200 },
+      ),
+    );
+    // La proposition, déjà payée, doit tout de même s'afficher : le bloc d'import n'a pas été démonté par la bascule.
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    // La série créée entre-temps par « Commencer » n'a pas été perdue (l'épisode d'exemple y est toujours).
+    expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
+  });
+
+  it("sans série : déposer un document crée la série ET applique l'import, sans clic préalable sur « Commencer »", async () => {
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    serveur({
+      [`POST ${assistantRoute}`]: [
+        {
+          corps: {
+            proposition: {
+              type: "importer-bible",
+              personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }],
+              elements: [],
+              episodes: [],
+            },
+          },
+        },
+      ],
+    });
+    render(<Banc />);
+    // Le bloc d'import est déjà visible, sans avoir cliqué « Commencer la série à la main ».
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), {
+      target: { value: "Henrik est un personnage de la bible de production." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    // La série de départ (épisode d'exemple) a bien été créée au passage.
+    expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
+  });
+
   it("le coût et le modèle sont affichés AVANT le clic : Fast avec Awa, Lite pour l'objet seul", async () => {
     serveur({
       [`GET ${plan("rangement")}`]: [vide()],

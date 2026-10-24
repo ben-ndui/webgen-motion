@@ -1,3 +1,4 @@
+import { estUnExemple } from "../../../../remotion/film/cinema/exemples";
 import { ELEMENTS_MAX, EPISODES_A_VENIR_MAX, LONGUEUR_MAX_DE_LA_NOTE_A_VENIR, LONGUEUR_MAX_DU_TITRE_A_VENIR, PERSONNAGES_MAX } from "../../../../remotion/film/cinema/validerCinema";
 import type { CinemaDuFilm, ElementDeLaBible, EpisodeAVenir, Personnage, TypeDElement } from "../../../../remotion/film/cinema/types";
 import { LONGUEUR_MAX_DE_DESCRIPTION } from "../../../../remotion/film/cinema/validerReferences";
@@ -37,7 +38,13 @@ export function lireLImportDeLaBible(cinema: CinemaDuFilm, reponse: unknown): Le
   const nomsDeja = new Set([...cinema.personnages.map((p) => normalise(p.nom)), ...(cinema.elements ?? []).map((e) => normalise(e.nom))]);
   // Les titres déjà écrits OU déjà en attente : un réimport de la même bible
   // ne double pas la liste, et un épisode déjà écrit n'y revient pas.
-  const titresDeja = new Set([...cinema.episodes.map((e) => normalise(e.titre)), ...(cinema.episodesAVenir ?? []).map((e) => normalise(e.titre))]);
+  // L'épisode d'exemple d'une série tout juste créée (« Épisode 1 ») est
+  // exclu : sinon le premier épisode d'une vraie bible portant ce même nom
+  // (le cas le plus courant) serait écarté comme un doublon.
+  const titresDeja = new Set([
+    ...cinema.episodes.filter((e) => !estUnExemple("titre", e.titre)).map((e) => normalise(e.titre)),
+    ...(cinema.episodesAVenir ?? []).map((e) => normalise(e.titre)),
+  ]);
 
   const placePersonnages = Math.max(0, PERSONNAGES_MAX - cinema.personnages.length);
   const placeElements = Math.max(0, ELEMENTS_MAX - (cinema.elements ?? []).length);

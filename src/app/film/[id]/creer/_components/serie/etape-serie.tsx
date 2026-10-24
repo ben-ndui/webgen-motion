@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { serieDeDepart } from "@/lib/cinema/edition-serie";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
@@ -38,34 +38,48 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeD
   };
   const cinema = fiche.cinema;
   const ecrire = <EcrireAvecClaude filmId={id} premierEpisode={!cinema} avantDEcrire={enregistrer} quandEcrit={quandEcrit} />;
-  if (!cinema) return <SerieAbsente ecrire={ecrire} onCommencer={() => modifier((copie) => void (copie.cinema = serieDeDepart()))} />;
+  // Un seul geste crée la série ET l'applique : déposer un document, écrire
+  // avec Claude ou « Commencer à la main » n'ont plus besoin d'un clic
+  // préalable pour « activer » la série avant de pouvoir y travailler.
+  const modifierLaSerie = useCallback(
+    (changement: (cinema: CinemaDuFilm) => void) =>
+      modifier((copie) => {
+        copie.cinema ??= serieDeDepart();
+        changement(copie.cinema);
+      }),
+    [modifier],
+  );
+  // Référence stable (pas recréée à chaque rendu) tant qu'aucune série
+  // n'existe encore : ImporterLaBible reste LA MÊME instance React avant et
+  // après la création de la série, sinon une proposition de Claude en
+  // attente (ou une lecture de PDF en cours) serait perdue en silence au
+  // moment où la série apparaît.
+  const serieVide = useMemo(() => serieDeDepart(), []);
   return (
     <>
-      {proposeeDepuisLeSite && (
+      {proposeeDepuisLeSite && cinema && (
         <p className="champ-aide serie-proposee" role="status">
           Un premier épisode a été proposé depuis ton site : relis les consignes, les répliques et le casting avant de générer quoi que ce soit.
         </p>
       )}
-      <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifier={modifier} enregistrer={enregistrer} ecrire={ecrire} episodeOuvert={episodeOuvert} />
+      <div className="blocs">
+        <ImporterLaBible filmId={id} cinema={cinema ?? serieVide} modifierLaSerie={modifierLaSerie} />
+        {!cinema && (
+          <section className="bloc serie-vide">
+            <h3 className="bloc-titre">Une série pour ta marque</h3>
+            <p className="champ-aide">
+              Des épisodes courts, générés par IA : des personnages qui gardent le même visage d&apos;un plan à l&apos;autre, qui parlent en français, dans
+              les couleurs de ta marque. Compte environ 1 $ par plan de 8 secondes avec un personnage, 0,64 $ sans.
+            </p>
+            <button type="button" className="film-btn film-btn-ghost" onClick={() => modifier((copie) => void (copie.cinema ??= serieDeDepart()))}>
+              Commencer la série à la main
+            </button>
+          </section>
+        )}
+        {ecrire}
+      </div>
+      {cinema && <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifierLaSerie={modifierLaSerie} enregistrer={enregistrer} episodeOuvert={episodeOuvert} />}
     </>
-  );
-}
-
-function SerieAbsente({ onCommencer, ecrire }: { onCommencer: () => void; ecrire: ReactNode }) {
-  return (
-    <div className="blocs">
-      <section className="bloc serie-vide">
-        <h3 className="bloc-titre">Une série pour ta marque</h3>
-        <p className="champ-aide">
-          Des épisodes courts, générés par IA : des personnages qui gardent le même visage d&apos;un plan à l&apos;autre, qui parlent en français, dans les
-          couleurs de ta marque. Compte environ 1 $ par plan de 8 secondes avec un personnage, 0,64 $ sans.
-        </p>
-        <button type="button" className="film-btn film-btn-ghost" onClick={onCommencer}>
-          Commencer la série à la main
-        </button>
-      </section>
-      {ecrire}
-    </div>
   );
 }
 
@@ -73,20 +87,12 @@ type PropsDeLaSerie = {
   id: string;
   cinema: CinemaDuFilm;
   declinaisons: FilmSpec["declinaisons"];
-  modifier: Props["modifier"];
+  modifierLaSerie: (changement: (cinema: CinemaDuFilm) => void) => void;
   enregistrer: Props["enregistrer"];
-  ecrire: ReactNode;
   episodeOuvert: string | null;
 };
 
-function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, episodeOuvert }: PropsDeLaSerie) {
-  const modifierLaSerie = useCallback(
-    (changement: (cinema: CinemaDuFilm) => void) =>
-      modifier((copie) => {
-        if (copie.cinema) changement(copie.cinema);
-      }),
-    [modifier],
-  );
+function SerieDuFilm({ id, cinema, declinaisons, modifierLaSerie, enregistrer, episodeOuvert }: PropsDeLaSerie) {
   const planIds = cinema.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans.map((p) => p.id)));
   const quandUnPlanArrive = useCallback(
     (planId: string) =>
@@ -109,11 +115,9 @@ function SerieDuFilm({ id, cinema, declinaisons, modifier, enregistrer, ecrire, 
         </p>
       )}
       <div className="blocs">
-        <ImporterLaBible filmId={id} cinema={cinema} modifierLaSerie={modifierLaSerie} />
         <BibleDeLaSerie filmId={id} cinema={cinema} modifierLaSerie={modifierLaSerie} bible={bible} />
         <ObjetEtBudget filmId={id} cinema={cinema} enregistrer={enregistrer} budget={budget} modifierLaSerie={modifierLaSerie} />
         <EpisodesAVenir cinema={cinema} modifierLaSerie={modifierLaSerie} />
-        {ecrire}
       </div>
       <EpisodesDeLaSerie
         key={episodeOuvert ?? "premier"}
