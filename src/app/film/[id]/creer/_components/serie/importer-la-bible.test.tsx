@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { useRef, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { cleDuTexteDeDepart } from "@/lib/cinema/bible/texte-de-depart";
 import { serieSaya } from "../../../../../../../remotion/film/cinema/serie-exemple.test-utils";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import ImporterLaBible from "./importer-la-bible";
@@ -32,7 +33,17 @@ const PROPOSITION = {
 };
 
 describe("ImporterLaBible", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    sessionStorage.clear();
+  });
+
+  it("récupère le texte déposé sur « Nouvelle série » avant la création du film, et efface la clé pour ne pas le reposer au rechargement", () => {
+    sessionStorage.setItem(cleDuTexteDeDepart("saya"), "Henrik est le frère perdu d'Awa, déposé avant la création.");
+    render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);
+    expect(screen.getByPlaceholderText("Colle ici le texte de sa bible…")).toHaveValue("Henrik est le frère perdu d'Awa, déposé avant la création.");
+    expect(sessionStorage.getItem(cleDuTexteDeDepart("saya"))).toBeNull();
+  });
 
   it("le bouton reste désactivé tant que le texte collé est trop court", () => {
     render(<Banc depart={serieSaya()} onSerie={vi.fn()} />);

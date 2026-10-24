@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { LONGUEUR_MAX_DE_LA_BIBLE_COLLEE } from "@/lib/cinema/assistant/types";
 import { couperProprement } from "@/lib/cinema/bible/troncature";
+import { cleDuTexteDeDepart } from "@/lib/cinema/bible/texte-de-depart";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import AideDeClaude from "./aide-de-claude";
 import { useAssistant } from "./use-assistant";
@@ -36,7 +37,19 @@ function estDuTextePur(fichier: File): boolean {
  * format à reconnaître, pas d'aller-retour serveur nécessaire).
  */
 export default function ImporterLaBible({ filmId, cinema, modifierLaSerie }: Props) {
-  const [texte, setTexte] = useState("");
+  // « Nouvelle série » (nouveau/serie) y dépose le texte extrait AVANT que ce
+  // film n'existe : récupéré ici une seule fois, puis la clé est effacée pour
+  // qu'un rechargement de page ne le repose pas une seconde fois.
+  const [texte, setTexte] = useState(() => {
+    try {
+      const cle = cleDuTexteDeDepart(filmId);
+      const enAttente = sessionStorage.getItem(cle);
+      if (enAttente) sessionStorage.removeItem(cle);
+      return enAttente ?? "";
+    } catch {
+      return "";
+    }
+  });
   const [etatDepot, setEtatDepot] = useState<EtatDepot>({ type: "repos" });
   const [erreurDepot, setErreurDepot] = useState<string | null>(null);
   const assistant = useAssistant(filmId, cinema, modifierLaSerie);
