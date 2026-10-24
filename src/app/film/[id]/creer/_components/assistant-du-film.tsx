@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Tabs } from "@/components/ui";
 import type { EtatDeLEditeur } from "@/lib/film-editeur";
 import { LANGUES, type Langue } from "../../../../../../remotion/film/spec";
+import { type Etape, ORDRE } from "./etapes";
 import EtapeEcrans from "./etape-ecrans";
 import EtapeHistoire from "./etape-histoire";
 import EtapeMarque from "./etape-marque";
@@ -16,8 +17,6 @@ import RemplirDepuisLeSite from "./remplir-depuis-le-site";
 import EtapeSerie from "./serie/etape-serie";
 import { useFicheDuFilm } from "./use-fiche-du-film";
 
-export type Etape = "marque" | "serie" | "musique" | "ecrans" | "histoire" | "pret";
-const ORDRE: Etape[] = ["marque", "serie", "musique", "ecrans", "histoire", "pret"];
 const TITRES: Record<Etape, string> = {
   marque: "Ta marque",
   serie: "Ta série",
@@ -33,12 +32,14 @@ const TITRES: Record<Etape, string> = {
  * captures, textes). Tout s'enregistre seul ; on peut revenir à n'importe
  * quelle étape.
  */
-type Props = { etatInitial: EtatDeLEditeur; adresseAuDepart?: string };
+type Props = { etatInitial: EtatDeLEditeur; adresseAuDepart?: string; etapeInitiale?: Etape };
 
-export default function AssistantDuFilm({ etatInitial, adresseAuDepart }: Props) {
+export default function AssistantDuFilm({ etatInitial, adresseAuDepart, etapeInitiale }: Props) {
   const { etat, fiche, enregistrement, modifier, enregistrer, deposer, recharger } = useFicheDuFilm(etatInitial);
   const [occupe, setOccupe] = useState(false);
-  const [etape, setEtape] = useState<Etape>("marque");
+  // « Nouvelle série » (nouveau/serie) y renvoie directement : pas la peine
+  // de refaire passer par « Ta marque » un projet qui n'en a pas besoin.
+  const [etape, setEtape] = useState<Etape>(etapeInitiale ?? "marque");
   const langues: Langue[] = LANGUES.filter((l) => fiche.declinaisons.some((d) => d.langue === l));
   const [langue, setLangue] = useState<Langue>(langues[0] ?? "fr");
   const present = (role: string) => etat.medias.some((m) => m.role === role && m.present);

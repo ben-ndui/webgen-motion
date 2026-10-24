@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { serieDeDepart } from "@/lib/cinema/edition-serie";
 import { serieSaya } from "../../../../remotion/film/cinema/serie-exemple.test-utils";
 import { lireLImportDeLaBible } from "./import-bible";
 
@@ -98,6 +99,12 @@ describe("lireLImportDeLaBible", () => {
     ); // 1 (Awa) + 29 = 30 = PERSONNAGES_MAX, plus de place.
     const lecture = lireLImportDeLaBible(cinema, { personnages: [{ nom: "Henrik", description: "x" }] });
     expect(lecture).toMatchObject({ ok: false });
+  });
+
+  it("l'épisode d'exemple d'une série tout juste créée n'écarte pas le vrai « Épisode 1 » d'une bible importée", () => {
+    const cinema = serieDeDepart(); // episodes[0].titre === "Épisode 1" (exemple)
+    const lecture = lireLImportDeLaBible(cinema, { episodes: [{ titre: "Épisode 1", note: "Henrik découvre son héritage." }] });
+    expect(lecture).toMatchObject({ ok: true, proposition: { episodes: [{ titre: "Épisode 1" }] } });
   });
 
   it("n'importe pas un épisode déjà écrit, ni un déjà en attente, même réimporté deux fois", () => {

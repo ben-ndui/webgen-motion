@@ -11,6 +11,7 @@ import {
   ajouterUnPlan,
   ajouterUneScene,
   basculerUneReference,
+  fusionnerLEpisodeEcrit,
   poserLaDecoupe,
   retirerUnElement,
   retirerUnPersonnage,
@@ -162,5 +163,92 @@ describe("poserLaDecoupe", () => {
     expect(valide(serie)).toEqual([]);
     poserLaDecoupe(p, { debut: 0, fin: 8 });
     expect(p.decoupe).toBeUndefined();
+  });
+});
+
+describe("fusionnerLEpisodeEcrit", () => {
+  // Un épisode « proposé » par le serveur, comme `ajouterLEpisodeEcrit` en
+  // construit un : une COPIE de la série au moment de la demande, avec le
+  // nouvel épisode en plus. Léa est un personnage inédit QUE Claude vient de
+  // créer ; ses ids (ep2, scene-3, plan-3) sont ceux que LE SERVEUR a numérotés
+  // contre SA propre copie, pas forcément libres dans la série actuelle.
+  function proposeAvecLea(serie: CinemaDuFilm): CinemaDuFilm {
+    const propose = JSON.parse(JSON.stringify(serie)) as CinemaDuFilm;
+    propose.personnages.push({ id: "lea", nom: "Léa", description: "A young woman with short curly hair." });
+    propose.episodes.push({
+      id: "ep2",
+      titre: "La rencontre",
+      scenes: [{ id: "scene-3", decor: "A quiet street at dusk.", plans: [{ id: "plan-3", consigne: "Léa crosses paths with Awa.", personnages: ["awa", "lea"], objet: false, replique: { personnage: "lea", texte: "Pardon, madame." } }] }],
+    });
+    return propose;
+  }
+
+  it("fusionne un nouvel épisode et son personnage inédit dans la série actuelle", () => {
+    const serie = serieSaya();
+    const propose = proposeAvecLea(serie);
+    const idReel = fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    expect(idReel).toBe("ep2");
+    expect(serie.personnages.map((p) => p.nom)).toEqual(["Awa", "Léa"]);
+    expect(serie.episodes).toHaveLength(2);
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("un import survenu PENDANT l'écriture n'est pas perdu (la série ne se remplace jamais en bloc)", () => {
+    const serie = serieSaya();
+    const propose = proposeAvecLea(serie); // calculé AVANT l'import ci-dessous : ne connaît pas Henrik
+    ajouterUnPersonnage(serie); // simule l'import gardé entre-temps (un personnage de plus, "Personnage 1")
+    const idReel = fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    expect(idReel).not.toBeNull();
+    // L'import n'a pas été écrasé...
+    expect(serie.personnages.map((p) => p.nom)).toContain("Personnage 1");
+    // ...et le nouvel épisode a bien été ajouté en plus.
+    expect(serie.personnages.map((p) => p.nom)).toContain("Léa");
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("un personnage déjà connu (même prénom) garde son id : pas de doublon, la réplique le retrouve", () => {
+    const serie = serieSaya(); // a déjà "Awa", id "awa"
+    const propose = proposeAvecLea(serie);
+    fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    expect(serie.personnages.filter((p) => p.nom === "Awa")).toHaveLength(1);
+    const nouveauPlan = serie.episodes[1].scenes[0].plans[0];
+    expect(nouveauPlan.personnages).toContain("awa");
+  });
+
+  it("les ids du nouvel épisode ne collisionnent jamais avec la série actuelle, même si elle a grandi depuis l'envoi", () => {
+    const serie = serieSaya();
+    const propose = proposeAvecLea(serie); // numéroté par le serveur contre l'état d'avant (ep2, scene-3, plan-3)
+    ajouterUnEpisode(serie); // la série a grandi entre-temps : "ep2" existe déjà localement
+    const idReel = fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    expect(idReel).not.toBe("ep2"); // l'id du serveur est déjà pris localement : renumérotation obligatoire
+    const tousLesIds = serie.episodes.flatMap((e) => e.scenes.flatMap((s) => s.plans.map((p) => p.id)));
+    expect(new Set(tousLesIds).size).toBe(tousLesIds.length);
+    expect(valide(serie)).toEqual([]);
+  });
+
+  it("la réplique d'un personnage inédit est reliée au bon id après remappage", () => {
+    const serie = serieSaya();
+    const propose = proposeAvecLea(serie);
+    fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    const lea = serie.personnages.find((p) => p.nom === "Léa")!;
+    const nouveauPlan = serie.episodes[1].scenes[0].plans[0];
+    expect(nouveauPlan.replique?.personnage).toBe(lea.id);
+  });
+
+  it("pose l'objet seulement s'il n'est pas déjà défini : ne remplace pas celui de la série actuelle", () => {
+    const serie = serieSaya(); // a déjà un objet
+    const objetDeDepart = serie.objet;
+    const propose = proposeAvecLea(serie);
+    propose.objet = "Un tout autre objet proposé par Claude.";
+    fusionnerLEpisodeEcrit(serie, propose, "ep2");
+    expect(serie.objet).toBe(objetDeDepart);
+  });
+
+  it("rend null et ne modifie rien si l'épisode annoncé est introuvable dans la proposition", () => {
+    const serie = serieSaya();
+    const propose = proposeAvecLea(serie);
+    const avant = JSON.parse(JSON.stringify(serie));
+    expect(fusionnerLEpisodeEcrit(serie, propose, "ep-fantome")).toBeNull();
+    expect(serie).toEqual(avant);
   });
 });

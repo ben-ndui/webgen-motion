@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import type { EtatDeLEditeur } from "@/lib/film-editeur";
 import type { FilmSpec } from "../../../../../../remotion/film/spec";
-import type { Etape } from "./assistant-du-film";
+import type { Etape } from "./etapes";
 import { groupesDEcrans } from "./etape-ecrans";
 
 const LIBELLES: Record<string, string> = {

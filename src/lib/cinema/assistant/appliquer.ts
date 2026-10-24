@@ -1,3 +1,4 @@
+import { estUnExemple } from "../../../../remotion/film/cinema/exemples";
 import type { CinemaDuFilm, EpisodeDeCinema, PlanDeCinema } from "../../../../remotion/film/cinema/types";
 import { ELEMENTS_MAX, EPISODES_A_VENIR_MAX, PERSONNAGES_MAX } from "../../../../remotion/film/cinema/validerCinema";
 import { ajouterUnPlan } from "../edition-serie";
@@ -84,7 +85,12 @@ export function appliquerLaProposition(cinema: CinemaDuFilm, proposition: Propos
       // nom (sans accent ni casse) ET plafonds sont revérifiés, pas seulement l'id.
       const idsConnus = new Set([...cinema.personnages.map((p) => p.id), ...(cinema.elements ?? []).map((e) => e.id)]);
       const nomsConnus = new Set([...cinema.personnages.map((p) => normalise(p.nom)), ...(cinema.elements ?? []).map((e) => normalise(e.nom))]);
-      const titresConnus = new Set([...cinema.episodes.map((e) => normalise(e.titre)), ...(cinema.episodesAVenir ?? []).map((e) => normalise(e.titre))]);
+      // L'épisode d'exemple (« Épisode 1 ») d'une série tout juste créée ne
+      // doit pas écarter le vrai premier épisode d'une bible importée.
+      const titresConnus = new Set([
+        ...cinema.episodes.filter((e) => !estUnExemple("titre", e.titre)).map((e) => normalise(e.titre)),
+        ...(cinema.episodesAVenir ?? []).map((e) => normalise(e.titre)),
+      ]);
 
       const placePersonnages = Math.max(0, PERSONNAGES_MAX - cinema.personnages.length);
       const nouveauxPersonnages = proposition.personnages.filter((p) => !idsConnus.has(p.id) && !nomsConnus.has(normalise(p.nom))).slice(0, placePersonnages);

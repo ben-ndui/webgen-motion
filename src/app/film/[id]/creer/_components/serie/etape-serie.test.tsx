@@ -63,6 +63,119 @@ describe("étape « Série »", () => {
     expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
   });
 
+  it("cliquer « Commencer la série à la main » pendant qu'une proposition de Claude est en attente ne la fait pas disparaître", async () => {
+    // « Commencer » fait aussitôt apparaître SerieDuFilm, qui lance ses propres
+    // fetch (bible, suivi des plans) : seule la requête à l'assistant doit
+    // rester en attente, les autres répondent tout de suite pour ne pas
+    // bloquer le reste de l'écran.
+    let resoudreAssistant!: (reponse: Response) => void;
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options) => {
+      if (String(url) === assistantRoute && options?.method === "POST") {
+        return new Promise((resolve) => void (resoudreAssistant = resolve));
+      }
+      return new Response(JSON.stringify({ references: [] }), { status: 200 });
+    });
+    render(<Banc />);
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), {
+      target: { value: "Henrik est un personnage de la bible de production." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    // La demande à Claude est en vol (pas encore résolue) : la série est créée entre-temps par l'autre bouton.
+    fireEvent.click(screen.getByRole("button", { name: "Commencer la série à la main" }));
+    expect(ficheCourante.cinema).toBeDefined();
+    resoudreAssistant(
+      new Response(
+        JSON.stringify({ proposition: { type: "importer-bible", personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }], elements: [], episodes: [] } }),
+        { status: 200 },
+      ),
+    );
+    // La proposition, déjà payée, doit tout de même s'afficher : le bloc d'import n'a pas été démonté par la bascule.
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    // La série créée entre-temps par « Commencer » n'a pas été perdue (l'épisode d'exemple y est toujours).
+    expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
+  });
+
+  it("un import gardé PENDANT que Claude écrit un épisode n'est pas écrasé à son retour", async () => {
+    const scenarioRoute = "/api/motion/film/saya/cinema/scenario";
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    let resoudreScenario!: (reponse: Response) => void;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options) => {
+      const cle = `${options?.method ?? "GET"} ${String(url)}`;
+      if (cle === `POST ${scenarioRoute}`) return new Promise((resolve) => void (resoudreScenario = resolve));
+      if (cle === `POST ${assistantRoute}`) {
+        return new Response(
+          JSON.stringify({ proposition: { type: "importer-bible", personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }], elements: [], episodes: [] } }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ references: [] }), { status: 200 });
+    });
+    render(<Banc />);
+
+    // Lance l'écriture d'un épisode avec Claude : la demande part, reste en vol.
+    fireEvent.change(screen.getByPlaceholderText("Une cliente entre dans la boutique un soir de pluie et reconnaît le parfum de sa grand-mère."), {
+      target: { value: "Une cliente entre et reconnaît un parfum." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Écrire l'épisode/ }));
+    await screen.findByText("Claude écrit l'épisode…");
+
+    // Pendant ce temps, elle importe sa bible et garde la proposition : Henrik est ajouté en mémoire.
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), { target: { value: "Henrik est un personnage de la bible de production." } });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+
+    // La réponse de Claude arrive enfin : construite avant l'import, elle ne connaît pas Henrik.
+    const proposeAvecLea: CinemaDuFilm = {
+      personnages: [{ id: "lea", nom: "Léa", description: "x" }],
+      episodes: [
+        { id: "ep1", titre: "Épisode 1", scenes: [{ id: "scene-1", decor: "x", plans: [{ id: "plan-1", consigne: "x", personnages: [], objet: false }] }] },
+        { id: "ep2", titre: "La rencontre", scenes: [{ id: "scene-2", decor: "x", plans: [{ id: "plan-2", consigne: "x", personnages: ["lea"], objet: false }] }] },
+      ],
+    };
+    resoudreScenario(new Response(JSON.stringify({ cinema: proposeAvecLea, episodeId: "ep2" }), { status: 200 }));
+
+    await waitFor(() => expect(ficheCourante.cinema?.personnages.map((p) => p.nom)).toContain("Léa"));
+    // Henrik, gardé entre-temps, n'a pas disparu : la série n'a pas été remplacée en bloc.
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    expect(ficheCourante.cinema?.episodes).toHaveLength(2);
+  });
+
+  it("sans série : déposer un document crée la série ET applique l'import, sans clic préalable sur « Commencer »", async () => {
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    serveur({
+      [`POST ${assistantRoute}`]: [
+        {
+          corps: {
+            proposition: {
+              type: "importer-bible",
+              personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }],
+              elements: [],
+              episodes: [],
+            },
+          },
+        },
+      ],
+    });
+    render(<Banc />);
+    // Le bloc d'import est déjà visible, sans avoir cliqué « Commencer la série à la main ».
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), {
+      target: { value: "Henrik est un personnage de la bible de production." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    // La série de départ (épisode d'exemple) a bien été créée au passage.
+    expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
+    // L'écran a vraiment basculé sur la série (pas seulement la fiche en mémoire).
+    expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
+  });
+
   it("le coût et le modèle sont affichés AVANT le clic : Fast avec Awa, Lite pour l'objet seul", async () => {
     serveur({
       [`GET ${plan("rangement")}`]: [vide()],

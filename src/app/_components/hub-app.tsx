@@ -26,6 +26,7 @@ const Search = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" 
 const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
 const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
 const FilmIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5" /></svg>;
+const SerieIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="m4 8 2-4h3l-2 4M10 8l2-4h3l-2 4M16 8l2-4h2l-2 4" /><rect x="3" y="8" width="18" height="12" rx="1.5" /></svg>;
 const FormatIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
 const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
 const SparkIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" /></svg>;
@@ -68,6 +69,10 @@ function CreateControl() {
         <Link href="/nouveau/film" className="menu-item" data-wm-id="hub.action.new.film" onClick={() => setOpen(false)}>
           <span className="mi-ic"><FilmIco /></span>
           <span><span className="mi-t">Nouveau film</span><span className="mi-d">Le film de ta marque, à partir de ton site.</span></span>
+        </Link>
+        <Link href="/nouveau/serie" className="menu-item" data-wm-id="hub.action.new.serie" onClick={() => setOpen(false)}>
+          <span className="mi-ic"><SerieIco /></span>
+          <span><span className="mi-t">Nouvelle série</span><span className="mi-d">Dépose la bible de ta cliente, importe-la tout de suite.</span></span>
         </Link>
         <Link href="/nouveau/format" className="menu-item" data-wm-id="hub.action.new.format" onClick={() => setOpen(false)}>
           <span className="mi-ic"><FormatIco /></span>

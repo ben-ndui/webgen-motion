@@ -4,6 +4,7 @@ import { etatDeLEditeur } from "@/lib/film-editeur";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import CadreDuFilm, { EnTeteDuFilm } from "../_components/cadre-du-film";
 import AssistantDuFilm from "./_components/assistant-du-film";
+import { type Etape, ORDRE } from "./_components/etapes";
 import "./assistant.css";
 import "./serie.css";
 
@@ -14,16 +15,20 @@ import "./serie.css";
  */
 export const dynamic = "force-dynamic";
 
+function etapeValide(valeur: unknown): Etape | undefined {
+  return (ORDRE as string[]).includes(valeur as string) ? (valeur as Etape) : undefined;
+}
+
 export default async function CreerUnFilmPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ site?: string }>;
+  searchParams: Promise<{ site?: string; etape?: string }>;
 }) {
   if (isPublicWebRuntime(process.env)) notFound();
   const { id } = await params;
-  const { site } = await searchParams;
+  const { site, etape } = await searchParams;
   const etat = etatDeLEditeur(id);
   if (!etat) {
     return (
@@ -36,7 +41,7 @@ export default async function CreerUnFilmPage({
   return (
     <CadreDuFilm nom={nom}>
       <EnTeteDuFilm id={id} titre={`Créer le film de ${nom}`} sousTitre="Six étapes, dans l'ordre que tu veux. Tout s'enregistre au fur et à mesure." />
-      <AssistantDuFilm etatInitial={etat} adresseAuDepart={typeof site === "string" ? site : undefined} />
+      <AssistantDuFilm etatInitial={etat} adresseAuDepart={typeof site === "string" ? site : undefined} etapeInitiale={etapeValide(etape)} />
     </CadreDuFilm>
   );
 }
