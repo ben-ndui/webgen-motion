@@ -24,6 +24,13 @@ export type FicheDeFilm =
   | { id: string; etat: "valide"; spec: FilmSpec }
   | { id: string; etat: "invalide"; erreurs: string[] };
 
+/** Le film a une série (import bible, écrite à la main ou via Claude). Sert
+ *  au profil d'interface « série » (cf. /setup/interface) pour ne lister que
+ *  ces films-là sur une install dédiée à une cliente comme Brigitte. */
+export function estUneSerie(fiche: FicheDeFilm): boolean {
+  return fiche.etat === "valide" && !!fiche.spec.cinema;
+}
+
 /**
  * Où vivent les fiches. En développement : `films/` à la racine du repo.
  * Dans l'app installée (la coque pose WEBGEN_RUNNERS_DIR, transmise aux

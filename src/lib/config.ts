@@ -104,6 +104,14 @@ export interface MotionConfig {
     /** True une fois l'event 'activated' envoyé (envoyé une seule fois). */
     activationSent?: boolean;
   };
+  /** Profil d'interface : "complet" montre tout (tours, films, formats) ;
+   *  "serie" allège le dashboard pour une cliente qui n'utilise que les
+   *  séries IA (ex. installation dédiée) — masque tours/formats, ne liste
+   *  que les films ayant une série, et « + Nouveau » ne propose plus que
+   *  « Nouvelle série ». Absent = "complet". */
+  interface?: {
+    profil?: "complet" | "serie";
+  };
 }
 
 export const DEFAULT_VOICEBOX_URL = "http://127.0.0.1:17493";
@@ -157,6 +165,10 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
       ...current.telemetry,
       ...partial.telemetry,
     },
+    interface: {
+      ...current.interface,
+      ...partial.interface,
+    },
     veo: {
       ...current.veo,
       ...partial.veo,
@@ -196,6 +208,9 @@ export function saveConfig(partial: MotionConfig): MotionConfig {
   }
   if (next.telemetry && Object.keys(next.telemetry).length === 0) {
     delete next.telemetry;
+  }
+  if (!next.interface?.profil) {
+    delete next.interface;
   }
   writeConfigSecure(getConfigPath(), JSON.stringify(next, null, 2));
   return next;

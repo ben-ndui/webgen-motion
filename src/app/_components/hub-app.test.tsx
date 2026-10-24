@@ -85,3 +85,26 @@ describe("HubApp", () => {
     expect(declencheur).toHaveAttribute("aria-expanded", "false");
   });
 });
+
+describe("HubApp — profil « série » (réglage /setup/interface)", () => {
+  it("masque les tours (titre, recherche, filtres, grille)", () => {
+    render(<HubApp tours={TOURS} edition="studio" profilSerie />);
+    expect(screen.queryByText("Onboarding SaaS")).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/Rechercher/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("tablist", { name: "Format" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Tours/)).not.toBeInTheDocument();
+  });
+
+  it("« + Nouveau » devient un lien direct vers Nouvelle série, sans menu déroulant", () => {
+    render(<HubApp tours={TOURS} edition="studio" profilSerie />);
+    expect(screen.queryByRole("button", { name: /Nouveau/ })).not.toBeInTheDocument();
+    const lien = screen.getByRole("link", { name: /Nouvelle série/ });
+    expect(lien).toHaveAttribute("href", "/nouveau/serie");
+  });
+
+  it("le reste du hub (marque, réglages, licence) n'est pas affecté", () => {
+    render(<HubApp tours={TOURS} edition="community" profilSerie films={[]} />);
+    expect(screen.getByText("GEN MOTION")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Community" })).toBeInTheDocument();
+  });
+});

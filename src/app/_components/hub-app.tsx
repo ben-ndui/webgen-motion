@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "./theme-toggle";
 import type { Reglage } from "@/lib/reglages/etat-des-reglages";
@@ -13,23 +13,12 @@ import SettingsMenu from "./settings-menu";
 import DeviceIndicator from "./device-indicator";
 import HubFilms, { type HubFilm } from "./hub-films";
 import HubFormats, { type HubFormat } from "./hub-formats";
-import TourCard, { type HubTour } from "./hub-tour-card";
+import type { HubTour } from "./hub-tour-card";
+import HubToursGrid from "./hub-tours-grid";
+import { useToursFiltres } from "./hub-tours-filtres";
+import { Caret, FilmIco, FormatIco, NewTourIco, Plus, Search, ScaffoldIco, SerieIco, SparkIco } from "./hub-icons";
 
 export type { HubTour };
-
-const SORTS = { recent: "Récents", name: "Nom A→Z", dur: "Durée", steps: "Étapes" } as const;
-type SortKey = keyof typeof SORTS;
-
-/* icons — load-bearing only */
-const Caret = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>;
-const Search = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.2-3.2" /></svg>;
-const Plus = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>;
-const NewTourIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="14" height="14" rx="2" /><path d="m22 8-6 4 6 4V8Z" /></svg>;
-const FilmIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="M7 4v16M17 4v16M2 9h5M2 15h5M17 9h5M17 15h5" /></svg>;
-const SerieIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="m4 8 2-4h3l-2 4M10 8l2-4h3l-2 4M16 8l2-4h2l-2 4" /><rect x="3" y="8" width="18" height="12" rx="1.5" /></svg>;
-const FormatIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>;
-const ScaffoldIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 21V9" /></svg>;
-const SparkIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" /></svg>;
 
 /**
  * Un seul bouton pour toute création (tour, film, format) : il contenait
@@ -37,7 +26,7 @@ const SparkIco = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * ouvrait un popup — remplacés par de vraies pages (porte orpheline +
  * popup cassé signalés par Ben).
  */
-function CreateControl() {
+function CreateControl({ profilSerie }: { profilSerie: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -50,6 +39,15 @@ function CreateControl() {
       document.removeEventListener("keydown", onKey);
     };
   }, []);
+  // Profil « série » (install cliente, cf. /setup/interface) : un seul geste
+  // possible, pas la peine d'un menu déroulant pour une unique option.
+  if (profilSerie) {
+    return (
+      <Link href="/nouveau/serie" className="btn btn-primary create-main" data-wm-id="hub.action.new.serie">
+        <Plus /> Nouvelle série
+      </Link>
+    );
+  }
   return (
     <div className="create" ref={ref} data-wm-id="hub.action.create">
       <button
@@ -106,6 +104,7 @@ export default function HubApp({
   films = [],
   filmsError = null,
   formats,
+  profilSerie = false,
 }: {
   tours: HubTour[];
   edition: string;
@@ -116,41 +115,11 @@ export default function HubApp({
   filmsError?: string | null;
   // Absent ou projets null : section masquée (vitrine publique).
   formats?: { projets: HubFormat[] | null; error: string | null };
+  // Profil « série » (réglage /setup/interface) : dashboard allégé pour une
+  // cliente qui ne fait que des séries IA — tours et formats masqués.
+  profilSerie?: boolean;
 }) {
-  const [fmt, setFmt] = useState<"all" | "16:9" | "9:16">("all");
-  const [cat, setCat] = useState("all");
-  const [q, setQ] = useState("");
-  const [sort, setSort] = useState<SortKey>("recent");
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement?.tagName !== "INPUT") {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  const cats = useMemo(() => Array.from(new Set(tours.map((t) => t.cat))), [tours]);
-  const list = useMemo(() => {
-    let r = tours.filter(
-      (t) =>
-        (fmt === "all" || t.fmt === fmt) &&
-        (cat === "all" || t.cat === cat) &&
-        (q.trim() === "" ||
-          t.name.toLowerCase().includes(q.toLowerCase()) ||
-          t.cat.toLowerCase().includes(q.toLowerCase())),
-    );
-    const toSec = (d: string) => d.split(":").reduce((a, b) => a * 60 + +b, 0);
-    if (sort === "name") r = [...r].sort((a, b) => a.name.localeCompare(b.name));
-    if (sort === "dur") r = [...r].sort((a, b) => toSec(b.dur) - toSec(a.dur));
-    if (sort === "steps") r = [...r].sort((a, b) => b.steps - a.steps);
-    return r;
-  }, [tours, fmt, cat, q, sort]);
-
+  const { fmt, setFmt, cat, setCat, q, setQ, sort, setSort, searchRef, cats, list } = useToursFiltres(tours);
   const isStudio = edition === "studio";
 
   return (
@@ -159,15 +128,17 @@ export default function HubApp({
       <main className="main" data-wm-id="hub.main">
         <header className="topbar" data-wm-id="hub.topbar">
           <div className="brand"><span className="brand-mark" /><span className="brand-name">GEN&nbsp;MOTION</span></div>
-          <h1 className="page-title">Tours <span className="n">{list.length}</span></h1>
+          {!profilSerie && <h1 className="page-title">Tours <span className="n">{list.length}</span></h1>}
           <div className="topbar-spacer" />
-          <label className="search" data-wm-id="hub.search">
-            <Search />
-            <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un tour…" />
-            <kbd>/</kbd>
-          </label>
+          {!profilSerie && (
+            <label className="search" data-wm-id="hub.search">
+              <Search />
+              <input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un tour…" />
+              <kbd>/</kbd>
+            </label>
+          )}
           {reglages && <PastilleDesReglages reglages={reglages} />}
-          <CreateControl />
+          <CreateControl profilSerie={profilSerie} />
           <Link
             className="edition"
             href="/setup/license"
@@ -181,48 +152,9 @@ export default function HubApp({
           <ThemeToggle />
         </header>
 
-        <div className="toolbar" data-wm-id="hub.filters">
-          <div className="segmented" role="tablist" aria-label="Format">
-            {(["all", "16:9", "9:16"] as const).map((f) => (
-              <button key={f} className={"seg" + (fmt === f ? " active" : "")} onClick={() => setFmt(f)}>
-                {f === "all" ? "Tous" : f}
-              </button>
-            ))}
-          </div>
-          <button className={"chip" + (cat === "all" ? " active" : "")} onClick={() => setCat("all")}>
-            Toutes catégories
-          </button>
-          {cats.map((c) => (
-            <button key={c} className={"chip" + (cat === c ? " active" : "")} onClick={() => setCat(c)}>
-              <span className="dot" />{c}
-            </button>
-          ))}
-          <div className="toolbar-spacer" />
-          <button
-            className="select"
-            data-wm-id="hub.sort"
-            onClick={() => {
-              const keys = Object.keys(SORTS) as SortKey[];
-              setSort(keys[(keys.indexOf(sort) + 1) % keys.length]);
-            }}
-          >
-            Trier&nbsp;: {SORTS[sort]} <Caret />
-          </button>
-        </div>
-
-        <div className="grid-wrap">
-          <div className="grid" data-wm-id="hub.grid">
-            {list.length === 0 ? (
-              <div className="empty">
-                <span className="ec"><Search /></span>
-                <h3>Aucun tour ne correspond</h3>
-                <p>Ajustez les filtres ou la recherche — ou lancez un nouveau tour pour commencer.</p>
-              </div>
-            ) : (
-              list.map((tour) => <TourCard key={tour.id} tour={tour} />)
-            )}
-          </div>
-        </div>
+        {!profilSerie && (
+          <HubToursGrid fmt={fmt} setFmt={setFmt} cat={cat} setCat={setCat} sort={sort} setSort={setSort} cats={cats} list={list} />
+        )}
 
         {films !== null && <HubFilms films={films} error={filmsError} />}
         {formats && formats.projets !== null && <HubFormats projets={formats.projets} error={formats.error} />}

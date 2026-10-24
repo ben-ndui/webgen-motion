@@ -69,6 +69,8 @@ export interface PublicConfig {
   edition: "community" | "studio" | "enterprise";
   /** Télémétrie d'activation anonyme (opt-out). Default true. */
   telemetryEnabled: boolean;
+  /** Profil d'interface actif. Default "complet". */
+  profilInterface: "complet" | "serie";
 }
 export function getPublicConfig(): PublicConfig {
   const cfg = getConfig();
@@ -131,6 +133,7 @@ export function getPublicConfig(): PublicConfig {
     configured: !!resolveVoiceBackend(),
     edition: getEdition(),
     telemetryEnabled: cfg.telemetry?.enabled ?? true,
+    profilInterface: cfg.interface?.profil ?? "complet",
   };
 }
 

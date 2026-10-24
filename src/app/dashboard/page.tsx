@@ -7,8 +7,9 @@ import { getCategory } from "@/lib/motion-categories";
 import { formatDuration } from "@/lib/format-duration";
 import { getMotionTourDir } from "@/lib/motion-tour-store";
 import { resolveEdition } from "@/lib/edition";
+import { getConfig } from "@/lib/config";
 import { lireLEtatDesReglages } from "@/lib/reglages/lire-l-etat-des-reglages";
-import { listerFilms } from "@/lib/film-loader";
+import { estUneSerie, listerFilms } from "@/lib/film-loader";
 import { resumerFilm } from "@/lib/film-etat";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import HubApp, { type HubTour } from "../_components/hub-app";
@@ -34,26 +35,30 @@ function statusFor(id: string): HubTour["status"] {
 }
 
 // Les films de marque, statut tiré du disque. Une lecture ratée du dossier
-// remonte comme une ERREUR à l'écran, jamais comme « aucun film ».
-function filmsDuHub(): { films: HubFilm[] | null; error: string | null } {
+// remonte comme une ERREUR à l'écran, jamais comme « aucun film ». Profil
+// « série » : ne retient que les films qui ONT une série (pour une install
+// cliente qui ne fait que ça, cf. /setup/interface).
+function filmsDuHub(profilSerie: boolean): { films: HubFilm[] | null; error: string | null } {
   try {
-    const films = listerFilms().map((fiche) => {
-      const resume = resumerFilm(fiche);
-      return {
-        id: resume.id,
-        nom: resume.nom,
-        statut: resume.statut,
-        langues: resume.langues,
-        declinaisons: resume.declinaisons.length,
-        rendus: resume.rendus,
-        erreurs: resume.erreurs.length,
-        // Le premier rendu sert de vignette ; sans rendu, le format de la première déclinaison.
-        apercu: {
-          video: resume.declinaisons.find((d) => d.rendu)?.rendu?.url ?? null,
-          portrait: (resume.declinaisons.find((d) => d.rendu) ?? resume.declinaisons[0])?.version === "court",
-        },
-      };
-    });
+    const films = listerFilms()
+      .filter((fiche) => !profilSerie || estUneSerie(fiche))
+      .map((fiche) => {
+        const resume = resumerFilm(fiche);
+        return {
+          id: resume.id,
+          nom: resume.nom,
+          statut: resume.statut,
+          langues: resume.langues,
+          declinaisons: resume.declinaisons.length,
+          rendus: resume.rendus,
+          erreurs: resume.erreurs.length,
+          // Le premier rendu sert de vignette ; sans rendu, le format de la première déclinaison.
+          apercu: {
+            video: resume.declinaisons.find((d) => d.rendu)?.rendu?.url ?? null,
+            portrait: (resume.declinaisons.find((d) => d.rendu) ?? resume.declinaisons[0])?.version === "court",
+          },
+        };
+      });
     return { films, error: null };
   } catch (erreur) {
     return { films: [], error: (erreur as Error).message };
@@ -89,7 +94,8 @@ export default function DashboardPage() {
   // tombait en 500 ; le visiteur est envoyé vers le téléchargement de l'app.
   if (isPublicWebRuntime(process.env)) redirect("/download");
 
-  const tours = getAllTours();
+  const profilSerie = getConfig().interface?.profil === "serie";
+  const tours = profilSerie ? [] : getAllTours();
   const edition = resolveEdition().edition;
   const reglages = lireLEtatDesReglages();
 
@@ -112,10 +118,18 @@ export default function DashboardPage() {
     };
   });
 
-  const { films, error } = filmsDuHub();
-  const formats = formatsDuHub();
+  const { films, error } = filmsDuHub(profilSerie);
+  const formats = profilSerie ? { projets: null, error: null } : formatsDuHub();
 
   return (
-    <HubApp tours={cards} edition={edition} reglages={reglages} films={films} filmsError={error} formats={formats} />
+    <HubApp
+      tours={cards}
+      edition={edition}
+      reglages={reglages}
+      films={films}
+      filmsError={error}
+      formats={formats}
+      profilSerie={profilSerie}
+    />
   );
 }

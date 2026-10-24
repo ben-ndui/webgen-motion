@@ -96,6 +96,9 @@ export async function PUT(req: NextRequest) {
   if (body.telemetry && typeof body.telemetry.enabled === "boolean") {
     sanitized.telemetry = { enabled: body.telemetry.enabled };
   }
+  if (body.interface?.profil === "complet" || body.interface?.profil === "serie") {
+    sanitized.interface = { profil: body.interface.profil };
+  }
   saveConfig(sanitized);
   return NextResponse.json(getPublicConfig());
 }
