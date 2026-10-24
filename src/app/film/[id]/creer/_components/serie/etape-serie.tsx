@@ -38,9 +38,7 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeD
   };
   const cinema = fiche.cinema;
   const ecrire = <EcrireAvecClaude filmId={id} premierEpisode={!cinema} avantDEcrire={enregistrer} quandEcrit={quandEcrit} />;
-  // Un seul geste crée la série ET l'applique : déposer un document, écrire
-  // avec Claude ou « Commencer à la main » n'ont plus besoin d'un clic
-  // préalable pour « activer » la série avant de pouvoir y travailler.
+  // Crée la série de départ si elle n'existe pas encore, puis applique le changement.
   const modifierLaSerie = useCallback(
     (changement: (cinema: CinemaDuFilm) => void) =>
       modifier((copie) => {
@@ -63,7 +61,6 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeD
         </p>
       )}
       <div className="blocs">
-        <ImporterLaBible filmId={id} cinema={cinema ?? serieVide} modifierLaSerie={modifierLaSerie} />
         {!cinema && (
           <section className="bloc serie-vide">
             <h3 className="bloc-titre">Une série pour ta marque</h3>
@@ -76,6 +73,7 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeD
             </button>
           </section>
         )}
+        <ImporterLaBible filmId={id} cinema={cinema ?? serieVide} modifierLaSerie={modifierLaSerie} />
         {ecrire}
       </div>
       {cinema && <SerieDuFilm id={id} cinema={cinema} declinaisons={fiche.declinaisons} modifierLaSerie={modifierLaSerie} enregistrer={enregistrer} episodeOuvert={episodeOuvert} />}

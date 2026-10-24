@@ -125,6 +125,8 @@ describe("étape « Série »", () => {
     expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
     // La série de départ (épisode d'exemple) a bien été créée au passage.
     expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
+    // L'écran a vraiment basculé sur la série (pas seulement la fiche en mémoire).
+    expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
   });
 
   it("le coût et le modèle sont affichés AVANT le clic : Fast avec Awa, Lite pour l'objet seul", async () => {
