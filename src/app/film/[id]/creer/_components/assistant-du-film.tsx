@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Tabs } from "@/components/ui";
 import type { EtatDeLEditeur } from "@/lib/film-editeur";
 import { LANGUES, type Langue } from "../../../../../../remotion/film/spec";
+import { type Etape, ORDRE } from "./etapes";
 import EtapeEcrans from "./etape-ecrans";
 import EtapeHistoire from "./etape-histoire";
 import EtapeMarque from "./etape-marque";
@@ -16,8 +17,6 @@ import RemplirDepuisLeSite from "./remplir-depuis-le-site";
 import EtapeSerie from "./serie/etape-serie";
 import { useFicheDuFilm } from "./use-fiche-du-film";
 
-export type Etape = "marque" | "serie" | "musique" | "ecrans" | "histoire" | "pret";
-export const ORDRE: Etape[] = ["marque", "serie", "musique", "ecrans", "histoire", "pret"];
 const TITRES: Record<Etape, string> = {
   marque: "Ta marque",
   serie: "Ta série",

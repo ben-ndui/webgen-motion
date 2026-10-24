@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { etatDeLEditeur } from "@/lib/film-editeur";
 import { isPublicWebRuntime } from "@/lib/server/desktop-guard";
 import CadreDuFilm, { EnTeteDuFilm } from "../_components/cadre-du-film";
-import AssistantDuFilm, { type Etape, ORDRE } from "./_components/assistant-du-film";
+import AssistantDuFilm from "./_components/assistant-du-film";
+import { type Etape, ORDRE } from "./_components/etapes";
 import "./assistant.css";
 import "./serie.css";
 
