@@ -98,6 +98,53 @@ describe("étape « Série »", () => {
     expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
   });
 
+  it("un import gardé PENDANT que Claude écrit un épisode n'est pas écrasé à son retour", async () => {
+    const scenarioRoute = "/api/motion/film/saya/cinema/scenario";
+    const assistantRoute = "/api/motion/film/saya/cinema/assistant";
+    let resoudreScenario!: (reponse: Response) => void;
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options) => {
+      const cle = `${options?.method ?? "GET"} ${String(url)}`;
+      if (cle === `POST ${scenarioRoute}`) return new Promise((resolve) => void (resoudreScenario = resolve));
+      if (cle === `POST ${assistantRoute}`) {
+        return new Response(
+          JSON.stringify({ proposition: { type: "importer-bible", personnages: [{ id: "henrik", nom: "Henrik", description: "Un homme grand." }], elements: [], episodes: [] } }),
+          { status: 200 },
+        );
+      }
+      return new Response(JSON.stringify({ references: [] }), { status: 200 });
+    });
+    render(<Banc />);
+
+    // Lance l'écriture d'un épisode avec Claude : la demande part, reste en vol.
+    fireEvent.change(screen.getByPlaceholderText("Une cliente entre dans la boutique un soir de pluie et reconnaît le parfum de sa grand-mère."), {
+      target: { value: "Une cliente entre et reconnaît un parfum." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Écrire l'épisode/ }));
+    await screen.findByText("Claude écrit l'épisode…");
+
+    // Pendant ce temps, elle importe sa bible et garde la proposition : Henrik est ajouté en mémoire.
+    fireEvent.change(screen.getByPlaceholderText("Colle ici le texte de sa bible…"), { target: { value: "Henrik est un personnage de la bible de production." } });
+    fireEvent.click(screen.getByRole("button", { name: "Importer avec Claude" }));
+    await screen.findByRole("region", { name: "Proposition de Claude" });
+    fireEvent.click(screen.getByRole("button", { name: "Garder" }));
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+
+    // La réponse de Claude arrive enfin : construite avant l'import, elle ne connaît pas Henrik.
+    const proposeAvecLea: CinemaDuFilm = {
+      personnages: [{ id: "lea", nom: "Léa", description: "x" }],
+      episodes: [
+        { id: "ep1", titre: "Épisode 1", scenes: [{ id: "scene-1", decor: "x", plans: [{ id: "plan-1", consigne: "x", personnages: [], objet: false }] }] },
+        { id: "ep2", titre: "La rencontre", scenes: [{ id: "scene-2", decor: "x", plans: [{ id: "plan-2", consigne: "x", personnages: ["lea"], objet: false }] }] },
+      ],
+    };
+    resoudreScenario(new Response(JSON.stringify({ cinema: proposeAvecLea, episodeId: "ep2" }), { status: 200 }));
+
+    await waitFor(() => expect(ficheCourante.cinema?.personnages.map((p) => p.nom)).toContain("Léa"));
+    // Henrik, gardé entre-temps, n'a pas disparu : la série n'a pas été remplacée en bloc.
+    expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
+    expect(ficheCourante.cinema?.episodes).toHaveLength(2);
+  });
+
   it("sans série : déposer un document crée la série ET applique l'import, sans clic préalable sur « Commencer »", async () => {
     const assistantRoute = "/api/motion/film/saya/cinema/assistant";
     serveur({

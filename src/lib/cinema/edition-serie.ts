@@ -1,5 +1,6 @@
 import { EXEMPLES_DE_SERIE } from "../../../remotion/film/cinema/exemples";
-import { type CinemaDuFilm, DUREE_D_UN_PLAN, type PlanDeCinema, type SceneDeCinema, type TypeDElement } from "../../../remotion/film/cinema/types";
+import { type CinemaDuFilm, DUREE_D_UN_PLAN, type EpisodeDeCinema, type PlanDeCinema, type SceneDeCinema, type TypeDElement } from "../../../remotion/film/cinema/types";
+import { idDe } from "./scenario-lecture";
 
 /**
  * Les gestes d'édition de la série, sur une COPIE de la fiche (l'assistant
@@ -37,6 +38,68 @@ export function ajouterUnEpisode(cinema: CinemaDuFilm): string {
   const scene = nouvelleScene(cinema);
   cinema.episodes.push({ id, titre: `Épisode ${numero}`, scenes: [scene] });
   return id;
+}
+
+/**
+ * Un épisode écrit par Claude depuis un brief arrive dans une série COMPLÈTE,
+ * reconstruite par le serveur à partir de la fiche du disque au moment de la
+ * demande : la série a pu bouger depuis (un import gardé entre-temps, par
+ * exemple). On ne remplace donc jamais `cinema` en bloc, qui effacerait ce
+ * changement sans un mot : on retrouve l'épisode écrit et les personnages
+ * qu'il a créés, pour les fusionner dans la série TELLE QU'ELLE EST
+ * MAINTENANT. Les ids de personnages que l'épisode proposé cite sont réécrits
+ * au passage (ses ids n'ont de sens que dans SA PROPRE copie de la série).
+ * Rend l'id réel du nouvel épisode (jamais celui proposé, toujours renuméroté
+ * contre la série actuelle), ou `null` si l'épisode annoncé est introuvable.
+ */
+export function fusionnerLEpisodeEcrit(cinema: CinemaDuFilm, propose: CinemaDuFilm, episodeId: string): string | null {
+  const episode = propose.episodes.find((e) => e.id === episodeId);
+  if (!episode) return null;
+
+  // Un personnage déjà connu (même prénom) garde SON id actuel ; un nouveau
+  // reçoit un id libre dans la série actuelle, pas celle proposée.
+  const idsPris = new Set([...cinema.personnages.map((p) => p.id), ...(cinema.elements ?? []).map((e) => e.id)]);
+  const idParPrenomActuel = new Map(cinema.personnages.map((p) => [p.nom.toLowerCase(), p.id]));
+  const reecritureDesIds = new Map<string, string>();
+  for (const personnage of propose.personnages) {
+    const prenom = personnage.nom.toLowerCase();
+    const idExistant = idParPrenomActuel.get(prenom);
+    if (idExistant) {
+      reecritureDesIds.set(personnage.id, idExistant);
+      continue;
+    }
+    const nouvelId = idDe(personnage.nom, idsPris);
+    reecritureDesIds.set(personnage.id, nouvelId);
+    idParPrenomActuel.set(prenom, nouvelId);
+    cinema.personnages.push({ ...personnage, id: nouvelId });
+  }
+  if (!cinema.objet && propose.objet) cinema.objet = propose.objet;
+
+  let plan = prochainNumero(tousLesPlans(cinema).map((p) => p.id), "plan-");
+  let scene = prochainNumero(toutesLesScenes(cinema).map((s) => s.id), "scene-");
+  const nouvelId = `ep${prochainNumero(cinema.episodes.map((e) => e.id), "ep")}`;
+  const episodeRenumerote: EpisodeDeCinema = {
+    id: nouvelId,
+    titre: episode.titre,
+    scenes: episode.scenes.map((s) => ({
+      ...s,
+      id: `scene-${scene++}`,
+      plans: s.plans.map((p) => {
+        const { replique: ancienneReplique, personnages: anciensPersonnages, ...resteDuPlan } = p;
+        const nouveauPlan: PlanDeCinema = {
+          ...resteDuPlan,
+          id: `plan-${plan++}`,
+          personnages: anciensPersonnages.map((id) => reecritureDesIds.get(id)).filter((id): id is string => !!id),
+        };
+        if (ancienneReplique && reecritureDesIds.has(ancienneReplique.personnage)) {
+          nouveauPlan.replique = { ...ancienneReplique, personnage: reecritureDesIds.get(ancienneReplique.personnage)! };
+        }
+        return nouveauPlan;
+      }),
+    })),
+  };
+  cinema.episodes.push(episodeRenumerote);
+  return nouvelId;
 }
 
 export function ajouterUnPersonnage(cinema: CinemaDuFilm): void {

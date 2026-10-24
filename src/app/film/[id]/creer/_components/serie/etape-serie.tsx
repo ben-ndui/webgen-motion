@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { serieDeDepart } from "@/lib/cinema/edition-serie";
+import { fusionnerLEpisodeEcrit, serieDeDepart } from "@/lib/cinema/edition-serie";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import type { FilmSpec } from "../../../../../../../remotion/film/spec";
 import BibleDeLaSerie from "./bible-de-la-serie";
@@ -32,12 +32,7 @@ type Props = {
 export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeDepuisLeSite = false }: Props) {
   // L'épisode à ouvrir après une écriture par Claude (sinon le premier).
   const [episodeOuvert, setEpisodeOuvert] = useState<string | null>(null);
-  const quandEcrit = (cinema: CinemaDuFilm, episodeId: string) => {
-    modifier((copie) => void (copie.cinema = cinema));
-    setEpisodeOuvert(episodeId);
-  };
   const cinema = fiche.cinema;
-  const ecrire = <EcrireAvecClaude filmId={id} premierEpisode={!cinema} avantDEcrire={enregistrer} quandEcrit={quandEcrit} />;
   // Crée la série de départ si elle n'existe pas encore, puis applique le changement.
   const modifierLaSerie = useCallback(
     (changement: (cinema: CinemaDuFilm) => void) =>
@@ -47,6 +42,19 @@ export default function EtapeSerie({ id, fiche, modifier, enregistrer, proposeeD
       }),
     [modifier],
   );
+  // L'épisode proposé par Claude vient d'une copie de la série reconstruite
+  // par le serveur au moment de LA DEMANDE : elle a pu bouger depuis (un
+  // import gardé entre-temps, par exemple). On ne remplace donc jamais
+  // `cinema` en bloc, on fusionne juste ce que Claude a écrit dans la série
+  // ACTUELLE (voir fusionnerLEpisodeEcrit).
+  const quandEcrit = (propose: CinemaDuFilm, episodeId: string) => {
+    let idReel: string | null = null;
+    modifierLaSerie((cinemaActuel) => {
+      idReel = fusionnerLEpisodeEcrit(cinemaActuel, propose, episodeId);
+    });
+    if (idReel) setEpisodeOuvert(idReel);
+  };
+  const ecrire = <EcrireAvecClaude filmId={id} premierEpisode={!cinema} avantDEcrire={enregistrer} quandEcrit={quandEcrit} />;
   // Référence stable (pas recréée à chaque rendu) tant qu'aucune série
   // n'existe encore : ImporterLaBible reste LA MÊME instance React avant et
   // après la création de la série, sinon une proposition de Claude en
