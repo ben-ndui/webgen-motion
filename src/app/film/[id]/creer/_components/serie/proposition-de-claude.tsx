@@ -95,28 +95,49 @@ export default function PropositionDeClaude({ cinema, proposition }: Props) {
             {personnages.length} personnage{personnages.length > 1 ? "s" : ""}, {elements.length} élément{elements.length > 1 ? "s" : ""}, {episodes.length} épisode
             {episodes.length > 1 ? "s" : ""} trouvés.
           </p>
-          {(personnages.length > 0 || elements.length > 0) && (
-            <ul>
-              {personnages.map((p) => (
-                <li key={p.id}>
-                  <b>{p.nom}</b> (personnage) : <span lang="en">{p.description}</span>
-                </li>
-              ))}
-              {elements.map((e) => (
-                <li key={e.id}>
-                  <b>{e.nom}</b> ({NOM_DU_TYPE[e.type]}) : <span lang="en">{e.description}</span>
-                </li>
-              ))}
-            </ul>
+          {/* Repliées par défaut : une bible dense (8-10 personnages) rendait la
+              proposition illisible en liste à plat. */}
+          {personnages.length > 0 && (
+            <details className="film-details">
+              <summary>
+                {personnages.length} personnage{personnages.length > 1 ? "s" : ""}
+              </summary>
+              <ul>
+                {personnages.map((p) => (
+                  <li key={p.id}>
+                    <b>{p.nom}</b> : <span lang="en">{p.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+          {elements.length > 0 && (
+            <details className="film-details">
+              <summary>
+                {elements.length} élément{elements.length > 1 ? "s" : ""}
+              </summary>
+              <ul>
+                {elements.map((e) => (
+                  <li key={e.id}>
+                    <b>{e.nom}</b> ({NOM_DU_TYPE[e.type]}) : <span lang="en">{e.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
           )}
           {episodes.length > 0 && (
-            <ol>
-              {episodes.map((e, index) => (
-                <li key={`${e.titre}-${index}`}>
-                  <b>{e.titre}</b> : {e.note}
-                </li>
-              ))}
-            </ol>
+            <details className="film-details">
+              <summary>
+                {episodes.length} épisode{episodes.length > 1 ? "s" : ""}
+              </summary>
+              <ol>
+                {episodes.map((e, index) => (
+                  <li key={`${e.titre}-${index}`}>
+                    <b>{e.titre}</b> : {e.note}
+                  </li>
+                ))}
+              </ol>
+            </details>
           )}
         </>
       );
