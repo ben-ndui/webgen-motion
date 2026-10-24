@@ -10,6 +10,7 @@ import {
   Film,
   HelpCircle,
   KeyRound,
+  LayoutPanelLeft,
   Mic,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -105,6 +106,13 @@ export default function SettingsMenu() {
             icon={<Film className="w-3.5 h-3.5" />}
             label="Vidéo IA"
             hint="Clé Google (Veo) · fal.ai (Seedance)"
+            onClick={() => setOpen(false)}
+          />
+          <MenuLink
+            href="/setup/interface"
+            icon={<LayoutPanelLeft className="w-3.5 h-3.5" />}
+            label="Interface"
+            hint="Dashboard complet ou allégé (série)"
             onClick={() => setOpen(false)}
           />
           <MenuLink

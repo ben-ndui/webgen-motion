@@ -2,8 +2,9 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { chargerFilm, getFilmsDir, listerFilms } from "./film-loader";
+import { chargerFilm, estUneSerie, getFilmsDir, listerFilms } from "./film-loader";
 import { dossierJetable, ecrireFiche, ficheValide } from "./film-fixtures.test-utils";
+import { serieDeDepart } from "./cinema/edition-serie";
 
 describe("film-loader", () => {
   it("charge une fiche valide, typée", () => {
@@ -73,5 +74,21 @@ describe("getFilmsDir — où vivent les fiches", () => {
 
   it("WEBGEN_FILMS_DIR l'emporte, pour les tests et les cas particuliers", () => {
     expect(getFilmsDir({ WEBGEN_FILMS_DIR: "/tmp/fiches", WEBGEN_RUNNERS_DIR: "/x" })).toBe("/tmp/fiches");
+  });
+});
+
+describe("estUneSerie — profil d'interface « série »", () => {
+  it("un film sans cinema n'est pas une série", () => {
+    expect(estUneSerie({ id: "x", etat: "valide", spec: ficheValide() })).toBe(false);
+  });
+
+  it("un film avec une série (bible importée ou écrite) en est une", () => {
+    const spec = ficheValide();
+    spec.cinema = serieDeDepart();
+    expect(estUneSerie({ id: "x", etat: "valide", spec })).toBe(true);
+  });
+
+  it("une fiche invalide n'est jamais une série, même avec des erreurs sans rapport", () => {
+    expect(estUneSerie({ id: "x", etat: "invalide", erreurs: ["peu importe"] })).toBe(false);
   });
 });
