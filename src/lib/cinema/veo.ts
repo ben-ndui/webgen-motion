@@ -2,24 +2,22 @@ import type { QualiteDeCinema } from "../../../remotion/film/cinema/types";
 import { ecrireAtomiquement, genreDeVideo } from "../film-fichiers-deposes";
 
 /**
- * Le client Veo 3.1 de l'API Gemini : lancer un plan, suivre l'opération,
- * télécharger la vidéo. Rien d'autre : le budget et la fiche se gèrent dans
- * generation.ts. SERVEUR SEULEMENT.
+ * Le client vidéo de l'API Gemini. PONT MINIMAL (01/11/2026) : Google a retiré
+ * Veo de ce compte et l'a remplacé par Gemini Omni Flash — contrat différent
+ * (`POST /interactions`, réponse SYNCHRONE qui contient déjà la vidéo ; fini
+ * `predictLongRunning` + `operations.get`). Pour ne pas bloquer une
+ * production en cours, ce pont fait juste marcher un plan avec le nouveau
+ * modèle. Une vraie migration reste à faire : un seul modèle (fini la
+ * distinction Fast/Lite), des clips de 10 s rendus (pas 8, aucun paramètre de
+ * durée documenté chez Google), un coût facturé au token (couts.ts garde
+ * l'ancien tarif Veo, pas encore mis à jour), et les tests de generation.ts /
+ * fond-sur-mesure.ts / photo-du-produit.ts qui simulaient encore le
+ * lancement-puis-sondage en deux appels (ce pont n'en fait plus qu'un).
+ * Le budget et la fiche se gèrent dans generation.ts. SERVEUR SEULEMENT.
  */
 export const API_VEO = "https://generativelanguage.googleapis.com/v1beta";
 
-export const MODELES_VEO: Record<QualiteDeCinema, string> = {
-  fast: "veo-3.1-fast-generate-preview",
-  lite: "veo-3.1-lite-generate-preview",
-};
-
-// Relevé en réel le 14/10 : Lite refuse `negativePrompt` et `referenceImages` ;
-// Fast refuse `negativePrompt` dès qu'il reçoit un portrait en référence
-// (« not supported in your use case »). Seul Fast sans portrait prend le
-// paramètre ; partout ailleurs, les interdits passent dans le prompt.
-function accepteUnNegatif(qualite: QualiteDeCinema, avecPortraits: boolean): boolean {
-  return qualite === "fast" && !avecPortraits;
-}
+const MODELE_OMNI = "gemini-omni-1.1-flash";
 
 /** Un portrait de personnage envoyé en référence, pour garder son visage. */
 export type ImageDeReference = { octets: Uint8Array; mimeType: "image/jpeg" | "image/png" };
@@ -33,27 +31,21 @@ export type DemandeDePlan = {
   format?: "9:16" | "16:9";
 };
 
-/** Le corps de la requête de lancement, selon ce que le modèle accepte. */
+/** Le corps de la requête à Gemini Omni Flash. Pas de `negativePrompt` documenté : les interdits passent toujours dans le prompt. */
 export function corpsDuLancement(demande: DemandeDePlan): unknown {
   const references = demande.references ?? [];
-  // Lite refuse aussi `referenceImages` : choisirLeModele ne l'y envoie jamais.
-  if (references.length > 0 && demande.qualite === "lite") {
-    throw new Error("Veo Lite n'accepte pas de portrait en référence : ce plan doit passer en Fast.");
+  const texte = demande.negatif ? `${demande.prompt} Avoid: ${demande.negatif}.` : demande.prompt;
+  const input: unknown[] = [{ type: "text", text: texte }];
+  for (const reference of references) {
+    input.push({ type: "image", data: Buffer.from(reference.octets).toString("base64"), mime_type: reference.mimeType });
   }
-  const parametres = { aspectRatio: demande.format ?? "9:16", resolution: "1080p", durationSeconds: 8 };
-  const instance: Record<string, unknown> = { prompt: demande.prompt };
-  if (references.length > 0) {
-    instance.referenceImages = references.map((reference) => ({
-      image: { bytesBase64Encoded: Buffer.from(reference.octets).toString("base64"), mimeType: reference.mimeType },
-      referenceType: "asset",
-    }));
-  }
-  if (accepteUnNegatif(demande.qualite, references.length > 0)) {
-    return { instances: [instance], parameters: { ...parametres, negativePrompt: demande.negatif } };
-  }
-  return { instances: [{ ...instance, prompt: `${demande.prompt} Avoid: ${demande.negatif}.` }], parameters: parametres };
+  return {
+    model: MODELE_OMNI,
+    input,
+    response_format: { type: "video", aspect_ratio: demande.format ?? "9:16", resolution: "720p", delivery: "uri" },
+    generation_config: { video_config: { task: references.length > 0 ? "reference_to_video" : "text_to_video" } },
+  };
 }
-
 
 const POIDS_MAX = 80 * 1024 * 1024;
 
@@ -95,7 +87,7 @@ async function lireJson(reponse: Response): Promise<unknown> {
 export async function lancerUnPlan(client: ClientVeo, demande: DemandeDePlan): Promise<Lancement> {
   let reponse: Response;
   try {
-    reponse = await fetch(`${client.base}/models/${MODELES_VEO[demande.qualite]}:predictLongRunning`, {
+    reponse = await fetch(`${client.base}/interactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": client.cle },
       body: JSON.stringify(corpsDuLancement(demande)),
@@ -103,34 +95,32 @@ export async function lancerUnPlan(client: ClientVeo, demande: DemandeDePlan): P
   } catch {
     return { ok: false, statut: 0, raison: "Google injoignable : vérifie ta connexion." };
   }
-  const corps = await lireJson(reponse);
-  const nom = (corps as { name?: unknown } | null)?.name;
-  if (!reponse.ok || typeof nom !== "string") return { ok: false, statut: reponse.status, raison: raisonDuRefus(reponse.status, corps) };
-  return { ok: true, operation: nom };
+  const corps = (await lireJson(reponse)) as ReponseOmni | null;
+  if (!reponse.ok || !corps) return { ok: false, statut: reponse.status, raison: raisonDuRefus(reponse.status, corps) };
+  const uri = corps.status === "completed" ? uriDeLaReponse(corps) : undefined;
+  if (!uri) return { ok: false, statut: 502, raison: "Gemini Omni Flash n'a rendu aucune vidéo exploitable." };
+  // Omni répond du premier coup : rien à sonder ensuite, l'adresse de la
+  // vidéo part directement dans « l'opération » que generation.ts note sur
+  // le disque. `suivreUnPlan` la retrouve sans rappeler Google.
+  return { ok: true, operation: `${OPERATION_PRETE}${uri}` };
 }
 
-type Operation = {
-  done?: boolean;
-  error?: { message?: string };
-  response?: { generateVideoResponse?: { generatedSamples?: { video?: { uri?: string } }[]; raiMediaFilteredReasons?: string[] } };
-};
+type ReponseOmni = { status?: string; steps?: { type?: string; content?: { type?: string; uri?: string }[] }[] };
 
-export async function suivreUnPlan(client: ClientVeo, operation: string): Promise<Suivi> {
-  let reponse: Response;
-  try {
-    reponse = await fetch(`${client.base}/${operation}`, { headers: { "x-goog-api-key": client.cle } });
-  } catch {
-    return { etat: "injoignable", raison: "Google injoignable : la génération continue peut-être, réessaie dans un instant." };
+function uriDeLaReponse(corps: ReponseOmni): string | undefined {
+  for (const etape of corps.steps ?? []) {
+    if (etape.type !== "model_output") continue;
+    const video = (etape.content ?? []).find((item) => item.type === "video" && typeof item.uri === "string");
+    if (video?.uri) return video.uri;
   }
-  const corps = (await lireJson(reponse)) as Operation | null;
-  if (!reponse.ok || !corps) return { etat: "injoignable", raison: raisonDuRefus(reponse.status, corps) };
-  if (!corps.done) return { etat: "en-cours" };
-  if (corps.error) return { etat: "refuse", raison: `Google a arrêté ce plan : ${corps.error.message ?? "raison non donnée"}` };
-  const resultat = corps.response?.generateVideoResponse;
-  const uri = resultat?.generatedSamples?.[0]?.video?.uri;
-  if (uri) return { etat: "pret", uri };
-  const filtres = resultat?.raiMediaFilteredReasons?.join(" ") || "aucune vidéo rendue";
-  return { etat: "refuse", raison: `Google a refusé ce plan (filtre de sécurité) : ${filtres}` };
+  return undefined;
+}
+
+const OPERATION_PRETE = "omni-pret:";
+
+export async function suivreUnPlan(_client: ClientVeo, operation: string): Promise<Suivi> {
+  if (operation.startsWith(OPERATION_PRETE)) return { etat: "pret", uri: operation.slice(OPERATION_PRETE.length) };
+  return { etat: "refuse", raison: "Cette génération vient d'un ancien format (Veo), abandonné par Google : relance ce plan." };
 }
 
 /**

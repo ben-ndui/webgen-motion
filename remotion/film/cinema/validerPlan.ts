@@ -61,13 +61,18 @@ function verifierReplique(erreurs: Erreurs, chemin: string, replique: unknown, p
   }
 }
 
-function verifierReferences(erreurs: Erreurs, chemin: string, references: unknown, connues: Set<string>): void {
+// Kling (elements + image_urls + start image) et Seedance (jusqu'à 30 images
+// chez fal.ai) acceptent bien plus de références que Veo ; on reste prudent
+// à 7 malgré tout, cohérence du plan oblige (trop de références dilue le sujet).
+const REFERENCES_PAR_PLAN_MAX_FAL = 7;
+
+function verifierReferences(erreurs: Erreurs, chemin: string, references: unknown, connues: Set<string>, maxReferences: number): void {
   if (references === undefined) return;
   if (!Array.isArray(references)) {
     erreurs.push(`${chemin} : liste attendue`);
     return;
   }
-  if (references.length > REFERENCES_PAR_PLAN_MAX) erreurs.push(`${chemin} : ${REFERENCES_PAR_PLAN_MAX} au plus (limite de Veo), ${references.length} reçues`);
+  if (references.length > maxReferences) erreurs.push(`${chemin} : ${maxReferences} au plus (limite de ${maxReferences === REFERENCES_PAR_PLAN_MAX_FAL ? "fal.ai" : "Veo"}), ${references.length} reçues`);
   if (new Set(references).size !== references.length) erreurs.push(`${chemin} : une référence citée deux fois`);
   for (const id of references) {
     if (typeof id !== "string" || !connues.has(id)) erreurs.push(`${chemin} : référence inconnue « ${String(id)} »`);
@@ -91,20 +96,21 @@ export function verifierPlan(erreurs: Erreurs, chemin: string, plan: unknown, co
   if (typeof plan.objet !== "boolean") erreurs.push(`${chemin}.objet : vrai ou faux`);
   // Un objet à l'image sans description : Veo en inventerait un différent à chaque plan.
   if (plan.objet === true && !contexte.objetDecrit) erreurs.push(`${chemin}.objet : décris d'abord l'objet du film (cinema.objet)`);
-  verifierReferences(erreurs, `${chemin}.references`, plan.references, contexte.referencesConnues);
+  const maxReferences = plan.fournisseur === "kling" || plan.fournisseur === "seedance" ? REFERENCES_PAR_PLAN_MAX_FAL : REFERENCES_PAR_PLAN_MAX;
+  verifierReferences(erreurs, `${chemin}.references`, plan.references, contexte.referencesConnues, maxReferences);
   // Sans choix explicite, les personnages du plan partent en référence ; la photo du produit s'y ajoute.
   const choisies = Array.isArray(plan.references) ? plan.references : Array.isArray(plan.personnages) ? plan.personnages : [];
   const references = choisies.length + (plan.objet === true && contexte.objetEnPhoto ? 1 : 0);
-  if (choisies.length <= REFERENCES_PAR_PLAN_MAX && references > REFERENCES_PAR_PLAN_MAX) {
-    erreurs.push(`${chemin} : ${references} images de référence (références + photo du produit), ${REFERENCES_PAR_PLAN_MAX} au plus pour Veo`);
+  if (choisies.length <= maxReferences && references > maxReferences) {
+    erreurs.push(`${chemin} : ${references} images de référence (références + photo du produit), ${maxReferences} au plus${maxReferences === REFERENCES_PAR_PLAN_MAX ? " pour Veo" : ""}`);
   }
   verifierReplique(erreurs, `${chemin}.replique`, plan.replique, plan.personnages);
   if (plan.fichier !== undefined && (typeof plan.fichier !== "string" || !FICHIER_DE_PLAN_SUR.test(plan.fichier))) {
     erreurs.push(`${chemin}.fichier : cinema/<plan>/prise-<n>.mp4 (posé par GEN MOTION)`);
   }
   if (plan.produitReel !== undefined && plan.produitReel !== true) erreurs.push(`${chemin}.produitReel : vrai ou absent (posé par GEN MOTION)`);
-  if (plan.fournisseur !== undefined && plan.fournisseur !== "veo" && plan.fournisseur !== "seedance") {
-    erreurs.push(`${chemin}.fournisseur : « veo » ou « seedance » (absent : Veo)`);
+  if (plan.fournisseur !== undefined && plan.fournisseur !== "veo" && plan.fournisseur !== "seedance" && plan.fournisseur !== "kling") {
+    erreurs.push(`${chemin}.fournisseur : « veo », « seedance » ou « kling » (absent : Veo)`);
   }
   verifierDecoupe(erreurs, `${chemin}.decoupe`, plan.decoupe);
 }

@@ -63,6 +63,14 @@ export const termine = (base: string): ReponseLocale => ({
   },
 });
 
+// Pont minimal Gemini Omni Flash (01/11/2026, voir veo.ts) : UNE réponse,
+// synchrone, qui contient déjà la vidéo — plus de « accepté » puis « fini ».
+export const omniTermine = (base: string, uri?: string): ReponseLocale => ({
+  statut: 200,
+  corps: { status: "completed", steps: [{ type: "model_output", content: [{ type: "video", uri: uri ?? `${base}/files/xyz:download?alt=media` }] }] },
+});
+export const omniSansVideo = (): ReponseLocale => ({ statut: 200, corps: { status: "completed", steps: [] } });
+
 export async function demarrerGoogleLocal(): Promise<GoogleLocal> {
   const file: ReponseLocale[] = [];
   const appels: Appel[] = [];

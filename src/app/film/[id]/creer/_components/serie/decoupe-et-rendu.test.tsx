@@ -22,7 +22,7 @@ describe("DecoupeDuPlan", () => {
         planCourant = copie;
         return copie;
       });
-    return <DecoupeDuPlan filmId="saya" plan={plan} fichier="cinema/rangement.mp4" version={0} modifierLePlan={modifierLePlan} />;
+    return <DecoupeDuPlan filmId="saya" numero={1} plan={plan} fichier="cinema/rangement.mp4" version={0} modifierLePlan={modifierLePlan} />;
   }
   // Le lecteur est mis à l'instant voulu, comme quand on avance la vidéo.
   const lecteurA = (secondes: number) => Object.defineProperty(document.querySelector("video")!, "currentTime", { value: secondes, configurable: true });
@@ -46,6 +46,16 @@ describe("DecoupeDuPlan", () => {
     expect(planCourant.decoupe).toEqual({ debut: 0, fin: 8, coupe: [4, 5] });
     fireEvent.click(screen.getByRole("button", { name: "Tout garder" }));
     expect(planCourant.decoupe).toBeUndefined();
+  });
+
+  it("« Voir en grand » ouvre le plan dans une fenêtre, Échap la referme", () => {
+    render(<Banc />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Voir le plan 1 en grand" }));
+    const fenetre = screen.getByRole("dialog");
+    expect(fenetre.querySelector("video")).toHaveAttribute("src", "/api/motion/film/saya/media?relatif=cinema%2Frangement.mp4&v=0");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 

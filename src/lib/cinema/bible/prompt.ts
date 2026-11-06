@@ -1,3 +1,5 @@
+import type { StyleVisuel } from "../../../../remotion/film/cinema/types";
+import { RENDU_DE_REFERENCE } from "../styles";
 import type { ReferenceDeLaSerie, VueDeReference } from "./etat";
 
 /**
@@ -9,25 +11,41 @@ import type { ReferenceDeLaSerie, VueDeReference } from "./etat";
  * un décor EST le fond. Lui imposer un studio gris contredit sa propre
  * description (architecture, lumière, ambiance) et rend l'image de référence
  * plate — ce qui se voit ensuite dans les plans qui la citent. 18/10/2026.
+ *
+ * Le RENDU (photoréaliste par défaut, ou le style de la série) remplace
+ * seulement l'adjectif de tête : le reste de la recette ne bouge pas, pour
+ * qu'une bible déjà en cours garde des images cohérentes entre elles.
  */
-const CADRAGE_DU_PERSONNAGE: Record<Exclude<VueDeReference, "image">, string> = {
-  face: "Photorealistic character reference, head and shoulders, facing directly towards the camera",
-  "trois-quarts": "Photorealistic character reference, head and shoulders, three-quarter angle view (about 45 degrees)",
-  profil: "Photorealistic character reference, head and shoulders, exact side profile view (90 degrees)",
-  "en-pied": "Photorealistic full-body character reference, standing, front view, arms relaxed",
-};
+const RENDU_PAR_DEFAUT = "Photorealistic";
+
+function rendu(style: StyleVisuel | undefined): string {
+  if (!style || style === "photorealiste") return RENDU_PAR_DEFAUT;
+  return RENDU_DE_REFERENCE[style] ?? RENDU_PAR_DEFAUT;
+}
+
+function cadrageDuPersonnage(vue: Exclude<VueDeReference, "image">, r: string): string {
+  const CADRAGE: Record<Exclude<VueDeReference, "image">, string> = {
+    face: `${r} character reference, head and shoulders, facing directly towards the camera`,
+    "trois-quarts": `${r} character reference, head and shoulders, three-quarter angle view (about 45 degrees)`,
+    profil: `${r} character reference, head and shoulders, exact side profile view (90 degrees)`,
+    "en-pied": `${r} full-body character reference, standing, front view, arms relaxed`,
+  };
+  return CADRAGE[vue];
+}
 
 const FOND_NEUTRE = "even soft studio light, plain light grey seamless studio background";
 const SANS_PARASITE = "No props, no text, no logo.";
 
-export function promptDeLaVue(reference: Pick<ReferenceDeLaSerie, "type" | "description">, vue: VueDeReference): string {
+export function promptDeLaVue(reference: Pick<ReferenceDeLaSerie, "type" | "description">, vue: VueDeReference, style?: StyleVisuel, negatif?: string): string {
   const description = reference.description.trim();
+  const r = rendu(style);
+  const eviter = negatif ? ` Avoid: ${negatif.trim()}.` : "";
   if (reference.type === "decor") {
-    return `Photorealistic wide establishing shot of this real location, showing its full environment and depth, with its own natural lighting and atmosphere. ${description} No people, no characters, no camera or film equipment visible. ${SANS_PARASITE}`;
+    return `${r} wide establishing shot of this real location, showing its full environment and depth, with its own natural lighting and atmosphere. ${description} No people, no characters, no camera or film equipment visible. ${SANS_PARASITE}${eviter}`;
   }
   if (reference.type === "objet") {
-    return `Photorealistic reference image, ${FOND_NEUTRE}. ${description} ${SANS_PARASITE}`;
+    return `${r} reference image, ${FOND_NEUTRE}. ${description} ${SANS_PARASITE}${eviter}`;
   }
-  const cadrage = CADRAGE_DU_PERSONNAGE[vue as Exclude<VueDeReference, "image">];
-  return `${cadrage}, ${FOND_NEUTRE}. ${description} Neutral calm expression, looking at the camera. Natural skin texture. ${SANS_PARASITE}`;
+  const cadrage = cadrageDuPersonnage(vue as Exclude<VueDeReference, "image">, r);
+  return `${cadrage}, ${FOND_NEUTRE}. ${description} Neutral calm expression, looking at the camera. Natural skin texture. ${SANS_PARASITE}${eviter}`;
 }

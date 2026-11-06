@@ -88,13 +88,32 @@ export default function PropositionDeClaude({ cinema, proposition }: Props) {
         </p>
       );
     case "importer-bible": {
-      const { personnages, elements, episodes } = proposition;
+      const { personnages, elements, episodes, style, palette, negatif } = proposition;
       return (
         <>
           <p>
             {personnages.length} personnage{personnages.length > 1 ? "s" : ""}, {elements.length} élément{elements.length > 1 ? "s" : ""}, {episodes.length} épisode
             {episodes.length > 1 ? "s" : ""} trouvés.
           </p>
+          {(style || palette || negatif) && (
+            <ul className="champ-aide">
+              {style && (
+                <li>
+                  Style détecté : <b>{style}</b>
+                </li>
+              )}
+              {palette && (
+                <li lang="en">
+                  Palette détectée : {palette}
+                </li>
+              )}
+              {negatif && (
+                <li lang="en">
+                  À éviter, détecté : {negatif}
+                </li>
+              )}
+            </ul>
+          )}
           {/* Repliées par défaut : une bible dense (8-10 personnages) rendait la
               proposition illisible en liste à plat. */}
           {personnages.length > 0 && (

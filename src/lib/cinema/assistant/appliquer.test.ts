@@ -126,6 +126,24 @@ describe("appliquerLaProposition", () => {
     expect(cinema.episodesAVenir).toEqual([{ titre: "Épisode 1", note: "Henrik découvre son héritage." }]);
   });
 
+  it("importer-bible pose style, palette et negatif quand la série n'en a pas encore", () => {
+    const cinema = serieSaya();
+    appliquerLaProposition(cinema, { type: "importer-bible", personnages: [], elements: [], episodes: [], style: "manga-anime", palette: "Black and blue.", negatif: "short hair" });
+    expect(cinema.style).toBe("manga-anime");
+    expect(cinema.palette).toBe("Black and blue.");
+    expect(cinema.negatif).toBe("short hair");
+  });
+
+  it("importer-bible n'écrase jamais un style, une palette ou un negatif déjà réglés, même revérifié au clic", () => {
+    const cinema = serieSaya();
+    cinema.style = "illustration";
+    cinema.palette = "Déjà réglée à la main.";
+    appliquerLaProposition(cinema, { type: "importer-bible", personnages: [], elements: [], episodes: [], style: "manga-anime", palette: "Nouvelle palette.", negatif: "short hair" });
+    expect(cinema.style).toBe("illustration");
+    expect(cinema.palette).toBe("Déjà réglée à la main.");
+    expect(cinema.negatif).toBe("short hair"); // celui-ci n'était pas réglé : il se pose normalement
+  });
+
   it("l'épisode suivant reprend des ids libres, même si la série a grandi entre-temps", () => {
     const cinema = serieSaya();
     // L'épisode a été numéroté contre une série qui n'avait pas encore « plan-1 ».

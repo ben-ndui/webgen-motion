@@ -29,6 +29,10 @@ export const LONGUEUR_MAX_DU_CARTON = 120;
 export const EPISODES_A_VENIR_MAX = 120;
 export const LONGUEUR_MAX_DU_TITRE_A_VENIR = 200;
 export const LONGUEUR_MAX_DE_LA_NOTE_A_VENIR = 2000;
+// Negatif et palette : des phrases libres, pas une fiche de personnage (plus
+// court qu'une description de référence, plus long qu'un titre).
+export const LONGUEUR_MAX_DU_NEGATIF = 600;
+export const LONGUEUR_MAX_DE_LA_PALETTE = 600;
 const PHOTO_DE_L_OBJET_SURE = /^cinema\/objet\.(jpg|png)$/;
 const LOGO_DU_CARTON_SUR = /^cinema\/fin\/logo\.(jpg|png)$/;
 
@@ -89,6 +93,14 @@ export function erreursDuCinema(spec: unknown): string[] {
   const erreurs: Erreurs = [];
   const ids = verifierLaBible(erreurs, cinema);
   if (cinema.objet !== undefined) verifierDescription(erreurs, "cinema.objet", cinema.objet);
+  if (cinema.negatif !== undefined) {
+    if (!estTexte(cinema.negatif)) erreurs.push("cinema.negatif : texte attendu");
+    else if (cinema.negatif.length > LONGUEUR_MAX_DU_NEGATIF) erreurs.push(`cinema.negatif : ${LONGUEUR_MAX_DU_NEGATIF} caractères au plus, ${cinema.negatif.length} reçus`);
+  }
+  if (cinema.palette !== undefined) {
+    if (!estTexte(cinema.palette)) erreurs.push("cinema.palette : texte attendu");
+    else if (cinema.palette.length > LONGUEUR_MAX_DE_LA_PALETTE) erreurs.push(`cinema.palette : ${LONGUEUR_MAX_DE_LA_PALETTE} caractères au plus, ${cinema.palette.length} reçus`);
+  }
   if (cinema.photoDeLObjet !== undefined && (typeof cinema.photoDeLObjet !== "string" || !PHOTO_DE_L_OBJET_SURE.test(cinema.photoDeLObjet))) {
     erreurs.push("cinema.photoDeLObjet : cinema/objet.jpg ou .png (posée par GEN MOTION)");
   }

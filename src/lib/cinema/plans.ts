@@ -35,7 +35,7 @@ export function referencesDuPlan(cinema: CinemaDuFilm, plan: PlanDeCinema): Refe
   return ids.map((id) => toutes.find((reference) => reference.id === id)).filter((reference): reference is ReferenceDeLaSerie => reference !== undefined);
 }
 
-export type ChoixDuModele = { fournisseur: "veo"; qualite: QualiteDeCinema; pourquoi: string } | { fournisseur: "seedance"; pourquoi: string };
+export type ChoixDuModele = { fournisseur: "veo"; qualite: QualiteDeCinema; pourquoi: string } | { fournisseur: "seedance"; pourquoi: string } | { fournisseur: "kling"; pourquoi: string };
 
 /** La photo du vrai produit part en référence dans ce plan. */
 export function photoDuProduitDansLePlan(cinema: CinemaDuFilm, plan: PlanDeCinema): boolean {
@@ -50,7 +50,10 @@ export function photoDuProduitDansLePlan(cinema: CinemaDuFilm, plan: PlanDeCinem
  */
 export function choisirLeModele(cinema: CinemaDuFilm, plan: PlanDeCinema): ChoixDuModele {
   if (plan.fournisseur === "seedance") {
-    return { fournisseur: "seedance", pourquoi: "Choisi pour ce plan : audio natif, facturé au token chez fal.ai." };
+    return { fournisseur: "seedance", pourquoi: "Choisi pour ce plan : contenu dramatique que le filtre de Veo refuse, identité des visages mieux tenue que Kling, facturé au token chez fal.ai." };
+  }
+  if (plan.fournisseur === "kling") {
+    return { fournisseur: "kling", pourquoi: "Choisi pour ce plan : contenu dramatique que le filtre de Veo refuse, facturé au token chez fal.ai." };
   }
   const presentes = referencesDuPlan(cinema, plan);
   if (presentes.length === 0 && photoDuProduitDansLePlan(cinema, plan)) {

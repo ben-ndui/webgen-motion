@@ -11,6 +11,10 @@ import { ecrireAtomiquement, genreDeVideo } from "../film-fichiers-deposes";
  */
 export const API_FAL = "https://queue.fal.run";
 export const MODELE_SEEDANCE = "bytedance/seedance-2.5/us/reference-to-video";
+// Le suivi (statut ET résultat) vit sous le chemin COURT de l'app, pas sous
+// la variante lancée (constaté en direct, comme pour Kling : la variante
+// lancée répond 405 sur /status et /response).
+const SUIVI_SEEDANCE = "bytedance/seedance-2.5";
 
 // La vidéo prête vit sur un domaine DIFFÉRENT de l'API (queue.fal.run vs
 // *.fal.media) : le domaine de confiance se transporte avec le client, pas
@@ -100,7 +104,7 @@ type Resultat = { video?: { url?: string } };
 export async function suivreUnPlan(client: ClientFal, requestId: string): Promise<Suivi> {
   let reponse: Response;
   try {
-    reponse = await fetch(`${client.base}/${MODELE_SEEDANCE}/requests/${requestId}/status`, { headers: { Authorization: `Key ${client.cle}` } });
+    reponse = await fetch(`${client.base}/${SUIVI_SEEDANCE}/requests/${requestId}/status`, { headers: { Authorization: `Key ${client.cle}` } });
   } catch {
     return { etat: "injoignable", raison: "fal.ai injoignable : la génération continue peut-être, réessaie dans un instant." };
   }
@@ -112,7 +116,7 @@ export async function suivreUnPlan(client: ClientFal, requestId: string): Promis
 
   let resultat: Response;
   try {
-    resultat = await fetch(`${client.base}/${MODELE_SEEDANCE}/requests/${requestId}/response`, { headers: { Authorization: `Key ${client.cle}` } });
+    resultat = await fetch(`${client.base}/${SUIVI_SEEDANCE}/requests/${requestId}`, { headers: { Authorization: `Key ${client.cle}` } });
   } catch {
     return { etat: "injoignable", raison: "fal.ai injoignable : le résultat est prêt, réessaie dans un instant." };
   }

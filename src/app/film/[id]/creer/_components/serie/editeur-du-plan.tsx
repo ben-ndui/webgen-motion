@@ -36,7 +36,7 @@ type Props = {
   onRetirer: () => void;
 };
 
-const NOM_DU_FOURNISSEUR: Record<ChoixDuModele["fournisseur"], string> = { veo: "Google", seedance: "fal.ai" };
+const NOM_DU_FOURNISSEUR: Record<ChoixDuModele["fournisseur"], string> = { veo: "Google", seedance: "fal.ai", kling: "fal.ai" };
 
 const MESSAGES: Partial<Record<SuiviDUnPlan["etat"], string>> = {
   pret: "Plan prêt.",
@@ -104,7 +104,7 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
 
       {suivi?.etat === "pret" && plan.replique && <ControleDeLaReplique key={`${version}-${plan.replique.texte}`} filmId={filmId} planId={plan.id} />}
       {suivi?.etat === "pret" && (
-        <DecoupeDuPlan key={version} filmId={filmId} plan={plan} fichier={suivi.fichier} version={version} modifierLePlan={modifierLePlan} />
+        <DecoupeDuPlan key={version} filmId={filmId} numero={numero} plan={plan} fichier={suivi.fichier} version={version} modifierLePlan={modifierLePlan} />
       )}
       {suivi?.etat === "pret" && (
         <PrisesDuPlan
@@ -139,6 +139,9 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
           <button type="button" className="puce" aria-pressed={choix.fournisseur === "seedance"} onClick={() => modifierLePlan((p) => void (p.fournisseur = "seedance"))}>
             Seedance
           </button>
+          <button type="button" className="puce" aria-pressed={choix.fournisseur === "kling"} onClick={() => modifierLePlan((p) => void (p.fournisseur = "kling"))}>
+            Kling
+          </button>
         </div>
       </fieldset>
 
@@ -151,7 +154,9 @@ export default function EditeurDuPlan({ filmId, cinema, scene, plan, numero, sui
           {raison ??
             (choix.fournisseur === "veo"
               ? `Veo ${choix.qualite === "fast" ? "Fast" : "Lite"} : ${choix.pourquoi}`
-              : `Seedance : ${choix.pourquoi}`)}
+              : choix.fournisseur === "seedance"
+                ? `Seedance : ${choix.pourquoi}`
+                : `Kling : ${choix.pourquoi}`)}
         </p>
       </div>
       {message && (

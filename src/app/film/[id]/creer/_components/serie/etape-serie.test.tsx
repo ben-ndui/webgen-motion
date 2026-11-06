@@ -60,7 +60,8 @@ describe("étape « Série »", () => {
     render(<Banc />);
     fireEvent.click(screen.getByRole("button", { name: "Commencer la série à la main" }));
     expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
-    expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
+    // La bible visuelle est montée dès la création (juste sur un autre onglet par défaut) : { hidden: true } la retrouve sans cliquer dessus.
+    expect(screen.getByRole("button", { name: /Ajouter un personnage/, hidden: true })).toBeInTheDocument();
   });
 
   it("cliquer « Commencer la série à la main » pendant qu'une proposition de Claude est en attente ne la fait pas disparaître", async () => {
@@ -142,7 +143,10 @@ describe("étape « Série »", () => {
     await waitFor(() => expect(ficheCourante.cinema?.personnages.map((p) => p.nom)).toContain("Léa"));
     // Henrik, gardé entre-temps, n'a pas disparu : la série n'a pas été remplacée en bloc.
     expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
-    expect(ficheCourante.cinema?.episodes).toHaveLength(2);
+    // Un seul épisode : celui écrit par Claude. L'épisode d'exemple de départ
+    // (posé par l'import de Henrik, qui a créé la série avec `serieDeDepart`)
+    // est retiré par la fusion, pas gardé à côté du premier vrai épisode.
+    expect(ficheCourante.cinema?.episodes).toHaveLength(1);
   });
 
   it("sans série : déposer un document crée la série ET applique l'import, sans clic préalable sur « Commencer »", async () => {
@@ -172,8 +176,9 @@ describe("étape « Série »", () => {
     expect(ficheCourante.cinema?.personnages.map((p) => p.id)).toContain("henrik");
     // La série de départ (épisode d'exemple) a bien été créée au passage.
     expect(ficheCourante.cinema?.episodes[0].scenes[0].plans[0].id).toBe("plan-1");
-    // L'écran a vraiment basculé sur la série (pas seulement la fiche en mémoire).
-    expect(screen.getByRole("button", { name: /Ajouter un personnage/ })).toBeInTheDocument();
+    // L'écran a vraiment basculé sur la série (pas seulement la fiche en mémoire) ;
+    // la bible visuelle reste sur son propre onglet, { hidden: true } la retrouve quand même.
+    expect(screen.getByRole("button", { name: /Ajouter un personnage/, hidden: true })).toBeInTheDocument();
   });
 
   it("le coût et le modèle sont affichés AVANT le clic : Fast avec Awa, Lite pour l'objet seul", async () => {
@@ -185,7 +190,7 @@ describe("étape « Série »", () => {
     });
     render(<Banc cinema={avecPortrait()} />);
     // Laisse la bible (fetch async) se résoudre avant la suite : sinon sa mise à jour d'état fuit sur le test suivant.
-    await screen.findByRole("heading", { name: "La bible visuelle" });
+    await screen.findByRole("heading", { name: "La bible visuelle", hidden: true });
     expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeEnabled();
     expect(scene1().getByText("Veo Fast : Awa est à l'image : Fast garde le même visage.")).toBeInTheDocument();
     fireEvent.click(within(screen.getByRole("list", { name: "Plans de la scène 1" })).getByRole("button", { name: /Plan 2/ }));
@@ -196,7 +201,7 @@ describe("étape « Série »", () => {
     const propose = { id: "awa", type: "personnage", nom: "Awa", description: serieSaya().personnages[0].description, fiche: { statut: "propose", vues: {}, journal: [] } };
     serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [{ corps: { references: [propose] } }] });
     render(<Banc cinema={serieSaya()} />);
-    await screen.findByRole("article", { name: "Personnage Awa" });
+    await screen.findByRole("button", { name: "Personnage Awa", hidden: true });
     await waitFor(() => expect(scene1().getByRole("button", { name: "Générer ce plan (0,96 $)" })).toBeDisabled());
     expect(scene1().getByText("Awa n'a pas encore d'image validée dans la bible.")).toBeInTheDocument();
   });
@@ -205,7 +210,7 @@ describe("étape « Série »", () => {
     const enregistrer = vi.fn(async () => true);
     serveur({ [`GET ${plan("rangement")}`]: [vide()], [`GET ${bibleRoute}`]: [bibleVide()] });
     render(<Banc cinema={avecPortrait()} enregistrer={enregistrer} />);
-    await screen.findByRole("heading", { name: "La bible visuelle" });
+    await screen.findByRole("heading", { name: "La bible visuelle", hidden: true });
     await waitFor(() => expect(enregistrer).toHaveBeenCalled());
   });
 
@@ -273,9 +278,12 @@ describe("étape « Série »", () => {
       [`POST ${bibleRoute}/awa/en-pied`]: [{ corps: { fichier: "cinema/bible/awa/en-pied-v1.jpg" } }],
     });
     render(<Banc cinema={serieSaya()} />);
-    expect(await screen.findByRole("article", { name: "Personnage Awa" })).toBeInTheDocument();
+    // La bible visuelle a son propre onglet (pas affichée par défaut) : on l'ouvre comme le ferait la personne.
+    fireEvent.click(screen.getByRole("tab", { name: "Bible visuelle" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Personnage Awa" }));
+    const fenetre = await screen.findByRole("dialog", { name: "Personnage Awa" });
     // En pied est la première vue d'un personnage (VUES_DU_TYPE) : son bouton Générer est le premier.
-    fireEvent.click(within(screen.getByRole("article", { name: "Personnage Awa" })).getAllByRole("button", { name: /Générer/ })[0]);
+    fireEvent.click(within(fenetre).getAllByRole("button", { name: /Générer/ })[0]);
     expect(await screen.findByRole("img", { name: "En pied, version 1" })).toBeInTheDocument();
   });
 

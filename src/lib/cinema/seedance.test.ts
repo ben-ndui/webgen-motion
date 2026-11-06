@@ -74,7 +74,7 @@ describe("suivreUnPlan", () => {
     expect(await suivreUnPlan(client(), REQUEST_ID)).toEqual({ etat: "en-cours" });
     fal.repondre(...termine(fal.base));
     expect(await suivreUnPlan(client(), REQUEST_ID)).toEqual({ etat: "pret", uri: `${fal.base}/files/plan.mp4` });
-    expect(fal.appels[0].chemin).toBe(`/bytedance/seedance-2.5/us/reference-to-video/requests/${REQUEST_ID}/status`);
+    expect(fal.appels[0].chemin).toBe(`/bytedance/seedance-2.5/requests/${REQUEST_ID}/status`);
   });
 
   it("une file terminée sans vidéo dans le résultat est un refus", async () => {

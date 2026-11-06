@@ -5,6 +5,7 @@
 
 /* Le noir de la pellicule ne suit pas le thème : en sombre, --ink est clair. */
 .gm-film { --pellicule: #000; --pellicule-texte: #f5f5f5; }
+.gm-film .serie-onglets { display: flex; flex-direction: column; gap: var(--s-4); }
 .gm-film .serie { display: flex; flex-direction: column; gap: var(--s-5); }
 .gm-film .serie-vide { max-width: 640px; }
 .gm-film .serie-vide .film-btn { align-self: flex-start; }
@@ -12,13 +13,34 @@
 /* La bible visuelle */
 .gm-film .bible { display: flex; flex-direction: column; gap: var(--s-4); }
 .gm-film .bible-ajouts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.gm-film .reference-bible { padding-top: var(--s-3); border-top: 1px solid var(--line-soft); }
-.gm-film .reference-bible-details { display: flex; flex-direction: column; gap: var(--s-3); }
-.gm-film .reference-bible-details > summary { font-size: var(--t-base); color: var(--ink); }
+.gm-film .reference-bible { display: flex; flex-direction: column; gap: var(--s-3); }
 .gm-film .reference-bible-type { font-size: var(--t-xs); color: var(--muted); padding: 4px 10px; border-radius: var(--r-full); background: var(--surface-2); white-space: nowrap; }
 .gm-film .reference-bible-vues { display: flex; flex-wrap: wrap; gap: var(--s-3); }
 .gm-film .reference-bible-verrou { display: flex; flex-direction: column; gap: 6px; padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
 .gm-film .reference-bible-deverrouiller { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+/* La bible visuelle en grille de tuiles (façon cartes du tableau de bord) */
+.gm-film .reference-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--s-3); }
+.gm-film .reference-tuile { display: flex; flex-direction: column; gap: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); overflow: hidden; cursor: pointer; text-align: left; font: inherit; color: var(--ink); transition: border-color .2s, box-shadow .2s, transform .2s; }
+.gm-film .reference-tuile:hover { border-color: var(--line-strong); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.gm-film .reference-tuile:focus-visible { outline: none; box-shadow: var(--ring); }
+.gm-film .reference-tuile-image { aspect-ratio: 3 / 4; background: var(--surface-2); display: grid; place-items: center; overflow: hidden; }
+.gm-film .reference-tuile-image img { width: 100%; height: 100%; object-fit: cover; }
+.gm-film .reference-tuile-vide { font-family: var(--font-mono); font-size: 28px; color: var(--faint); }
+.gm-film .reference-tuile-corps { display: flex; flex-direction: column; gap: 4px; padding: 11px 13px 13px; }
+.gm-film .reference-tuile-type { font-size: 10px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--faint); }
+.gm-film .reference-tuile-nom { font-size: var(--t-sm); font-weight: 600; color: var(--ink); line-height: 1.25; }
+.gm-film .reference-tuile .status { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-xs); margin-top: 2px; }
+.gm-film .reference-tuile .status .sdot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.gm-film .reference-tuile .status.vide { color: var(--muted); } .gm-film .reference-tuile .status.vide .sdot { background: var(--line-strong); }
+.gm-film .reference-tuile .status.a-valider { color: var(--accent); } .gm-film .reference-tuile .status.a-valider .sdot { background: var(--accent); }
+.gm-film .reference-tuile .status.validee { color: var(--ink); } .gm-film .reference-tuile .status.validee .sdot { background: var(--ink); }
+
+/* La fenêtre ouverte depuis une tuile : mêmes conventions que remplissage.css */
+.gm-film .reference-fond { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: color-mix(in oklch, var(--ink) 40%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.gm-film .reference-fenetre { position: relative; width: min(720px, 100%); max-height: 88dvh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--s-4); padding: 28px; border-radius: var(--r-xl); border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-pop); outline: none; }
+.gm-film .reference-fenetre-entete { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-3); border-bottom: 1px solid var(--line-soft); }
+.gm-film .reference-fenetre-titre { margin: 0; display: flex; align-items: center; gap: var(--s-2); font-size: var(--t-lg); font-weight: 600; color: var(--ink); }
 
 .gm-film .vue-bible { display: flex; flex-direction: column; gap: 6px; width: 140px; }
 .gm-film .vue-bible-image { aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); color: var(--pellicule-texte); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
@@ -87,9 +109,20 @@
 
 /* La découpe d'un plan prêt */
 .gm-film .decoupe { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }
-.gm-film .decoupe-lecteur { width: min(100%, 240px); aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
+.gm-film .decoupe-lecteur-bloc { position: relative; width: min(100%, 240px); }
+.gm-film .decoupe-lecteur { width: 100%; aspect-ratio: 9 / 16; border-radius: var(--r-md); background: var(--pellicule); }
+.gm-film .decoupe-agrandir { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: var(--r-sm); background: color-mix(in oklch, var(--ink) 55%, transparent); color: var(--bg); cursor: pointer; }
+.gm-film .decoupe-agrandir:hover { background: color-mix(in oklch, var(--ink) 75%, transparent); }
+.gm-film .decoupe-agrandir:focus-visible { outline: none; box-shadow: var(--ring); }
 .gm-film .decoupe-planche { width: 100%; border-radius: var(--r-sm); cursor: pointer; background: var(--pellicule); }
 .gm-film .decoupe-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+/* Le plan ouvert en grand (bouton « voir en grand » du petit lecteur) */
+.gm-film .plan-fond { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 24px; background: color-mix(in oklch, var(--ink) 75%, transparent); }
+.gm-film .plan-fenetre { position: relative; display: grid; place-items: center; max-height: 90dvh; outline: none; }
+.gm-film .plan-fenetre-video { height: min(85dvh, 100%); max-width: 90vw; border-radius: var(--r-lg); background: #000; box-shadow: var(--shadow-pop); }
+.gm-film .plan-fenetre-fermer { position: absolute; top: -44px; right: 0; color: var(--bg); }
+.gm-film .plan-fenetre-fermer:hover { background: color-mix(in oklch, var(--bg) 20%, transparent); }
 
 /* Les prises d'un plan régénéré */
 .gm-film .prises { padding-top: var(--s-2); border-top: 1px solid var(--line-soft); }

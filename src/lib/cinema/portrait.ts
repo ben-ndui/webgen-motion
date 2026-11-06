@@ -1,10 +1,11 @@
 import { genreDImage } from "../film-fichiers-deposes";
-import { type ClientVeo, raisonDuRefus } from "./veo";
+import { type ClientVeo, type ImageDeReference, raisonDuRefus } from "./veo";
 
 /**
  * Le client Gemini (image) : envoie un prompt déjà composé, rend l'image.
  * Le prompt lui-même vient de `bible/prompt.ts` (une vue de la bible :
- * personnage, créature, objet ou décor). Même clé et même serveur que Veo.
+ * personnage, créature, objet ou décor) ou de `plan-still.ts` (l'image fixe
+ * d'un plan, avec ses références jointes). Même clé et même serveur que Veo.
  * SERVEUR SEULEMENT.
  */
 export const MODELE_DE_PORTRAIT = "gemini-3.1-flash-image";
@@ -13,14 +14,18 @@ export type Portrait = { ok: true; octets: Uint8Array; extension: "jpg" | "png" 
 
 type ReponseGemini = { candidates?: { content?: { parts?: { inlineData?: { data?: string } }[] } }[] };
 
-export async function genererUnPortraitChezGoogle(client: ClientVeo, prompt: string): Promise<Portrait> {
+export async function genererUnPortraitChezGoogle(client: ClientVeo, prompt: string, references: ImageDeReference[] = []): Promise<Portrait> {
+  const parts: unknown[] = [{ text: prompt }];
+  for (const reference of references) {
+    parts.push({ inlineData: { mimeType: reference.mimeType, data: Buffer.from(reference.octets).toString("base64") } });
+  }
   let reponse: Response;
   try {
     reponse = await fetch(`${client.base}/models/${MODELE_DE_PORTRAIT}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": client.cle },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts }],
         generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "9:16" } },
       }),
     });

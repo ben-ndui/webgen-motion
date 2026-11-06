@@ -36,19 +36,25 @@ describe("composerLePrompt — série", () => {
         "Awa places the bottle on a shelf, then turns toward the camera with a gentle smile. " +
         `Awa (reference image 1): ${awa.description} ` +
         `The object: ${serieSaya().objet} It has no label and no text. ` +
+        "No one in this shot speaks any audible dialogue. Any background chatter stays an indistinct murmur, never clear English words. " +
         "Keep this setting all around the characters: A small elegant perfume boutique with warm lights and wooden shelves. " +
         "Never reuse the plain studio background or the pose of the reference images. " +
         "Night atmosphere, deep shadows with warm glowing highlights, moody and elegant. " +
         "Color palette: midnight navy blue, gold and ivory. " +
-        "Shallow depth of field, slow camera movement, 35mm film look.",
+        "Shallow depth of field, slow camera movement, 35mm film look. " +
+        "Audio: dialogue and natural ambient room tone only. No background music, no score, no soundtrack of any kind.",
     );
     expect(negatif).not.toContain("bottle");
     expect(negatif).toContain("subtitles");
+    expect(negatif).toContain("background music");
   });
 
   it("la réplique est dite en français, entre guillemets, par le personnage nommé", () => {
     const { prompt, negatif } = promptDe("confidence");
-    expect(prompt).toContain("Awa says softly in French: « Ce parfum, c'est l'histoire de ma grand-mère. » Natural lip movement.");
+    expect(prompt).toContain(
+      "Awa speaks ONLY this exact line, in FRENCH, word for word, with natural lip movement matching the French words — " +
+        "never translate it, never improvise different words, never speak English: « Ce parfum, c'est l'histoire de ma grand-mère. »",
+    );
     expect(prompt).not.toContain("The object");
     // Pas d'objet à l'image : Veo ne doit pas en poser un.
     expect(negatif).toContain("bottle");
@@ -85,6 +91,34 @@ describe("composerLePrompt — série", () => {
     expect(prompt).toContain("Awa (reference image 1)");
     expect(prompt).toContain("Sahor (reference image 2): A black and silver wolf.");
     expect(prompt).not.toContain("Sahor says");
+  });
+
+  it("un style manga-anime ajoute sa phrase et retire « cartoon » de l'interdit ; photorealiste ne change rien", () => {
+    const serie = serieSaya();
+    serie.style = "manga-anime";
+    const { prompt, negatif } = promptDe("flacon", saya(serie));
+    expect(prompt).toContain("Japanese anime / manga cinematic art style");
+    expect(negatif).not.toContain("cartoon");
+
+    const photoreal = serieSaya();
+    photoreal.style = "photorealiste";
+    expect(promptDe("flacon", saya(photoreal)).prompt).toBe(promptDe("flacon").prompt);
+  });
+
+  it("une palette décrite remplace la palette de marque dans le prompt", () => {
+    const serie = serieSaya();
+    serie.palette = "Black and anthracite for clothes, deep blue for night scenes, warm orange for the face.";
+    const { prompt } = promptDe("flacon", saya(serie));
+    expect(prompt).toContain("Black and anthracite for clothes, deep blue for night scenes, warm orange for the face.");
+    expect(prompt).not.toContain("Color palette: midnight navy blue");
+  });
+
+  it("un negatif de la série s'ajoute à l'interdit commun, sans l'effacer", () => {
+    const serie = serieSaya();
+    serie.negatif = "short hair, inconsistent pendant";
+    const { negatif } = promptDe("flacon", saya(serie));
+    expect(negatif).toContain("subtitles");
+    expect(negatif).toContain("short hair, inconsistent pendant");
   });
 
   it("refuse une fiche sans cinéma", () => {

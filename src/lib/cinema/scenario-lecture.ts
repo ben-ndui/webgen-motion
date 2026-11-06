@@ -28,6 +28,13 @@ export function idDe(nom: string, pris: Set<string>): string {
 
 const numeroLibre = (ids: string[], prefixe: string) => Math.max(0, ...ids.map((id) => Number(id.replace(prefixe, ""))).filter(Number.isFinite)) + 1;
 
+// Claude cite un personnage par son PRÉNOM seul (consigne du prompt : « reuse
+// them by their exact first name »), jamais par son nom complet. Comparer sur
+// le nom complet ne matchait donc jamais un personnage déjà là ( « Henrik » ≠
+// « henrik vahl » ) : chaque épisode recréait un doublon vide, sans portrait,
+// à la place du vrai personnage validé.
+const premierPrenom = (nom: string): string => nom.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+
 // L'épisode d'exemple de « Commencer la série », jamais touché : il n'a rien à faire devant l'épisode écrit.
 export function estLEpisodeDeDepartVierge(episode: EpisodeDeCinema): boolean {
   const plans = episode.scenes.flatMap((s) => s.plans);
@@ -51,14 +58,14 @@ export function ajouterLEpisodeEcrit(actuel: CinemaDuFilm | undefined, reponse: 
   // clé commune) : un nouveau personnage ne doit jamais reprendre l'id d'une
   // créature, d'un objet ou d'un décor déjà là.
   const idsPris = new Set([...cinema.personnages.map((p) => p.id), ...(cinema.elements ?? []).map((e) => e.id)]);
-  const parPrenom = new Map(cinema.personnages.map((p) => [p.nom.toLowerCase(), p.id]));
+  const parPrenom = new Map(cinema.personnages.map((p) => [premierPrenom(p.nom), p.id]));
 
   for (const brut of liste(reponse.personnages).filter(estObjet)) {
     const nom = texte(brut.nom);
-    if (!nom || parPrenom.has(nom.toLowerCase())) continue;
+    if (!nom || parPrenom.has(premierPrenom(nom))) continue;
     const nouveau: Personnage = { id: idDe(nom, idsPris), nom, description: texte(brut.description) };
     cinema.personnages.push(nouveau);
-    parPrenom.set(nom.toLowerCase(), nouveau.id);
+    parPrenom.set(premierPrenom(nom), nouveau.id);
   }
   if (!cinema.objet && texte(reponse.objet)) cinema.objet = texte(reponse.objet);
 
@@ -73,10 +80,10 @@ export function ajouterLEpisodeEcrit(actuel: CinemaDuFilm | undefined, reponse: 
   for (const brute of liste(reponse.scenes).filter(estObjet).slice(0, L.scenes)) {
     const plans: PlanDeCinema[] = [];
     for (const brut of liste(brute.plans).filter(estObjet).slice(0, L.plansParScene)) {
-      const personnages = [...new Set(liste(brut.personnages).map((n) => parPrenom.get(texte(n).toLowerCase())).filter((id): id is string => !!id))].slice(0, L.personnagesParPlan);
+      const personnages = [...new Set(liste(brut.personnages).map((n) => parPrenom.get(premierPrenom(texte(n)))).filter((id): id is string => !!id))].slice(0, L.personnagesParPlan);
       const plan: PlanDeCinema = { id: `plan-${prochainPlan++}`, consigne: texte(brut.consigne), personnages, objet: brut.objet === true && !!cinema.objet };
       const replique = estObjet(brut.replique) ? brut.replique : null;
-      const orateur = replique ? parPrenom.get(texte(replique.personnage).toLowerCase()) : undefined;
+      const orateur = replique ? parPrenom.get(premierPrenom(texte(replique.personnage))) : undefined;
       // Une réplique n'est gardée que si celui qui parle est à l'image.
       if (replique && orateur && personnages.includes(orateur) && texte(replique.texte)) {
         plan.replique = { personnage: orateur, texte: texte(replique.texte).slice(0, L.replique) };

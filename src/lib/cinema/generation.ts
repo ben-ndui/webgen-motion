@@ -9,11 +9,13 @@ import { lireLaBible } from "./bible/stockage";
 import { coutDuModele } from "./couts";
 import { portraitsPourVeo } from "./generation-portrait";
 import { LIEUX_PAR_DEFAUT, type Lieux, type Refus, SANS_CLE, SANS_CLE_FAL, ficheAvecCinema } from "./lieux";
+import { lancerUnPlan as lancerUnPlanKling, suivreUnPlan as suivreUnPlanKling, telechargerLePlan as telechargerLePlanKling } from "./kling";
+import { imageFixeValidee } from "./plan-still";
 import { type ChoixDuModele, choisirLeModele, photoDuProduitDansLePlan, referencesDuPlan, trouverLePlan } from "./plans";
 import { cheminDeLaPrise, prisesDuPlan, prochainNumeroDePrise } from "./prises/etat";
 import { ajouterUnePrise, retenirUnePrise } from "./prises/gestes";
 import { lireLesPrises } from "./prises/stockage";
-import { composerLePrompt } from "./prompt";
+import { composerLePrompt, composerLePromptDAnimation } from "./prompt";
 import { annulerSansFrais, lireLeRegistre, noterLeLancement, reserver, terminer } from "./registre";
 import {
   type ClientFal,
@@ -102,6 +104,11 @@ async function lancerLaGeneration(modele: ModeleDuPlan, lieux: Lieux, prompt: { 
     if (!client) return { ok: false, statut: 412, raison: SANS_CLE_FAL.raison };
     return lancerUnPlanSeedance(client, { prompt: prompt.prompt, negatif: prompt.negatif, references });
   }
+  if (modele.fournisseur === "kling") {
+    const client = lieux.fal();
+    if (!client) return { ok: false, statut: 412, raison: SANS_CLE_FAL.raison };
+    return lancerUnPlanKling(client, { prompt: prompt.prompt, negatif: prompt.negatif, references });
+  }
   const client = lieux.veo();
   if (!client) return { ok: false, statut: 412, raison: SANS_CLE.raison };
   return lancerUnPlanVeo(client, { qualite: modele.qualite, ...prompt, references });
@@ -114,12 +121,16 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   const contexte = lecture.contexte;
   const modele = contexte.modele;
   if (modele.fournisseur === "veo" && !lieux.veo()) return SANS_CLE;
-  if (modele.fournisseur === "seedance" && !lieux.fal()) return SANS_CLE_FAL;
+  if ((modele.fournisseur === "seedance" || modele.fournisseur === "kling") && !lieux.fal()) return SANS_CLE_FAL;
   const texteDExemple = texteEncoreDExemple(contexte);
   if (texteDExemple) return { ok: false, statut: 400, raison: texteDExemple };
   const photo = photoDuProduitDansLePlan(contexte.cinema, contexte.plan) ? contexte.cinema.photoDeLObjet : undefined;
   const dossier = lieux.dossier(id);
-  const portraits = portraitsPourVeo(referencesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), lireLaBible(dossier), photo);
+  // Une image fixe validée (méthode du pack de production) remplace les portraits
+  // séparés : Veo anime UN seul still déjà composé, au lieu de recomposer plusieurs
+  // visages réalistes en mouvement d'un coup — plus proche de ce que son filtre accepte.
+  const imageFixe = imageFixeValidee(dossier, lieux.public(id), planId);
+  const portraits = imageFixe ? { ok: true as const, references: [imageFixe] } : portraitsPourVeo(referencesDuPlan(contexte.cinema, contexte.plan), lieux.public(id), lireLaBible(dossier), photo);
   if (!portraits.ok) return portraits;
 
   const reservation = reserver(dossier, planId, contexte.plafond);
@@ -127,7 +138,7 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   if (!reservation.ok) {
     return { ok: false, statut: 409, raison: `Budget atteint : ${reservation.utilises} plans sur ${contexte.plafond}. Augmente le budget du film pour continuer.` };
   }
-  const prompt = composerLePrompt(contexte.spec, contexte.scene, contexte.plan);
+  const prompt = imageFixe ? composerLePromptDAnimation(contexte.spec, contexte.scene, contexte.plan) : composerLePrompt(contexte.spec, contexte.scene, contexte.plan);
   const lancement = await lancerLaGeneration(modele, lieux, prompt, portraits.references);
   if (!lancement.ok) {
     annulerSansFrais(dossier, planId);
@@ -137,7 +148,7 @@ export async function genererUnPlan(id: string, planId: string, partiel: Partial
   return repondre(id, contexte, { etat: "en-cours" }, lieux);
 }
 
-const NOM_DU_FOURNISSEUR: Record<FournisseurDeCinema, string> = { veo: "Google", seedance: "fal.ai" };
+const NOM_DU_FOURNISSEUR: Record<FournisseurDeCinema, string> = { veo: "Google", seedance: "fal.ai", kling: "fal.ai" };
 
 type AccesFournisseur = { ok: true; suivre: () => Promise<Suivi>; telecharger: (uri: string, destination: string) => Promise<boolean> } | Refus;
 
@@ -149,6 +160,11 @@ function accesAuFournisseur(fournisseur: FournisseurDeCinema, lieux: Lieux, oper
     const client: ClientFal | null = lieux.fal();
     if (!client) return SANS_CLE_FAL;
     return { ok: true, suivre: () => suivreUnPlanSeedance(client, operationNom), telecharger: (uri, destination) => telechargerLePlanSeedance(client, uri, destination) };
+  }
+  if (fournisseur === "kling") {
+    const client: ClientFal | null = lieux.fal();
+    if (!client) return SANS_CLE_FAL;
+    return { ok: true, suivre: () => suivreUnPlanKling(client, operationNom), telecharger: (uri, destination) => telechargerLePlanKling(client, uri, destination) };
   }
   const client: ClientVeo | null = lieux.veo();
   if (!client) return SANS_CLE;

@@ -103,6 +103,12 @@ export function appliquerLaProposition(cinema: CinemaDuFilm, proposition: Propos
       const placeEpisodes = Math.max(0, EPISODES_A_VENIR_MAX - (cinema.episodesAVenir ?? []).length);
       const nouveauxEpisodes = proposition.episodes.filter((e) => !titresConnus.has(normalise(e.titre))).slice(0, placeEpisodes);
       cinema.episodesAVenir = [...(cinema.episodesAVenir ?? []), ...nouveauxEpisodes];
+
+      // Revérifié ici comme le reste : la série a pu recevoir un réglage
+      // manuel entre la réponse de Claude et le clic. Jamais d'écrasement.
+      if (proposition.style && cinema.style === undefined) cinema.style = proposition.style;
+      if (proposition.palette && cinema.palette === undefined) cinema.palette = proposition.palette;
+      if (proposition.negatif && cinema.negatif === undefined) cinema.negatif = proposition.negatif;
       return null;
     }
     case "decrire-reference": {

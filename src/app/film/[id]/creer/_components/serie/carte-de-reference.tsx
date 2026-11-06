@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { FicheVisuelle, TypeDeReference, VueDeReference } from "@/lib/cinema/bible/etat";
-import { NOM_DU_TYPE, VUES_DU_TYPE } from "@/lib/cinema/bible/etat";
+import { VUES_DU_TYPE } from "@/lib/cinema/bible/etat";
 import { EXEMPLES_DE_SERIE, estUnExemple } from "../../../../../../../remotion/film/cinema/exemples";
 import type { CinemaDuFilm } from "../../../../../../../remotion/film/cinema/types";
 import AideDeClaude from "./aide-de-claude";
@@ -35,7 +35,12 @@ type Props = {
 
 const FICHE_PAR_DEFAUT: FicheVisuelle = { statut: "propose", vues: {}, journal: [] };
 
-/** Une référence de la bible (personnage, créature, objet ou décor) : ses textes, ses vues, et son verrou. */
+/**
+ * Le contenu d'une référence de la bible (personnage, créature, objet ou
+ * décor) : ses textes, ses vues, et son verrou. Affiché dans la fenêtre
+ * ouverte depuis sa tuile (voir ReferenceTuile) — jamais seul sur la page,
+ * donc pas de replié/déplié ici.
+ */
 export default function CarteDeReference({ filmId, cinema, id, type, nom, description, fiche = FICHE_PAR_DEFAUT, etats, modifierLesTextes, modifierLaSerie, onGenerer, onImporter, onRetenir, onChoisirPrincipale, onValider, onDeverrouiller, onRetirer }: Props) {
   const [motif, setMotif] = useState<string | null>(null);
   const verrouillee = fiche.statut === "valide";
@@ -46,16 +51,8 @@ export default function CarteDeReference({ filmId, cinema, id, type, nom, descri
   // Verrouillée : c'est cette description, mot pour mot, qui part avec l'image validée à Veo.
   const gestes = verrouillee ? [] : [{ libelle: descriptionAEcrire ? "Décrire avec Claude" : "Réécrire avec Claude", demande: { type: "decrire-reference" as const, reference: id } }];
 
-  const statut = verrouillee ? "validée" : aUneImage ? "image à valider" : "pas encore d'image";
-
   return (
-    <article className="reference-bible" aria-label={`${NOM_DU_TYPE[type]} ${nom}`}>
-      {/* Repliée par défaut : une bible de 8-10 personnages rendait la page
-          interminable, une carte complète après l'autre. */}
-      <details className="film-details reference-bible-details">
-        <summary>
-          <span className="reference-bible-type">{NOM_DU_TYPE[type]}</span> {nom} — {statut}
-        </summary>
+    <div className="reference-bible">
         <label className="champ">
           <span className="champ-question">Son nom</span>
           <input className="champ-saisie" value={nom} onChange={(e) => modifierLesTextes(e.target.value.trim() === "" ? nom : e.target.value, description)} />
@@ -126,7 +123,6 @@ export default function CarteDeReference({ filmId, cinema, id, type, nom, descri
         <button type="button" className="lien" onClick={onRetirer}>
           Retirer {type === "personnage" ? "ce personnage" : "cet élément"}
         </button>
-      </details>
-    </article>
+    </div>
   );
 }

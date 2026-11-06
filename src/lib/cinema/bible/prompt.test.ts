@@ -50,4 +50,24 @@ describe("promptDeLaVue", () => {
   it("un décor n'invente ni personnage ni équipe de tournage dans l'image de référence", () => {
     expect(promptDeLaVue(decor, "image")).toContain("No people, no characters, no camera or film equipment visible.");
   });
+
+  it("un style manga-anime remplace « Photorealistic » partout, sans toucher au reste de la recette", () => {
+    for (const [reference, vue] of [[personnage, "face"] as const, [objet, "image"] as const, [decor, "image"] as const]) {
+      const prompt = promptDeLaVue(reference, vue, "manga-anime");
+      expect(prompt).not.toContain("Photorealistic");
+      expect(prompt).toContain("Japanese anime / manga style");
+    }
+    expect(promptDeLaVue(personnage, "en-pied", "manga-anime")).toContain("full-body character reference, standing");
+  });
+
+  it("style absent ou photorealiste : exactement le rendu d'avant", () => {
+    expect(promptDeLaVue(personnage, "face")).toBe(promptDeLaVue(personnage, "face", "photorealiste"));
+    expect(promptDeLaVue(personnage, "face")).toContain("Photorealistic");
+  });
+
+  it("un negatif de la série s'ajoute en fin de prompt, sans remplacer l'interdit déjà là", () => {
+    const prompt = promptDeLaVue(personnage, "face", undefined, "short hair, visible logo");
+    expect(prompt).toContain("No props, no text, no logo.");
+    expect(prompt).toContain("Avoid: short hair, visible logo.");
+  });
 });

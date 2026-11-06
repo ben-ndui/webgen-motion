@@ -7,10 +7,11 @@
 // cher, mais refuse les références) : GEN MOTION choisit selon le plan.
 export type QualiteDeCinema = "fast" | "lite";
 
-// Veo (Google, par défaut) ou Seedance (ByteDance, via fal.ai) : qui génère
-// la vidéo de ce plan. Absent sur un plan : Veo, choisi automatiquement
-// (choisirLeModele). Un choix explicite ne change RIEN d'autre au plan.
-export type FournisseurDeCinema = "veo" | "seedance";
+// Veo (Google, par défaut), Seedance (ByteDance) ou Kling (Kuaishou) — ces
+// deux derniers via fal.ai : qui génère la vidéo de ce plan. Absent sur un
+// plan : Veo, choisi automatiquement (choisirLeModele). Un choix explicite
+// ne change RIEN d'autre au plan.
+export type FournisseurDeCinema = "veo" | "seedance" | "kling";
 
 // Veo rend toujours 8 secondes : une découpe ne peut pas aller au-delà.
 export const DUREE_D_UN_PLAN = 8;
@@ -39,7 +40,7 @@ export type TypeDElement = "creature" | "objet" | "decor";
 export type ElementDeLaBible = { id: string; type: TypeDElement; nom: string; description: string };
 
 // Le rendu des images de référence ET des plans, choisi une fois pour la série.
-export const STYLES_VISUELS = ["photorealiste", "cinema-fantasy", "animation-3d", "illustration"] as const;
+export const STYLES_VISUELS = ["photorealiste", "cinema-fantasy", "animation-3d", "illustration", "manga-anime"] as const;
 export type StyleVisuel = (typeof STYLES_VISUELS)[number];
 
 /**
@@ -112,6 +113,14 @@ export type CinemaDuFilm = {
   elements?: ElementDeLaBible[];
   // Absent : photoréaliste.
   style?: StyleVisuel;
+  // Ce que la série interdit de montrer, en anglais, ajouté à l'interdit
+  // commun de chaque génération (portraits de la bible ET plans). Absent :
+  // rien de plus que les interdits communs (texte, logo, mains difformes…).
+  negatif?: string;
+  // La palette et son usage, en une description libre (quelle couleur, pour
+  // quel usage), ajoutée AU LIEU DE la palette de marque dans les plans et
+  // les références de cette série. Absente : la palette de marque.
+  palette?: string;
   // Le produit, décrit une fois.
   objet?: string;
   // La photo du VRAI produit (cinema/objet.jpg ou .png), posée par GEN MOTION

@@ -1,4 +1,4 @@
-import type { ElementDeLaBible, EpisodeAVenir, EpisodeDeCinema, Personnage, RepliqueDuPlan } from "../../../../remotion/film/cinema/types";
+import type { ElementDeLaBible, EpisodeAVenir, EpisodeDeCinema, Personnage, RepliqueDuPlan, StyleVisuel } from "../../../../remotion/film/cinema/types";
 
 /**
  * Les gestes de l'assistant de la série, et ce que Claude propose en
@@ -36,7 +36,7 @@ export type Proposition =
   // Le nouvel épisode, et les personnages qu'il crée (les autres existent déjà).
   | { type: "episode-suivant"; episode: EpisodeDeCinema; nouveauxPersonnages: Personnage[] }
   | { type: "decrire-reference"; reference: string; description: string }
-  | { type: "importer-bible"; personnages: Personnage[]; elements: ElementDeLaBible[]; episodes: EpisodeAVenir[] };
+  | { type: "importer-bible"; personnages: Personnage[]; elements: ElementDeLaBible[]; episodes: EpisodeAVenir[]; style?: StyleVisuel; palette?: string; negatif?: string };
 
 /** Les textes d'une proposition, pour demander « autre chose » à Claude. */
 export function textesDe(proposition: Proposition): string[] {

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ResolvedAgent } from "../config-resolve";
+import { serieDeDepart } from "./edition-serie";
 import { filmDeTest } from "./film-de-test.test-utils";
 import { type AppelerClaude, appelerClaude, ecrireUnEpisode } from "./scenario-claude";
 
@@ -56,6 +57,25 @@ describe("ecrireUnEpisode", () => {
   it("film inconnu : 404", async () => {
     const f = film();
     expect(await ecrireUnEpisode("inconnu", BRIEF, f.lieux, AGENT, vi.fn())).toMatchObject({ ok: false, statut: 404 });
+  });
+
+  it("reconnaît un personnage déjà là cité par son PRÉNOM seul, sans le dupliquer", async () => {
+    // Pas `film()` : elle crée déjà « saya » avec le casting par défaut (Awa),
+    // et `creer` réécrit en `wx` (échoue sans bruit si le fichier existe déjà).
+    const f = filmDeTest("http://127.0.0.1:1/v1beta");
+    f.creer({ ...serieDeDepart(), personnages: [{ id: "henrik-vahl", nom: "Henrik Vahl", description: "57-year-old Norwegian man." }] });
+    const episode = {
+      titre: "Le gala",
+      objet: null,
+      personnages: [], // Claude ne redéclare pas Henrik : il existe déjà, consigne du prompt.
+      scenes: [{ decor: "Monaco gala.", plans: [{ consigne: "Henrik announces the engagement.", personnages: ["Henrik"], objet: false, replique: null }] }],
+    };
+    const appeler = vi.fn<AppelerClaude>(async () => ({ ok: true, texte: JSON.stringify(episode) }));
+    const reponse = await ecrireUnEpisode("saya", BRIEF, f.lieux, AGENT, appeler);
+    expect(reponse).toMatchObject({ ok: true });
+    if (!reponse.ok) return;
+    expect(reponse.cinema.personnages).toHaveLength(1);
+    expect(reponse.cinema.episodes[0]!.scenes[0]!.plans[0]!.personnages).toEqual(["henrik-vahl"]);
   });
 });
 

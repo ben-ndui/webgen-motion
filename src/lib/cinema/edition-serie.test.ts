@@ -193,6 +193,18 @@ describe("fusionnerLEpisodeEcrit", () => {
     expect(valide(serie)).toEqual([]);
   });
 
+  it("le PREMIER épisode écrit remplace l'épisode d'exemple de départ, pas à côté de lui", () => {
+    const serie = serieDeDepart(); // ep1 = la scène de café vierge, jamais touchée
+    const propose = JSON.parse(JSON.stringify(serie)) as CinemaDuFilm;
+    propose.episodes = [{ id: "ep1", titre: "Le gala", scenes: [{ id: "scene-1", decor: "Monaco gala.", plans: [{ id: "plan-1", consigne: "Wide shot.", personnages: [], objet: false }] }] }];
+    const idReel = fusionnerLEpisodeEcrit(serie, propose, "ep1");
+    // Sans le retrait du placeholder, l'épisode réel atterrit en "ep2" et la
+    // scène de café vide reste affichée pour toujours à côté de lui.
+    expect(idReel).toBe("ep1");
+    expect(serie.episodes).toHaveLength(1);
+    expect(serie.episodes[0]!.titre).toBe("Le gala");
+  });
+
   it("un import survenu PENDANT l'écriture n'est pas perdu (la série ne se remplace jamais en bloc)", () => {
     const serie = serieSaya();
     const propose = proposeAvecLea(serie); // calculé AVANT l'import ci-dessous : ne connaît pas Henrik

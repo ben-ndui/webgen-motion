@@ -10,7 +10,7 @@ import { ficheValide } from "../film-fixtures.test-utils";
 import { type FilmDeTest, filmDeTest } from "./film-de-test.test-utils";
 import { VIDEO_GARDEE_PAR_GOOGLE_MS, genererUnPlan, suivreLePlan } from "./generation";
 import { REQUEST_ID, type FalLocal, demarrerFalLocal, enFile as seedanceEnFile, soumissionAcceptee, termine as seedanceTermine } from "./seedance-local.test-utils";
-import { type GoogleLocal, demarrerGoogleLocal, enCours, lancementAccepte, portraitJpeg, termine, videoMp4 } from "./veo-local.test-utils";
+import { type GoogleLocal, demarrerGoogleLocal, omniSansVideo, omniTermine, portraitJpeg, videoMp4 } from "./veo-local.test-utils";
 
 let google: GoogleLocal;
 let film: FilmDeTest;
@@ -22,11 +22,15 @@ afterEach(() => google.fermer());
 
 const lancements = () => google.appels.filter((appel) => appel.methode === "POST");
 const corpsDuLancement = (index = 0) => JSON.parse(lancements()[index].corps);
+// Pont minimal Gemini Omni Flash (voir veo.ts) : le prompt et les références
+// vivent dans `input`, pas dans `instances[0]`.
+const texteEnvoye = (index = 0) => corpsDuLancement(index).input.find((item: { type: string }) => item.type === "text").text;
+const referencesEnvoyees = (index = 0) => corpsDuLancement(index).input.filter((item: { type: string }) => item.type === "image");
 
 describe("plans avec personnage", () => {
   it("le parcours complet : Fast, portrait d'Awa en référence, prêt, fichier cité, plan compté", async () => {
     film.creer(film.donnerUnPortraitAAwa());
-    google.repondre(lancementAccepte(), enCours(), termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 200, video: true });
 
     expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({
       ok: true,
@@ -34,14 +38,11 @@ describe("plans avec personnage", () => {
       budget: { utilises: 1, plafond: 20 },
       modele: { qualite: "fast", coutUsd: 0.96, pourquoi: "Awa est à l'image : Fast garde le même visage." },
     });
-    expect(lancements()[0].chemin).toContain("veo-3.1-fast-generate-preview");
-    const instance = corpsDuLancement().instances[0];
-    expect(instance.referenceImages).toEqual([{ image: { bytesBase64Encoded: portraitJpeg().toString("base64"), mimeType: "image/jpeg" }, referenceType: "asset" }]);
-    expect(instance.prompt).toContain("Awa (reference image 1)");
-    expect(instance.prompt).toContain("Avoid: text, letters");
-    expect(corpsDuLancement().parameters.negativePrompt).toBeUndefined();
+    expect(lancements()[0].chemin).toBe("/v1beta/interactions");
+    expect(referencesEnvoyees()).toEqual([{ type: "image", data: portraitJpeg().toString("base64"), mime_type: "image/jpeg" }]);
+    expect(texteEnvoye()).toContain("Awa (reference image 1)");
+    expect(texteEnvoye()).toContain("Avoid: text, letters");
 
-    expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "en-cours" } });
     expect(await suivreLePlan("saya", "rangement", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/rangement/prise-1.mp4" } });
     expect(readFileSync(join(film.lieux.public("saya"), "cinema", "rangement", "prise-1.mp4")).equals(videoMp4())).toBe(true);
     expect(film.fiche().cinema?.episodes[0].scenes[0].plans[0].fichier).toBe("cinema/rangement/prise-1.mp4");
@@ -64,9 +65,10 @@ describe("plans avec personnage", () => {
 
   it("la réplique part dans le prompt du plan où Awa parle", async () => {
     film.creer(film.donnerUnPortraitAAwa());
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     await genererUnPlan("saya", "confidence", film.lieux);
-    expect(corpsDuLancement().instances[0].prompt).toContain("Awa says softly in French: « Ce parfum, c'est l'histoire de ma grand-mère. »");
+    expect(texteEnvoye()).toContain("« Ce parfum, c'est l'histoire de ma grand-mère. »");
+    expect(texteEnvoye()).toContain("never speak English");
   });
 });
 
@@ -88,13 +90,12 @@ describe("plans avec une créature citée par references", () => {
 
   it("envoie les deux images de référence (Awa puis Sahor) et nomme Sahor dans le prompt", async () => {
     film.creer(avecSahorValide());
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     expect(await genererUnPlan("saya", "rangement", film.lieux)).toMatchObject({ ok: true, modele: { qualite: "fast" } });
-    const instance = corpsDuLancement().instances[0];
-    expect(instance.referenceImages).toHaveLength(2);
-    expect(instance.prompt).toContain("Awa (reference image 1)");
-    expect(instance.prompt).toContain("Sahor (reference image 2)");
-    expect(instance.prompt).toContain("supernatural wolf");
+    expect(referencesEnvoyees()).toHaveLength(2);
+    expect(texteEnvoye()).toContain("Awa (reference image 1)");
+    expect(texteEnvoye()).toContain("Sahor (reference image 2)");
+    expect(texteEnvoye()).toContain("supernatural wolf");
   });
 
   it("Sahor sans image validée refuse le plan, même si Awa l'est", async () => {
@@ -126,20 +127,18 @@ describe("textes d'exemple", () => {
 describe("plans sans personnage", () => {
   it("Lite, sans portrait ni negativePrompt (Lite les refuse), interdits dans le prompt", async () => {
     film.creer();
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: true, modele: { qualite: "lite", coutUsd: 0.64 } });
-    expect(lancements()[0].chemin).toContain("veo-3.1-lite-generate-preview");
-    const corps = corpsDuLancement();
-    expect(corps.instances[0].referenceImages).toBeUndefined();
-    expect(corps.parameters.negativePrompt).toBeUndefined();
-    expect(corps.instances[0].prompt).toContain("Avoid: text, letters");
+    expect(lancements()[0].chemin).toBe("/v1beta/interactions");
+    expect(referencesEnvoyees()).toHaveLength(0);
+    expect(texteEnvoye()).toContain("Avoid: text, letters");
   });
 });
 
 describe("argent et reprise", () => {
   it("le double clic ne lance (et ne paie) qu'une génération", async () => {
     film.creer();
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     await genererUnPlan("saya", "flacon", film.lieux);
     expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: true, plan: { etat: "en-cours" } });
     expect(lancements()).toHaveLength(1);
@@ -159,34 +158,38 @@ describe("argent et reprise", () => {
     expect(film.registre()).toEqual({ utilises: 0, operations: {} });
   });
 
-  it("plan refusé par le filtre de Google : rendu au budget, et on peut relancer", async () => {
+  it("plan refusé par le filtre de Google : rien n'est facturé, et on peut relancer", async () => {
+    // Pont minimal (voir veo.ts) : Omni répond du premier coup, un refus de
+    // contenu ne se voit donc plus à un sondage séparé mais dès le lancement.
     film.creer();
-    google.repondre(lancementAccepte(), { statut: 200, corps: { done: true, response: { generateVideoResponse: { raiMediaFilteredReasons: ["Unsafe."] } } } }, lancementAccepte());
-    await genererUnPlan("saya", "flacon", film.lieux);
-    expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "refuse", raison: expect.stringContaining("Unsafe.") }, budget: { utilises: 0 } });
+    google.repondre(omniSansVideo(), omniTermine(google.base));
+    expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: false, statut: 502 });
+    expect(film.registre().utilises).toBe(0);
     expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: true, plan: { etat: "en-cours" } });
   });
 
   it("budget atteint : le deuxième plan est refusé AVANT d'appeler Google", async () => {
     film.creer({ ...film.donnerUnPortraitAAwa(), budget: 1 });
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     await genererUnPlan("saya", "flacon", film.lieux);
     expect(await genererUnPlan("saya", "rangement", film.lieux)).toEqual({ ok: false, statut: 409, raison: expect.stringContaining("1 plans sur 1") });
     expect(lancements()).toHaveLength(1);
   });
 
-  it("Google en panne pendant le suivi : l'opération est gardée, et reprise au passage suivant", async () => {
+  it("Google en panne pendant le téléchargement : l'opération est gardée, et reprise au passage suivant", async () => {
+    // Omni répond du premier coup (voir veo.ts) : plus de sondage séparé à
+    // faire échouer, seul le téléchargement de la vidéo peut encore rater.
     film.creer();
-    google.repondre(lancementAccepte(), { statut: 503, corps: null }, termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 503, corps: null }, { statut: 200, video: true });
     await genererUnPlan("saya", "flacon", film.lieux);
     expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "injoignable" } });
-    expect(film.registre().operations.flacon.nom).toContain("operations/");
+    expect(film.registre().operations.flacon.nom).toContain("omni-pret:");
     expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "pret" } });
   });
 
   it("téléchargement raté : rien n'est cité, l'opération reste, le passage suivant réussit", async () => {
     film.creer();
-    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, corps: { pas: "une vidéo" } }, termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 200, corps: { pas: "une vidéo" } }, { statut: 200, video: true });
     await genererUnPlan("saya", "flacon", film.lieux);
     expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "injoignable" } });
     expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].fichier).toBeUndefined();
@@ -196,7 +199,7 @@ describe("argent et reprise", () => {
 
   it("vidéo expirée chez Google (48 h) : opération close, plan compté, message « facturé »", async () => {
     film.creer();
-    google.repondre(lancementAccepte(), termine(google.base), { statut: 404, corps: { error: { message: "File not found" } } });
+    google.repondre(omniTermine(google.base), { statut: 404, corps: { error: { message: "File not found" } } });
     await genererUnPlan("saya", "flacon", film.lieux);
     const reponse = await suivreLePlan("saya", "flacon", film.lieux, Date.now() + VIDEO_GARDEE_PAR_GOOGLE_MS + 60_000);
     expect(reponse).toMatchObject({ ok: true, plan: { etat: "refuse", raison: expect.stringContaining("a été facturé") } });
@@ -210,7 +213,7 @@ describe("la fiche pendant la génération", () => {
     serie.episodes[0].scenes[0].plans[1].fichier = "cinema/flacon.mp4";
     serie.episodes[0].scenes[0].plans[1].decoupe = { debut: 0, fin: 7.8, coupe: [4, 5] };
     film.creer(serie);
-    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 200, video: true });
     await genererUnPlan("saya", "flacon", film.lieux);
 
     const retouchee = film.fiche();
@@ -226,7 +229,7 @@ describe("la fiche pendant la génération", () => {
     const serie = serieSaya();
     serie.episodes[0].scenes[0].plans[1].fichier = "cinema/flacon.mp4";
     film.creer(serie);
-    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 200, video: true });
     await genererUnPlan("saya", "flacon", film.lieux);
 
     expect(await suivreLePlan("saya", "flacon", film.lieux)).toMatchObject({ plan: { etat: "pret", fichier: "cinema/flacon/prise-2.mp4" } });
@@ -246,7 +249,7 @@ describe("la fiche pendant la génération", () => {
 
   it("fiche devenue invalide pendant la génération : 409, l'opération attend qu'on la répare", async () => {
     film.creer();
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     await genererUnPlan("saya", "flacon", film.lieux);
     const cassee = film.fiche() as unknown as Record<string, unknown>;
     cassee.musique = null;

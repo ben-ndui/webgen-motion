@@ -1,6 +1,6 @@
 import { EXEMPLES_DE_SERIE } from "../../../remotion/film/cinema/exemples";
 import { type CinemaDuFilm, DUREE_D_UN_PLAN, type EpisodeDeCinema, type PlanDeCinema, type SceneDeCinema, type TypeDElement } from "../../../remotion/film/cinema/types";
-import { idDe } from "./scenario-lecture";
+import { estLEpisodeDeDepartVierge, idDe } from "./scenario-lecture";
 
 /**
  * Les gestes d'édition de la série, sur une COPIE de la fiche (l'assistant
@@ -55,6 +55,13 @@ export function ajouterUnEpisode(cinema: CinemaDuFilm): string {
 export function fusionnerLEpisodeEcrit(cinema: CinemaDuFilm, propose: CinemaDuFilm, episodeId: string): string | null {
   const episode = propose.episodes.find((e) => e.id === episodeId);
   if (!episode) return null;
+
+  // Le PREMIER épisode écrit arrive dans une série qui n'a encore que
+  // l'épisode d'exemple de « Commencer la série » : il ne doit pas rester à
+  // côté du vrai premier épisode, sans quoi celui-ci s'appelle « Épisode 2 »
+  // pour toujours. `ajouterLEpisodeEcrit` le retire déjà côté serveur ; ici on
+  // fait pareil côté série actuelle, qui a pu garder sa propre copie du vide.
+  cinema.episodes = cinema.episodes.filter((e) => !estLEpisodeDeDepartVierge(e));
 
   // Un personnage déjà connu (même prénom) garde SON id actuel ; un nouveau
   // reçoit un id libre dans la série actuelle, pas celle proposée.

@@ -1,6 +1,7 @@
 import { estUnExemple } from "../../../../remotion/film/cinema/exemples";
+import { LONGUEUR_MAX_DE_LA_PALETTE, LONGUEUR_MAX_DU_NEGATIF } from "../../../../remotion/film/cinema/validerCinema";
 import { ELEMENTS_MAX, EPISODES_A_VENIR_MAX, LONGUEUR_MAX_DE_LA_NOTE_A_VENIR, LONGUEUR_MAX_DU_TITRE_A_VENIR, PERSONNAGES_MAX } from "../../../../remotion/film/cinema/validerCinema";
-import type { CinemaDuFilm, ElementDeLaBible, EpisodeAVenir, Personnage, TypeDElement } from "../../../../remotion/film/cinema/types";
+import { STYLES_VISUELS, type CinemaDuFilm, type ElementDeLaBible, type EpisodeAVenir, type Personnage, type StyleVisuel, type TypeDElement } from "../../../../remotion/film/cinema/types";
 import { LONGUEUR_MAX_DE_DESCRIPTION } from "../../../../remotion/film/cinema/validerReferences";
 import { idDe } from "../scenario-lecture";
 
@@ -25,7 +26,16 @@ const TYPES_D_ELEMENT: readonly TypeDElement[] = ["creature", "objet", "decor"];
 // (la série a pu bouger entre-temps).
 export const normalise = (nom: string): string => nom.toLowerCase().normalize("NFD").replace(/\p{Mn}/gu, "");
 
-export type PropositionImportee = { personnages: Personnage[]; elements: ElementDeLaBible[]; episodes: EpisodeAVenir[] };
+export type PropositionImportee = {
+  personnages: Personnage[];
+  elements: ElementDeLaBible[];
+  episodes: EpisodeAVenir[];
+  // Absents si le texte ne les décrivait pas, OU si la série en a déjà un :
+  // l'import REMPLIT ce qui manque, il n'écrase jamais un réglage déjà posé.
+  style?: StyleVisuel;
+  palette?: string;
+  negatif?: string;
+};
 export type LectureDeLImport = { ok: true; proposition: PropositionImportee } | { ok: false; raison: string };
 
 export function lireLImportDeLaBible(cinema: CinemaDuFilm, reponse: unknown): LectureDeLImport {
@@ -79,8 +89,15 @@ export function lireLImportDeLaBible(cinema: CinemaDuFilm, reponse: unknown): Le
     episodes.push({ titre: titre.slice(0, LONGUEUR_MAX_DU_TITRE_A_VENIR), note: note.slice(0, LONGUEUR_MAX_DE_LA_NOTE_A_VENIR) });
   }
 
-  if (personnages.length === 0 && elements.length === 0 && episodes.length === 0) {
+  // Remplissent ce qui manque, n'écrasent jamais un réglage déjà posé par la
+  // personne (à la main ou par un import précédent) : proposés SEULEMENT
+  // quand la série n'a encore rien dessus.
+  const style = cinema.style === undefined && (STYLES_VISUELS as readonly unknown[]).includes(reponse.style) ? (reponse.style as StyleVisuel) : undefined;
+  const palette = cinema.palette === undefined ? texte(reponse.palette).slice(0, LONGUEUR_MAX_DE_LA_PALETTE) || undefined : undefined;
+  const negatif = cinema.negatif === undefined ? texte(reponse.negatif).slice(0, LONGUEUR_MAX_DU_NEGATIF) || undefined : undefined;
+
+  if (personnages.length === 0 && elements.length === 0 && episodes.length === 0 && !style && !palette && !negatif) {
     return { ok: false, raison: "Claude n'a rien trouvé d'exploitable dans ce texte : vérifie qu'il décrit bien des personnages ou des épisodes." };
   }
-  return { ok: true, proposition: { personnages, elements, episodes } };
+  return { ok: true, proposition: { personnages, elements, episodes, style, palette, negatif } };
 }

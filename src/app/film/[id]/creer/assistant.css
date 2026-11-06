@@ -4,11 +4,10 @@
    (requête de conteneur, pas d'écran) ; dans un bloc, une seule colonne et
    l'aide au-dessus de la case. */
 
-.gm-film .assistant { display: flex; flex-direction: column; gap: var(--s-5); container-type: inline-size; }
-.gm-film .assistant-barre { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; }
-/* Six onglets ne tiennent pas sur un téléphone : la barre défile seule, la page ne déborde pas. */
-.gm-film .assistant-onglets { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.gm-film .onglet-reste { font-family: var(--font-mono); font-size: 10px; min-width: 18px; padding: 1px 6px; border-radius: var(--r-full); background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-line); }
+/* Les six étapes vivent dans la barre flottante en bas (DA 2026-2027) : la
+   page réserve la place sous elle pour ne jamais passer dessous. */
+.gm-film .assistant { display: flex; flex-direction: column; gap: var(--s-5); container-type: inline-size; padding-bottom: calc(68px + 4px + 24px + env(safe-area-inset-bottom)); }
+.gm-film .assistant-barre { display: flex; justify-content: flex-end; }
 
 /* Le conteneur est l'assistant : une requête de conteneur ne peut pas
    styler le conteneur lui-même. */

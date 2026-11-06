@@ -53,7 +53,7 @@ export async function genererUneImageDeLaBible(id: string, referenceId: string, 
     return { ok: false, statut: 409, raison: `Budget d'images atteint : ${reservation.generees} sur ${plafond}. Augmente-le dans les réglages du film.` };
   }
 
-  const resultat = await genererUnPortraitChezGoogle(client, promptDeLaVue(reference, vue));
+  const resultat = await genererUnPortraitChezGoogle(client, promptDeLaVue(reference, vue, lecture.cinema.style, lecture.cinema.negatif));
   if (!resultat.ok) {
     modifierLaBible(dossier, (bible) => libererSansFrais(bible, cle));
     return { ok: false, statut: 502, raison: resultat.raison };

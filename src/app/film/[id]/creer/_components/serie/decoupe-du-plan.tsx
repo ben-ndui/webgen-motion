@@ -2,13 +2,17 @@
 
 /* eslint-disable @next/next/no-img-element -- planche contact locale, servie par l'API du film */
 
+import { Maximize2 } from "lucide-react";
 import { useRef, useState } from "react";
 
+import HorsDuFlux from "@/app/_components/hors-du-flux";
 import { poserLaDecoupe } from "@/lib/cinema/edition-serie";
 import { DUREE_D_UN_PLAN, type PlanDeCinema } from "../../../../../../../remotion/film/cinema/types";
+import FenetreDuPlan from "./fenetre-du-plan";
 
 type Props = {
   filmId: string;
+  numero: number;
   plan: PlanDeCinema;
   fichier: string;
   version: number;
@@ -24,13 +28,15 @@ const enSecondes = (s: number) => `${s.toFixed(1).replace(".", ",")} s`;
  * contact cliquable), puis « Commencer ici », « Finir ici », ou « Retirer un
  * passage » en deux clics. Le montage de l'épisode suit cette découpe.
  */
-export default function DecoupeDuPlan({ filmId, plan, fichier, version, modifierLePlan }: Props) {
+export default function DecoupeDuPlan({ filmId, numero, plan, fichier, version, modifierLePlan }: Props) {
   const lecteur = useRef<HTMLVideoElement>(null);
   const [debutDuPassage, setDebutDuPassage] = useState<number | null>(null);
+  const [agrandi, setAgrandi] = useState(false);
   const actuelle = plan.decoupe ?? { debut: 0, fin: DUREE_D_UN_PLAN };
   const maintenant = () => lecteur.current?.currentTime ?? 0;
   const poser = (voulue: { debut: number; fin: number; coupe?: [number, number] }) => modifierLePlan((p) => poserLaDecoupe(p, voulue));
   const base = `/api/motion/film/${filmId}`;
+  const source = `${base}/media?relatif=${encodeURIComponent(fichier)}&v=${version}`;
 
   const allerA = (evenement: React.MouseEvent<HTMLImageElement>) => {
     const boite = evenement.currentTarget.getBoundingClientRect();
@@ -55,7 +61,13 @@ export default function DecoupeDuPlan({ filmId, plan, fichier, version, modifier
         {actuelle.coupe ? `, sans le passage de ${enSecondes(actuelle.coupe[0])} à ${enSecondes(actuelle.coupe[1])}` : ""}. Clique une image de la planche
         pour y amener le lecteur.
       </p>
-      <video ref={lecteur} className="decoupe-lecteur" src={`${base}/media?relatif=${encodeURIComponent(fichier)}&v=${version}`} controls playsInline />
+      <div className="decoupe-lecteur-bloc">
+        <video ref={lecteur} className="decoupe-lecteur" src={source} controls playsInline />
+        <button type="button" className="decoupe-agrandir" onClick={() => setAgrandi(true)} aria-label={`Voir le plan ${numero} en grand`} title="Voir en grand">
+          <Maximize2 aria-hidden size={16} />
+        </button>
+      </div>
+      <HorsDuFlux racine=".gm-film">{agrandi && <FenetreDuPlan numero={numero} src={source} fermer={() => setAgrandi(false)} />}</HorsDuFlux>
       <img className="decoupe-planche" src={`${base}/cinema/plans/${encodeURIComponent(plan.id)}/planche?v=${version}`} alt="Planche contact du plan, une image toutes les demi-secondes" onClick={allerA} />
       <div className="decoupe-actions">
         <button type="button" className="film-btn film-btn-ghost" onClick={() => poser({ ...actuelle, debut: maintenant() })}>

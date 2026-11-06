@@ -32,7 +32,7 @@ describe("erreursDuCinema — format série", () => {
     plan.fournisseur = "seedance";
     expect(erreurs(serie)).toEqual([]);
     plan.fournisseur = "sora";
-    expect(erreurs(serie)).toEqual(["cinema.episodes[0].scenes[0].plans[0].fournisseur : « veo » ou « seedance » (absent : Veo)"]);
+    expect(erreurs(serie)).toEqual(["cinema.episodes[0].scenes[0].plans[0].fournisseur : « veo », « seedance » ou « kling » (absent : Veo)"]);
   });
 
   it("accepte un Reel sans personnage : un épisode, une scène, un plan", () => {
@@ -128,5 +128,23 @@ describe("erreursDuCinema — format série", () => {
       "cinema.personnages : liste attendue (vide s'il n'y a personne)",
       "cinema.episodes : liste attendue",
     ]);
+  });
+
+  it("accepte le style manga-anime, refuse un style qui n'existe pas", () => {
+    const serie = serieSaya();
+    (serie as unknown as { style: string }).style = "manga-anime";
+    expect(erreurs(serie)).toEqual([]);
+    (serie as unknown as { style: string }).style = "chibi";
+    expect(erreurs(serie)).toEqual(["cinema.style : photorealiste, cinema-fantasy, animation-3d, illustration, manga-anime"]);
+  });
+
+  it("accepte negatif et palette, refuse un texte trop long", () => {
+    const serie = serieSaya();
+    (serie as unknown as { negatif: string; palette: string }).negatif = "short hair, cartoon style";
+    (serie as unknown as { negatif: string; palette: string }).palette = "Black for clothes, deep blue for night scenes.";
+    expect(erreurs(serie)).toEqual([]);
+    (serie as unknown as { negatif: string; palette: string }).negatif = "x".repeat(601);
+    (serie as unknown as { negatif: string; palette: string }).palette = "x".repeat(601);
+    expect(erreurs(serie)).toEqual(["cinema.negatif : 600 caractères au plus, 601 reçus", "cinema.palette : 600 caractères au plus, 601 reçus"]);
   });
 });

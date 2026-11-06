@@ -114,4 +114,40 @@ describe("lireLImportDeLaBible", () => {
     const lecture = lireLImportDeLaBible(cinema, reponse);
     expect(lecture).toMatchObject({ ok: true, proposition: { episodes: [{ titre: "La trahison" }] } });
   });
+
+  it("extrait style, palette et negatif quand le texte les décrit", () => {
+    const cinema = serieSaya();
+    const reponse = { style: "manga-anime", palette: "Black for clothes, deep blue for night scenes.", negatif: "short hair, visible logo" };
+    const lecture = lireLImportDeLaBible(cinema, reponse);
+    expect(lecture).toMatchObject({ ok: true, proposition: { style: "manga-anime", palette: "Black for clothes, deep blue for night scenes.", negatif: "short hair, visible logo" } });
+  });
+
+  it("un style qui n'existe pas est ignoré, sans faire échouer l'import du reste", () => {
+    const cinema = serieSaya();
+    const reponse = { style: "chibi", personnages: [{ nom: "Henrik", description: "x" }] };
+    const lecture = lireLImportDeLaBible(cinema, reponse);
+    expect(lecture).toMatchObject({ ok: true, proposition: { personnages: [{ nom: "Henrik" }] } });
+    if (lecture.ok) expect(lecture.proposition.style).toBeUndefined();
+  });
+
+  it("ne propose JAMAIS style, palette ou negatif si la série en a déjà un : l'import ne remplace rien", () => {
+    const cinema = serieSaya();
+    cinema.style = "illustration";
+    cinema.palette = "Already set.";
+    cinema.negatif = "Already set.";
+    const reponse = { style: "manga-anime", palette: "New palette.", negatif: "New negatif." };
+    const lecture = lireLImportDeLaBible(cinema, reponse);
+    expect(lecture).toMatchObject({ ok: false }); // rien d'autre dans la réponse : rien à garder
+  });
+
+  it("tronque une palette ou un negatif trop longs au lieu de les refuser", () => {
+    const cinema = serieSaya();
+    const reponse = { palette: "p".repeat(700), negatif: "n".repeat(700) };
+    const lecture = lireLImportDeLaBible(cinema, reponse);
+    expect(lecture).toMatchObject({ ok: true });
+    if (lecture.ok) {
+      expect(lecture.proposition.palette).toHaveLength(600);
+      expect(lecture.proposition.negatif).toHaveLength(600);
+    }
+  });
 });

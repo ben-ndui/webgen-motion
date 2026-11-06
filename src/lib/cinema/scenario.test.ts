@@ -32,9 +32,30 @@ describe("demandeDeScenario", () => {
     const { systeme, message } = demandeDeScenario(spec, "  Une cliente découvre le parfum de sa grand-mère.  ");
     expect(systeme).toContain("Lines of dialogue are in FRENCH");
     expect(systeme).toContain("Never put text, logos");
+    expect(systeme).toContain("If the brief contains a numbered shot list ('Shot 1: ...'");
     expect(message).toContain("Brand: SAYA. Colors: midnight navy blue, gold and ivory. Mood: nocturne.");
     expect(message).toContain("- Awa: A Black woman in her early thirties");
     expect(message).toContain("Brief from the client (in French):\nUne cliente découvre le parfum de sa grand-mère.");
+  });
+
+  it("une palette et un style de série remplacent la palette de marque et s'ajoutent au message ; un negatif rejoint les règles", () => {
+    const serie = serieSaya();
+    serie.palette = "Black for clothes, deep blue for night scenes.";
+    serie.style = "manga-anime";
+    serie.negatif = "short hair, visible logo";
+    const spec = { marque: { nom: "SAYA", couleurs: { encre: "#0A1A2C", clair: "#ECE4D2", accent: "#C19A42" } }, direction: "nocturne", cinema: serie } as never;
+    const { systeme, message } = demandeDeScenario(spec, "Une cliente découvre le parfum.");
+    expect(message).toContain("Brand: SAYA. Colors: Black for clothes, deep blue for night scenes. Mood: nocturne.");
+    expect(message).not.toContain("midnight navy blue");
+    expect(message).toContain("Visual style: Japanese anime / manga cinematic art style");
+    expect(systeme).toContain("- Never show or describe: short hair, visible logo.");
+  });
+
+  it("sans palette/style/negatif sur la série : exactement le comportement d'avant", () => {
+    const spec = { marque: { nom: "SAYA", couleurs: { encre: "#0A1A2C", clair: "#ECE4D2", accent: "#C19A42" } }, direction: "nocturne", cinema: serieSaya() } as never;
+    const { systeme, message } = demandeDeScenario(spec, "Brief.");
+    expect(message).not.toContain("Visual style");
+    expect(systeme).not.toContain("Never show or describe");
   });
 });
 

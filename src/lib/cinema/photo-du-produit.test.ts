@@ -9,7 +9,7 @@ import { garderLesChampsDuServeur } from "./champs-du-serveur";
 import { type FilmDeTest, filmDeTest } from "./film-de-test.test-utils";
 import { genererUnPlan, suivreLePlan } from "./generation";
 import { deposerLaPhotoDuProduit, retirerLaPhotoDuProduit } from "./photo-du-produit";
-import { type GoogleLocal, demarrerGoogleLocal, lancementAccepte, portraitJpeg, termine } from "./veo-local.test-utils";
+import { type GoogleLocal, demarrerGoogleLocal, omniTermine, portraitJpeg } from "./veo-local.test-utils";
 
 const PNG = Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d2a5b40000000049454e44ae426082", "hex");
 let google: GoogleLocal;
@@ -48,16 +48,19 @@ describe("dépôt de la photo du produit", () => {
 });
 
 describe("la photo dans la génération", () => {
+  // Pont minimal Gemini Omni Flash (voir veo.ts) : le prompt et les
+  // références vivent dans `input`, pas dans `instances[0]`.
   const lancements = () => google.appels.filter((a) => a.methode === "POST").map((a) => JSON.parse(a.corps));
+  const texteEnvoye = (index = 0) => lancements()[index].input.find((item: { type: string }) => item.type === "text").text;
+  const referencesEnvoyees = (index = 0) => lancements()[index].input.filter((item: { type: string }) => item.type === "image");
 
   it("objet seul : Fast, la photo en référence, et le plan est marqué « vrai produit »", async () => {
     film.creer();
     deposerLaPhotoDuProduit("saya", portraitJpeg(), film.lieux);
-    google.repondre(lancementAccepte(), termine(google.base), { statut: 200, video: true });
+    google.repondre(omniTermine(google.base), { statut: 200, video: true });
     expect(await genererUnPlan("saya", "flacon", film.lieux)).toMatchObject({ ok: true, modele: { qualite: "fast", pourquoi: expect.stringContaining("photo du vrai produit") } });
-    const instance = lancements()[0].instances[0];
-    expect(instance.referenceImages).toHaveLength(1);
-    expect(instance.prompt).toContain("The real product (reference image 1)");
+    expect(referencesEnvoyees()).toHaveLength(1);
+    expect(texteEnvoye()).toContain("The real product (reference image 1)");
     await suivreLePlan("saya", "flacon", film.lieux);
     expect(film.fiche().cinema?.episodes[0].scenes[0].plans[1].produitReel).toBe(true);
   });
@@ -65,11 +68,10 @@ describe("la photo dans la génération", () => {
   it("avec Awa : son portrait d'abord, la photo ensuite (« reference image 2 »)", async () => {
     film.creer(film.donnerUnPortraitAAwa());
     deposerLaPhotoDuProduit("saya", PNG, film.lieux);
-    google.repondre(lancementAccepte());
+    google.repondre(omniTermine(google.base));
     await genererUnPlan("saya", "rangement", film.lieux);
-    const instance = lancements()[0].instances[0];
-    expect(instance.referenceImages.map((r: { image: { mimeType: string } }) => r.image.mimeType)).toEqual(["image/jpeg", "image/png"]);
-    expect(instance.prompt).toContain("The real product (reference image 2)");
+    expect(referencesEnvoyees().map((r: { mime_type: string }) => r.mime_type)).toEqual(["image/jpeg", "image/png"]);
+    expect(texteEnvoye()).toContain("The real product (reference image 2)");
   });
 
   it("photo citée mais absente du disque : refus AVANT de payer", async () => {
