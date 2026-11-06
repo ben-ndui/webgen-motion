@@ -4,9 +4,11 @@
 # tags `v*`). Ici on protège `main` : aucune régression lint / type /
 # test ne doit passer en silence.
 #
-# Volontairement léger : pas de build Next complet ni de Rust/Tauri —
-# le pipeline (Puppeteer / ffmpeg / Remotion) n'est pas exercé en CI,
-# seulement le code applicatif et la logique testée par Vitest.
+# Volontairement léger : pas de build Next complet ni de Rust/Tauri, pas le
+# vrai pipeline Puppeteer/Remotion — seulement le code applicatif et la
+# logique testée par Vitest. ffmpeg reste nécessaire : les tests du cinéma
+# fabriquent de vrais fichiers JPEG/MP4 via ffmpeg (fixtures réalistes,
+# `veo-local.test-utils.ts`), pas des buffers inventés.
 
 name: ci
 
@@ -30,6 +32,9 @@ jobs:
       PUPPETEER_SKIP_DOWNLOAD: "1"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Vérifie ffmpeg (préinstallé sur ubuntu-latest, sinon installé)
+        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
 
       - name: Setup Node
         uses: actions/setup-node@v4
